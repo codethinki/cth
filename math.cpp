@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "math.hpp"
-
+#include <string>
 namespace cth::math {
 template<integral_t T>
 [[nodiscard]] constexpr T cycle(const T x, const T a, const T b) {
