@@ -4,6 +4,8 @@
 #include "../type_traits.hpp"
 
 namespace cth {
+using namespace std;
+
 #define TRAITS_TEST(trait, correct, wrong) \
     EXPECT_TRUE(type_traits::trait##_v<correct>); \
     EXPECT_FALSE(type_traits::trait##_v<wrong>)

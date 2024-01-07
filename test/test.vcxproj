@@ -166,6 +166,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="tests_concepts.hpp" />
+    <ClInclude Include="test_math.hpp" />
     <ClInclude Include="test_type_traits.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,8 +1,7 @@
 #pragma once
 #include <type_traits>
 
-
-namespace cth {
+namespace cth::concepts {
 using namespace std;
 
 template<typename T>
