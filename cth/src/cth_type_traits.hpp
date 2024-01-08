@@ -10,7 +10,7 @@ template<typename T> static constexpr bool is_##name##_v = __VA_ARGS__; \
 template<typename T> struct is_##name : std::bool_constant<is_##name##_v<T>> {};
 
 
-namespace cth::type_traits {
+namespace cth::type {
 namespace dev {
     template<class T, T V>
     struct Constant {
@@ -42,10 +42,12 @@ CTH_TYPE_GROUP(nchar_p, _Is_any_of_v<decay_t<remove_cv_t<T>>, const char*, char*
 CTH_TYPE_GROUP(wchar_p, _Is_any_of_v<decay_t<remove_cv_t<T>>, const wchar_t*, wchar_t*>)
 CTH_TYPE_GROUP(char_p, is_wchar_p_v<T> || is_nchar_p_v<T>)
 
+
+
 //string
 CTH_TYPE_GROUP(nstring, _Is_any_of_v<remove_cv_t<T>, string>)
 CTH_TYPE_GROUP(wstring, _Is_any_of_v<remove_cv_t<T>, wstring>)
-CTH_TYPE_GROUP(string, is_nstring_v<T> || is_wstring_v<T>)
+CTH_TYPE_GROUP(string, _Is_any_of_v<remove_cv_t<T>, string, wstring>)
 
 //textual
 CTH_TYPE_GROUP(ntextual, is_nstring_v<T> || is_nchar_p_v<T>)
@@ -56,6 +58,14 @@ CTH_TYPE_GROUP(textual, is_string_v<T> || is_char_p_v<T>)
 CTH_TYPE_GROUP(wliteral, is_wstring_v<T> || is_wchar_p_v<T> || is_wchar_v<T>)
 CTH_TYPE_GROUP(nliteral, is_nstring_v<T> || is_nchar_p_v<T> || is_nchar_v<T>)
 CTH_TYPE_GROUP(literal, is_nliteral_v<T> || is_wliteral_v<T>)
+
+
+
+//string_view (not in literal or textual because it's not the actual string, it doesn't own the memory)
+CTH_TYPE_GROUP(string_view, _Is_any_of_v<remove_cv_t<T>, string_view, wstring_view>)
+
+
+
 
 //stream
 CTH_TYPE_GROUP(ostream, _Is_any_of_v<remove_cv_t<T>, ostream, wostream>);

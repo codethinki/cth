@@ -1,15 +1,19 @@
 #pragma once
 #include <gtest/gtest.h>
 
-#include "../concepts.hpp"
+#include "../cth/src/cth_concepts.hpp"
+
+//this header is missing tests but idc because it's just concepts
 
 namespace cth {
 
 TEST(headerConcepts, conceptTests) {
-    EXPECT_FALSE(cth::concepts::arithmetic_t<char*>);
-    EXPECT_TRUE(cth::concepts::floating_point_t<float>);
-    EXPECT_FALSE(cth::concepts::unsigned_t<int>);
-    EXPECT_FALSE(cth::concepts::integral_t<float>);
+    using namespace cth::concepts::num;
+
+    EXPECT_FALSE(arithmetic_t<char*>);
+    EXPECT_TRUE(floating_point_t<float>);
+    EXPECT_FALSE(unsigned_t<int>);
+    EXPECT_FALSE(integral_t<float>);
 }
 
 }

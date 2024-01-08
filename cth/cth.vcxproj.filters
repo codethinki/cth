@@ -13,30 +13,35 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="utils">
-      <UniqueIdentifier>{126de693-04fa-478f-98b5-f2a329f749d1}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="test.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="test_type_traits.hpp">
+    <ClInclude Include="src\cth_concepts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tests_concepts.hpp">
+    <ClInclude Include="src\cth_console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="test_numeric.hpp">
+    <ClInclude Include="src\cth_log.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\cth_numeric.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cth_string.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cth_type_traits.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

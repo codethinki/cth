@@ -159,15 +159,15 @@
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\cth.vcxproj">
-      <Project>{c38940d0-ffa7-475a-9447-431c7aa1024e}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="tests_concepts.hpp" />
-    <ClInclude Include="test_math.hpp" />
+    <ClInclude Include="test_numeric.hpp" />
     <ClInclude Include="test_type_traits.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\cth\cth.vcxproj">
+      <Project>{7dda21b4-4072-4f64-8b76-247008cde359}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
