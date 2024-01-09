@@ -5,9 +5,13 @@
 
 
 int main() {
-    println("Hello, World!", cth::console::ANSI_ID_BRIGHT_BLACK_BG);
-    println("Hello2", cth::console::ANSI_ID_CLEAR_UNDERLINE);
+    cth::Console::println("Hello World!");
+    cth::Console::println("Hello, World!", cth::Console::COL_ID_BRIGHT_RED_TEXT);
+    cth::Console::println("Hello, World!");
 
+    cth::Console::println("Hello, World!", cth::Console::COL_ID_BRIGHT_GREEN_TEXT);
+    cth::Console::setBgCol(cth::Console::COL_ID_BRIGHT_RED_BG);
+    cth::Console::errln(L"Hello, World!");
 
     return 0;
 }
