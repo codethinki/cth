@@ -5,13 +5,13 @@
 
 
 int main() {
-    cth::Console::println("Hello World!");
-    cth::Console::println("Hello, World!", cth::Console::COL_ID_BRIGHT_RED_TEXT);
-    cth::Console::println("Hello, World!");
+    cth::console::println("Hello World!");
+    cth::console::println("Hello, World!", cth::console::COL_ID_BRIGHT_RED_TEXT);
+    cth::console::println("Hello, World!");
 
-    cth::Console::println("Hello, World!", cth::Console::COL_ID_BRIGHT_GREEN_TEXT);
-    cth::Console::setBgCol(cth::Console::COL_ID_BRIGHT_RED_BG);
-    cth::Console::errln(L"Hello, World!");
+    cth::console::println("Hello, World!", cth::console::COL_ID_BRIGHT_GREEN_TEXT);
+    cth::console::setBgCol(cth::console::COL_ID_BRIGHT_RED_BG);
+    cth::console::errln(L"Hello, World!");
 
     return 0;
 }
