@@ -5,79 +5,93 @@
 #include <locale>
 #include <stack>
 #include <string>
-#include <Windows.h>
 
 #include "cth_concepts.hpp"
 #include "cth_string.hpp"
 
 namespace cth::console {
-using console_state_t = uint32_t;
+using namespace std;
+
+/**
+ * \brief type to store the console state\n its split up into 4 8 bit parts (high to low: nothing, text style, text col, BG col)
+ */
+using state_t = uint32_t;
+
+namespace internal {
+    inline constexpr int TEXT_COL_IDS_SHIFT = 0;
+    inline constexpr int BG_COL_IDS_SHIFT = 8;
+    inline constexpr int TEXT_STYLE_IDS_SHIFT = 16;
+}
 
 //-----------------------------
 //VARIABLES / CONSTANTS
 //-----------------------------
 
 enum Text_Col_Ids {
-    TEXT_COL_IDS_FIRST = 0,
-    COL_ID_DEFAULT_TEXT = TEXT_COL_IDS_FIRST,
+    COL_ID_DEFAULT_TEXT,
 
-    COL_ID_BLACK_TEXT,
-    COL_ID_DARK_RED_TEXT,
-    COL_ID_DARK_GREEN_TEXT,
-    COL_ID_DARK_YELLOW_TEXT,
-    COL_ID_DARK_BLUE_TEXT,
-    COL_ID_DARK_MAGENTA_TEXT,
-    COL_ID_DARK_CYAN_TEXT,
-    COL_ID_DARK_WHITE_TEXT,
-    COL_ID_BRIGHT_BLACK_TEXT,
-    COL_ID_BRIGHT_RED_TEXT,
-    COL_ID_BRIGHT_GREEN_TEXT,
-    COL_ID_BRIGHT_YELLOW_TEXT,
-    COL_ID_BRIGHT_BLUE_TEXT,
-    COL_ID_BRIGHT_MAGENTA_TEXT,
-    COL_ID_BRIGHT_CYAN_TEXT,
-    COL_ID_WHITE_TEXT,
+    COL_ID_BLACK_TEXT = 1 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_RED_TEXT = 2 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_GREEN_TEXT = 3 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_YELLOW_TEXT = 4 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_BLUE_TEXT = 5 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_MAGENTA_TEXT = 6 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_CYAN_TEXT = 7 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_WHITE_TEXT = 8 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_BLACK_TEXT = 9 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_RED_TEXT = 10 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_GREEN_TEXT = 11 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_YELLOW_TEXT = 12 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_BLUE_TEXT = 13 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_MAGENTA_TEXT = 14 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_CYAN_TEXT = 15 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_WHITE_TEXT = 16 << internal::TEXT_COL_IDS_SHIFT,
 };
-enum Bg_Col_Ids {
-    BG_COL_IDS_FIRST = 0xff + 1,
+enum BG_Col_Ids {
+    COL_ID_DEFAULT_BG,
 
-    COL_ID_BLACK_BG = BG_COL_IDS_FIRST,
-    COL_ID_DARK_RED_BG,
-    COL_ID_DARK_GREEN_BG,
-    COL_ID_DARK_YELLOW_BG,
-    COL_ID_DARK_BLUE_BG,
-    COL_ID_DARK_MAGENTA_BG,
-    COL_ID_DARK_CYAN_BG,
-    COL_ID_DARK_WHITE_BG,
-    COL_ID_BRIGHT_BLACK_BG,
-    COL_ID_BRIGHT_RED_BG,
-    COL_ID_BRIGHT_GREEN_BG,
-    COL_ID_BRIGHT_YELLOW_BG,
-    COL_ID_BRIGHT_BLUE_BG,
-    COL_ID_BRIGHT_MAGENTA_BG,
-    COL_ID_BRIGHT_CYAN_BG,
-    COL_ID_WHITE_BG,
+    COL_ID_BLACK_BG = COL_ID_DEFAULT_BG,
+    COL_ID_DARK_RED_BG = 1 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_GREEN_BG = 2 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_YELLOW_BG = 3 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_BLUE_BG = 4 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_MAGENTA_BG = 5 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_CYAN_BG = 6 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_WHITE_BG = 7 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_BLACK_BG = 8 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_RED_BG = 9 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_GREEN_BG = 10 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_YELLOW_BG = 11 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_BLUE_BG = 12 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_MAGENTA_BG = 13 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_CYAN_BG = 14 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_WHITE_BG = 15 << internal::BG_COL_IDS_SHIFT,
 };
 enum Text_Style_Ids {
-    TEXT_STYLE_IDS_FIRST = 0xffff + 1,
+    STYLE_ID_DEFAULT_TEXT,
 
-    STYLE_ID_NO_BOLD_TEXT,
+    STYLE_ID_BOLD_TEXT = 1 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_FAINT_TEXT = 2 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_BOLD_TEXT = 3 << internal::TEXT_STYLE_IDS_SHIFT,
     STYLE_ID_NO_FAINT_TEXT = STYLE_ID_NO_BOLD_TEXT,
-    STYLE_ID_BOLD_TEXT,
-    STYLE_ID_FAINT_TEXT,
 
-    STYLE_ID_ITALIC_TEXT,
-    STYLE_ID_NO_ITALIC_TEXT,
+    STYLE_ID_ITALIC_TEXT = 4 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_ITALIC_TEXT = 5 << internal::TEXT_STYLE_IDS_SHIFT,
 
-    STYLE_ID_NO_UNDERLINED_TEXT,
-    STYLE_ID_UNDERLINED_TEXT,
-    STYLE_ID_DOUBLE_UNDERLINED_TEXT,
+    STYLE_ID_UNDERLINED_TEXT = 6 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_DOUBLE_UNDERLINED_TEXT = 7 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_UNDERLINED_TEXT = 8 << internal::TEXT_STYLE_IDS_SHIFT,
 
-    STYLE_ID_BLINK_TEXT,
-    STYLE_ID_NO_BLINK_TEXT,
+    STYLE_ID_BLINK_TEXT = 9 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_BLINK_TEXT = 10 << internal::TEXT_STYLE_IDS_SHIFT,
 
-    STYLE_ID_INVERSE_TEXT,
-    STYLE_ID_NO_INVERSE_TEXT,
+    STYLE_ID_INVERSE_TEXT = 11 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_INVERSE_TEXT = 12 << internal::TEXT_STYLE_IDS_SHIFT,
+
+    STYLE_ID_HIDDEN_TEXT = 13 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_HIDDEN_TEXT = 14 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_STRIKEOUT_TEXT = 15 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_STRIKEOUT_TEXT = 16 << internal::TEXT_STYLE_IDS_SHIFT,
 };
 
 enum Cursor_Ids {
@@ -116,12 +130,15 @@ inline constexpr array<const char*, 16> BG_COLOR_CODES = {{
     "\033[100m", "\033[101m", "\033[102m", "\033[103m",
     "\033[104m", "\033[105m", "\033[106m", "\033[107m",
 }};
-inline constexpr array<const char*, 12> TEXT_STYLE_CODES = {{
-    "\033[22m", "\033[1m", "\033[2m", //clear bold/faint, bold, faint,
+inline constexpr array<const char*, 17> TEXT_STYLE_CODES = {{
+    "\033[22;23;24;25;27;28;29m", //default
+    "\033[1m", "\033[2m", "\033[22m", //bold, faint, clear bold/faint
     "\033[3m", "\033[23m", //italic, clear italic
-    "\033[24m", "\033[4m", "\033[21m", //clear underline, underline, double underline
+    "\033[4m", "\033[21m", "\033[24m", //underline, double underline, clear underline
     "\033[5m", "\033[25m", //blink, clear blink
     "\033[7m", "\033[27m", //inverse, clear inverse
+    "\033[8m", "\033[28m", //hidden, clear hidden
+    "\033[9m", "\033[29m" //strikeout, clear strikeout
 }};
 
 //TODO add supports for these codes
@@ -140,14 +157,21 @@ constexpr array<const char*, ERASE_IDS_SIZE> ERASE_CODES_N{{
     "\033[1J", "\033[0J" //erase screen up, down
 }};
 
-namespace internal {
-    [[nodiscard]] console_state_t initialState();
-    console_state_t currentState = initialState();
+namespace state {
+    namespace internal {
+        [[nodiscard]] state_t initialState();
 
-    constexpr uint32_t MAX_STACK_SIZE = 16;
-    uint32_t stackIndex = 0;
-    array<console_state_t, MAX_STACK_SIZE> stack{};
-}
+        constexpr uint32_t MAX_STACK_SIZE = 16;
+        uint32_t stackIndex = 0;
+        array<state_t, MAX_STACK_SIZE> stack{};
+    } // namespace internal
+
+    state_t current = internal::initialState(); //represents the current cached state of the console
+
+
+} // namespace state
+
+
 
 //-------------------------
 //     DECLARATIONS
@@ -155,86 +179,90 @@ namespace internal {
 
 template<bool CacheToState = true>
 void setTextCol(Text_Col_Ids text_col);
-
 template<bool CacheToState = true>
-void setBgCol(Bg_Col_Ids bg_col);
-
+void setBGCol(BG_Col_Ids bg_col);
 template<bool CacheToState = true>
 void setTextStyle(Text_Style_Ids text_style);
 
-template<bool Cache = true>
-void setState(console_state_t new_state);
+namespace state {
+    template<bool Cache = true>
+    void set(state_t new_state);
+}
+
 
 //-----------------------------
 //   ONE LINE FUNCTIONS
 //-----------------------------
 
-[[nodiscard]] inline console_state_t setTextCol(const Text_Col_Ids text_color, const console_state_t state) {
-    return (state & 0xffffff00) | text_color;
-}
-[[nodiscard]] inline console_state_t setBgCol(const Bg_Col_Ids bg_color, const console_state_t state) { return (state & 0xffff00ff) | bg_color; }
-[[nodiscard]] inline console_state_t setTextStyle(const Text_Style_Ids text_style, const console_state_t state) {
-    return (state & 0xff00ffff) | text_style;
-}
-
-inline void cacheTextCol(const Text_Col_Ids text_col) { internal::currentState = setTextCol(text_col, internal::currentState); }
-inline void cacheBgCol(const Bg_Col_Ids bg_col) { internal::currentState = setBgCol(bg_col, internal::currentState); }
-inline void cacheTextStyle(const Text_Style_Ids text_style) { internal::currentState = setTextStyle(text_style, internal::currentState); }
 
 
-[[nodiscard]] inline Text_Col_Ids toTextColorId(const console_state_t console_state) { return static_cast<Text_Col_Ids>(console_state & 0xff); }
-[[nodiscard]] inline Bg_Col_Ids toBgColorId(const console_state_t console_state) { return static_cast<Bg_Col_Ids>(console_state & 0xff00); }
-[[nodiscard]] inline Text_Style_Ids toTextStyleId(const console_state_t console_state) {
-    return static_cast<Text_Style_Ids>(console_state & 0xff0000);
-}
+namespace state {
+    inline void push() { internal::stack[internal::stackIndex++] = current; }
+    inline void pop() { set(internal::stack[--internal::stackIndex]); }
 
-inline void pushState() { internal::stack[internal::stackIndex++] = internal::currentState; }
-inline void popState() { setState(internal::stack[--internal::stackIndex]); }
+    [[nodiscard]] inline Text_Col_Ids toTextColorId(const state_t console_state) { return static_cast<Text_Col_Ids>(console_state & 0xff); }
+    [[nodiscard]] inline BG_Col_Ids toBGColorId(const state_t console_state) { return static_cast<BG_Col_Ids>(console_state & 0xff00); }
+    [[nodiscard]] inline Text_Style_Ids toTextStyleId(const state_t console_state) { return static_cast<Text_Style_Ids>(console_state & 0xff0000); }
 
-[[nodiscard]] inline Text_Col_Ids getTextColorId() { return toTextColorId(internal::currentState); }
-[[nodiscard]] inline Bg_Col_Ids getBgColorId() { return toBgColorId(internal::currentState); }
-[[nodiscard]] inline Text_Style_Ids getTextStyleId() { return toTextStyleId(internal::currentState); }
+    [[nodiscard]] inline state_t setTextCol(const Text_Col_Ids text_color, const state_t state) { return (state & 0xffffff00) | text_color; }
+    [[nodiscard]] inline state_t setBGCol(const BG_Col_Ids bg_color, const state_t state) { return (state & 0xffff00ff) | bg_color; }
+    [[nodiscard]] inline state_t setTextStyle(const Text_Style_Ids text_style, const state_t state) { return (state & 0xff00ffff) | text_style; }
 
+    inline void cacheTextCol(const Text_Col_Ids text_col) { current = setTextCol(text_col, current); }
+    inline void cacheBGCol(const BG_Col_Ids bg_col) { current = setBGCol(bg_col, current); }
+    inline void cacheTextStyle(const Text_Style_Ids text_style) { current = setTextStyle(text_style, current); }
+} // namespace state
+
+[[nodiscard]] inline Text_Col_Ids getTextColorId() { return state::toTextColorId(state::current); }
+[[nodiscard]] inline BG_Col_Ids getBGColorId() { return state::toBGColorId(state::current); }
+[[nodiscard]] inline Text_Style_Ids getTextStyleId() { return state::toTextStyleId(state::current); }
+
+[[nodiscard]] constexpr size_t toArrayIndex(const Text_Col_Ids text_col) { return (text_col >> internal::TEXT_COL_IDS_SHIFT) & 0xff; }
+[[nodiscard]] constexpr size_t toArrayIndex(const BG_Col_Ids bg_col) { return (bg_col >> internal::BG_COL_IDS_SHIFT) & 0xff; }
+[[nodiscard]] constexpr size_t toArrayIndex(const Text_Style_Ids text_style) { return (text_style >> internal::TEXT_STYLE_IDS_SHIFT) & 0xff; }
 //-------------------------
 //       DEFINITIONS
 //-------------------------
 template<bool CacheToState>
 void setTextCol(const Text_Col_Ids text_col) {
-    if constexpr(CacheToState) internal::currentState = (internal::currentState & 0xffffff00) | text_col;
-    cout << TEXT_COLOR_CODES[text_col - TEXT_COL_IDS_FIRST];
+    if constexpr(CacheToState) state::cacheTextCol(text_col);
+    cout << TEXT_COLOR_CODES[toArrayIndex(text_col)];
 }
 
 template<bool CacheToState>
 
-void setBgCol(const Bg_Col_Ids bg_col) {
-    if constexpr(CacheToState) internal::currentState = (internal::currentState & 0xffff00ff) | bg_col;
-    cout << BG_COLOR_CODES[bg_col - BG_COL_IDS_FIRST];
+void setBGCol(const BG_Col_Ids bg_col) {
+    if constexpr(CacheToState) state::cacheBGCol(bg_col);
+    cout << BG_COLOR_CODES[toArrayIndex(bg_col)];
 }
 template<bool CacheToState>
 void setTextStyle(const Text_Style_Ids text_style) {
-    if constexpr(CacheToState) internal::currentState = (internal::currentState & 0xff00ffff) | text_style;
-    cout << TEXT_STYLE_CODES[text_style - TEXT_STYLE_IDS_FIRST];
+    if constexpr(CacheToState) state::cacheTextStyle(text_style);
+    cout << TEXT_STYLE_CODES[toArrayIndex(text_style)];
 }
 
-template<bool Cache>
-void setState(const console_state_t new_state) {
-    if constexpr(Cache) internal::currentState = new_state;
-    setTextCol<false>(toTextColorId(internal::currentState));
-    setBgCol<false>(toBgColorId(internal::currentState));
-    setTextStyle<false>(toTextStyleId(internal::currentState));
+namespace state {
+    template<bool Cache>
+    void set(const state_t new_state) {
+        if constexpr(Cache) state::current = new_state;
+        setTextCol<false>(toTextColorId(new_state));
+        setBGCol<false>(toBGColorId(new_state));
+        setTextStyle<false>(toTextStyleId(new_state));
+    }
+
 }
 
 #define CTH_PRINT_FUNC_TEMPLATE(name, stream) \
-inline void name(const string_view str, const Text_Col_Ids color) { (stream) << TEXT_COLOR_CODES[color] << str << TEXT_COLOR_CODES[getTextColorId()]; } \
+inline void name(const string_view str, const Text_Col_Ids color) { (stream) << TEXT_COLOR_CODES[toArrayIndex(color)] << str << TEXT_COLOR_CODES[getTextColorId()]; } \
 inline void name(const wstring_view str, const Text_Col_Ids color) { \
-    (stream) << TEXT_COLOR_CODES[color]; \
+    (stream) << TEXT_COLOR_CODES[toArrayIndex(color)]; \
     w##stream << str; \
     (stream) << TEXT_COLOR_CODES[getTextColorId()]; \
     } \
 inline void name(const string_view str) { cout << str; } \
 inline void name(const wstring_view str) { wcout << str; } \
 inline void name##ln(const string_view str, const Text_Col_Ids color) { \
-    (stream) << TEXT_COLOR_CODES[color] << str << TEXT_COLOR_CODES[getTextColorId()] << '\n'; \
+    (stream) << TEXT_COLOR_CODES[toArrayIndex(color)] << str << TEXT_COLOR_CODES[getTextColorId()] << '\n'; \
 } \
 inline void name##ln(const wstring_view str, const Text_Col_Ids color) { \
      name(str, color); \
@@ -247,11 +275,11 @@ CTH_PRINT_FUNC_TEMPLATE(print, cout)
 CTH_PRINT_FUNC_TEMPLATE(err, cerr)
 
 
-namespace internal {
-    inline console_state_t initialState() {
-        constexpr console_state_t x = static_cast<int>(TEXT_COL_IDS_FIRST) | static_cast<int>(BG_COL_IDS_FIRST) |
-            static_cast<int>(TEXT_STYLE_IDS_FIRST);
-        setState(x);
+namespace state::internal {
+    inline state_t initialState() {
+        constexpr state_t x = static_cast<int>(COL_ID_DEFAULT_TEXT) | static_cast<int>(COL_ID_DEFAULT_BG) |
+            static_cast<int>(STYLE_ID_DEFAULT_TEXT);
+        set(x);
         return x;
     }
 } //namespace internal
