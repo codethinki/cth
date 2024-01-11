@@ -41,5 +41,8 @@
     <ClInclude Include="test_console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="test_log.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

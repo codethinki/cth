@@ -17,7 +17,7 @@ using namespace std;
  */
 using state_t = uint32_t;
 
-namespace internal {
+namespace dev {
     inline constexpr int TEXT_COL_IDS_SHIFT = 0;
     inline constexpr int BG_COL_IDS_SHIFT = 8;
     inline constexpr int TEXT_STYLE_IDS_SHIFT = 16;
@@ -30,68 +30,68 @@ namespace internal {
 enum Text_Col_Ids {
     COL_ID_DEFAULT_TEXT,
 
-    COL_ID_BLACK_TEXT = 1 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_RED_TEXT = 2 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_GREEN_TEXT = 3 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_YELLOW_TEXT = 4 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_BLUE_TEXT = 5 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_MAGENTA_TEXT = 6 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_CYAN_TEXT = 7 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_WHITE_TEXT = 8 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_BLACK_TEXT = 9 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_RED_TEXT = 10 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_GREEN_TEXT = 11 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_YELLOW_TEXT = 12 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_BLUE_TEXT = 13 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_MAGENTA_TEXT = 14 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_CYAN_TEXT = 15 << internal::TEXT_COL_IDS_SHIFT,
-    COL_ID_WHITE_TEXT = 16 << internal::TEXT_COL_IDS_SHIFT,
+    COL_ID_BLACK_TEXT = 1 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_RED_TEXT = 2 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_GREEN_TEXT = 3 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_YELLOW_TEXT = 4 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_BLUE_TEXT = 5 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_MAGENTA_TEXT = 6 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_CYAN_TEXT = 7 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_DARK_WHITE_TEXT = 8 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_BLACK_TEXT = 9 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_RED_TEXT = 10 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_GREEN_TEXT = 11 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_YELLOW_TEXT = 12 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_BLUE_TEXT = 13 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_MAGENTA_TEXT = 14 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_CYAN_TEXT = 15 << dev::TEXT_COL_IDS_SHIFT,
+    COL_ID_WHITE_TEXT = 16 << dev::TEXT_COL_IDS_SHIFT,
 };
 enum BG_Col_Ids {
     COL_ID_DEFAULT_BG,
 
     COL_ID_BLACK_BG = COL_ID_DEFAULT_BG,
-    COL_ID_DARK_RED_BG = 1 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_GREEN_BG = 2 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_YELLOW_BG = 3 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_BLUE_BG = 4 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_MAGENTA_BG = 5 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_CYAN_BG = 6 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_WHITE_BG = 7 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_BLACK_BG = 8 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_RED_BG = 9 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_GREEN_BG = 10 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_YELLOW_BG = 11 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_BLUE_BG = 12 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_MAGENTA_BG = 13 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_CYAN_BG = 14 << internal::BG_COL_IDS_SHIFT,
-    COL_ID_WHITE_BG = 15 << internal::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_RED_BG = 1 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_GREEN_BG = 2 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_YELLOW_BG = 3 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_BLUE_BG = 4 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_MAGENTA_BG = 5 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_CYAN_BG = 6 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_DARK_WHITE_BG = 7 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_BLACK_BG = 8 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_RED_BG = 9 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_GREEN_BG = 10 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_YELLOW_BG = 11 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_BLUE_BG = 12 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_MAGENTA_BG = 13 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_BRIGHT_CYAN_BG = 14 << dev::BG_COL_IDS_SHIFT,
+    COL_ID_WHITE_BG = 15 << dev::BG_COL_IDS_SHIFT,
 };
 enum Text_Style_Ids {
     STYLE_ID_DEFAULT_TEXT,
 
-    STYLE_ID_BOLD_TEXT = 1 << internal::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_FAINT_TEXT = 2 << internal::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_BOLD_TEXT = 3 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_BOLD_TEXT = 1 << dev::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_FAINT_TEXT = 2 << dev::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_BOLD_TEXT = 3 << dev::TEXT_STYLE_IDS_SHIFT,
     STYLE_ID_NO_FAINT_TEXT = STYLE_ID_NO_BOLD_TEXT,
 
-    STYLE_ID_ITALIC_TEXT = 4 << internal::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_ITALIC_TEXT = 5 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_ITALIC_TEXT = 4 << dev::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_ITALIC_TEXT = 5 << dev::TEXT_STYLE_IDS_SHIFT,
 
-    STYLE_ID_UNDERLINED_TEXT = 6 << internal::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_DOUBLE_UNDERLINED_TEXT = 7 << internal::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_UNDERLINED_TEXT = 8 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_UNDERLINED_TEXT = 6 << dev::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_DOUBLE_UNDERLINED_TEXT = 7 << dev::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_UNDERLINED_TEXT = 8 << dev::TEXT_STYLE_IDS_SHIFT,
 
-    STYLE_ID_BLINK_TEXT = 9 << internal::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_BLINK_TEXT = 10 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_BLINK_TEXT = 9 << dev::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_BLINK_TEXT = 10 << dev::TEXT_STYLE_IDS_SHIFT,
 
-    STYLE_ID_INVERSE_TEXT = 11 << internal::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_INVERSE_TEXT = 12 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_INVERSE_TEXT = 11 << dev::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_INVERSE_TEXT = 12 << dev::TEXT_STYLE_IDS_SHIFT,
 
-    STYLE_ID_HIDDEN_TEXT = 13 << internal::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_HIDDEN_TEXT = 14 << internal::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_STRIKEOUT_TEXT = 15 << internal::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_STRIKEOUT_TEXT = 16 << internal::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_HIDDEN_TEXT = 13 << dev::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_HIDDEN_TEXT = 14 << dev::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_STRIKEOUT_TEXT = 15 << dev::TEXT_STYLE_IDS_SHIFT,
+    STYLE_ID_NO_STRIKEOUT_TEXT = 16 << dev::TEXT_STYLE_IDS_SHIFT,
 };
 
 enum Cursor_Ids {
@@ -158,15 +158,15 @@ constexpr array<const char*, ERASE_IDS_SIZE> ERASE_CODES_N{{
 }};
 
 namespace state {
-    namespace internal {
+    namespace dev {
         [[nodiscard]] state_t initialState();
 
         constexpr uint32_t MAX_STACK_SIZE = 16;
         uint32_t stackIndex = 0;
         array<state_t, MAX_STACK_SIZE> stack{};
-    } // namespace internal
+    } // namespace dev
 
-    state_t current = internal::initialState(); //represents the current cached state of the console
+    state_t current = dev::initialState(); //represents the current cached state of the console
 
 
 } // namespace state
@@ -197,8 +197,8 @@ namespace state {
 
 
 namespace state {
-    inline void push() { internal::stack[internal::stackIndex++] = current; }
-    inline void pop() { set(internal::stack[--internal::stackIndex]); }
+    inline void push() { dev::stack[dev::stackIndex++] = current; }
+    inline void pop() { set(dev::stack[--dev::stackIndex]); }
 
     [[nodiscard]] inline Text_Col_Ids toTextColorId(const state_t console_state) { return static_cast<Text_Col_Ids>(console_state & 0xff); }
     [[nodiscard]] inline BG_Col_Ids toBGColorId(const state_t console_state) { return static_cast<BG_Col_Ids>(console_state & 0xff00); }
@@ -217,9 +217,9 @@ namespace state {
 [[nodiscard]] inline BG_Col_Ids getBGColorId() { return state::toBGColorId(state::current); }
 [[nodiscard]] inline Text_Style_Ids getTextStyleId() { return state::toTextStyleId(state::current); }
 
-[[nodiscard]] constexpr size_t toArrayIndex(const Text_Col_Ids text_col) { return (text_col >> internal::TEXT_COL_IDS_SHIFT) & 0xff; }
-[[nodiscard]] constexpr size_t toArrayIndex(const BG_Col_Ids bg_col) { return (bg_col >> internal::BG_COL_IDS_SHIFT) & 0xff; }
-[[nodiscard]] constexpr size_t toArrayIndex(const Text_Style_Ids text_style) { return (text_style >> internal::TEXT_STYLE_IDS_SHIFT) & 0xff; }
+[[nodiscard]] constexpr size_t toArrayIndex(const Text_Col_Ids text_col) { return (text_col >> dev::TEXT_COL_IDS_SHIFT) & 0xff; }
+[[nodiscard]] constexpr size_t toArrayIndex(const BG_Col_Ids bg_col) { return (bg_col >> dev::BG_COL_IDS_SHIFT) & 0xff; }
+[[nodiscard]] constexpr size_t toArrayIndex(const Text_Style_Ids text_style) { return (text_style >> dev::TEXT_STYLE_IDS_SHIFT) & 0xff; }
 //-------------------------
 //       DEFINITIONS
 //-------------------------
@@ -275,12 +275,12 @@ CTH_PRINT_FUNC_TEMPLATE(print, cout)
 CTH_PRINT_FUNC_TEMPLATE(err, cerr)
 
 
-namespace state::internal {
+namespace state::dev {
     inline state_t initialState() {
         constexpr state_t x = static_cast<int>(COL_ID_DEFAULT_TEXT) | static_cast<int>(COL_ID_DEFAULT_BG) |
             static_cast<int>(STYLE_ID_DEFAULT_TEXT);
         set(x);
         return x;
     }
-} //namespace internal
+} //namespace dev
 } // namespace cth::console

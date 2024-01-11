@@ -8,6 +8,7 @@
 
 #include <boost/asio.hpp>
 
+//TODO write tests for this
 
 namespace cth {
     using std::array;

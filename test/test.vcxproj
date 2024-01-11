@@ -162,6 +162,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="tests_concepts.hpp" />
     <ClInclude Include="test_console.hpp" />
+    <ClInclude Include="test_log.hpp" />
     <ClInclude Include="test_numeric.hpp" />
     <ClInclude Include="test_type_traits.hpp" />
   </ItemGroup>
