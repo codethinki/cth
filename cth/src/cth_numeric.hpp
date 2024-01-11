@@ -6,6 +6,7 @@
 #include <string>
 
 #include "cth_concepts.hpp"
+#include "cth_log.hpp"
 
 namespace cth {
 using namespace cth::concepts::num;
@@ -100,7 +101,7 @@ namespace num {
 
     template<floating_point_t T>
     [[nodiscard]] constexpr T heronSqrt(const T x, const T precision) {
-        assert(x >= 0 && "heron sqrt: x > 0 required");
+        CTH_ASSERT(x >= 0 && "heronSqrt: x >= 0 required");
 
         T val = x * static_cast<T>(0.5);
         while(val * val < x - precision || val * val > x + precision) val = (val + x / val) * static_cast<T>(0.5);

@@ -23,7 +23,6 @@ TEST(headerNumeric, funcCycle) {
 TEST(headerNumeric, funcHeronSqrt) {
     EXPECT_NEAR(heronSqrt(4.f), 2, 0.0001);
     EXPECT_NEAR(heronSqrt(9.f), 3, 0.0001);
-    //TEMP until CthLog.hpp is ready. EXPECT_DEATH(heronSqrt(-5.f), "none");
 }
 
 TEST(headerNumeric, funcExp) {
