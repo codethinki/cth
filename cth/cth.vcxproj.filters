@@ -41,6 +41,9 @@
     <ClInclude Include="src\cth_network.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cth_windows.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint">

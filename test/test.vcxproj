@@ -165,6 +165,7 @@
     <ClInclude Include="test_log.hpp" />
     <ClInclude Include="test_numeric.hpp" />
     <ClInclude Include="test_type_traits.hpp" />
+    <ClInclude Include="test_windows.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cth\cth.vcxproj">
