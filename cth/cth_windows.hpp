@@ -3,6 +3,20 @@
 #include <Windows.h>
 
 namespace cth::windows {
+    //IMPLEMENT this function and its tests
+    /*export string getText() {
+        assert(!OpenClipboard(nullptr) && "getClipboardText: cant open clipboard");
+
+        const HANDLE hData = GetClipboardData(CF_TEXT);
+        const char* pszText = static_cast<char*>(GlobalLock(hData));
+        if (pszText == nullptr) throw runtime_error("function getClipboardText: cb text = null");
+        string text = pszText;
+        GlobalUnlock(hData);
+        CloseClipboard();
+        return text;
+    }*/
+
+
 namespace proc {
     inline bool is_elevated() {
         SID_IDENTIFIER_AUTHORITY ntAuthority = SECURITY_NT_AUTHORITY;
