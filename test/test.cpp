@@ -5,5 +5,5 @@
 #include "test_numeric.hpp"
 #include "test_type_traits.hpp"
 #include "test_log.hpp"
-
+#include "test_algorithm.hpp"
 
