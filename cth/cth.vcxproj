@@ -30,6 +30,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cth_keybd.hpp" />
     <ClInclude Include="src\cth_concepts.hpp" />
     <ClInclude Include="src\cth_console.hpp" />
     <ClInclude Include="src\cth_log.hpp" />

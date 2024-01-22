@@ -1,8 +1,48 @@
 #pragma once
+#include <filesystem>
 #include <Windows.h>
 #include <TlHelp32.h>
 
-namespace cth::windows {
+#include "cth_string.hpp"
+
+namespace cth::win {
+namespace cmd {
+    using namespace std;
+    /**
+     * \brief executes a cmd command in the background
+     * \param exec_dir (default: current dir)
+     */
+    inline int hidden(wstring command, const wstring& exec_dir = filesystem::current_path()) {
+        PROCESS_INFORMATION pInfo{};
+        STARTUPINFO sInfo{};
+        sInfo.cb = sizeof(sInfo);
+
+        command = L"cmd.exe /c" + command;
+        const bool res = CreateProcessW(nullptr, const_cast<wchar_t*>(command.c_str()),
+            nullptr, nullptr, false, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW,
+            nullptr, exec_dir.c_str(), &sInfo, &pInfo);
+
+        if(!res) return EXIT_FAILURE; //IMPLEMENT the planned cth_stable_warn here
+
+        WaitForSingleObject(pInfo.hProcess, INFINITE);
+
+        DWORD returnValue = 0;
+        GetExitCodeProcess(pInfo.hProcess, &returnValue);
+
+        CloseHandle(pInfo.hProcess);
+        CloseHandle(pInfo.hThread);
+
+        return static_cast<int>(returnValue);
+    }
+    /**
+     * \brief executes a cmd command in the background
+     * \param exec_dir (default: current dir)
+     */
+    inline int hidden(const string& command, const string& exec_dir = filesystem::current_path().string()) {
+        return hidden(cth::str::conv::toW(command), str::conv::toW(exec_dir));
+    }
+}
+
 namespace clipbd {
     inline string getText() {
         string text;
@@ -19,8 +59,6 @@ namespace clipbd {
         return text;
     }
 } // namespace clipbd
-
-
 
 namespace proc {
     inline bool is_elevated() {
@@ -70,4 +108,4 @@ namespace desktop {
 
 
 
-} // namespace cth::windows
+} // namespace cth::win

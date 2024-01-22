@@ -5,7 +5,7 @@
 
 
 namespace cth {
-TEST(headerWindows, funcIsElevatedProc) { EXPECT_FALSE(cth::windows::proc::is_elevated()); }
+TEST(headerWindows, funcIsElevatedProc) { EXPECT_FALSE(cth::win::proc::is_elevated()); }
 
 
 }

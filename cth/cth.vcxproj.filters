@@ -44,6 +44,9 @@
     <ClInclude Include="src\cth_windows.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cth_keybd.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint">
