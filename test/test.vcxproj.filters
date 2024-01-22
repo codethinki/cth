@@ -47,5 +47,8 @@
     <ClInclude Include="test_windows.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="test_string.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

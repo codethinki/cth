@@ -31,7 +31,6 @@ TEST(headerNumeric, funcExp) {
     EXPECT_NEAR(exp(3.2f), 24.53253, 0.0001);
 
     EXPECT_NEAR(exp(-3.2f), 0.040762, 0.0001);
-
 }
 
 TEST(headerNumeric, funcMap) {
@@ -87,6 +86,9 @@ TEST(headerNumeric, funcToBitArr) {
 
     for(uint32_t i = 0; i < arrLarge.size() && valid; ++i) valid = bits::toBitArr(3873457565679u)[i] == arrLarge[i];
     EXPECT_TRUE(valid);
+
+
+    bits::printBits(20);
 }
 
 } // namespace cth

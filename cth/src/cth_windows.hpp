@@ -1,20 +1,25 @@
 #pragma once
-#include <TlHelp32.h>
 #include <Windows.h>
+#include <TlHelp32.h>
 
 namespace cth::windows {
-    //IMPLEMENT this function and its tests
-    /*export string getText() {
+namespace clipbd {
+    inline string getText() {
+        string text;
+
         assert(!OpenClipboard(nullptr) && "getClipboardText: cant open clipboard");
 
         const HANDLE hData = GetClipboardData(CF_TEXT);
         const char* pszText = static_cast<char*>(GlobalLock(hData));
-        if (pszText == nullptr) throw runtime_error("function getClipboardText: cb text = null");
-        string text = pszText;
+
+        if(pszText != nullptr) text = pszText;
+
         GlobalUnlock(hData);
         CloseClipboard();
         return text;
-    }*/
+    }
+} // namespace clipbd
+
 
 
 namespace proc {
@@ -51,15 +56,16 @@ namespace proc {
 
         return processCount;
     }
-}
+} // namespace proc
 
-
-inline void getDesktopResolution(uint32_t& horizontal, uint32_t& vertical) {
-    RECT desktop;
-    HWND hDesktop = GetDesktopWindow();
-    GetWindowRect(hDesktop, &desktop);
-    horizontal = desktop.right;
-    vertical = desktop.bottom;
+namespace desktop {
+    inline void getResolution(uint32_t& horizontal, uint32_t& vertical) {
+        RECT desktop;
+        HWND hDesktop = GetDesktopWindow();
+        GetWindowRect(hDesktop, &desktop);
+        horizontal = desktop.right;
+        vertical = desktop.bottom;
+    }
 }
 
 

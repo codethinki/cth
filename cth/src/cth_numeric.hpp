@@ -1,15 +1,16 @@
 #pragma once
+#include <algorithm>
 #include <array>
 #include <cassert>
-#include <cstdint>
-#include <iostream>
+#include <print>
 #include <string>
+
 
 #include "cth_concepts.hpp"
 #include "cth_log.hpp"
 
 namespace cth {
-using namespace cth::concepts::num;
+using namespace cth::type;
 using namespace std;
 
 //------------------
@@ -61,6 +62,7 @@ namespace num {
     [[nodiscard]] constexpr T sqam(T base, U power, V mod);
 
     namespace bits {
+        //no unit tests written
         template<integral_t T>
         void printBits(T val);
 
@@ -91,7 +93,7 @@ namespace num {
     [[nodiscard]] constexpr T exp(const T x, const T precision) {
         uint32_t n = 1;
         T result = 1, term = x;
-        while (num::abs(term) > precision) {
+        while(num::abs(term) > precision) {
             result += term;
             ++n;
             term *= x / n;
@@ -151,7 +153,8 @@ namespace num {
         template<integral_t T>
         void printBits(const T val) {
             array<bool, sizeof(T) * 8> arr = bits::toBitArr(val);
-            for (uint32_t i = 0; i < sizeof(T) * 8; i++) cout << std::to_string((arr[i] ? 1 : 0));
+
+            ranges::for_each(arr, [](const bool b) { cout << (b ? '1' : '0'); });
             cout << ": " << std::to_string(val) << '\n';
         }
 

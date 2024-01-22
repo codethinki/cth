@@ -8,7 +8,7 @@
 namespace cth {
 
 TEST(headerConcepts, conceptTests) {
-    using namespace cth::concepts::num;
+    using namespace cth::type;
 
     EXPECT_FALSE(arithmetic_t<char*>);
     EXPECT_TRUE(floating_point_t<float>);
