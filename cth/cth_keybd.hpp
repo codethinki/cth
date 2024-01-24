@@ -6,11 +6,13 @@
 #include <queue>
 #include <vector>
 #include <Windows.h>
+#include <deque>
 
 #include <boost/lockfree/queue.hpp>
 
 #include "src/cth_log.hpp"
 
+import hlc.algorithm;
 
 //-------------------------
 //      DEFINITIONS
@@ -19,10 +21,10 @@ namespace cth::keybd {
 using namespace std;
 
 namespace dev {
-    template<bool Raw>
-    struct EventQueueTemplate;
-    template<bool Raw>
-    struct CallbackEventQueueTemplate;
+template<bool Raw>
+struct EventQueueTemplate;
+template<bool Raw>
+struct CallbackEventQueueTemplate;
 
     inline static vector<EventQueueTemplate<false>*> queues{};
     inline static vector<EventQueueTemplate<true>*> rawQueues{};
@@ -34,10 +36,10 @@ namespace dev {
     inline static array<int, 255> pressedKeys{};
 
 
-    template<bool Raw>
-    void eraseEventQueue(EventQueueTemplate<Raw>* queue);
-    template<bool Raw>
-    void addEventQueue(EventQueueTemplate<Raw>* queue);
+template<bool Raw>
+void eraseEventQueue(EventQueueTemplate<Raw>* queue);
+template<bool Raw>
+void addEventQueue(EventQueueTemplate<Raw>* queue);
 
 
     inline LRESULT CALLBACK hookFunc(int n_code, WPARAM action, LPARAM l_param);
@@ -72,8 +74,8 @@ namespace cth::keybd {
 using namespace std;
 
 namespace dev {
-    template<bool Raw>
-    struct EventQueueTemplate {
+template<bool Raw>
+struct EventQueueTemplate {
         using template_event_t = conditional_t<Raw, raw_event_t, event_t>;
         using template_callback_t = conditional_t<Raw, raw_callback_t, callback_t>;
 
@@ -88,22 +90,22 @@ namespace dev {
 
         [[nodiscard]] bool empty() const { return eventQueue.empty(); }
 
-        [[nodiscard]] template_event_t pop() {
+    [[nodiscard]] template_event_t pop() {
             CTH_ASSERT(!eventQueue.empty() && "pop: queue is empty");
-            if constexpr(!Raw) lastKey = 0;
+        if constexpr(!Raw) lastKey = 0;
 
             lock_guard<mutex> lock(queueMutexes[Raw][id]);
 
             template_event_t keyEvent = eventQueue.front();
             eventQueue.pop(keyEvent);
 
-            return keyEvent;
-        }
-        [[nodiscard]] vector<template_event_t> popAll() {
-            vector<template_event_t> events{};
-            while(!empty()) events.push_back(pop());
-            return events;
-        }
+        return keyEvent;
+    }
+    [[nodiscard]] vector<template_event_t> popAll() {
+        vector<template_event_t> events{};
+        while(!empty()) events.push_back(pop());
+        return events;
+    }
 
         void dumpAll() {
             lock_guard<mutex> lock(queueMutexes[Raw][id]);
@@ -115,70 +117,90 @@ namespace dev {
         }
 
     private:
-        void push(template_event_t event) {
+    void push(template_event_t event) {
             lock_guard<mutex> lock(queueMutexes[Raw][id]);
-            if constexpr(!Raw)
-                if(event.action > 0) {
-                    if(lastKey == event.key) {
+        if constexpr(!Raw)
+            if(event.action > 0) {
+                if(lastKey == event.key) {
                         eventQueue.pop();
-                        event.action += 1;
-                    } else lastKey = event.key;
-                }
+                    event.action += 1;
+                } else lastKey = event.key;
+            }
             eventQueue.push(event);
-        }
+    }
+
+private:
+    //friend LRESULT CALLBACK hookFunc(int n_code, WPARAM action, LPARAM l_param);
 
 
         queue<template_event_t> eventQueue{};
-        template_callback_t callback{};
+    template_callback_t callback{};
         size_t id;
 
-        int lastKey = 0; //count repeated keypresses on normal queue
+    int lastKey = 0; //count repeated keypresses on normal queue
 
         friend LRESULT CALLBACK hookFunc(int n_code, WPARAM action, LPARAM l_param);
         template<bool R>
         friend void eraseEventQueue(EventQueueTemplate<R>* queue);
-    };
-    template<bool Raw>
-    struct CallbackEventQueueTemplate {
+};
+
+//TEMP not here
+template<bool Raw>
+struct CallbackEventQueueTemplate {
         using template_event_t = conditional_t<Raw, raw_event_t, event_t>;
         using template_callback_t = conditional_t<Raw, raw_callback_t, callback_t>;
 
-        explicit CallbackEventQueueTemplate(template_callback_t callback_function) : callback(callback_function) {}
+    explicit CallbackEventQueueTemplate(template_callback_t callback_function) : callback(callback_function) {}
 
         [[nodiscard]] bool empty() const { return eventQueue.empty(); }
 
         void dumpAll() { eventQueue.dumpAll(); }
         void dump() { eventQueue.dump(); }
 
-        void process() {
+    void process() {
             CTH_ASSERT(!eventQueue.empty() && "process: queue is empty");
 
-            template_event_t keybdEvent = eventQueue.pop();
-            callback(keybdEvent.key, keybdEvent.action);
-        }
+        template_event_t keybdEvent = eventQueue.pop();
+        callback(keybdEvent.key, keybdEvent.action);
+    }
         void processAll() { for(const auto& event : eventQueue.popAll()) callback(event.key, event.action); }
 
-        EventQueueTemplate<Raw> eventQueue{};
-        template_callback_t callback{};
-    };
+    EventQueueTemplate<Raw> eventQueue{};
+    template_callback_t callback{};
+};
+
+typedef EventQueueTemplate<false> EventQueue;
+typedef EventQueueTemplate<true> RawEventQueue;
+typedef CallbackEventQueueTemplate<false> CallbackEventQueue;
+typedef CallbackEventQueueTemplate<true> RawCallbackEventQueue;
 
 
+vector<EventQueue*> queues{};
+vector<RawEventQueue*> rawQueues{};
+mutex queuesMtx{};
 
-    LRESULT CALLBACK hookFunc(const int n_code, const WPARAM action, const LPARAM l_param) {
-        if(n_code == HC_ACTION) {
-            const auto keyStruct = *reinterpret_cast<KBDLLHOOKSTRUCT*>(l_param);
+thread keyboardHookThread{};
+atomic<bool> threadStop = true;
+array<int, 255> pressedKeys{};
 
-            const int vkCode = keyStruct.vkCode;
 
-            if(keyStruct.flags & LLKHF_UP) {
-                pressedKeys[vkCode] = 0;
+//TEMP not here
+LRESULT CALLBACK hookFunc(const int n_code, const WPARAM action, const LPARAM l_param) {
+    if(n_code == HC_ACTION) {
+        const auto keyStruct = *reinterpret_cast<KBDLLHOOKSTRUCT*>(l_param);
+
+        lock_guard<mutex> mtx(queuesMtx);
+        const int vkCode = keyStruct.vkCode;
+
+        if(keyStruct.flags & LLKHF_UP) {
+            pressedKeys[vkCode] = 0;
 
                 for(const auto [q, mtx] : views::zip(queues, queueMutexes[0])) {
                     lock_guard<mutex> lock(mtx);
                     q->push(event_t{vkCode, 0});
                 }
-            } else {
-                pressedKeys[vkCode] += 1;
+        } else {
+            pressedKeys[vkCode] += 1;
                 for(const auto [q, mtx] : views::zip(queues, queueMutexes[0])) {
                     lock_guard<mutex> lock(mtx);
                     q->push(event_t{vkCode, 1});
@@ -187,47 +209,50 @@ namespace dev {
             for(const auto [q, mtx] : views::zip(rawQueues, queueMutexes[1])) {
                 lock_guard<mutex> lock(mtx);
                 q->push(raw_event_t{keyStruct, action});
-            }
         }
-        return CallNextHookEx(nullptr, n_code, action, l_param);
+
+        for(const auto& queue : rawQueues) queue->push(raw_event_t{keyStruct, action});
     }
+    return CallNextHookEx(nullptr, n_code, action, l_param);
+}
     void hookThreadProc(std::stop_token stop) {
 
-        static HHOOK hookHandle = nullptr;
-        hookHandle = SetWindowsHookExW(WH_KEYBOARD_LL, hookFunc, nullptr, 0);
+    static HHOOK hookHandle = nullptr;
+    hookHandle = SetWindowsHookExW(WH_KEYBOARD_LL, hookFunc, nullptr, 0);
 
         //IMPLEMENT as soon as CTH_STABLE_ASSERT is here: ABORT(hookHandle == nullptr && "failed to establish key hook");
 
-        MSG msg;
+    threadStop = false;
+    MSG msg;
         while(GetMessageW(&msg, nullptr, 0, 0) && !stop.stop_requested()) {
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-        }
-
-        UnhookWindowsHookEx(hookHandle);
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
     }
+
+    UnhookWindowsHookEx(hookHandle);
+}
 
     void hook() { keyboardHookThread = std::jthread(hookThreadProc); }
-    void unhook() {
+void unhook() {
         keyboardHookThread.request_stop();
-        keyboardHookThread.detach();
-    }
+    keyboardHookThread.detach();
+}
 
 
 
-    template<bool Raw>
-    void addEventQueue(EventQueueTemplate<Raw>* queue) {
+template<bool Raw>
+void addEventQueue(EventQueueTemplate<Raw>* queue) {
         lock_guard<mutex> mtx(queuesMutex[Raw]);
 
-        if(queues.empty() && rawQueues.empty()) hook();
+    if(queues.empty() && rawQueues.empty()) hook();
 
-        if constexpr(Raw) rawQueues.push_back(queue);
-        else queues.push_back(queue);
+    if constexpr(Raw) rawQueues.push_back(queue);
+    else queues.push_back(queue);
 
-    }
+}
 
-    template<bool Raw>
-    void eraseEventQueue(EventQueueTemplate<Raw>* queue) {
+template<bool Raw>
+void eraseEventQueue(EventQueueTemplate<Raw>* queue) {
         CTH_ASSERT(!queues.empty() && !rawQueues.empty() && "cannot remove queue");
         lock_guard<mutex> lock(queuesMutex[Raw]);
 
@@ -243,8 +268,8 @@ namespace dev {
         queuesVec->erase(queuesVec->begin() + id);
         for_each(queuesVec->begin() + id - 1, queuesVec->end(), [](queue_t* q) { q->id -= 1; });
 
-        if(queues.empty()) unhook();
-    }
+    if(queues.empty()) unhook();
+}
 } //namespace dev
 
 } //namespace cth::keybd

@@ -12,13 +12,13 @@ TEST(headerLog, LogMacros) {
     CTH_LOG(false && "log") x = 1;
     ASSERT_EQ(x, 1);
 
-    CTH_HINT(false && "hint") x = 2;
-    ASSERT_EQ(x, 2);
+        CTH_HINT(false && "hint") x = 2;
+        ASSERT_EQ(x, 2);
 
-    CTH_WARN(false && "warn") x = 3;
-    ASSERT_EQ(x, 3);
+        CTH_WARN(false && "warn") x = 3;
+        ASSERT_EQ(x, 3);
 #endif
-    ASSERT_EQ(1, 1);
+        ASSERT_EQ(1, 1);
 
 }
 
