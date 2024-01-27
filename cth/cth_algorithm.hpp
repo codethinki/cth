@@ -1,13 +1,13 @@
 #pragma once
 #include <algorithm>
 
-#include "src/cth_concepts.hpp"
-#include "src/cth_log.hpp"
+#include "cth_concepts.hpp"
+#include "cth_log.hpp"
 
 //TEMP untested
 
 namespace cth::algorithm {
-template<typename It, unsigned_t Size, arithmetic_t T>
+template<typename It, type::unsigned_t Size, type::arithmetic_t T>
 constexpr void fillInc(It first, Size count, T increment, T start = 0) { for(Size i = 0; i < count; ++i) *first++ = start += increment; }
 } // namespace cth::algorithm
 
@@ -18,27 +18,32 @@ using namespace std;
 
 template<typename BidIt>
 constexpr void doubleSelectionSort(BidIt begin, BidIt end) {
-    //TEMP not working fix it
+    if(begin == end) return;
 
-    while(begin != end--) {
-        BidIt smallest = begin;
-        BidIt largest = end;
-        for(BidIt k = begin; k != end; ++k) {
-            if(*smallest > *k) smallest = k;
-            if(*largest < *k) largest = k;
+    BidIt min = begin;
+    BidIt max = end;
+    --max;
+
+    while(begin < max) {
+        min = begin;
+        max = begin;
+        for(BidIt it = begin; it != end; ++it) {
+            if(*it < *min) min = it;
+            if(*it > *max) max = it;
         }
-        if(smallest != begin) std::iter_swap(begin, smallest);
-        if(largest != end) std::iter_swap(end, largest);
-
+        std::iter_swap(begin, min);
+        if(max == begin) max = min;
+        std::iter_swap(max, end - 1);
         ++begin;
+        --end;
     }
 }
 
-}
+} // namespace cth::algorithm::unsorted
 
 
 namespace cth::expr::algorithm {
-template<typename It, unsigned_t Size, arithmetic_t T>
+template<typename It, type::unsigned_t Size, type::arithmetic_t T>
 constexpr void fillInc(It first, Size count, T increment, T start = 0) { cth::algorithm::fillInc(first, count, increment, start); }
 
 

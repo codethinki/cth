@@ -2,7 +2,7 @@
 #pragma once
 #include <gtest/gtest.h>
 
-#include "../cth/src/cth_numeric.hpp"
+#include "../cth/cth_numeric.hpp"
 
 namespace cth {
 

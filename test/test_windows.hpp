@@ -1,7 +1,7 @@
 #pragma once
 #include <gtest/gtest.h>
 
-#include "../cth/src/cth_windows.hpp"
+#include "../cth/cth_windows.hpp"
 
 
 namespace cth {

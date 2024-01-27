@@ -1,6 +1,6 @@
 #pragma once
 #include <gtest/gtest.h>
-#include "../cth/src/cth_console.hpp"
+#include "../cth/cth_console.hpp"
 
 namespace cth {
 

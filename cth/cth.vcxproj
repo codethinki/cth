@@ -27,21 +27,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="cth_algorithm.hpp" />
+    <ClInclude Include="cth_concepts.hpp" />
+    <ClInclude Include="cth_console.hpp" />
     <ClInclude Include="cth_keybd.hpp" />
-    <ClInclude Include="src\cth_concepts.hpp" />
-    <ClInclude Include="src\cth_console.hpp" />
-    <ClInclude Include="src\cth_log.hpp" />
-    <ClInclude Include="src\cth_network.hpp" />
-    <ClInclude Include="src\cth_numeric.hpp" />
-    <ClInclude Include="src\cth_string.hpp" />
-    <ClInclude Include="src\cth_type_traits.hpp" />
-    <ClInclude Include="src\cth_windows.hpp" />
+    <ClInclude Include="cth_log.hpp" />
+    <ClInclude Include="cth_network.hpp" />
+    <ClInclude Include="cth_numeric.hpp" />
+    <ClInclude Include="cth_string.hpp" />
+    <ClInclude Include="cth_type_traits.hpp" />
+    <ClInclude Include="cth_windows.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="cpp.hint" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

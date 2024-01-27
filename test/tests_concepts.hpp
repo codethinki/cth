@@ -1,7 +1,7 @@
 #pragma once
 #include <gtest/gtest.h>
 
-#include "../cth/src/cth_concepts.hpp"
+#include "../cth/cth_concepts.hpp"
 
 //this header is missing tests but idc because it's just concepts
 

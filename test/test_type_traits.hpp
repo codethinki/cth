@@ -1,7 +1,7 @@
 #pragma once
 #include <gtest/gtest.h>
 
-#include "../cth/src/cth_type_traits.hpp"
+#include "../cth/cth_type_traits.hpp"
 
 //ik this test file is incomplete but idc
 
