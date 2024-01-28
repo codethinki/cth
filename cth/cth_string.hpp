@@ -1,5 +1,6 @@
 #pragma once
 //you have to define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING in the preprocessor or source file for this to work
+#include "cth_concepts.hpp"
 
 #include <codecvt>
 
@@ -8,8 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "cth_concepts.hpp"
-#include "cth_network.hpp"
+
 
 namespace cth::str::conv {
 using namespace std;

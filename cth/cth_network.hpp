@@ -3,6 +3,9 @@
 #include <iostream>
 #include <string>
 
+#if defined(_WINSOCKAPI_) && !defined(_WINSOCK2API_)
+#error "WinSock.h" included but "WinSock2.h" is required (maybe you included Windows.h before this?)
+#endif
 #include <boost/asio.hpp>
 
 //TODO write tests for this

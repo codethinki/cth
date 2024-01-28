@@ -159,12 +159,12 @@ namespace state {
     namespace dev {
         [[nodiscard]] state_t initialState();
 
-        constexpr uint32_t MAX_STACK_SIZE = 16;
-        uint32_t stackIndex = 0;
-        array<state_t, MAX_STACK_SIZE> stack{};
+        inline constexpr uint32_t MAX_STACK_SIZE = 16;
+        inline uint32_t stackIndex = 0;
+        inline array<state_t, MAX_STACK_SIZE> stack{};
     } // namespace dev
 
-    state_t current = dev::initialState(); //represents the current cached state of the console
+    inline state_t current = dev::initialState(); //represents the current cached state of the console
 
 
 } // namespace state

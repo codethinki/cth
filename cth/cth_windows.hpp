@@ -1,9 +1,13 @@
 #pragma once
+
+#include "cth_log.hpp"
+#include "cth_string.hpp"
+
 #include <filesystem>
 #include <Windows.h>
 #include <TlHelp32.h>
 
-#include "cth_string.hpp"
+
 
 namespace cth::win {
 namespace cmd {
@@ -47,7 +51,7 @@ namespace clipbd {
     inline string getText() {
         string text;
 
-        assert(!OpenClipboard(nullptr) && "getClipboardText: cant open clipboard");
+        CTH_STABLE_WARN(!OpenClipboard(nullptr) && "getClipboardText: no clipboard access");
 
         const HANDLE hData = GetClipboardData(CF_TEXT);
         const char* pszText = static_cast<char*>(GlobalLock(hData));

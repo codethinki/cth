@@ -22,7 +22,7 @@ enum Cth_Log_Colors {
     LOG_COLOR_DEFAULT = console::COL_ID_WHITE_TEXT,
     LOG_COLOR_HINT = console::COL_ID_DARK_CYAN_TEXT,
     LOG_COLOR_WARN = console::COL_ID_DARK_YELLOW_TEXT,
-    LOG_COLOR_ABORT = console::COL_ID_DARK_RED_TEXT
+    LOG_COLOR_ERROR = console::COL_ID_DARK_RED_TEXT
 };
 
 namespace dev {
@@ -45,7 +45,7 @@ namespace dev {
             if constexpr(LogType == LOG_COLOR_DEFAULT) msg = L"LOG: " + msg;
             else if constexpr(LogType == LOG_COLOR_HINT) msg = L"HINT: " + msg;
             else if constexpr(LogType == LOG_COLOR_WARN) msg = L"WARNING: " + msg;
-            else if constexpr(LogType == LOG_COLOR_ABORT) msg = L"ERROR: " + msg;
+            else if constexpr(LogType == LOG_COLOR_ERROR) msg = L"ERROR: " + msg;
 
             if(logStream == nullptr) log::dev::msg(msg, file, LogType);
             else *logStream << msg << L", file: " << file << L'\n';
@@ -53,7 +53,7 @@ namespace dev {
             //----------------------------------------
             //         CTH_ASSERTION_ERROR
             //----------------------------------------
-            if constexpr(LogType == LOG_COLOR_ABORT) abort();
+            if constexpr(LogType == LOG_COLOR_ERROR) abort();
         }
 
     private:
@@ -66,6 +66,9 @@ namespace dev {
 
 inline void msg(const std::string_view msg, Cth_Log_Colors err_severity = LOG_COLOR_DEFAULT) {
     console::print(msg, static_cast<console::Text_Col_Ids>(err_severity));
+}
+inline void msgln(const std::string_view msg, Cth_Log_Colors err_severity = LOG_COLOR_DEFAULT) {
+    console::println(msg, static_cast<console::Text_Col_Ids>(err_severity));
 }
 
 
@@ -107,7 +110,7 @@ inline void setLogStream(std::wostream* stream) { dev::logStream = stream; }
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> error
  */
-#define CTH_STABLE_ASSERT(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_ABORT)
+#define CTH_STABLE_ASSERT(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_ERROR)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_ERROR
 
 #undef CTH_STABLE_WARN
@@ -175,7 +178,7 @@ inline auto x = []() {
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> error
  */
-#define CTH_ASSERT(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_ABORT)
+#define CTH_ASSERT(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_ERROR)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_ERROR
 
 #undef CTH_WARN
