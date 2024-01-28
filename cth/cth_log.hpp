@@ -103,7 +103,7 @@ inline void setLogStream(std::wostream* stream) { dev::logStream = stream; }
 /**
  * \brief assert extension\n
  * stable -> also for _NDEBUG\n
- * can execute code (use {} for multiple lines)\n
+ * can execute code before abort (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> error
  */
@@ -171,7 +171,7 @@ inline auto x = []() {
 #undef CTH_ASSERT
 /**
  * \brief assert extension\n
- * can execute code (use {} for multiple lines)\n
+ * can execute code before abort (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> error
  */
