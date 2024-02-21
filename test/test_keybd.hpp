@@ -9,16 +9,10 @@ void callback(uint32_t key, uint32_t data) { std::println("callback: key \'{0}\'
 void rawCallback(const KBDLLHOOKSTRUCT& key, WPARAM action) { std::cout << "rawCallback" << std::endl; }
 
 TEST(headerKeybd, classKeyBd) {
-    try {
-            win::keybd::EventQueue queue{};
-            win::keybd::RawEventQueue rawQueue{};
-            win::keybd::CallbackEventQueue callbackEventQueue{callback};
-            win::keybd::RawCallbackEventQueue rawCallbackEventQueue{rawCallback};
-    }
-    catch(cth::except::default_exception<cth::except::ERR>& e) {
-        FAIL() << "Exception thrown";
-        EXPECT_EQ(0, 1);
-    }
+    win::keybd::EventQueue queue{};
+    win::keybd::RawEventQueue rawQueue{};
+    win::keybd::CallbackEventQueue callbackEventQueue{callback};
+    win::keybd::RawCallbackEventQueue rawCallbackEventQueue{rawCallback};
 }
 
 }

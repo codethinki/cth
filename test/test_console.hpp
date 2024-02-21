@@ -1,5 +1,7 @@
 #pragma once
 #include <gtest/gtest.h>
+
+#include "test_keybd.hpp"
 #include "../cth/cth_console.hpp"
 
 namespace cth {
@@ -90,6 +92,10 @@ TEST(headerConsole, textStyle) {
     println("i am UNDERLINED_TEXT");
     error.setTextStyle(UNDERLINED_TEXT_STYLE, false);
     println("i am no UNDERLINED_TEXT");
+
+    error.setTextStyle(DOUBLE_UNDERLINED_TEXT_STYLE);
+    error.setTextStyle(UNDERLINED_TEXT_STYLE);
+    println("i am normal text");
 
     error.setTextStyle(DOUBLE_UNDERLINED_TEXT_STYLE);
     println("i am DOUBLE_UNDERLINED_TEXT");

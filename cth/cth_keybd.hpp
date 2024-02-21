@@ -262,11 +262,12 @@ void threadProc(const std::stop_token& stop) {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         }
+        UnhookWindowsHookEx(hookHandle);
     }
-    catch(const exception& e) {
+    catch(...) {
+        UnhookWindowsHookEx(hookHandle);
         //just return and unhook
     }
-    UnhookWindowsHookEx(hookHandle);
 }
 
 void hook() {
