@@ -6,6 +6,6 @@
 
 namespace cth {
 TEST(headerWindows, funcIsElevatedProc) { EXPECT_FALSE(cth::win::proc::is_elevated()); }
-
+    //TODO implement tests
 
 }

@@ -24,6 +24,7 @@ namespace dev {
     inline array<int, 255> pressedKeys{};
 
     inline jthread keyboardHookThread{};
+    inline jthread::id threadId{};
     inline uint32_t queueCount = 0;
 
 } //namespace dev
@@ -52,7 +53,7 @@ using raw_callback_t = void(const KBDLLHOOKSTRUCT&, WPARAM); //key, action
 //-------------------------
 namespace cth::win::keybd::dev {
 inline LRESULT CALLBACK hookFunc(int n_code, WPARAM action, LPARAM l_param);
-inline void threadProc(std::stop_token stop);
+inline void threadProc(const std::stop_token& stop);
 
 inline void hook();
 inline void unhook();
@@ -137,7 +138,7 @@ template<bool Raw>
 EventQueueTemplate<Raw>::EventQueueTemplate() { addEventQueue(this); }
 template<bool Raw>
 auto EventQueueTemplate<Raw>::pop()->template_event_t {
-    CTH_ASSERT(!baseQueue.empty() && "pop: queue is empty");
+    CTH_ERR(!baseQueue.empty(), "pop: baseQueue is empty") throw details.exception();
 
     lock_guard<mutex> lock(queueMtx);
 
@@ -188,9 +189,13 @@ void EventQueueTemplate<Raw>::push(template_event_t event) {
         }
     baseQueue.push(event);
 }
+
+
 template<bool Raw>
 void EventQueueTemplate<Raw>::addEventQueue(EventQueueTemplate* queue) {
     if(queueCount++ == 0) hook();
+    CTH_STABLE_ERR(keyboardHookThread.get_id() == threadId, "hook thread crashed")
+        throw details->exception();
 
     lock_guard<mutex> lock(queuesMtx);
     queue->id = queues.size();
@@ -198,7 +203,8 @@ void EventQueueTemplate<Raw>::addEventQueue(EventQueueTemplate* queue) {
 }
 template<bool Raw>
 void EventQueueTemplate<Raw>::eraseEventQueue(uint32_t id) {
-    CTH_ASSERT(queueCount > 0 && "no queues active");
+    CTH_STABLE_ERR(keyboardHookThread.get_id() == threadId, "hook thread crashed") throw details->exception();
+    CTH_ERR(queueCount > 0, "no queues active") throw details->exception();
 
     lock_guard<mutex> lock(queuesMtx);
     queues.erase(queues.begin() + id);
@@ -210,7 +216,9 @@ void EventQueueTemplate<Raw>::eraseEventQueue(uint32_t id) {
 
 template<bool Raw>
 void CallbackEventQueueTemplate<Raw>::process() {
-    CTH_ASSERT(!eventQueue.empty() && "process: queue is empty");
+    CTH_ERR(!eventQueue.empty(), "process: queue is empty")
+        throw details.exception();
+
 
     template_event_t keybdEvent = eventQueue.pop();
     callback(keybdEvent.key, keybdEvent.action);
@@ -241,27 +249,34 @@ LRESULT CALLBACK hookFunc(const int n_code, const WPARAM action, const LPARAM l_
     return CallNextHookEx(nullptr, n_code, action, l_param);
 }
 
-void threadProc(std::stop_token stop) {
-
+void threadProc(const std::stop_token& stop) {
     static HHOOK hookHandle = nullptr;
-    hookHandle = SetWindowsHookExW(WH_KEYBOARD_LL, hookFunc, nullptr, 0);
 
-    CTH_STABLE_ASSERT(hookHandle != nullptr && "failed to establish key hook");
+    try {
+        hookHandle = SetWindowsHookExW(WH_KEYBOARD_LL, hookFunc, nullptr, 0);
+        CTH_STABLE_ERR(hookHandle != nullptr, "failed to establish key hook") throw details->exception();
 
 
-    MSG msg;
-    while(GetMessageW(&msg, nullptr, 0, 0) && !stop.stop_requested()) {
-        TranslateMessage(&msg);
-        DispatchMessageW(&msg);
+        MSG msg;
+        while(GetMessageW(&msg, nullptr, 0, 0) && !stop.stop_requested()) {
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
+        }
     }
-
+    catch(const exception& e) {
+        //just return and unhook
+    }
     UnhookWindowsHookEx(hookHandle);
 }
 
-void hook() { keyboardHookThread = std::jthread(threadProc); }
+void hook() {
+    keyboardHookThread = std::jthread(threadProc);
+    threadId = keyboardHookThread.get_id();
+}
 void unhook() {
     keyboardHookThread.request_stop();
     keyboardHookThread.detach();
+    threadId = jthread::id{};
 }
 
 } //namespace cth::win::keybd::dev

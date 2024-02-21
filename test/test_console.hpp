@@ -4,143 +4,146 @@
 
 namespace cth {
 
-
 TEST(headerConsole, textColor) {
-    using namespace cth::console;
+    using namespace cth::out;
 
-    println("i am black", COL_ID_BLACK_TEXT);
-    println("i am dark red", COL_ID_DARK_RED_TEXT);
-    println("i am dark green", COL_ID_DARK_GREEN_TEXT);
-    println("i am dark yellow", COL_ID_DARK_YELLOW_TEXT);
-    println("i am dark blue", COL_ID_DARK_BLUE_TEXT);
-    println("i am dark magenta", COL_ID_DARK_MAGENTA_TEXT);
-    println("i am dark cyan", COL_ID_DARK_CYAN_TEXT);
-    println("i am dark white", COL_ID_DARK_WHITE_TEXT);
-    println("i am bright black", COL_ID_BRIGHT_BLACK_TEXT);
-    println("i am bright red", COL_ID_BRIGHT_RED_TEXT);
-    println("i am bright green", COL_ID_BRIGHT_GREEN_TEXT);
-    println("i am bright yellow", COL_ID_BRIGHT_YELLOW_TEXT);
-    println("i am bright blue", COL_ID_BRIGHT_BLUE_TEXT);
-    println("i am bright magenta", COL_ID_BRIGHT_MAGENTA_TEXT);
-    println("i am bright cyan", COL_ID_BRIGHT_CYAN_TEXT);
-    println("i am white", COL_ID_WHITE_TEXT);
+    console.println(BLACK_TEXT_COL, "i am black");
+    console.println(DARK_RED_TEXT_COL, "i am dark red");
+    console.println(DARK_GREEN_TEXT_COL, "i am dark green");
+    console.println(DARK_YELLOW_TEXT_COL, "i am dark yellow");
+    console.println(DARK_BLUE_TEXT_COL, "i am dark blue");
+    console.println(DARK_MAGENTA_TEXT_COL, "i am dark magenta");
+    console.println(DARK_CYAN_TEXT_COL, "i am dark cyan");
+    console.println(DARK_WHITE_TEXT_COL, "i am dark white");
+    console.println(BRIGHT_BLACK_TEXT_COL, "i am bright black");
+    console.println(BRIGHT_RED_TEXT_COL, "i am bright red");
+    console.println(BRIGHT_GREEN_TEXT_COL, "i am bright green");
+    console.println(BRIGHT_YELLOW_TEXT_COL, "i am bright yellow");
+    console.println(BRIGHT_BLUE_TEXT_COL, "i am bright blue");
+    console.println(BRIGHT_MAGENTA_TEXT_COL, "i am bright magenta");
+    console.println(BRIGHT_CYAN_TEXT_COL, "i am bright cyan");
+    console.println(WHITE_TEXT_COL, "i am white");
 
-    println("i am default", COL_ID_DEFAULT_TEXT);
+    console.println(DEFAULT_TEXT_COL, "i am default");
 
-    ASSERT_EQ(toArrayIndex(COL_ID_WHITE_TEXT) + 1, console::TEXT_COLOR_CODES.size());
 }
 TEST(headerConsole, textBackground) {
-    using namespace cth::console;
+    using namespace cth::out;
 
-    setBGCol(COL_ID_BLACK_BG);
+
+    error.setBGCol(BLACK_BG_COL);
     print("i am black");
-    setBGCol(COL_ID_DARK_RED_BG);
+    error.setBGCol(DARK_RED_BG_COL);
     print("i am dark red");
-    setBGCol(COL_ID_DARK_GREEN_BG);
+    error.setBGCol(DARK_GREEN_BG_COL);
     print("i am dark green");
-    setBGCol(COL_ID_DARK_YELLOW_BG);
+    error.setBGCol(DARK_YELLOW_BG_COL);
     print("i am dark yellow");
-    setBGCol(COL_ID_DARK_BLUE_BG);
+    error.setBGCol(DARK_BLUE_BG_COL);
     print("i am dark blue");
-    setBGCol(COL_ID_DARK_MAGENTA_BG);
+    error.setBGCol(DARK_MAGENTA_BG_COL);
     print("i am dark magenta");
-    setBGCol(COL_ID_DARK_CYAN_BG);
+    error.setBGCol(DARK_CYAN_BG_COL);
     print("i am dark cyan");
-    setBGCol(COL_ID_DARK_WHITE_BG);
+    error.setBGCol(DARK_WHITE_BG_COL);
     print("i am dark white");
-    setBGCol(COL_ID_BRIGHT_BLACK_BG);
+    error.setBGCol(BRIGHT_BLACK_BG_COL);
     print("i am bright black");
-    setBGCol(COL_ID_BRIGHT_RED_BG);
+    error.setBGCol(BRIGHT_RED_BG_COL);
     print("i am bright red");
-    setBGCol(COL_ID_BRIGHT_GREEN_BG);
+    error.setBGCol(BRIGHT_GREEN_BG_COL);
     print("i am bright green");
-    setBGCol(COL_ID_BRIGHT_YELLOW_BG);
+    error.setBGCol(BRIGHT_YELLOW_BG_COL);
     print("i am bright yellow");
-    setBGCol(COL_ID_BRIGHT_BLUE_BG);
+    error.setBGCol(BRIGHT_BLUE_BG_COL);
     print("i am bright blue");
-    setBGCol(COL_ID_BRIGHT_MAGENTA_BG);
+    error.setBGCol(BRIGHT_MAGENTA_BG_COL);
     print("i am bright magenta");
-    setBGCol(COL_ID_BRIGHT_CYAN_BG);
+    error.setBGCol(BRIGHT_CYAN_BG_COL);
     print("i am bright cyan");
-    setBGCol(COL_ID_WHITE_BG);
+    error.setBGCol(WHITE_BG_COL);
     print("i am white");
 
-    setBGCol(COL_ID_DEFAULT_BG);
+    error.setBGCol(DEFAULT_BG_COL);
     print("i am default");
-
-    ASSERT_EQ(toArrayIndex(COL_ID_WHITE_BG) + 1, console::BG_COLOR_CODES.size());
+    console.println("");
 }
 
 TEST(headerConsole, textStyle) {
-    using namespace cth::console;
-
-    setTextStyle(STYLE_ID_BOLD_TEXT);
+    using namespace cth::out;
+    error.setTextStyle(BOLD_TEXT_STYLE);
     println("i am BOLD_TEXT");
-    setTextStyle(STYLE_ID_FAINT_TEXT);
+    error.setTextStyle(BOLD_TEXT_STYLE, false);
+    println("i am no BOLD_TEXT");
+
+    error.setTextStyle(FAINT_TEXT_STYLE);
     println("i am FAINT_TEXT");
+    error.setTextStyle(FAINT_TEXT_STYLE, false);
+    println("i am no FAINT_TEXT");
 
-    setTextStyle(STYLE_ID_NO_BOLD_TEXT);
-    println("i am NO_BOLD_TEXT");
-
-    setTextStyle(STYLE_ID_ITALIC_TEXT);
+    error.setTextStyle(ITALIC_TEXT_STYLE);
     println("i am ITALIC_TEXT");
-    setTextStyle(STYLE_ID_NO_ITALIC_TEXT);
-    println("i am NO_ITALIC_TEXT");
+    error.setTextStyle(ITALIC_TEXT_STYLE, false);
+    println("i am no ITALIC_TEXT");
 
-    setTextStyle(STYLE_ID_UNDERLINED_TEXT);
+    error.setTextStyle(UNDERLINED_TEXT_STYLE);
     println("i am UNDERLINED_TEXT");
-    setTextStyle(STYLE_ID_DOUBLE_UNDERLINED_TEXT);
+    error.setTextStyle(UNDERLINED_TEXT_STYLE, false);
+    println("i am no UNDERLINED_TEXT");
+
+    error.setTextStyle(DOUBLE_UNDERLINED_TEXT_STYLE);
     println("i am DOUBLE_UNDERLINED_TEXT");
-    setTextStyle(STYLE_ID_NO_UNDERLINED_TEXT);
-    println("i am NO_UNDERLINED_TEXT");
+    error.setTextStyle(DOUBLE_UNDERLINED_TEXT_STYLE, false);
+    println("i am no UNDERLINED_TEXT");
 
-    setTextStyle(STYLE_ID_BLINK_TEXT);
+    error.setTextStyle(BLINK_TEXT_STYLE);
     println("i am BLINK_TEXT");
-    setTextStyle(STYLE_ID_NO_BLINK_TEXT);
-    println("i am NO_BLINK_TEXT");
+    error.setTextStyle(BLINK_TEXT_STYLE, false);
+    println("i am no BLINK_TEXT");
 
-    setTextStyle(STYLE_ID_INVERSE_TEXT);
+    error.setTextStyle(INVERSE_TEXT_STYLE);
     println("i am INVERSE_TEXT");
-    setTextStyle(STYLE_ID_NO_INVERSE_TEXT);
-    println("i am NO_INVERSE_TEXT");
+    error.setTextStyle(INVERSE_TEXT_STYLE, false);
+    println("i am no INVERSE_TEXT");
 
-    setTextStyle(STYLE_ID_HIDDEN_TEXT);
-    println("i am HIDDEN_TEXT");
-    setTextStyle(STYLE_ID_NO_HIDDEN_TEXT);
-    println("i am NO_HIDDEN_TEXT");
+    error.setTextStyle(HIDDEN_TEXT_STYLE);
+    print("i am HIDDEN_TEXT");
+    error.setTextStyle(HIDDEN_TEXT_STYLE, false);
+    console.println(" (<-- should be hidden)");
+    println("i am no HIDDEN_TEXT");
 
-    setTextStyle(STYLE_ID_STRIKEOUT_TEXT);
+    error.setTextStyle(STRIKEOUT_TEXT_STYLE);
     println("i am STRIKEOUT_TEXT");
-    setTextStyle(STYLE_ID_NO_STRIKEOUT_TEXT);
-    println("i am NO_STRIKEOUT_TEXT");
+    error.setTextStyle(STRIKEOUT_TEXT_STYLE);
+    println("i am no STRIKEOUT_TEXT");
 
-    setTextStyle(STYLE_ID_BOLD_TEXT);
-    setTextStyle(STYLE_ID_ITALIC_TEXT);
-    setTextStyle(STYLE_ID_UNDERLINED_TEXT);
-    setTextStyle(STYLE_ID_BLINK_TEXT);
-    setTextStyle(STYLE_ID_INVERSE_TEXT);
-    setTextStyle(STYLE_ID_HIDDEN_TEXT);
-    setTextStyle(STYLE_ID_STRIKEOUT_TEXT);
+    error.setTextStyle(BOLD_TEXT_STYLE);
+    error.setTextStyle(ITALIC_TEXT_STYLE);
+    error.setTextStyle(UNDERLINED_TEXT_STYLE);
+    error.setTextStyle(BLINK_TEXT_STYLE);
+    error.setTextStyle(INVERSE_TEXT_STYLE);
+    error.setTextStyle(HIDDEN_TEXT_STYLE);
+    error.setTextStyle(STRIKEOUT_TEXT_STYLE);
 
-    setTextStyle(STYLE_ID_DEFAULT_TEXT);
-    println("i am DEFAULT TEXT");
+    error.resetState();
+    println("i am DEFAULT_TEXT");
 
-    ASSERT_EQ(toArrayIndex(STYLE_ID_NO_STRIKEOUT_TEXT) + 1, console::TEXT_STYLE_CODES.size());
 }
 
 TEST(headerConsole, consoleState) {
-    console::state::push();
+    using namespace cth::out;
+    error.pushState();
 
-    console::setTextCol(console::COL_ID_BRIGHT_RED_TEXT);
-    console::setBGCol(console::COL_ID_BRIGHT_GREEN_BG);
-    console::setTextStyle(console::STYLE_ID_BLINK_TEXT);
+    error.setTextCol(BRIGHT_RED_TEXT_COL);
+    error.setBGCol(out::BRIGHT_GREEN_BG_COL);
+    error.setTextStyle(out::BLINK_TEXT_STYLE);
 
-    console::print("i am bright red blink text with bright green BG");
+    print("i am bright red blink text with bright green BG");
 
-    console::state::pop();
-    console::println("");
+    error.popState();
+    println("");
 
-    console::println("i am default text with default BG");
+    println("i am default text with default BG");
 }
 
 }

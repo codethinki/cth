@@ -1,284 +1,335 @@
 #pragma once
-
 #include <array>
+#include <codecvt>
 #include <iostream>
-#include <locale>
-#include <stack>
+#include <print>
 
 #include "cth_string.hpp"
 
-namespace cth::console {
-using namespace std;
 
-/**
- * \brief type to store the console state\n its split up into 4 8 bit parts (high to low: nothing, text style, text col, BG col)
- */
-using state_t = uint32_t;
+namespace cth::out {
+class col_stream;
+
+using namespace std;
+//-------------------------
+//        CONSTANTS
+//-------------------------
+
+enum Text_Colors {
+    DEFAULT_TEXT_COL,
+    BLACK_TEXT_COL,
+    DARK_RED_TEXT_COL,
+    DARK_GREEN_TEXT_COL,
+    DARK_YELLOW_TEXT_COL,
+    DARK_BLUE_TEXT_COL,
+    DARK_MAGENTA_TEXT_COL,
+    DARK_CYAN_TEXT_COL,
+    DARK_WHITE_TEXT_COL,
+    BRIGHT_BLACK_TEXT_COL,
+    BRIGHT_RED_TEXT_COL,
+    BRIGHT_GREEN_TEXT_COL,
+    BRIGHT_YELLOW_TEXT_COL,
+    BRIGHT_BLUE_TEXT_COL,
+    BRIGHT_MAGENTA_TEXT_COL,
+    BRIGHT_CYAN_TEXT_COL,
+    WHITE_TEXT_COL,
+    TEXT_COL_SIZE
+};
+enum BG_Colors {
+    DEFAULT_BG_COL,
+    BLACK_BG_COL = DEFAULT_BG_COL,
+    DARK_RED_BG_COL,
+    DARK_GREEN_BG_COL,
+    DARK_YELLOW_BG_COL,
+    DARK_BLUE_BG_COL,
+    DARK_MAGENTA_BG_COL,
+    DARK_CYAN_BG_COL,
+    DARK_WHITE_BG_COL,
+    BRIGHT_BLACK_BG_COL,
+    BRIGHT_RED_BG_COL,
+    BRIGHT_GREEN_BG_COL,
+    BRIGHT_YELLOW_BG_COL,
+    BRIGHT_BLUE_BG_COL,
+    BRIGHT_MAGENTA_BG_COL,
+    BRIGHT_CYAN_BG_COL,
+    WHITE_BG_COL,
+    BG_COL_SIZE
+};
+enum Text_Styles {
+    BOLD_TEXT_STYLE,
+    FAINT_TEXT_STYLE,
+    ITALIC_TEXT_STYLE,
+    UNDERLINED_TEXT_STYLE,
+    DOUBLE_UNDERLINED_TEXT_STYLE,
+    BLINK_TEXT_STYLE,
+    INVERSE_TEXT_STYLE,
+    HIDDEN_TEXT_STYLE,
+    STRIKEOUT_TEXT_STYLE,
+    TEXT_STYLE_SIZE
+};
 
 namespace dev {
-    inline constexpr int TEXT_COL_IDS_SHIFT = 0;
-    inline constexpr int BG_COL_IDS_SHIFT = 8;
-    inline constexpr int TEXT_STYLE_IDS_SHIFT = 16;
-}
+    static inline constexpr size_t MAX_STACK_SIZE = 16;
 
-//-----------------------------
-//VARIABLES / CONSTANTS
-//-----------------------------
+    enum Cursor_Ids {
+        //cursor codes
+        ID_CURSOR_UP,
+        ID_CURSOR_UP_RESET_X,
+        ID_CURSOR_DOWN,
+        ID_CURSOR_DOWN_RESET_X,
+        ID_CURSOR_LEFT,
+        ID_CURSOR_RIGHT,
+        ID_CURSOR_SET_X,
+        ID_CURSOR_RESET,
 
-enum Text_Col_Ids {
-    COL_ID_DEFAULT_TEXT,
-
-    COL_ID_BLACK_TEXT = 1 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_RED_TEXT = 2 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_GREEN_TEXT = 3 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_YELLOW_TEXT = 4 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_BLUE_TEXT = 5 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_MAGENTA_TEXT = 6 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_CYAN_TEXT = 7 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_DARK_WHITE_TEXT = 8 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_BLACK_TEXT = 9 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_RED_TEXT = 10 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_GREEN_TEXT = 11 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_YELLOW_TEXT = 12 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_BLUE_TEXT = 13 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_MAGENTA_TEXT = 14 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_CYAN_TEXT = 15 << dev::TEXT_COL_IDS_SHIFT,
-    COL_ID_WHITE_TEXT = 16 << dev::TEXT_COL_IDS_SHIFT,
-};
-enum BG_Col_Ids {
-    COL_ID_DEFAULT_BG,
-
-    COL_ID_BLACK_BG = COL_ID_DEFAULT_BG,
-    COL_ID_DARK_RED_BG = 1 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_GREEN_BG = 2 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_YELLOW_BG = 3 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_BLUE_BG = 4 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_MAGENTA_BG = 5 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_CYAN_BG = 6 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_DARK_WHITE_BG = 7 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_BLACK_BG = 8 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_RED_BG = 9 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_GREEN_BG = 10 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_YELLOW_BG = 11 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_BLUE_BG = 12 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_MAGENTA_BG = 13 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_BRIGHT_CYAN_BG = 14 << dev::BG_COL_IDS_SHIFT,
-    COL_ID_WHITE_BG = 15 << dev::BG_COL_IDS_SHIFT,
-};
-enum Text_Style_Ids {
-    STYLE_ID_DEFAULT_TEXT,
-
-    STYLE_ID_BOLD_TEXT = 1 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_FAINT_TEXT = 2 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_BOLD_TEXT = 3 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_FAINT_TEXT = STYLE_ID_NO_BOLD_TEXT,
-
-    STYLE_ID_ITALIC_TEXT = 4 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_ITALIC_TEXT = 5 << dev::TEXT_STYLE_IDS_SHIFT,
-
-    STYLE_ID_UNDERLINED_TEXT = 6 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_DOUBLE_UNDERLINED_TEXT = 7 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_UNDERLINED_TEXT = 8 << dev::TEXT_STYLE_IDS_SHIFT,
-
-    STYLE_ID_BLINK_TEXT = 9 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_BLINK_TEXT = 10 << dev::TEXT_STYLE_IDS_SHIFT,
-
-    STYLE_ID_INVERSE_TEXT = 11 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_INVERSE_TEXT = 12 << dev::TEXT_STYLE_IDS_SHIFT,
-
-    STYLE_ID_HIDDEN_TEXT = 13 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_HIDDEN_TEXT = 14 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_STRIKEOUT_TEXT = 15 << dev::TEXT_STYLE_IDS_SHIFT,
-    STYLE_ID_NO_STRIKEOUT_TEXT = 16 << dev::TEXT_STYLE_IDS_SHIFT,
-};
-
-enum Cursor_Ids {
-    //cursor codes
-    ID_CURSOR_UP,
-    ID_CURSOR_UP_RESET_X,
-    ID_CURSOR_DOWN,
-    ID_CURSOR_DOWN_RESET_X,
-    ID_CURSOR_LEFT,
-    ID_CURSOR_RIGHT,
-    ID_CURSOR_SET_X,
-    ID_CURSOR_RESET,
-
-    CURSOR_IDS_SIZE
-};
-enum Erase_Ids {
-    ID_ERASE_LINE,
-    ID_ERASE_CURSOR_LEFT,
-    ID_ERASE_CURSOR_RIGHT,
-    ID_ERASE_SCREEN,
-    ID_ERASE_SCREEN_UP,
-    ID_ERASE_SCREEN_DOWN,
-    ERASE_IDS_SIZE
-};
-
-inline constexpr array<const char*, 17> TEXT_COLOR_CODES = {{
-    "\033[39m", //default
-    "\033[30m", "\033[31m", "\033[32m", "\033[33m",
-    "\033[34m", "\033[35m", "\033[36m", "\033[37m",
-    "\033[90m", "\033[91m", "\033[92m", "\033[93m",
-    "\033[94m", "\033[95m", "\033[96m", "\033[97m",
-}};
-inline constexpr array<const char*, 16> BG_COLOR_CODES = {{
-    "\033[40m", "\033[41m", "\033[42m", "\033[43m",
-    "\033[44m", "\033[45m", "\033[46m", "\033[47m",
-    "\033[100m", "\033[101m", "\033[102m", "\033[103m",
-    "\033[104m", "\033[105m", "\033[106m", "\033[107m",
-}};
-inline constexpr array<const char*, 17> TEXT_STYLE_CODES = {{
-    "\033[22;23;24;25;27;28;29m", //default
-    "\033[1m", "\033[2m", "\033[22m", //bold, faint, clear bold/faint
-    "\033[3m", "\033[23m", //italic, clear italic
-    "\033[4m", "\033[21m", "\033[24m", //underline, double underline, clear underline
-    "\033[5m", "\033[25m", //blink, clear blink
-    "\033[7m", "\033[27m", //inverse, clear inverse
-    "\033[8m", "\033[28m", //hidden, clear hidden
-    "\033[9m", "\033[29m" //strikeout, clear strikeout
-}};
-
-//TODO add supports for these codes
-constexpr array<const char*, CURSOR_IDS_SIZE> CURSOR_CODES_N{{
-    //control sequences, replace the # with a number
-    "\033[#A", "\033[#F", //up, up reset x
-    "\033[#B", "\033[#E", //down, down reset x
-    "\033[#C", "\033[#D", //left, right
-    "\033[#G", //set x
-    "\033[#H" //reset
-}};
-constexpr array<const char*, ERASE_IDS_SIZE> ERASE_CODES_N{{
-    "\033[2K", //erase line
-    "\033[1K", "\033[0K", //erase line left, right
-    "\033[2J", //erase screen
-    "\033[1J", "\033[0J" //erase screen up, down
-}};
-
-namespace state {
-    namespace dev {
-        [[nodiscard]] state_t initialState();
-
-        inline constexpr uint32_t MAX_STACK_SIZE = 16;
-        inline uint32_t stackIndex = 0;
-        inline array<state_t, MAX_STACK_SIZE> stack{};
-    } // namespace dev
-
-    inline state_t current = dev::initialState(); //represents the current cached state of the console
+        CURSOR_IDS_SIZE
+    };
+    enum Erase_Ids {
+        ID_ERASE_LINE,
+        ID_ERASE_CURSOR_LEFT,
+        ID_ERASE_CURSOR_RIGHT,
+        ID_ERASE_SCREEN,
+        ID_ERASE_SCREEN_UP,
+        ID_ERASE_SCREEN_DOWN,
+        ERASE_IDS_SIZE
+    };
 
 
-} // namespace state
 
+    inline static constexpr array<const char*, TEXT_COL_SIZE> TEXT_COLOR_CODES_N = {{
+        "\033[39m", //default
+        "\033[30m", "\033[31m", "\033[32m", "\033[33m",
+        "\033[34m", "\033[35m", "\033[36m", "\033[37m",
+        "\033[90m", "\033[91m", "\033[92m", "\033[93m",
+        "\033[94m", "\033[95m", "\033[96m", "\033[97m",
+    }};
+    inline static constexpr array<const char*, BG_COL_SIZE> BG_COLOR_CODES_N = {{
+        "\033[40m", "\033[41m", "\033[42m", "\033[43m",
+        "\033[44m", "\033[45m", "\033[46m", "\033[47m",
+        "\033[100m", "\033[101m", "\033[102m", "\033[103m",
+        "\033[104m", "\033[105m", "\033[106m", "\033[107m",
+    }};
+    inline static constexpr array<const char*, TEXT_STYLE_SIZE * 2> TEXT_STYLE_CODES_N = {{
+        "\033[1m", "\033[22m", //bold clear bold
+        "\033[2m", "\033[22m", //faint, clear bold
+        "\033[3m", "\033[23m", //italic, clear italic
+        "\033[4m", "\033[24m", //underline, clear underline
+        "\033[21m", "\033[24m", //double underline, clear underline
+        "\033[5m", "\033[25m", //blink, clear blink
+        "\033[7m", "\033[27m", //inverse, clear inverse
+        "\033[8m", "\033[28m", //hidden, clear hidden
+        "\033[9m", "\033[29m" //strikeout, clear strikeout
+    }};
 
+    inline static constexpr array<const wchar_t*, 17> TEXT_COLOR_CODES_W = {{
+        L"\033[39m", //default
+        L"\033[30m", L"\033[31m", L"\033[32m", L"\033[33m",
+        L"\033[34m", L"\033[35m", L"\033[36m", L"\033[37m",
+        L"\033[90m", L"\033[91m", L"\033[92m", L"\033[93m",
+        L"\033[94m", L"\033[95m", L"\033[96m", L"\033[97m",
+    }};
+    inline static constexpr array<const wchar_t*, 16> BG_COLOR_CODES_W = {{
+        L"\033[40m", L"\033[41m", L"\033[42m", L"\033[43m",
+        L"\033[44m", L"\033[45m", L"\033[46m", L"\033[47m",
+        L"\033[100m", L"\033[101m", L"\033[102m", L"\033[103m",
+        L"\033[104m", L"\033[105m", L"\033[106m", L"\033[107m",
+    }};
+    inline static constexpr array<const wchar_t*, 18> TEXT_STYLE_CODES_W = {{
+        L"\033[1m", L"\033[22m", //bold clear bold
+        L"\033[2m", L"\033[22m", //faint, clear bold
+        L"\033[3m", L"\033[23m", //italic, clear italic
+        L"\033[4m", L"\033[24m", //underline, clear underline
+        L"\033[21m", L"\033[24m", //double underline, clear underline
+        L"\033[5m", L"\033[25m", //blink, clear blink
+        L"\033[7m", L"\033[27m", //inverse, clear inverse
+        L"\033[8m", L"\033[28m", //hidden, clear hidden
+        L"\033[9m", L"\033[29m" //strikeout, clear strikeout
+    }};
+
+    template<type::char_t T = char>
+    static constexpr basic_string_view<T> ansiCode(const Text_Colors color) {
+        if constexpr(type::is_nchar_v<T>) return TEXT_COLOR_CODES_N[color];
+        else return TEXT_COLOR_CODES_W[color];
+    }
+    template<type::char_t T = char>
+    static constexpr basic_string_view<T> ansiCode(const BG_Colors color) {
+        if constexpr(type::is_nchar_v<T>) return BG_COLOR_CODES_N[color];
+        else return BG_COLOR_CODES_W[color];
+    }
+    template<type::char_t T = char>
+    static constexpr basic_string_view<T> ansiCode(const Text_Styles color) {
+        if constexpr(type::is_nchar_v<T>) return TEXT_STYLE_CODES_N[color];
+        else return TEXT_STYLE_CODES_W[color];
+    }
+
+    //TODO add supports for these codes
+    //inline static constexpr array<const char*, CURSOR_IDS_SIZE> CURSOR_CODES_N{{
+    //    //control sequences, replace the # with a number
+    //    "\033[#A", "\033[#F", //up, up reset x
+    //    "\033[#B", "\033[#E", //down, down reset x
+    //    "\033[#C", "\033[#D", //left, right
+    //    "\033[#G", //set x
+    //    "\033[#H" //reset
+    //}};
+    //inline static constexpr array<const char*, ERASE_IDS_SIZE> ERASE_CODES_N{{
+    //    "\033[2K", //erase line
+    //    "\033[1K", "\033[0K", //erase line left, right
+    //    "\033[2J", //erase screen
+    //    "\033[1J", "\033[0J" //erase screen up, down
+    //}};
+
+} // namespace dev
 
 //-------------------------
-//     DECLARATIONS
+//    DECLARATIONS
 //-------------------------
 
-template<bool CacheToState = true>
-void setTextCol(Text_Col_Ids text_col);
-template<bool CacheToState = true>
-void setBGCol(BG_Col_Ids bg_col);
-template<bool CacheToState = true>
-void setTextStyle(Text_Style_Ids text_style);
 
-namespace state {
+struct col_stream_state {
+    constexpr col_stream_state() = default;
+
+    [[nodiscard]] constexpr Text_Colors textCol() const { return textCol_; }
+    [[nodiscard]] constexpr BG_Colors bgCol() const { return bgCol_; }
+    [[nodiscard]] constexpr bool styleActive(const Text_Styles id) const { return textStyles[id]; }
+
+    constexpr void setTextCol(const Text_Colors text_color) { textCol_ = text_color; }
+    constexpr void setBGCol(const BG_Colors bg_color) { bgCol_ = bg_color; }
+    constexpr void resetStyle() { textStyles.fill(0); }
+
+    constexpr void setTextStyles(const array<bool, TEXT_STYLE_SIZE>& text_styles) { textStyles = text_styles; }
+
+    constexpr void setStyle(const Text_Styles style, const bool activate = true) { textStyles[style] = activate; }
+
+private:
+    Text_Colors textCol_ = DEFAULT_TEXT_COL;
+    BG_Colors bgCol_ = DEFAULT_BG_COL;
+
+    array<bool, TEXT_STYLE_SIZE> textStyles{};
+
+    friend col_stream;
+};
+
+class col_stream {
+public:
+    /**
+     * \param out ostream to wrap
+     * \param current_state for sharing state between streams\n same output streams must be shared!
+     */
+    explicit col_stream(ostream* out, const shared_ptr<col_stream_state>& current_state = nullptr) : oStream(out) {
+        if(current_state != nullptr) current = current_state;
+        else current = make_shared<col_stream_state>();
+    }
+
+
     template<bool Cache = true>
-    void set(state_t new_state);
-}
+    void setTextCol(Text_Colors text_col) const;
+    void setCachedTextCol() const { setTextCol<false>(current->textCol()); }
+    template<bool Cache = true>
+    void setBGCol(BG_Colors bg_col) const;
+    void setBGCol() const { setBGCol<false>(current->bgCol()); }
+    template<bool Cache = true>
+    void setTextStyle(Text_Styles style, bool activate = true) const;
 
+    template<bool Cache = true>
+    void setState(col_stream_state new_state) const;
 
-//-----------------------------
-//   ONE LINE FUNCTIONS
-//-----------------------------
+    template<bool Cache = true>
+    void resetState() const { setState<Cache>(col_stream_state()); }
 
-
-
-namespace state {
-    inline void push() { dev::stack[dev::stackIndex++] = current; }
-    inline void pop() { set(dev::stack[--dev::stackIndex]); }
-
-    [[nodiscard]] inline Text_Col_Ids toTextColorId(const state_t console_state) { return static_cast<Text_Col_Ids>(console_state & 0xff); }
-    [[nodiscard]] inline BG_Col_Ids toBGColorId(const state_t console_state) { return static_cast<BG_Col_Ids>(console_state & 0xff00); }
-    [[nodiscard]] inline Text_Style_Ids toTextStyleId(const state_t console_state) { return static_cast<Text_Style_Ids>(console_state & 0xff0000); }
-
-    [[nodiscard]] inline state_t setTextCol(const Text_Col_Ids text_color, const state_t state) { return (state & 0xffffff00) | text_color; }
-    [[nodiscard]] inline state_t setBGCol(const BG_Col_Ids bg_color, const state_t state) { return (state & 0xffff00ff) | bg_color; }
-    [[nodiscard]] inline state_t setTextStyle(const Text_Style_Ids text_style, const state_t state) { return (state & 0xff00ffff) | text_style; }
-
-    inline void cacheTextCol(const Text_Col_Ids text_col) { current = setTextCol(text_col, current); }
-    inline void cacheBGCol(const BG_Col_Ids bg_col) { current = setBGCol(bg_col, current); }
-    inline void cacheTextStyle(const Text_Style_Ids text_style) { current = setTextStyle(text_style, current); }
-} // namespace state
-
-[[nodiscard]] inline Text_Col_Ids getTextColorId() { return state::toTextColorId(state::current); }
-[[nodiscard]] inline BG_Col_Ids getBGColorId() { return state::toBGColorId(state::current); }
-[[nodiscard]] inline Text_Style_Ids getTextStyleId() { return state::toTextStyleId(state::current); }
-
-[[nodiscard]] constexpr size_t toArrayIndex(const Text_Col_Ids text_col) { return (text_col >> dev::TEXT_COL_IDS_SHIFT) & 0xff; }
-[[nodiscard]] constexpr size_t toArrayIndex(const BG_Col_Ids bg_col) { return (bg_col >> dev::BG_COL_IDS_SHIFT) & 0xff; }
-[[nodiscard]] constexpr size_t toArrayIndex(const Text_Style_Ids text_style) { return (text_style >> dev::TEXT_STYLE_IDS_SHIFT) & 0xff; }
-//-------------------------
-//       DEFINITIONS
-//-------------------------
-template<bool CacheToState>
-void setTextCol(const Text_Col_Ids text_col) {
-    if constexpr(CacheToState) state::cacheTextCol(text_col);
-    cout << TEXT_COLOR_CODES[toArrayIndex(text_col)];
-}
-
-template<bool CacheToState>
-
-void setBGCol(const BG_Col_Ids bg_col) {
-    if constexpr(CacheToState) state::cacheBGCol(bg_col);
-    cout << BG_COLOR_CODES[toArrayIndex(bg_col)];
-}
-template<bool CacheToState>
-void setTextStyle(const Text_Style_Ids text_style) {
-    if constexpr(CacheToState) state::cacheTextStyle(text_style);
-    cout << TEXT_STYLE_CODES[toArrayIndex(text_style)];
-}
-
-namespace state {
-    template<bool Cache>
-    void set(const state_t new_state) {
-        if constexpr(Cache) state::current = new_state;
-        setTextCol<false>(toTextColorId(new_state));
-        setBGCol<false>(toBGColorId(new_state));
-        setTextStyle<false>(toTextStyleId(new_state));
+    void pushState() { stack[stackI++] = *current; }
+    void popState() {
+        *current = stack[--stackI];
+        setState<false>(*current);
     }
 
+    [[nodiscard]] shared_ptr<col_stream_state> state() { return current; }
+    [[nodiscard]] ostream& stream() const { return *oStream; }
+
+    void print(const string_view str) const { *oStream << str; }
+    void println(const string_view str) const { *oStream << str << '\n'; }
+    void print(const wstring_view str) const { *oStream << str::conv::narrow(str.data()); }
+    void println(const wstring_view str) const { *oStream << str::conv::narrow(str.data()) << '\n'; }
+
+
+    void print(Text_Colors col, string_view str) const;
+    void println(Text_Colors col, string_view str) const;
+    void print(const Text_Colors col, const wstring_view str) const { print(col, str::conv::narrow(str)); }
+    void println(const Text_Colors col, const wstring_view str) const { println(col, str::conv::narrow(str)); }
+
+
+    template<typename... Types>
+    enable_if_t<(sizeof...(Types) > 0u), void> print(Text_Colors col, format_string<Types...> f_str, Types&&... types);
+    template<typename... Types>
+    enable_if_t<(sizeof...(Types) > 0u), void> println(Text_Colors col, format_string<Types...> f_str, Types&&... types);
+
+private:
+    ostream* oStream;
+
+    shared_ptr<col_stream_state> current = nullptr;
+    uint32_t stackI = 0;
+    array<col_stream_state, dev::MAX_STACK_SIZE> stack{};
+};
+} // namespace cth::out
+
+namespace cth::out {
+using namespace std;
+//TEMP left off here, the styles are bugged fix them
+template<bool Cache>
+void col_stream::setTextCol(const Text_Colors text_col) const {
+    if constexpr(Cache) current->setTextCol(text_col);
+    *oStream << dev::ansiCode(text_col);
+}
+template<bool Cache>
+void col_stream::setBGCol(const BG_Colors bg_col) const {
+    if constexpr(Cache) current->setBGCol(bg_col);
+    *oStream << dev::ansiCode(bg_col);
+}
+template<bool Cache>
+void col_stream::setTextStyle(const Text_Styles style, const bool activate) const {
+    if constexpr(Cache) current->setStyle(style, activate);
+    *oStream << dev::ansiCode(static_cast<Text_Styles>(style * 2 + (activate ? 0 : 1)));
+}
+template<bool Cache>
+void col_stream::setState(const col_stream_state new_state) const {
+    if constexpr(Cache) *current = new_state;
+    setTextCol<false>(new_state.textCol());
+    setBGCol<false>(new_state.bgCol());
+    for(uint32_t i = 0; i < TEXT_STYLE_SIZE; i++) setTextStyle<false>((Text_Styles) i, new_state.styleActive((Text_Styles) i));
 }
 
-#define CTH_PRINT_FUNC_TEMPLATE(name, stream) \
-inline void name(const string_view str, const Text_Col_Ids color) { (stream) << TEXT_COLOR_CODES[toArrayIndex(color)] << str << TEXT_COLOR_CODES[getTextColorId()]; } \
-inline void name(const wstring_view str, const Text_Col_Ids color) { \
-    (stream) << TEXT_COLOR_CODES[toArrayIndex(color)]; \
-    w##stream << str; \
-    (stream) << TEXT_COLOR_CODES[getTextColorId()]; \
-    } \
-inline void name(const string_view str) { cout << str; } \
-inline void name(const wstring_view str) { wcout << str; } \
-inline void name##ln(const string_view str, const Text_Col_Ids color) { \
-    (stream) << TEXT_COLOR_CODES[toArrayIndex(color)] << str << TEXT_COLOR_CODES[getTextColorId()] << '\n'; \
-} \
-inline void name##ln(const wstring_view str, const Text_Col_Ids color) { \
-     name(str, color); \
-     w##stream << L'\n'; \
-} \
-inline void name##ln(const string_view str) { (stream) << str << '\n'; } \
-inline void name##ln(const wstring_view str) { w##stream << str << L'\n'; }
+inline void col_stream::print(const Text_Colors col, const string_view str) const {
+    *oStream << dev::ansiCode(col) << str << dev::ansiCode(current->textCol());
+}
 
-CTH_PRINT_FUNC_TEMPLATE(print, cout)
-CTH_PRINT_FUNC_TEMPLATE(err, cerr)
+inline void col_stream::println(const Text_Colors col, const string_view str) const {
+    print(col, str);
+    *oStream << '\n';
+}
 
 
-namespace state::dev {
-    inline state_t initialState() {
-        constexpr state_t x = static_cast<int>(COL_ID_DEFAULT_TEXT) | static_cast<int>(COL_ID_DEFAULT_BG) |
-            static_cast<int>(STYLE_ID_DEFAULT_TEXT);
-        set(x);
-        return x;
-    }
-} //namespace dev
-} // namespace cth::console
+template<typename... Types> enable_if_t<(sizeof...(Types) > 0u), void>
+col_stream::print(const Text_Colors col, const format_string<Types...> f_str, Types&&... types) {
+    col_stream::print(col, std::format(f_str, std::forward<Types>(types)...));
+}
+template<typename... Types> enable_if_t<(sizeof...(Types) > 0u), void>
+col_stream::println(const Text_Colors col, const format_string<Types...> f_str, Types&&... types) {
+    col_stream::println(col, std::format(f_str, std::forward<Types>(types)...));
+}
+
+} // namespace cth::out
+
+//-------------------------
+// INSTANTIATIONS
+//-------------------------
+namespace cth::out {}
+
+//-------------------------
+//  GLOBAL CONSOLES
+//-------------------------
+
+namespace cth::out {
+
+inline col_stream console{&std::cout};
+inline col_stream error{&std::cerr, console.state()};
+
+}

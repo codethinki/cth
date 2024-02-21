@@ -16,8 +16,6 @@ using namespace std;
 // DECLARATIONS
 //------------------
 namespace num {
-    using namespace std;
-
     template<arithmetic_t T>
     [[nodiscard]] constexpr T abs(T val);
 
@@ -83,7 +81,7 @@ namespace num {
 
     template<integral_t T>
     [[nodiscard]] constexpr T cycle(const T x, const T a, const T b) {
-        assert(b > a && "a must be the lower value");
+        CTH_LOG(b > a, "a must be the lower value");
         const T off = (x - a) % (b - a);
         return off < 0 ? b + off : a + off;
     }
@@ -102,7 +100,8 @@ namespace num {
 
     template<floating_point_t T>
     [[nodiscard]] constexpr T heronSqrt(const T x, const T precision) {
-        CTH_ASSERT(x >= 0 && "heronSqrt: x >= 0 required");
+
+        CTH_ERR((x >= 0), "heronSqrt: x >= 0 required");
 
         T val = x * static_cast<T>(0.5);
         while(val * val < x - precision || val * val > x + precision) val = (val + x / val) * static_cast<T>(0.5);

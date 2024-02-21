@@ -1,104 +1,101 @@
 #pragma once
+
 // ReSharper disable CppClangTidyCppcoreguidelinesMacroUsage
 // disabled because this header is forced to use macros
-
 #include "cth_console.hpp"
+#include "cth_exception.hpp"
 
 #define CTH_LOG_LEVEL_ALL 0
 #define CTH_LOG_LEVEL_DEBUG 0
 #define CTH_LOG_LEVEL_INFO 1
 #define CTH_LOG_LEVEL_WARN 2
-#define CTH_LOG_LEVEL_ERROR 3
-#define CTH_LOG_LEVEL_NONE 4
+#define CTH_LOG_LEVEL_ERR 3
+#define CTH_LOG_LEVEL_CRITICAL 4
+#define CTH_LOG_LEVEL_NONE 5
 
 #ifndef CTH_LOG_LEVEL
 #define CTH_LOG_LEVEL CTH_LOG_LEVEL_ALL
 #endif
 
 namespace cth::log {
-enum Cth_Log_Colors {
-    LOG_COLOR_PASSED = console::COL_ID_DARK_GREEN_TEXT,
-    LOG_COLOR_FAILED = console::COL_ID_BRIGHT_RED_TEXT,
-    LOG_COLOR_DEFAULT = console::COL_ID_WHITE_TEXT,
-    LOG_COLOR_HINT = console::COL_ID_DARK_CYAN_TEXT,
-    LOG_COLOR_WARN = console::COL_ID_DARK_YELLOW_TEXT,
-    LOG_COLOR_ERROR = console::COL_ID_DARK_RED_TEXT
-};
+
 
 namespace dev {
-    inline static std::wostream* logStream = nullptr;
+    inline static bool colored = true;
+    inline static out::col_stream logStream{&std::cout, out::error.state()};
 
-    inline void msg(const std::wstring& msg, const std::wstring& file, const Cth_Log_Colors err_type) {
-        console::errln(msg + L", file: " + file + L'\n', static_cast<console::Text_Col_Ids>(err_type));
+    static constexpr out::Text_Colors textColor(const cth::except::Severity severity) {
+        switch(severity) {
+            case cth::except::LOG: return out::WHITE_TEXT_COL;
+            case cth::except::Severity::INFO: return out::DARK_CYAN_TEXT_COL;
+            case cth::except::Severity::WARNING: return out::DARK_YELLOW_TEXT_COL;
+            case cth::except::Severity::ERR: return out::DARK_RED_TEXT_COL;
+            case cth::except::Severity::CRITICAL: return out::DARK_RED_TEXT_COL;
+            default: return out::WHITE_TEXT_COL;
+        }
     }
+} // namespace dev
 
+/**
+ * \brief sets a colored log stream. nullptr -> colored console output
+ */
+inline void setLogStream(const out::col_stream& stream) {
+    dev::colored = true;
+    dev::logStream = stream;
+}
+inline void setLogStream(std::ostream* stream) {
+    dev::colored = false;
+    dev::logStream = out::col_stream{stream};
+}
+
+inline void msg(const std::string& message, const cth::except::Severity severity = cth::except::Severity::LOG) {
+    if(dev::colored) dev::logStream.println(dev::textColor(severity), message);
+    else dev::logStream.println(message);
+}
+
+
+namespace dev {
     /**
      * \brief executes the statement in its destructor to support code execution before aborting
      */
-    template<Cth_Log_Colors LogType>
-    struct DelayedLogObj {
-        DelayedLogObj(const bool expression, std::wstring msg, std::wstring file) : expression(expression),
-        msg(std::move(msg)), file(std::move(file)) {}
-        ~DelayedLogObj() {
-            if(expression) return;
-
-            if constexpr(LogType == LOG_COLOR_DEFAULT) msg = L"LOG: " + msg;
-            else if constexpr(LogType == LOG_COLOR_HINT) msg = L"HINT: " + msg;
-            else if constexpr(LogType == LOG_COLOR_WARN) msg = L"WARNING: " + msg;
-            else if constexpr(LogType == LOG_COLOR_ERROR) msg = L"ERROR: " + msg;
-
-            if(logStream == nullptr) log::dev::msg(msg, file, LogType);
-            else *logStream << msg << L", file: " << file << L'\n';
-
-            //----------------------------------------
-            //         CTH_ASSERTION_ERROR
-            //----------------------------------------
-            if constexpr(LogType == LOG_COLOR_ERROR) abort();
+    template<cth::except::Severity S>
+    struct LogObj {
+        explicit LogObj(cth::except::default_exception<S> exception) : ex(std::move(exception)) {}
+        ~LogObj() {
+            cth::log::msg(ex.string(), S);
+            if constexpr(S == cth::except::Severity::CRITICAL) std::abort();
         }
+        [[nodiscard]] std::string string() const { return ex.string(); }
+        [[nodiscard]] cth::except::default_exception<S> exception() const { return ex; }
 
     private:
-        bool expression;
-        std::wstring msg;
-        const std::wstring file;
+        cth::except::default_exception<S> ex;
     };
-}
 
 
-inline void msg(const std::string_view msg, Cth_Log_Colors err_severity = LOG_COLOR_DEFAULT) {
-    console::print(msg, static_cast<console::Text_Col_Ids>(err_severity));
-}
-inline void msgln(const std::string_view msg, Cth_Log_Colors err_severity = LOG_COLOR_DEFAULT) {
-    console::println(msg, static_cast<console::Text_Col_Ids>(err_severity));
-}
 
-
+} // namespace dev
 
 /**
- * \brief sets the log stream. nullptr -> colored console output
- * \param stream 
+ * \brief wrapper for dev::LogObj
+ * \param expression expression false -> code execution + delayed log message
+ * \param message log message
+ * \param severity log severity
  */
-inline void setLogStream(std::wostream* stream) { dev::logStream = stream; }
-
-#define CTH_TO_WIDE_STR2(s) L ## s
-#define CTH_TO_WIDE_STR(s) CTH_TO_WIDE_STR2(s)
-
-
-/**
- * \brief wrapper for dev::DelayedLogObj
- * \param expression expression false -> delayed code execution
- * \param file path details string
- */
-#define CTH_DEV_DELAYED_STATEMENT_TEMPLATE(expression, file, log_type) if(cth::log::dev::DelayedLogObj<log_type> logObject{(expression), CTH_TO_WIDE_STR(#expression), file}; !(expression))
+#define CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message_str, severity) if(const auto details =\
+        (!static_cast<bool>(expression) ? std::make_unique<cth::log::dev::LogObj<(severity)>>(cth::except::default_exception<severity>{message_str,\
+        std::source_location::current(), std::stacktrace::current()}) : nullptr);\
+        !static_cast<bool>(expression)) //{...}
+#define CTH_DEV_DISABLED_LOG_TEMPLATE() if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; false) //{...}
 
 //------------------------------
 //  CTH_STABLE_ASSERTION
 //------------------------------
-
-
-#define CTH_STABLE_ASSERT(expression) if(false)
-#define CTH_STABLE_WARN(expression) if(false)
-#define CTH_STABLE_HINT(expression) if(false)
-#define CTH_STABLE_LOG(expression) if(false)
+#define CTH_STABLE_ASSERT(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
+#define CTH_STABLE_ERR(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
+#define CTH_STABLE_WARN(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
+#define CTH_STABLE_INFORM(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
+#define CTH_STABLE_LOG(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
 
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_NONE
 
@@ -110,8 +107,18 @@ inline void setLogStream(std::wostream* stream) { dev::logStream = stream; }
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> error
  */
-#define CTH_STABLE_ASSERT(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_ERROR)
-#if CTH_LOG_LEVEL != CTH_LOG_LEVEL_ERROR
+#define CTH_STABLE_ASSERT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::CRITICAL)
+#if CTH_LOG_LEVEL != CTH_LOG_LEVEL_CRITICAL
+
+#undef CTH_STABLE_ERR
+/**
+ * \brief if(!expression) -> error msg\n
+ * can execute code before warning (use {} for multiple lines)\n
+ * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
+ * \param expression false -> error
+ */
+#define CTH_STABLE_ERR(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::ERR)
+#if CTH_LOG_LEVEL != CTH_LOG_LEVEL_ERR
 
 #undef CTH_STABLE_WARN
 /**
@@ -121,10 +128,10 @@ inline void setLogStream(std::wostream* stream) { dev::logStream = stream; }
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> warn
  */
-#define CTH_STABLE_WARN(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_WARN)
+#define CTH_STABLE_WARN(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::WARNING)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_WARN
 
-#undef CTH_STABLE_HINT
+#undef CTH_STABLE_INFORM
 /**
  * \brief if(!expression) -> hint\n
  *  stable -> also for _NDEBUG\n
@@ -132,7 +139,7 @@ inline void setLogStream(std::wostream* stream) { dev::logStream = stream; }
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> hint
  */
-#define CTH_STABLE_HINT(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_HINT)
+#define CTH_STABLE_INFORM(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::INFO)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_INFO
 
 #undef CTH_STABLE_LOG
@@ -143,7 +150,7 @@ inline void setLogStream(std::wostream* stream) { dev::logStream = stream; }
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> log
  */
-#define CTH_STABLE_LOG(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_DEFAULT)
+#define CTH_STABLE_LOG(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::LOG)
 
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_DEBUG
 inline auto x = []() {
@@ -156,15 +163,17 @@ inline auto x = []() {
 #endif
 #endif
 #endif
+#endif
 
 
 //------------------------------
 //        CTH_ASSERTION
 //------------------------------
-#define CTH_ASSERT(expression) if(false)
-#define CTH_WARN(expression) if(false)
-#define CTH_HINT(expression) if(false)
-#define CTH_LOG(expression) if(false)
+#define CTH_ASSERT(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
+#define CTH_ERR(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
+#define CTH_WARN(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
+#define CTH_INFORM(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
+#define CTH_LOG(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
 
 
 #ifdef _DEBUG
@@ -176,10 +185,21 @@ inline auto x = []() {
  * \brief assert extension\n
  * can execute code before abort (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
+ * \param expression false -> error msg -> abort
+ */
+#define CTH_ASSERT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::CRITICAL)
+#if CTH_LOG_LEVEL != CTH_LOG_LEVEL_CRITICAL
+
+#undef CTH_ERR
+/**
+ * \brief if(!expression) -> error msg\n
+ * can execute code before warning (use {} for multiple lines)\n
+ * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> error
  */
-#define CTH_ASSERT(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_ERROR)
-#if CTH_LOG_LEVEL != CTH_LOG_LEVEL_ERROR
+#define CTH_ERR(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::ERR)
+#if CTH_LOG_LEVEL != CTH_LOG_LEVEL_ERR
+
 
 #undef CTH_WARN
 /**
@@ -188,17 +208,17 @@ inline auto x = []() {
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> warn
  */
-#define CTH_WARN(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_WARN)
+#define CTH_WARN(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::WARNING)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_WARN
 
-#undef CTH_HINT
+#undef CTH_INFORM
 /**
  * \brief if(!expression) -> hint\n
  * can execute code before hinting (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> hint
  */
-#define CTH_HINT(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_HINT)
+#define CTH_INFORM(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::INFO)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_INFO
 
 #undef CTH_LOG
@@ -208,15 +228,17 @@ inline auto x = []() {
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> log
  */
-#define CTH_LOG(expression) CTH_DEV_DELAYED_STATEMENT_TEMPLATE((expression), CTH_TO_WIDE_STR(__FILE__), cth::log::Cth_Log_Colors::LOG_COLOR_DEFAULT)
+#define CTH_LOG(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::LOG)
 
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_DEBUG
     inline auto x = []() {
-        CTH_ASSERT(false && "invalid CTH_LOG_LEVEL macro value defined");
+        CTH_ASSERT(false, "invalid CTH_LOG_LEVEL macro value defined");
+        static_assert(false);
         return 10;
         }();
 #endif
 
+#endif
 #endif
 #endif
 #endif

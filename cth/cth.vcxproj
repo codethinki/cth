@@ -30,6 +30,7 @@
     <ClInclude Include="cth_algorithm.hpp" />
     <ClInclude Include="cth_concepts.hpp" />
     <ClInclude Include="cth_console.hpp" />
+    <ClInclude Include="cth_exception.hpp" />
     <ClInclude Include="cth_keybd.hpp" />
     <ClInclude Include="cth_log.hpp" />
     <ClInclude Include="cth_network.hpp" />

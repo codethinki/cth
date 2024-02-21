@@ -10,7 +10,7 @@ using namespace std;
 TEST(headerAlgorithm, funcFillInc) {
 
     array<float, 4> y{};
-    algorithm::fillInc(y.begin() + 1, 3u, 4);
+    EXPECT_NO_THROW(algorithm::fillInc(y.begin() + 1, 3u, 4));
 
     constexpr array<float, 4> validY{0, 4, 8, 12};
     bool valid = true;
@@ -19,8 +19,9 @@ TEST(headerAlgorithm, funcFillInc) {
     EXPECT_TRUE(valid);
 }
 TEST(headerAlgorithm, funcDoubleSelectoinSort) {
+    
     array<uint32_t, 5> x{ 5, 4, 1, 3, 2 };
-    algorithm::unsorted::doubleSelectionSort(x.begin(), x.end());
+    EXPECT_NO_THROW(algorithm::unsorted::doubleSelectionSort(x.begin(), x.end()););
 
     constexpr array<uint32_t, 5> validX{ 1, 2, 3, 4, 5 };
     bool valid = true;

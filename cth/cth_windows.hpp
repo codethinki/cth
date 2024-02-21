@@ -10,8 +10,9 @@
 
 
 namespace cth::win {
-namespace cmd {
     using namespace std;
+
+namespace cmd {
     /**
      * \brief executes a cmd command in the background
      * \param exec_dir (default: current dir)
@@ -51,7 +52,7 @@ namespace clipbd {
     inline string getText() {
         string text;
 
-        CTH_STABLE_WARN(!OpenClipboard(nullptr) && "getClipboardText: no clipboard access");
+        CTH_STABLE_WARN(!OpenClipboard(nullptr), "getClipboardText: no clipboard access");
 
         const HANDLE hData = GetClipboardData(CF_TEXT);
         const char* pszText = static_cast<char*>(GlobalLock(hData));
@@ -110,6 +111,18 @@ namespace desktop {
     }
 }
 
+namespace file {
+    template<type::string_t T>
+    vector<T> loadTxt(const filesystem::path path) {
+        basic_ifstream<T> file(path.string());
+        if(is_same_v<T, std::wstring>) file.imbue(locale(locale::empty(), new std::codecvt_utf8<wchar_t>));
+        T s;
+        vector<T> strings;
 
+        while(std::getline(file, s)) strings.push_back(s);
+
+        return strings;
+    }
+}
 
 } // namespace cth::win

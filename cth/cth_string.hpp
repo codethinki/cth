@@ -68,21 +68,18 @@ template<type::arithmetic_t T>
     }
     if(i == str.size()) return num;
 
-    if constexpr(type::is_floating_point_v<T>) {
-        if(str[i++] != L'.') goto failed;
+    if constexpr(!type::is_floating_point_v<T>) return std::nullopt;
 
-        T d = 10;
-        for(; i < str.size(); i++) {
-            const wchar_t c = str[i];
-            if(c >= L'0' && c <= L'9') num += (c - L'0') / d;
-            else goto failed;
-            d *= 10;
-        }
-        return num;
+    if(str[i++] != L'.') return std::nullopt;
+
+    T d = 10;
+    for(; i < str.size(); i++) {
+        const wchar_t c = str[i];
+        if(c >= L'0' && c <= L'9') num += (c - L'0') / d;
+        else return std::nullopt;
+        d *= 10;
     }
-
-failed:;
-    return std::nullopt;
+    return num;
 }
 
 namespace dev {
