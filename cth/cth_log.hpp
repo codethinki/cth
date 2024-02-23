@@ -55,11 +55,12 @@ msg(const cth::except::Severity severity, std::format_string<Types...> f_str, Ty
     if(dev::colored) dev::logStream.println(dev::textColor(severity), std::format(f_str, std::forward<Types>(types)...));
     else dev::logStream.println(std::format(f_str, std::forward<Types>(types)...));
 }
-
-inline void msg(const cth::except::Severity severity = cth::except::Severity::LOG, const std::string_view message) {
+inline void msg(const cth::except::Severity severity, const std::string_view message) {
     if(dev::colored) dev::logStream.println(dev::textColor(severity), message);
     else dev::logStream.println(message);
 }
+
+
 
 
 namespace dev {
@@ -70,7 +71,7 @@ namespace dev {
     struct LogObj {
         explicit LogObj(cth::except::default_exception<S> exception) : ex(std::move(exception)) {}
         ~LogObj() {
-            cth::log::msg(ex.string(), S);
+            cth::log::msg(S, ex.string());
             if constexpr(S == cth::except::Severity::CRITICAL) std::abort();
         }
         [[nodiscard]] std::string string() const { return ex.string(); }
