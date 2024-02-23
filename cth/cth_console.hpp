@@ -257,10 +257,10 @@ public:
     void println(const Text_Colors col, const wstring_view str) const { println(col, str::conv::narrow(str)); }
 
 
-    template<typename... Types>
-    enable_if_t<(sizeof...(Types) > 0u), void> print(Text_Colors col, format_string<Types...> f_str, Types&&... types);
-    template<typename... Types>
-    enable_if_t<(sizeof...(Types) > 0u), void> println(Text_Colors col, format_string<Types...> f_str, Types&&... types);
+    template<typename... Types> enable_if_t<(sizeof...(Types) > 0u), void>
+    print(Text_Colors col, format_string<Types...> f_str, Types&&... types);
+    template<typename... Types> enable_if_t<(sizeof...(Types) > 0u), void>
+    println(Text_Colors col, format_string<Types...> f_str, Types&&... types);
 
 private:
     ostream* oStream;

@@ -48,7 +48,15 @@ inline void setLogStream(std::ostream* stream) {
     dev::logStream = out::col_stream{stream};
 }
 
-inline void msg(const std::string& message, const cth::except::Severity severity = cth::except::Severity::LOG) {
+
+
+template<typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void>
+msg(const cth::except::Severity severity, std::format_string<Types...> f_str, Types&&... types) {
+    if(dev::colored) dev::logStream.println(dev::textColor(severity), std::format(f_str, std::forward<Types>(types)...));
+    else dev::logStream.println(std::format(f_str, std::forward<Types>(types)...));
+}
+
+inline void msg(const cth::except::Severity severity = cth::except::Severity::LOG, const std::string_view message) {
     if(dev::colored) dev::logStream.println(dev::textColor(severity), message);
     else dev::logStream.println(message);
 }
@@ -74,19 +82,20 @@ namespace dev {
 
 
 
-} // namespace dev
-
-/**
- * \brief wrapper for dev::LogObj
- * \param expression expression false -> code execution + delayed log message
- * \param message log message
- * \param severity log severity
- */
+    /**
+     * \brief wrapper for dev::LogObj
+     * \param expression expression false -> code execution + delayed log message
+     * \param message log message
+     * \param severity log severity
+     */
 #define CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message_str, severity) if(const auto details =\
         (!static_cast<bool>(expression) ? std::make_unique<cth::log::dev::LogObj<(severity)>>(cth::except::default_exception<severity>{message_str,\
         std::source_location::current(), std::stacktrace::current()}) : nullptr);\
         !static_cast<bool>(expression)) //{...}
 #define CTH_DEV_DISABLED_LOG_TEMPLATE() if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; false) //{...}
+
+} // namespace dev
+
 
 //------------------------------
 //  CTH_STABLE_ASSERTION
