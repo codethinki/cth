@@ -74,9 +74,12 @@ namespace dev {
             cth::log::msg(S, ex.string());
             if constexpr(S == cth::except::Severity::CRITICAL) std::abort();
         }
+        void add(const std::string_view message) {
+            ex.add(message);
+        }
         [[nodiscard]] std::string string() const { return ex.string(); }
         [[nodiscard]] cth::except::default_exception<S> exception() const { return ex; }
-
+        [[nodiscard]] bool result() const { return false; }
     private:
         cth::except::default_exception<S> ex;
     };
@@ -89,7 +92,8 @@ namespace dev {
      * \param message log message
      * \param severity log severity
      */
-#define CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message_str, severity) if(const auto details =\
+#define CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message_str, severity) \
+    if(const auto details =\
         (!static_cast<bool>(expression) ? std::make_unique<cth::log::dev::LogObj<(severity)>>(cth::except::default_exception<severity>{message_str,\
         std::source_location::current(), std::stacktrace::current()}) : nullptr);\
         !static_cast<bool>(expression)) //{...}

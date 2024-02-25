@@ -17,38 +17,43 @@ enum Severity {
     CRITICAL
 };
 constexpr static std::string_view to_string(const Severity sev) {
-    switch (sev) {
-    case LOG:
-        return "LOG: ";
-    case INFO:
-        return "INFO: ";
-    case WARNING:
-        return "WARNING: ";
-    case ERR:
-        return "ERROR: ";
-    case CRITICAL:
-        return "CRITICAL ERROR:";
+    switch(sev) {
+        case LOG:
+            return "LOG: ";
+        case INFO:
+            return "INFO: ";
+        case WARNING:
+            return "WARNING: ";
+        case ERR:
+            return "ERROR: ";
+        case CRITICAL:
+            return "CRITICAL ERROR:";
     }
     return "UNKNOWN: ";
 }
 
 
 template<Severity S>
-class default_exception : public std::exception{
+class default_exception : public std::exception {
 public:
-
     explicit default_exception(std::string msg, std::source_location loc = std::source_location::current(),
         std::stacktrace trace = std::stacktrace::current()) : logMsg{std::string(to_string(S)) + ' ' + msg + '\n'},
         loc{loc}, trace{(trace)} {}
 
+    void add(std::string msg) {
+        if(detailsMsg.empty()) detailsMsg = "DETAILS: ";
+        detailsMsg += msg;
+        detailsMsg += '\n';
+    }
 
     [[nodiscard]] static constexpr Severity severity() { return S; }
     [[nodiscard]] const char* what() const override { return logMsg.c_str(); }
+    [[nodiscard]] std::string details() const { return detailsMsg; }
 
     [[nodiscard]] std::stacktrace stacktrace() const { return trace; }
     [[nodiscard]] std::source_location location() const { return loc; }
 
-    [[nodiscard]] std::string string() const { return std::format("{0} {1} {2}", logMsg, loc_string(), trace_string()); }
+    [[nodiscard]] std::string string() const { return std::format("{0} {1} {2} {3}", logMsg, detailsMsg, loc_string(), trace_string()); }
     [[nodiscard]] std::string loc_string() const {
         return std::format("FUNCTION: {0}\n LOCATION: \"{1}({2}:{3})\"\n", loc.function_name(), loc.file_name(), loc.line(), loc.column());
     }
@@ -64,6 +69,7 @@ public:
 
 private:
     std::string logMsg;
+    std::string detailsMsg{};
     std::source_location loc;
     std::stacktrace trace;
 };
