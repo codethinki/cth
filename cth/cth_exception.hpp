@@ -33,20 +33,20 @@ constexpr static std::string_view to_string(const Severity sev) {
 }
 
 
-template<Severity S>
 class default_exception : public std::exception {
 public:
-    explicit default_exception(std::string msg, std::source_location loc = std::source_location::current(),
-        std::stacktrace trace = std::stacktrace::current()) : logMsg{std::string(to_string(S)) + ' ' + msg + '\n'},
+    explicit default_exception(const Severity severity, std::string msg, std::source_location loc = std::source_location::current(),
+        std::stacktrace trace = std::stacktrace::current()) : severity_(severity), logMsg{std::string(to_string(severity)) + ' ' + msg + '\n'},
         loc{loc}, trace{(trace)} {}
 
     void add(std::string msg) {
-        if(detailsMsg.empty()) detailsMsg = "DETAILS: ";
+        if(detailsMsg.empty()) detailsMsg = "DETAILS:\n";
+        detailsMsg += " ";
         detailsMsg += msg;
         detailsMsg += '\n';
     }
 
-    [[nodiscard]] static constexpr Severity severity() { return S; }
+    [[nodiscard]] Severity severity() const { return severity_; }
     [[nodiscard]] const char* what() const override { return logMsg.c_str(); }
     [[nodiscard]] std::string details() const { return detailsMsg; }
 
@@ -68,18 +68,19 @@ public:
     }
 
 private:
+    Severity severity_;
     std::string logMsg;
     std::string detailsMsg{};
     std::source_location loc;
     std::stacktrace trace;
 };
-template<Severity S, typename T>
-class data_exception : public default_exception<S> {
+template<typename T>
+class data_exception : public default_exception {
 public:
-    data_exception(std::string msg, T data, std::source_location loc = std::source_location::current(),
-        std::stacktrace trace = std::stacktrace::current()) : default_exception<S>{std::move(msg), std::move(loc), std::move(trace)},
+    data_exception(Severity severity, std::string msg, T data, std::source_location loc = std::source_location::current(),
+        std::stacktrace trace = std::stacktrace::current()) : default_exception{severity, std::move(msg), std::move(loc), std::move(trace)},
         dataObj{std::move(data)} {}
-    data_exception(T data, default_exception<S> exception) : default_exception<S>{exception}, dataObj{data} {}
+    data_exception(T data, default_exception exception) : default_exception{exception}, dataObj{data} {}
     [[nodiscard]] T data() const { return dataObj; }
 
 private:

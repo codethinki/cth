@@ -69,19 +69,19 @@ namespace dev {
      */
     template<cth::except::Severity S>
     struct LogObj {
-        explicit LogObj(cth::except::default_exception<S> exception) : ex(std::move(exception)) {}
+        explicit LogObj(cth::except::default_exception exception) : ex(std::move(exception)) {}
         ~LogObj() {
-            cth::log::msg(S, ex.string());
+            cth::log::msg(S, "\n\n" + ex.string());
             if constexpr(S == cth::except::Severity::CRITICAL) std::abort();
         }
         void add(const std::string_view message) {
-            ex.add(message);
+            ex.add(message.data());
         }
         [[nodiscard]] std::string string() const { return ex.string(); }
-        [[nodiscard]] cth::except::default_exception<S> exception() const { return ex; }
+        [[nodiscard]] cth::except::default_exception exception() const { return ex; }
         [[nodiscard]] bool result() const { return false; }
     private:
-        cth::except::default_exception<S> ex;
+        cth::except::default_exception ex;
     };
 
 
@@ -94,7 +94,7 @@ namespace dev {
      */
 #define CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message_str, severity) \
     if(const auto details =\
-        (!static_cast<bool>(expression) ? std::make_unique<cth::log::dev::LogObj<(severity)>>(cth::except::default_exception<severity>{message_str,\
+        (!static_cast<bool>(expression) ? std::make_unique<cth::log::dev::LogObj<severity>>(cth::except::default_exception{severity, message_str,\
         std::source_location::current(), std::stacktrace::current()}) : nullptr);\
         !static_cast<bool>(expression)) //{...}
 #define CTH_DEV_DISABLED_LOG_TEMPLATE() if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; false) //{...}

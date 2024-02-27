@@ -15,18 +15,22 @@ TEST(headerLog, LogMacros) {
     CTH_INFORM(false, "hint") x = 2;
     ASSERT_EQ(x, 2);
 
+    CTH_WARN(false, "hint") x = 3;
+    ASSERT_EQ(x, 3);
     try {
-        CTH_WARN(false, "test throw") throw details->exception();
+        CTH_ERR(false, "test") {
+            details->add("hello");
+            throw except::data_exception{1, details->exception()};
+        }
     }
-    catch(cth::except::default_exception<except::WARNING>& e) {
-        out::console.println(e.string());
+    catch(except::default_exception& e) {
     }
 #endif
     ASSERT_EQ(1, 1);
 
 }
 TEST(headerLog, StableLogMacros) {
-#ifdef _DEBUG
+
     int x = 0;
 
     CTH_STABLE_LOG(false, "log") x = 1;
@@ -37,7 +41,9 @@ TEST(headerLog, StableLogMacros) {
 
     CTH_STABLE_WARN(false, "warn") x = 3;
     ASSERT_EQ(x, 3);
-#endif
+
+    CTH_STABLE_ERR(false, "warn") x = 4;
+    ASSERT_EQ(x, 4);
 }
 
 } // namespace cth
