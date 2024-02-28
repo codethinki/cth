@@ -138,7 +138,7 @@ template<bool Raw>
 EventQueueTemplate<Raw>::EventQueueTemplate() { addEventQueue(this); }
 template<bool Raw>
 auto EventQueueTemplate<Raw>::pop()->template_event_t {
-    CTH_ERR(!baseQueue.empty(), "pop: baseQueue is empty") throw details.exception();
+    CTH_ERR(!baseQueue.empty(), "pop: baseQueue is empty") throw details->exception();
 
     lock_guard<mutex> lock(queueMtx);
 
@@ -217,7 +217,7 @@ void EventQueueTemplate<Raw>::eraseEventQueue(uint32_t id) {
 template<bool Raw>
 void CallbackEventQueueTemplate<Raw>::process() {
     CTH_ERR(!eventQueue.empty(), "process: queue is empty")
-        throw details.exception();
+        throw details->exception();
 
 
     template_event_t keybdEvent = eventQueue.pop();

@@ -14,7 +14,8 @@ enum Severity {
     INFO,
     WARNING,
     ERR,
-    CRITICAL
+    CRITICAL,
+    SEVERITY_SIZE,
 };
 constexpr static std::string_view to_string(const Severity sev) {
     switch(sev) {
@@ -41,7 +42,7 @@ public:
 
     void add(std::string msg) {
         if(detailsMsg.empty()) detailsMsg = "DETAILS:\n";
-        detailsMsg += " ";
+        detailsMsg += '\t';
         detailsMsg += msg;
         detailsMsg += '\n';
     }
@@ -55,7 +56,8 @@ public:
 
     [[nodiscard]] std::string string() const { return std::format("{0} {1} {2} {3}", logMsg, detailsMsg, loc_string(), trace_string()); }
     [[nodiscard]] std::string loc_string() const {
-        return std::format("FUNCTION: {0}\n LOCATION: \"{1}({2}:{3})\"\n", loc.function_name(), loc.file_name(), loc.line(), loc.column());
+        const std::string filename = std::string(loc.file_name());
+        return std::format("FUNCTION: {0}\n LOCATION: {1}({2}:{3})\n", loc.function_name(), filename.substr(filename.find_last_of('\\') + 1), loc.line(), loc.column());
     }
     [[nodiscard]] std::string trace_string() const {
         std::string str = "STACKTRACE:\n";
@@ -88,16 +90,4 @@ private:
 };
 
 
-}
-
-
-inline std::ostream& operator <<(std::ostream& os, const std::source_location& loc) {
-    os << std::format("FUNCTION: {0}\n LOCATION: '{1}({2}:{3})'\n", loc.function_name(), loc.file_name(), loc.line(), loc.column());
-    return os;
-}
-
-inline std::ostream& operator <<(std::ostream& os, const std::stacktrace& backtrace) {
-    for(auto it = backtrace.begin(); it != backtrace.end() - 3; ++it)
-        os << it->source_file() << "(" << it->source_line() << ") : " << it->description() << "\n";
-    return os;
-}
+}// namespace cth::except
