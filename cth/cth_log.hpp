@@ -93,15 +93,19 @@ namespace dev {
             if constexpr(S == cth::except::Severity::CRITICAL) std::abort();
         }
         void add(const std::string_view message) { ex.add(message.data()); }
-        [[nodiscard]] cth::except::Severity verbosity() const { return msgVerbosity; }
+        template<typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void>
+        add(const std::format_string<Types...> f_str, Types&&... types) { ex.add(f_str, std::forward<Types>(types)...); }
+
         void setVerbosity(const cth::except::Severity new_verbosity) { msgVerbosity = new_verbosity; }
-        [[nodiscard]] std::string string() const { return ex.string(); }
-        [[nodiscard]] cth::except::default_exception exception() const { return ex; }
-        [[nodiscard]] bool result() const { return false; }
 
     private:
         cth::except::default_exception ex;
         cth::except::Severity msgVerbosity;
+
+    public:
+        [[nodiscard]] cth::except::Severity verbosity() const { return msgVerbosity; }
+        [[nodiscard]] std::string string() const { return ex.string(); }
+        [[nodiscard]] cth::except::default_exception exception() const { return ex; }
     };
 
 
@@ -114,11 +118,12 @@ namespace dev {
      */
 #define CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message_str, severity) \
     if(const auto details =\
-        (!static_cast<bool>(expression) ? std::make_unique<cth::log::dev::LogObj<severity>>(cth::except::default_exception{severity, message_str,\
+        (static_cast<bool>(expression) ? std::make_unique<cth::log::dev::LogObj<severity>>(cth::except::default_exception{severity, message_str,\
         std::source_location::current(), std::stacktrace::current()}) : nullptr);\
-        !static_cast<bool>(expression)) //{...}
+        static_cast<bool>(expression)) //{...}
 #define CTH_DEV_DISABLED_LOG_TEMPLATE() if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; false) //{...}
-#define CTH_DEV_DISABLED_STABLE_LOG_TEMPLATE(expression) if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; !static_cast<bool>(expression)) //{...}
+
+
 } // namespace dev
 
 
@@ -132,10 +137,10 @@ namespace dev {
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> error
  */
-#define CTH_STABLE_ASSERT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::CRITICAL)
+#define CTH_STABLE_ASSERT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(!(expression), message, cth::except::Severity::CRITICAL)
 
 /**
- * \brief if(!expression) -> error msg\n
+ * \brief if(expression) -> error msg\n
  * can execute code before warning (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
  * \param expression false -> error
@@ -143,7 +148,7 @@ namespace dev {
 #define CTH_STABLE_ERR(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::ERR)
 
 /**
- * \brief if(!expression) -> warn\n
+ * \brief if(expression) -> warn\n
  * stable -> also for _NDEBUG\n
  * can execute code before warning (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
@@ -152,7 +157,7 @@ namespace dev {
 #define CTH_STABLE_WARN(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::WARNING)
 
 /**
- * \brief if(!expression) -> hint\n
+ * \brief if(expression) -> hint\n
  *  stable -> also for _NDEBUG\n
  * can execute code before hinting (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
@@ -161,7 +166,7 @@ namespace dev {
 #define CTH_STABLE_INFORM(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::INFO)
 
 /**
- * \brief if(!expression) -> log message\n
+ * \brief if(expression) -> log message\n
  * stable -> also for _NDEBUG\n
  * can execute code before logging (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
@@ -192,12 +197,12 @@ namespace dev {
  * disabled in _NDEBUG or if CTH_LOG_LEVEL > CTH_LOG_LEVEL_CRITICAL
  * \param expression false -> error msg -> abort
  */
-#define CTH_ASSERT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::CRITICAL)
+#define CTH_ASSERT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(!(expression), message, cth::except::Severity::CRITICAL)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_CRITICAL
 
 #undef CTH_ERR
 /**
- * \brief if(!expression) -> error msg\n
+ * \brief if(expression) -> error msg\n
  * can execute code before warning (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}\n
  * disabled in _NDEBUG or if CTH_LOG_LEVEL > CTH_LOG_LEVEL_ERR
@@ -209,7 +214,7 @@ namespace dev {
 
 #undef CTH_WARN
 /**
- * \brief if(!expression) -> warn\n
+ * \brief if(expression) -> warn\n
  * can execute code before warning (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}\n
  * disabled in _NDEBUG or if CTH_LOG_LEVEL > CTH_LOG_LEVEL_WARN
@@ -220,7 +225,7 @@ namespace dev {
 
 #undef CTH_INFORM
 /**
- * \brief if(!expression) -> hint\n
+ * \brief if(expression) -> hint\n
  * can execute code before hinting (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}\n
  * disabled in _NDEBUG or if CTH_LOG_LEVEL > CTH_LOG_LEVEL_INFO
@@ -231,7 +236,7 @@ namespace dev {
 
 #undef CTH_LOG
 /**
- * \brief if(!expression) -> log message\n
+ * \brief if(expression) -> log message\n
  * can execute code before logging (use {} for multiple lines)\n
  * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}\n
  * disabled in _NDEBUG or if CTH_LOG_LEVEL > CTH_LOG_LEVEL_LOG

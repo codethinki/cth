@@ -138,7 +138,7 @@ template<bool Raw>
 EventQueueTemplate<Raw>::EventQueueTemplate() { addEventQueue(this); }
 template<bool Raw>
 auto EventQueueTemplate<Raw>::pop()->template_event_t {
-    CTH_ERR(!baseQueue.empty(), "pop: baseQueue is empty") throw details->exception();
+    CTH_ERR(baseQueue.empty(), "pop: baseQueue is empty") throw details->exception();
 
     lock_guard<mutex> lock(queueMtx);
 
@@ -194,7 +194,7 @@ void EventQueueTemplate<Raw>::push(template_event_t event) {
 template<bool Raw>
 void EventQueueTemplate<Raw>::addEventQueue(EventQueueTemplate* queue) {
     if(queueCount++ == 0) hook();
-    CTH_STABLE_ERR(keyboardHookThread.get_id() == threadId, "hook thread crashed")
+    CTH_STABLE_ERR(keyboardHookThread.get_id() != threadId, "hook thread crashed")
         throw details->exception();
 
     lock_guard<mutex> lock(queuesMtx);
@@ -203,8 +203,8 @@ void EventQueueTemplate<Raw>::addEventQueue(EventQueueTemplate* queue) {
 }
 template<bool Raw>
 void EventQueueTemplate<Raw>::eraseEventQueue(uint32_t id) {
-    CTH_STABLE_ERR(keyboardHookThread.get_id() == threadId, "hook thread crashed") throw details->exception();
-    CTH_ERR(queueCount > 0, "no queues active") throw details->exception();
+    CTH_STABLE_ERR(keyboardHookThread.get_id() != threadId, "hook thread crashed") throw details->exception();
+    CTH_ERR(queueCount <= 0, "no queues active") throw details->exception();
 
     lock_guard<mutex> lock(queuesMtx);
     queues.erase(queues.begin() + id);
@@ -216,7 +216,7 @@ void EventQueueTemplate<Raw>::eraseEventQueue(uint32_t id) {
 
 template<bool Raw>
 void CallbackEventQueueTemplate<Raw>::process() {
-    CTH_ERR(!eventQueue.empty(), "process: queue is empty")
+    CTH_ERR(eventQueue.empty(), "process: queue is empty")
         throw details->exception();
 
 
@@ -254,7 +254,7 @@ void threadProc(const std::stop_token& stop) {
 
     try {
         hookHandle = SetWindowsHookExW(WH_KEYBOARD_LL, hookFunc, nullptr, 0);
-        CTH_STABLE_ERR(hookHandle != nullptr, "failed to establish key hook") throw details->exception();
+        CTH_STABLE_ERR(hookHandle == nullptr, "failed to establish key hook") throw details->exception();
 
 
         MSG msg;

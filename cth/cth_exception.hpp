@@ -40,11 +40,13 @@ public:
         std::stacktrace trace = std::stacktrace::current()) : severity_(severity), logMsg{std::string(to_string(severity)) + ' ' + msg + '\n'},
         loc{loc}, trace{(trace)} {}
 
+
     void add(std::string msg) {
-        if(detailsMsg.empty()) detailsMsg = "DETAILS:\n";
-        detailsMsg += '\t';
-        detailsMsg += msg;
-        detailsMsg += '\n';
+        addNoCpy(msg);
+    }
+    template<typename... Types> enable_if_t<(sizeof...(Types) > 0u), void>
+    add(const format_string<Types...> f_str, Types&&... types) {
+        this->addNoCpy(std::format(f_str, std::forward<Types>(types)...));
     }
 
     [[nodiscard]] Severity severity() const { return severity_; }
@@ -57,7 +59,8 @@ public:
     [[nodiscard]] std::string string() const { return std::format("{0} {1} {2} {3}", logMsg, detailsMsg, loc_string(), trace_string()); }
     [[nodiscard]] std::string loc_string() const {
         const std::string filename = std::string(loc.file_name());
-        return std::format("FUNCTION: {0}\n LOCATION: {1}({2}:{3})\n", loc.function_name(), filename.substr(filename.find_last_of('\\') + 1), loc.line(), loc.column());
+        return std::format("FUNCTION: {0}\n LOCATION: {1}({2}:{3})\n", loc.function_name(), filename.substr(filename.find_last_of('\\') + 1),
+            loc.line(), loc.column());
     }
     [[nodiscard]] std::string trace_string() const {
         std::string str = "STACKTRACE:\n";
@@ -70,6 +73,13 @@ public:
     }
 
 private:
+    void addNoCpy(const std::string& msg) {
+        if(detailsMsg.empty()) detailsMsg = "DETAILS:\n";
+        detailsMsg += '\t';
+        detailsMsg += msg;
+        detailsMsg += '\n';
+    }
+
     Severity severity_;
     std::string logMsg;
     std::string detailsMsg{};
@@ -84,10 +94,9 @@ public:
         dataObj{std::move(data)} {}
     data_exception(T data, default_exception exception) : default_exception{exception}, dataObj{data} {}
     [[nodiscard]] T data() const { return dataObj; }
-
 private:
     T dataObj;
 };
 
 
-}// namespace cth::except
+} // namespace cth::except
