@@ -8,7 +8,6 @@ namespace cth {
 
 TEST(headerConsole, textColor) {
     using namespace cth::out;
-
     console.println(BLACK_TEXT_COL, "i am black");
     console.println(DARK_RED_TEXT_COL, "i am dark red");
     console.println(DARK_GREEN_TEXT_COL, "i am dark green");

@@ -5,7 +5,16 @@
 
 
 namespace cth {
-TEST(headerWindows, funcIsElevatedProc) { EXPECT_FALSE(cth::win::proc::is_elevated()); }
-    //TODO implement tests
 
+
+TEST(headerWindows, funcIsElevatedProc) {
+    EXPECT_FALSE(cth::win::proc::elevated());
+
+    win::cmd::hidden("asdfasdf");
+    win::cmd::hidden("asdfaasdf {}", "asdf");
+
+    win::cmd::hidden_dir(std::filesystem::current_path().string(), "asdfasdf");
+    win::cmd::hidden_dir(std::filesystem::current_path().string(), "asdfasdf {}", "hello");
+}
+    
 }
