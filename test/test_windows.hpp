@@ -16,5 +16,13 @@ TEST(headerWindows, funcIsElevatedProc) {
     win::cmd::hidden_dir(std::filesystem::current_path().string(), "asdfasdf");
     win::cmd::hidden_dir(std::filesystem::current_path().string(), "asdfasdf {}", "hello");
 }
-    
+TEST(headerWindows, funcLoadTxt) {
+   
+    try {
+        auto text = win::file::loadTxt("hello.txt");
+        if(!text.empty())cout << text[0];
+        auto wtext = win::file::loadTxt(L"hello.txt");
+    }
+    catch(...) {}
+}
 }

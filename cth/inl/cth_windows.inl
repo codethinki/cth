@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <fstream>
 #include "../cth_log.hpp"
 
 #include <TlHelp32.h>
@@ -13,7 +14,7 @@ namespace cmd {
         STARTUPINFOA sInfo{};
         sInfo.cb = sizeof(sInfo);
 
-        string cmd = std::format("cmd.exe /c {}", command);
+        string cmd = std::format("cmd /c {}", command);
 
         const bool res = CreateProcessA(nullptr, cmd.data(),
             nullptr, nullptr, false, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW,
@@ -84,9 +85,11 @@ namespace proc {
 }
 
 
-namespace file {
+namespace file::dev {
+
+
     template<type::char_t T>
-    vector<basic_string<T>> loadTxt(const std::string_view path) {
+    vector<basic_string<T>> loadTxt(const basic_string_view<T> path) {
         basic_ifstream<T> file(path.data());
         if(is_same_v<T, wchar_t>) file.imbue(locale(locale::empty(), new std::codecvt_utf8<wchar_t>));
         basic_string<T> s;
