@@ -112,7 +112,7 @@ namespace dev {
 
     /**
      * \brief wrapper for dev::LogObj
-     * \param expression expression false -> code execution + delayed log message
+     * \param expression (expression) == false -> code execution + delayed log message
      * \param message log message
      * \param severity log severity
      */
@@ -134,16 +134,24 @@ namespace dev {
  * \brief assert extension\n
  * stable -> also for _NDEBUG\n
  * can execute code before abort (use {} for multiple lines)\n
- * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
- * \param expression false -> error
+ * \note this macro MUST be followed by ; or {}
+ * \param (expression) == false -> error
  */
 #define CTH_STABLE_ASSERT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(!(expression), message, cth::except::Severity::CRITICAL)
+
+ /**
+  * \brief if(expression) -> error msg\n
+  * can execute code before aborting (use {} for multiple lines)\n
+  * \note this macro MUST be followed by ; or {}
+  * \param (expression) == false -> abort
+  */
+#define CTH_STABLE_ABORT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::CRITICAL)
 
 /**
  * \brief if(expression) -> error msg\n
  * can execute code before warning (use {} for multiple lines)\n
- * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
- * \param expression false -> error
+ * \note this macro MUST be followed by ; or {}
+ * \param (expression) == false -> error
  */
 #define CTH_STABLE_ERR(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::ERR)
 
@@ -151,8 +159,8 @@ namespace dev {
  * \brief if(expression) -> warn\n
  * stable -> also for _NDEBUG\n
  * can execute code before warning (use {} for multiple lines)\n
- * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
- * \param expression false -> warn
+ * \note this macro MUST be followed by ; or {}
+ * \param (expression) == false -> warn
  */
 #define CTH_STABLE_WARN(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::WARNING)
 
@@ -160,8 +168,8 @@ namespace dev {
  * \brief if(expression) -> hint\n
  *  stable -> also for _NDEBUG\n
  * can execute code before hinting (use {} for multiple lines)\n
- * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
- * \param expression false -> hint
+ * \note this macro MUST be followed by ; or {}
+ * \param (expression) == false -> hint
  */
 #define CTH_STABLE_INFORM(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::INFO)
 
@@ -169,8 +177,8 @@ namespace dev {
  * \brief if(expression) -> log message\n
  * stable -> also for _NDEBUG\n
  * can execute code before logging (use {} for multiple lines)\n
- * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}
- * \param expression false -> log
+ * \note this macro MUST be followed by ; or {}
+ * \param (expression) == false -> log
  */
 #define CTH_STABLE_LOG(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::LOG)
 
@@ -179,6 +187,8 @@ namespace dev {
 //        CTH_ASSERTION
 //------------------------------
 #define CTH_ASSERT(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
+#define CTH_ABORT(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
+
 #define CTH_ERR(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
 #define CTH_WARN(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
 #define CTH_INFORM(expression, message) CTH_DEV_DISABLED_LOG_TEMPLATE()
@@ -193,20 +203,32 @@ namespace dev {
 /**
  * \brief assert extension\n
  * can execute code before abort (use {} for multiple lines)\n
- * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}\n
- * disabled in _NDEBUG or if CTH_LOG_LEVEL > CTH_LOG_LEVEL_CRITICAL
- * \param expression false -> error msg -> abort
+ * \note this macro MUST be followed by ; or {}\n
+ * \note \note disabled when #ifndef _DEBUG or #if CTH_LOG_LEVEL > CTH_LOG_LEVEL_CRITICAL
+ * \param (expression) == false -> error msg -> abort
  */
 #define CTH_ASSERT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(!(expression), message, cth::except::Severity::CRITICAL)
+
+
+#undef CTH_ABORT
+ /**
+  * \brief if(expression) -> error msg\n
+  * can execute code before warning (use {} for multiple lines)\n
+  * \note this macro MUST be followed by ; or {}\n
+  * \note \note disabled when #ifndef _DEBUG or #if CTH_LOG_LEVEL > CTH_LOG_LEVEL_CRITICAL
+  * \param (expression) == false -> error
+  */
+#define CTH_ABORT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::CRITICAL)
+
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_CRITICAL
 
 #undef CTH_ERR
 /**
  * \brief if(expression) -> error msg\n
  * can execute code before warning (use {} for multiple lines)\n
- * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}\n
- * disabled in _NDEBUG or if CTH_LOG_LEVEL > CTH_LOG_LEVEL_ERR
- * \param expression false -> error
+ * \note this macro MUST be followed by ; or {}\n
+ * \note \note disabled when #ifndef _DEBUG or #if CTH_LOG_LEVEL > CTH_LOG_LEVEL_ERR
+ * \param (expression) == false -> error
  */
 #define CTH_ERR(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::ERR)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_ERR
@@ -216,9 +238,9 @@ namespace dev {
 /**
  * \brief if(expression) -> warn\n
  * can execute code before warning (use {} for multiple lines)\n
- * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}\n
- * disabled in _NDEBUG or if CTH_LOG_LEVEL > CTH_LOG_LEVEL_WARN
- * \param expression false -> warn
+ * \note this macro MUST be followed by ; or {}\n
+ * \note \note disabled when #ifndef _DEBUG or #if CTH_LOG_LEVEL > CTH_LOG_LEVEL_WARN
+ * \param (expression) == false -> warn
  */
 #define CTH_WARN(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::WARNING)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_WARN
@@ -227,9 +249,9 @@ namespace dev {
 /**
  * \brief if(expression) -> hint\n
  * can execute code before hinting (use {} for multiple lines)\n
- * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}\n
- * disabled in _NDEBUG or if CTH_LOG_LEVEL > CTH_LOG_LEVEL_INFO
- * \param expression false -> hint
+ * \note this macro MUST be followed by ; or {}\n
+ * \note \note disabled when #ifndef _DEBUG or #if CTH_LOG_LEVEL > CTH_LOG_LEVEL_INFO
+ * \param (expression) == false -> hint
  */
 #define CTH_INFORM(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::INFO)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_INFO
@@ -238,9 +260,9 @@ namespace dev {
 /**
  * \brief if(expression) -> log message\n
  * can execute code before logging (use {} for multiple lines)\n
- * CAUTION: THIS MACRO MUST BE TERMINATED WITH ';' or {}\n
- * disabled in _NDEBUG or if CTH_LOG_LEVEL > CTH_LOG_LEVEL_LOG
- * \param expression false -> log
+ * \note this macro MUST be followed by ; or {}\n
+ * \note \note disabled when #ifndef _DEBUG or #if CTH_LOG_LEVEL > CTH_LOG_LEVEL_LOG
+ * \param (expression) == false -> log
  */
 #define CTH_LOG(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::LOG)
 
