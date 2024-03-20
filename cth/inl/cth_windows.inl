@@ -14,18 +14,17 @@ namespace cmd {
         STARTUPINFOA sInfo{};
         sInfo.cb = sizeof(sInfo);
 
-        string cmd = std::format("cmd /c {}", command);
+        string cmd = std::format("cmd /c \"{}\"", command);
 
         const bool res = CreateProcessA(nullptr, cmd.data(),
             nullptr, nullptr, false, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW,
             nullptr, dir.data(), &sInfo, &pInfo);
 
 
-        CTH_WARN(res != EXIT_SUCCESS, "cmd command failed") {
+        CTH_WARN(res != 1, "cmd process creation failed") {
             details->add("cmd: {}", cmd);
             details->add("location: {}", dir);
-
-            return res;
+            return EXIT_FAILURE;
         }
 
 
