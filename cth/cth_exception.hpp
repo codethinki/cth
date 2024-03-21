@@ -20,24 +20,24 @@ enum Severity {
 constexpr static std::string_view to_string(const Severity sev) {
     switch(sev) {
         case LOG:
-            return "LOG: ";
+            return "LOG";
         case INFO:
-            return "INFO: ";
+            return "INFO";
         case WARNING:
-            return "WARNING: ";
+            return "WARNING";
         case ERR:
-            return "ERROR: ";
+            return "ERROR";
         case CRITICAL:
-            return "CRITICAL ERROR:";
+            return "CRITICAL ERROR";
     }
-    return "UNKNOWN: ";
+    return "UNKNOWN";
 }
 
 
 class default_exception : public std::exception {
 public:
     explicit default_exception(const Severity severity, std::string msg, std::source_location loc = std::source_location::current(),
-        std::stacktrace trace = std::stacktrace::current()) : severity_(severity), logMsg{std::string(to_string(severity)) + ' ' + msg + '\n'},
+        std::stacktrace trace = std::stacktrace::current()) : severity_(severity), logMsg{std::format("{0}: {1}\n", std::string(to_string(severity)), msg)},
         loc{loc}, trace{(trace)} {}
 
 
@@ -56,11 +56,14 @@ public:
     [[nodiscard]] std::stacktrace stacktrace() const { return trace; }
     [[nodiscard]] std::source_location location() const { return loc; }
 
-    [[nodiscard]] std::string string() const { return std::format("{0} {1} {2} {3}", logMsg, detailsMsg, loc_string(), trace_string()); }
+    [[nodiscard]] std::string string() const { return std::format("{0} {1} {2} {3} {4}", logMsg, detailsMsg, func_string(), loc_string(), trace_string()); }
     [[nodiscard]] std::string loc_string() const {
         const std::string filename = std::string(loc.file_name());
-        return std::format("FUNCTION: {0}\n LOCATION: {1}({2}:{3})\n", loc.function_name(), filename.substr(filename.find_last_of('\\') + 1),
+        return std::format("LOCATION: {0}({1}:{2})\n", filename.substr(filename.find_last_of('\\') + 1),
             loc.line(), loc.column());
+    }
+    [[nodiscard]] std::string func_string() const {
+        return std::format("FUNCTION: {0}\n", loc.function_name());
     }
     [[nodiscard]] std::string trace_string() const {
         std::string str = "STACKTRACE:\n";

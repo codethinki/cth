@@ -26,12 +26,18 @@ namespace dev {
 
     static constexpr out::Text_Colors textColor(const cth::except::Severity severity) {
         switch(severity) {
-            case cth::except::LOG: return out::WHITE_TEXT_COL;
-            case cth::except::Severity::INFO: return out::DARK_CYAN_TEXT_COL;
-            case cth::except::Severity::WARNING: return out::DARK_YELLOW_TEXT_COL;
-            case cth::except::Severity::ERR: return out::DARK_RED_TEXT_COL;
-            case cth::except::Severity::CRITICAL: return out::DARK_RED_TEXT_COL;
-            default: return out::WHITE_TEXT_COL;
+            case cth::except::LOG:
+                return out::WHITE_TEXT_COL;
+            case cth::except::Severity::INFO:
+                return out::DARK_CYAN_TEXT_COL;
+            case cth::except::Severity::WARNING:
+                return out::DARK_YELLOW_TEXT_COL;
+            case cth::except::Severity::ERR:
+                return out::DARK_RED_TEXT_COL;
+            case cth::except::Severity::CRITICAL:
+                return out::DARK_RED_TEXT_COL;
+            default:
+                return out::WHITE_TEXT_COL;
         }
     }
 } // namespace dev
@@ -61,6 +67,18 @@ inline void msg(const cth::except::Severity severity, const std::string_view mes
     if(dev::colored) dev::logStream.println(dev::textColor(severity), message);
     else dev::logStream.println(message);
 }
+template<cth::except::Severity S = cth::except::LOG, typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void>
+msg(std::format_string<Types...> f_str, Types&&... types) {
+    if constexpr (S < CTH_LOG_LEVEL) return;
+    if(dev::colored) dev::logStream.println(dev::textColor(S), std::format(f_str, std::forward<Types>(types)...));
+    else dev::logStream.println(std::format(f_str, std::forward<Types>(types)...));
+}
+template<cth::except::Severity S = cth::except::LOG>
+inline void msg(const std::string_view message) {
+    if constexpr (S < CTH_LOG_LEVEL) return;
+    if(dev::colored) dev::logStream.println(dev::textColor(S), message);
+    else dev::logStream.println(message);
+}
 
 
 
@@ -76,25 +94,30 @@ namespace dev {
 
             std::string out = "\n";
             switch(msgVerbosity) {
-                case except::CRITICAL: out += ex.string();
+                case except::CRITICAL:
+                    out += ex.string();
                     break;
-                case except::ERR: out += ex.string();
+                case except::ERR:
+                    out += ex.string();
                     break;
                 case except::WARNING:
-                    out += std::format("{0} {1} {2}", ex.what(), ex.details(), ex.loc_string());
+                    out += std::format("{0} {1} {2} {3}", ex.what(), ex.details(), ex.func_string(), ex.loc_string());
                     break;
-                case except::INFO: out += std::format("{0} {1} {2}", ex.what(), ex.details(), ex.loc_string());
+                case except::INFO:
+                    out += std::format("{0} {1} {2}", ex.what(), ex.details(), ex.func_string());
                     break;
-                case except::LOG: out += std::format("{0} {1}", ex.what(), ex.details());
+                case except::LOG:
+                    out = std::format("{0} {1}", ex.what(), ex.details());
                     break;
             }
             cth::log::msg(S, out);
 
-            if constexpr(S == cth::except::Severity::CRITICAL) std::abort();
+            if constexpr(S == cth::except::Severity::CRITICAL) std::terminate();
         }
         void add(const std::string_view message) { ex.add(message.data()); }
-        template<typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void>
-        add(const std::format_string<Types...> f_str, Types&&... types) { ex.add(f_str, std::forward<Types>(types)...); }
+        template<typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void> add(const std::format_string<Types...> f_str, Types&&... types) {
+            ex.add(f_str, std::forward<Types>(types)...);
+        }
 
         void setVerbosity(const cth::except::Severity new_verbosity) { msgVerbosity = new_verbosity; }
 
@@ -139,12 +162,12 @@ namespace dev {
  */
 #define CTH_STABLE_ASSERT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(!(expression), message, cth::except::Severity::CRITICAL)
 
- /**
-  * \brief if(expression) -> error msg\n
-  * can execute code before aborting (use {} for multiple lines)\n
-  * \note this macro MUST be followed by ; or {}
-  * \param (expression) == false -> abort
-  */
+/**
+ * \brief if(expression) -> error msg\n
+ * can execute code before aborting (use {} for multiple lines)\n
+ * \note this macro MUST be followed by ; or {}
+ * \param (expression) == false -> abort
+ */
 #define CTH_STABLE_ABORT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::CRITICAL)
 
 /**
@@ -211,13 +234,13 @@ namespace dev {
 
 
 #undef CTH_ABORT
- /**
-  * \brief if(expression) -> error msg\n
-  * can execute code before warning (use {} for multiple lines)\n
-  * \note this macro MUST be followed by ; or {}\n
-  * \note \note disabled when #ifndef _DEBUG or #if CTH_LOG_LEVEL > CTH_LOG_LEVEL_CRITICAL
-  * \param (expression) == false -> error
-  */
+/**
+ * \brief if(expression) -> error msg\n
+ * can execute code before warning (use {} for multiple lines)\n
+ * \note this macro MUST be followed by ; or {}\n
+ * \note \note disabled when #ifndef _DEBUG or #if CTH_LOG_LEVEL > CTH_LOG_LEVEL_CRITICAL
+ * \param (expression) == false -> error
+ */
 #define CTH_ABORT(expression, message) CTH_DEV_DELAYED_LOG_TEMPLATE(expression, message, cth::except::Severity::CRITICAL)
 
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_CRITICAL
