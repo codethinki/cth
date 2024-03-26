@@ -88,47 +88,47 @@ namespace dev {
      */
     template<cth::except::Severity S>
     struct LogObj {
-        explicit LogObj(cth::except::default_exception exception) : ex(std::move(exception)), msgVerbosity(S) {}
+        explicit LogObj(cth::except::default_exception exception) : _exception(std::move(exception)), msgVerbosity(S) {}
         ~LogObj() {
             if constexpr(static_cast<int>(S) < CTH_LOG_LEVEL) return;
 
             std::string out = "\n";
             switch(msgVerbosity) {
                 case except::CRITICAL:
-                    out += ex.string();
+                    out += _exception.string();
                     break;
                 case except::ERR:
-                    out += ex.string();
+                    out += _exception.string();
                     break;
                 case except::WARNING:
-                    out += std::format("{0} {1} {2} {3}", ex.what(), ex.details(), ex.func_string(), ex.loc_string());
+                    out += std::format("{0} {1} {2} {3}", _exception.what(), _exception.details(), _exception.func_string(), _exception.loc_string());
                     break;
                 case except::INFO:
-                    out += std::format("{0} {1} {2}", ex.what(), ex.details(), ex.func_string());
+                    out += std::format("{0} {1} {2}", _exception.what(), _exception.details(), _exception.func_string());
                     break;
                 case except::LOG:
-                    out = std::format("{0} {1}", ex.what(), ex.details());
+                    out = std::format("{0} {1}", _exception.what(), _exception.details());
                     break;
             }
             cth::log::msg(S, out);
 
             if constexpr(S == cth::except::Severity::CRITICAL) std::terminate();
         }
-        void add(const std::string_view message) { ex.add(message.data()); }
+        void add(const std::string_view message) { _exception.add(message.data()); }
         template<typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void> add(const std::format_string<Types...> f_str, Types&&... types) {
-            ex.add(f_str, std::forward<Types>(types)...);
+            _exception.add(f_str, std::forward<Types>(types)...);
         }
 
         void setVerbosity(const cth::except::Severity new_verbosity) { msgVerbosity = new_verbosity; }
 
     private:
-        cth::except::default_exception ex;
+        cth::except::default_exception _exception;
         cth::except::Severity msgVerbosity;
 
     public:
         [[nodiscard]] cth::except::Severity verbosity() const { return msgVerbosity; }
-        [[nodiscard]] std::string string() const { return ex.string(); }
-        [[nodiscard]] cth::except::default_exception exception() const { return ex; }
+        [[nodiscard]] std::string string() const { return _exception.string(); }
+        [[nodiscard]] cth::except::default_exception exception() const { return _exception; }
     };
 
 
