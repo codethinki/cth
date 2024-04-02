@@ -321,6 +321,7 @@ col_stream::println(const Text_Colors col, const format_string<Types...> f_str, 
 //-------------------------
 // INSTANTIATIONS
 //-------------------------
+
 namespace cth::out {}
 
 //-------------------------

@@ -1,5 +1,4 @@
 #pragma once
-#include <print>
 #include <array>
 #include <functional>
 #include <mutex>
@@ -9,9 +8,7 @@
 
 #include "cth_log.hpp"
 
-//-------------------------
-//      DEFINITIONS
-//-------------------------
+
 namespace cth::win::keybd {
 using namespace std;
 
