@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include "../cth/cth_log.hpp"
 
+#define FMT_ARGS(message, ...) std::format(message, __VA_ARGS__);
+
 namespace cth {
 
 
@@ -23,20 +25,20 @@ TEST(headerLog, LogMacros) {
             throw except::data_exception{1, details->exception()};
         }
     }
-    catch(except::default_exception& e) {
-    }
+    catch(except::default_exception& e) { std::print("{}", e.what()); }
 #endif
     ASSERT_EQ(1, 1);
 
 }
 TEST(headerLog, StableLogMacros) {
-
     int x = 0;
+   
 
-    CTH_STABLE_LOG(true, "stable log") x = 1;
+
+    CTH_STABLE_LOG(true, "stable log {}", x) x = 1;
     ASSERT_EQ(x, 1);
 
-    CTH_STABLE_INFORM(true, "stable info") x = 2;
+    CTH_STABLE_INFORM(true, "stable info {0}, {1}", x, 2) x = 2;
     ASSERT_EQ(x, 2);
 
     CTH_STABLE_WARN(true, "stable warning") x = 3;

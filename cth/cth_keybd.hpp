@@ -86,7 +86,7 @@ private:
 
 
     static void addEventQueue(EventQueueTemplate* queue);
-    static void eraseEventQueue(uint32_t id);
+    static void eraseEventQueue(size_t id);
 
     inline static vector<EventQueueTemplate*> queues{};
     inline static mutex queuesMtx{};
@@ -199,7 +199,7 @@ void EventQueueTemplate<Raw>::addEventQueue(EventQueueTemplate* queue) {
     queues.push_back(queue);
 }
 template<bool Raw>
-void EventQueueTemplate<Raw>::eraseEventQueue(uint32_t id) {
+void EventQueueTemplate<Raw>::eraseEventQueue(size_t id) {
     CTH_STABLE_ERR(keyboardHookThread.get_id() != threadId, "hook thread crashed") throw details->exception();
     CTH_ERR(queueCount <= 0, "no queues active") throw details->exception();
 

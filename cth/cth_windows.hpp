@@ -3,7 +3,9 @@
 
 #include <filesystem>
 #include <string>
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <Windows.h>
 
 

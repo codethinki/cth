@@ -139,7 +139,7 @@ namespace num {
 
 
         T val = base;
-        for(int i = bits::firstSetBit(power) + 1; i < bitArr.size(); ++i) {
+        for(auto i = bits::firstSetBit(power) + 1; i < bitArr.size(); ++i) {
             val *= val;
             if(bitArr[i]) val *= base;
             val %= mod;
@@ -161,7 +161,7 @@ namespace num {
             constexpr uint32_t bitLength = sizeof(T) * 8;
             array<bool, bitLength> bits{};
 
-            for(int i = 0; i < bitLength; i++) bits[i] = (static_cast<T>(1) << bitLength - 1 - i & val) > 0;
+            for(int i = 0; i < bitLength; i++) bits[i] = ((static_cast<T>(1) << (bitLength - 1 - i)) & val) > 0;
 
             return bits;
         }
@@ -171,7 +171,7 @@ namespace num {
             size_t pos = 0;
 
 
-            while((x & (static_cast<T>(1) << sizeof(T) * 8 - 1 - pos)) == 0 && pos < sizeof(T) * 8) ++pos;
+            while((x & (static_cast<T>(1) << (sizeof(T) * 8 - 1 - pos))) == 0 && pos < sizeof(T) * 8) ++pos;
 
             return pos;
         }

@@ -43,7 +43,8 @@ template<type::arithmetic_t T>
     if constexpr(type::is_floating_point_v<T>) {
         if(str[i++] != '.') goto failed;
 
-        T d = 10;
+        T d;
+        d = 10;
         for(; i < str.size(); i++) {
             const char c = str[i];
             if(c >= '0' && c <= '9') num += (c - '0') / d;
@@ -51,10 +52,10 @@ template<type::arithmetic_t T>
             d *= 10;
         }
         return num;
+    failed:;
     }
 
 
-failed:;
     return std::nullopt;
 }
 template<type::arithmetic_t T>
