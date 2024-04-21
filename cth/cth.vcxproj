@@ -38,6 +38,7 @@
     <ClInclude Include="cth_numeric.hpp" />
     <ClInclude Include="cth_string.hpp" />
     <ClInclude Include="cth_type_traits.hpp" />
+    <ClInclude Include="cth_variant.hpp" />
     <ClInclude Include="cth_windows.hpp" />
   </ItemGroup>
   <ItemGroup>
