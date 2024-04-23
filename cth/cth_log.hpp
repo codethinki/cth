@@ -17,6 +17,8 @@
 #define CTH_LOG_LEVEL CTH_LOG_LEVEL_ALL
 #endif
 
+#include <string>
+
 namespace cth::log {
 
 
@@ -40,6 +42,23 @@ namespace dev {
                 return out::WHITE_TEXT_COL;
         }
     }
+
+    constexpr static std::string_view label(const cth::except::Severity severity) {
+        switch(severity) {
+            case cth::except::Severity::LOG:
+                return "[LOG]";
+            case cth::except::Severity::INFO:
+                return "[INFO]";
+            case cth::except::Severity::WARNING:
+                return "[WARNING]";
+            case cth::except::Severity::ERR:
+                return "[ERROR]";
+            case cth::except::Severity::CRITICAL:
+                return "[CRITICAL]";
+            default:
+                std::unreachable();
+        }
+    }
 } // namespace dev
 
 /**
@@ -56,28 +75,42 @@ inline void setLogStream(std::ostream* stream) {
 
 
 
+
+inline void msg(const cth::except::Severity severity, const std::string_view message) {
+    if(severity < CTH_LOG_LEVEL) return;
+
+    if(dev::colored) {
+        dev::logStream.pushState();
+        dev::logStream.setTextStyle(out::ITALIC_TEXT_STYLE);
+        dev::logStream.setTextStyle(out::UNDERLINED_TEXT_STYLE);
+        dev::logStream.print(dev::textColor(severity), dev::label(severity));
+        dev::logStream.popState();
+        dev::logStream.print(" ");
+        dev::logStream.pushState();
+        dev::logStream.setTextStyle(out::BOLD_TEXT_STYLE);
+        dev::logStream.println(dev::textColor(severity), message);
+        dev::logStream.popState();
+    } else {
+        dev::logStream.print(dev::label(severity));
+        dev::logStream.println(message);
+    }
+}
+template<cth::except::Severity S = cth::except::LOG>
+void msg(const std::string_view message) {
+    if constexpr(S < CTH_LOG_LEVEL) return;
+
+    cth::log::msg(S, message);
+}
 template<typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void>
 msg(const cth::except::Severity severity, std::format_string<Types...> f_str, Types&&... types) {
     if(severity < CTH_LOG_LEVEL) return;
-    if(dev::colored) dev::logStream.println(dev::textColor(severity), std::format(f_str, std::forward<Types>(types)...));
-    else dev::logStream.println(std::format(f_str, std::forward<Types>(types)...));
+    log::msg(severity, std::format(f_str, std::forward<Types>(types)...));
 }
-inline void msg(const cth::except::Severity severity, const std::string_view message) {
-    if(severity < CTH_LOG_LEVEL) return;
-    if(dev::colored) dev::logStream.println(dev::textColor(severity), message);
-    else dev::logStream.println(message);
-}
+
 template<cth::except::Severity S = cth::except::LOG, typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void>
 msg(std::format_string<Types...> f_str, Types&&... types) {
     if constexpr(S < CTH_LOG_LEVEL) return;
-    if(dev::colored) dev::logStream.println(dev::textColor(S), std::format(f_str, std::forward<Types>(types)...));
-    else dev::logStream.println(std::format(f_str, std::forward<Types>(types)...));
-}
-template<cth::except::Severity S = cth::except::LOG>
-inline void msg(const std::string_view message) {
-    if constexpr(S < CTH_LOG_LEVEL) return;
-    if(dev::colored) dev::logStream.println(dev::textColor(S), message);
-    else dev::logStream.println(message);
+    log::msg<S>(std::format(f_str, std::forward<Types>(types)...));
 }
 
 
@@ -88,12 +121,12 @@ namespace dev {
      */
     template<cth::except::Severity S>
     struct LogObj {
-        explicit LogObj(cth::except::default_exception exception) : _exception(std::move(exception)), msgVerbosity(S) {}
+        explicit LogObj(cth::except::default_exception exception) : _exception(std::move(exception)){}
         ~LogObj() {
             if constexpr(static_cast<int>(S) < CTH_LOG_LEVEL) return;
 
             std::string out = "\n";
-            switch(msgVerbosity) {
+            switch(S) {
                 case except::CRITICAL:
                     out += _exception.string();
                     break;
@@ -107,28 +140,23 @@ namespace dev {
                     out += std::format("{0} {1} {2}", _exception.what(), _exception.details(), _exception.func_string());
                     break;
                 case except::LOG:
-                    out = std::format("{0} {1}", _exception.what(), _exception.details());
+                    out += std::format("{0} {1}", _exception.what(), _exception.details());
                     break;
                 default:
                     std::unreachable();
             }
-            cth::log::msg<S>(out);
+            cth::log::msg(S, out);
 
             if constexpr(S == cth::except::Severity::CRITICAL) std::terminate();
         }
         void add(const std::string_view message) { _exception.add(message.data()); }
-        template<typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void> add(const std::format_string<Types...> f_str, Types&&... types) {
-            _exception.add(f_str, std::forward<Types>(types)...);
-        }
-
-        void setVerbosity(const cth::except::Severity new_verbosity) { msgVerbosity = new_verbosity; }
+        template<typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void> add(const std::format_string<Types...> f_str,
+            Types&&... types) { _exception.add(f_str, std::forward<Types>(types)...); }
 
     private:
         cth::except::default_exception _exception;
-        cth::except::Severity msgVerbosity;
 
     public:
-        [[nodiscard]] cth::except::Severity verbosity() const { return msgVerbosity; }
         [[nodiscard]] std::string string() const { return _exception.string(); }
         [[nodiscard]] cth::except::default_exception exception() const { return _exception; }
     };

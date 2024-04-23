@@ -37,7 +37,7 @@ constexpr static std::string_view to_string(const Severity sev) {
 class default_exception : public std::exception {
 public:
     explicit default_exception(const Severity severity, std::string msg, std::source_location loc = std::source_location::current(),
-        std::stacktrace trace = std::stacktrace::current()) : severity_(severity), logMsg{std::format("{0}: {1}\n", std::string(to_string(severity)), msg)},
+        std::stacktrace trace = std::stacktrace::current()) : severity_(severity), logMsg{std::format(" {0}\n", msg)},
         loc{loc}, trace{(trace)} {}
 
 
