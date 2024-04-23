@@ -22,7 +22,7 @@ namespace cth::log {
 
 namespace dev {
     inline static bool colored = true;
-    inline static out::col_stream logStream{&std::cout, out::error.state()};
+    inline static out::col_stream logStream{&std::cerr, out::error.state()};
 
     static constexpr out::Text_Colors textColor(const cth::except::Severity severity) {
         switch(severity) {
@@ -109,8 +109,10 @@ namespace dev {
                 case except::LOG:
                     out = std::format("{0} {1}", _exception.what(), _exception.details());
                     break;
+                default:
+                    std::unreachable();
             }
-            cth::log::msg(S, out);
+            cth::log::msg<S>(out);
 
             if constexpr(S == cth::except::Severity::CRITICAL) std::terminate();
         }
