@@ -159,11 +159,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h" />
     <ClInclude Include="tests_concepts.hpp" />
     <ClInclude Include="test_algorithm.hpp" />
     <ClInclude Include="test_console.hpp" />
@@ -172,6 +170,7 @@
     <ClInclude Include="test_numeric.hpp" />
     <ClInclude Include="test_string.hpp" />
     <ClInclude Include="test_type_traits.hpp" />
+    <ClInclude Include="test_variant.hpp" />
     <ClInclude Include="test_windows.hpp" />
   </ItemGroup>
   <ItemGroup>

@@ -91,6 +91,8 @@ namespace desktop {
 
 
 namespace file {
+    void readUnbuffered(string_view path, vector<char>& buffer);
+
     namespace dev {
         template<type::char_t T>
         vector<basic_string<T>> loadTxt(basic_string_view<T> path);

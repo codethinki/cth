@@ -43,8 +43,6 @@ TEST(headerString, funcSplit) {
 
     auto res2 = str::split(L"asdf  asdf asdf dht", L' ');
 
-    const array<wstring_view, 4> validRes2 = {{L"asdf", L"asdf", L"asdf", L"dht"}};
-
     for(size_t i = 0; i < res.size(); ++i)
         EXPECT_EQ(res[i], validRes[i]);
 

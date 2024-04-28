@@ -9,6 +9,7 @@
 
 namespace cth::win {
 namespace cmd {
+
     inline int hidden_dir(const string_view dir, const string_view command) {
         PROCESS_INFORMATION pInfo{};
         STARTUPINFOA sInfo{};
@@ -84,7 +85,39 @@ namespace proc {
 }
 
 
+namespace file {
+
+    inline void readUnbuffered(const string_view path, vector<char>& buffer) {
+        HANDLE handle = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
+        CTH_STABLE_ERR(handle == INVALID_HANDLE_VALUE, "failed to create handle for file ({})", path) throw details->exception();
+
+
+        DWORD fileSize = GetFileSize(handle, nullptr);
+
+
+        buffer.resize(fileSize + 4096ULL - fileSize % 4096ULL);
+
+        auto event = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+
+        _OVERLAPPED overlapped{.hEvent = event};
+
+        DWORD bytesRead = 0;
+        ReadFile(handle, buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead, &overlapped);
+
+        CTH_STABLE_ERR(!GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE), "failed to read file ({})", path) {
+            details->add("file size: {}", fileSize);
+            details->add("buffer size: {}", buffer.size());
+            details->add("last error: {}", GetLastError());
+            throw details->exception();
+        }
+
+
+        buffer.resize(fileSize);
+    }
+}
+
 namespace file::dev {
+
 
 
     template<type::char_t T>

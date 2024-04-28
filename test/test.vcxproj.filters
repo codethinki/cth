@@ -13,22 +13,13 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="utils">
-      <UniqueIdentifier>{126de693-04fa-478f-98b5-f2a329f749d1}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
     <ClCompile Include="test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>utils</Filter>
-    </ClInclude>
     <ClInclude Include="test_type_traits.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="test_algorithm.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test_variant.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

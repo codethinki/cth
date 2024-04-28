@@ -83,26 +83,30 @@ template<type::arithmetic_t T>
     return num;
 }
 
-namespace dev {
-    /**
-     * \brief splits a string into a vector of strings
-     * \tparam V the delimiter type
-     */
-    template<type::string_t T, type::string_view_t U, typename V>
-    [[nodiscard]] vector<T> split(const U str, const V delimiter) {
-        vector<T> result = str
-            | views::split(delimiter)
-            | views::filter([](const auto string_part) { return !string_part.empty(); })
-            | ranges::to<vector<T>>();
+//namespace dev {
+/**
+ * \brief splits a string into a vector of strings
+ * \tparam U the delimiter type
+ */
+template<type::string_view_t T, type::literal_t U>
+[[nodiscard]] auto split(const T& str, const U& delimiter) {
+    using view_t = decltype(basic_string_view(str));
+    using ret_t = vector<basic_string<typename view_t::value_type>>;
 
-        return result;
-    }
-} // namespace dev
 
-inline vector<string> split(const string_view str, const string_view delimiter) { return dev::split<string>(str, delimiter); }
-inline vector<string> split(const string_view str, const char delimiter) { return dev::split<string>(str, delimiter); }
-inline vector<wstring> split(const wstring_view str, const wstring_view delimiter) { return dev::split<wstring>(str, delimiter); }
-inline vector<wstring> split(const wstring_view str, const wchar_t delimiter) { return dev::split<wstring>(str, delimiter); }
+    constexpr bool isChar = type::is_char_v<decay_t<U>>;
+    conditional_t<isChar, U, view_t> v; 
+    if constexpr (isChar) v = delimiter;
+    else v = view_t(delimiter);
+
+    ret_t result = view_t(str)
+        | views::split(v) //error here
+        | views::filter([](const auto string_part) { return !string_part.empty(); })
+        | ranges::to<ret_t>();
+
+    return result;
+}
+
 
 
 } // namespace cth::str

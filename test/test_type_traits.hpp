@@ -20,28 +20,16 @@ using namespace std;
 
 TEST(HeaderTypeTraits, TestChar) {
     TRAITS_TEST(is_nchar, char, wchar_t);
-    DOUBLE_TRAITS_TEST(is_nchar_p, char*, char[10], wchar_t*, wchar_t[10]);
+
 
     TRAITS_TEST(is_wchar, wchar_t, char);
-    DOUBLE_TRAITS_TEST(is_wchar_p, wchar_t*, wchar_t[10], wchar_t, const wchar_t);
-}
-TEST(HeaderTypeTraits, TestString) {
-    TRAITS_TEST(is_nstring, string, wstring);
-    TRAITS_TEST(is_wstring, wstring, string*);
-    TRAITS_TEST(is_string, string, string_view);
-}
-TEST(HeaderTypeTraits, TestTextual) {
-    TRAITS_TEST(is_ntextual, string, wstring);
-    TRAITS_TEST(is_wtextual, wchar_t*, string);
-    TRAITS_TEST(is_textual, string, char);
-}
 
-TEST(HeaderTypeTraits, TestLiteral) {
-    DOUBLE_TRAITS_TEST(is_nliteral, string, char[10], int, double);
-    DOUBLE_TRAITS_TEST(is_wliteral, wchar_t*, wchar_t, size_t, float);
 }
+//TEST(HeaderTypeTraits, TestString) {
+//    TRAITS_TEST(is_nstring, string, wstring);
+//    TRAITS_TEST(is_wstring, wstring, string*);
+//    TRAITS_TEST(is_string, string, string_view);
+//}
 
-TEST(HeaderTypeTraits, TestOstream) {
-    DOUBLE_TRAITS_TEST(is_ostream, ostream, wostream, ifstream, istream);
-}
+
 }

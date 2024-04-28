@@ -55,7 +55,7 @@ namespace num {
     /**
      * \brief square and multiply algorithm
      */
-    template<integral_t T, unsigned_t U, unsigned_t V>
+    template<integral_t T, unsigned_integral_t U, unsigned_integral_t V>
     [[nodiscard]] constexpr T sqam(T base, U power, V mod);
 
     namespace bits {
@@ -66,7 +66,7 @@ namespace num {
         template<integral_t T>
         constexpr array<bool, sizeof(T) * 8> toBitArr(T val);
 
-        template<unsigned_t T>
+        template<unsigned_integral_t T>
         constexpr size_t firstSetBit(T x);
     }
 
@@ -131,7 +131,7 @@ namespace num {
         return num::inRange(x, a_x, b_x) && num::inRange(y, a_y, b_y);
     }
 
-    template<integral_t T, unsigned_t U, unsigned_t V>
+    template<integral_t T, unsigned_integral_t U, unsigned_integral_t V>
     [[nodiscard]] constexpr T sqam(const T base, const U power, const V mod) {
         CTH_ERR(mod < 0, "invalid input: mod > 0 required") throw except::data_exception{mod, details->exception()};
 
@@ -166,7 +166,7 @@ namespace num {
             return bits;
         }
 
-        template<unsigned_t T>
+        template<unsigned_integral_t T>
         constexpr size_t firstSetBit(const T x) {
             size_t pos = 0;
 
@@ -208,11 +208,11 @@ namespace expr::num {
         return cth::num::inRange2d(x, a_x, b_x, y, a_y, b_y);
     }
 
-    template<integral_t T, unsigned_t U, unsigned_t V>
+    template<integral_t T, unsigned_integral_t U, unsigned_integral_t V>
     [[nodiscard]] constexpr T sqam(const T base, const U power, const V mod) { return cth::num::sqam(base, power, mod); }
 
     namespace bits {
-        template<unsigned_t T>
+        template<unsigned_integral_t T>
         [[nodiscard]] constexpr size_t firstSetBit(const T x) { return cth::num::bits::firstSetBit(x); }
 
         template<integral_t T>

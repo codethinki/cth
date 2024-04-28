@@ -1,7 +1,9 @@
 #pragma once
 
-#include <string>
 #include <type_traits>
+
+#include <string>
+
 /**
  * \brief ... is the variable for the expression
  */
@@ -31,44 +33,22 @@ using namespace std;
 
 template<bool V>
 using bool_constant = dev::Constant<bool, V>;
-
 //char
-CTH_TYPE_GROUP(wchar, _Is_any_of_v<remove_cv_t<T>, wchar_t>)
-CTH_TYPE_GROUP(nchar, _Is_any_of_v<remove_cv_t<T>, char>)
+CTH_TYPE_GROUP(wchar, _Is_any_of_v<decay_t<T>, wchar_t>)
+CTH_TYPE_GROUP(nchar, _Is_any_of_v<decay_t<T>, char>)
 CTH_TYPE_GROUP(char, is_nchar_v<T> || is_wchar_v<T>)
 
-//char_p
-CTH_TYPE_GROUP(nchar_p, _Is_any_of_v<decay_t<remove_cv_t<T>>, const char*, char*>)
-CTH_TYPE_GROUP(wchar_p, _Is_any_of_v<decay_t<remove_cv_t<T>>, const wchar_t*, wchar_t*>)
-CTH_TYPE_GROUP(char_p, is_wchar_p_v<T> || is_nchar_p_v<T>)
+////string
+//CTH_TYPE_GROUP(nstring, std::is_convertible_v<T, string> || std::is_constructible_v<T, string>)
+//CTH_TYPE_GROUP(wstring, std::is_convertible_v<T, string> || std::is_constructible_v<T, string>)
+//CTH_TYPE_GROUP(string, is_nstring_v<T> || is_wstring_v<T>)
+
 
 
 
 //string
-CTH_TYPE_GROUP(nstring, _Is_any_of_v<remove_cv_t<T>, string>)
-CTH_TYPE_GROUP(wstring, _Is_any_of_v<remove_cv_t<T>, wstring>)
-CTH_TYPE_GROUP(string, _Is_any_of_v<remove_cv_t<T>, string, wstring>)
+CTH_TYPE_GROUP(string_view_convertable, std::is_convertible_v<T, wstring_view> || std::is_convertible_v<T, string_view>)
 
-//textual
-CTH_TYPE_GROUP(ntextual, is_nstring_v<T> || is_nchar_p_v<T>)
-CTH_TYPE_GROUP(wtextual, is_wstring_v<T> || is_wchar_p_v<T>)
-CTH_TYPE_GROUP(textual, is_string_v<T> || is_char_p_v<T>)
-
-//literal
-CTH_TYPE_GROUP(wliteral, is_wstring_v<T> || is_wchar_p_v<T> || is_wchar_v<T>)
-CTH_TYPE_GROUP(nliteral, is_nstring_v<T> || is_nchar_p_v<T> || is_nchar_v<T>)
-CTH_TYPE_GROUP(literal, is_nliteral_v<T> || is_wliteral_v<T>)
-
-
-
-//string_view (not in literal or textual because it's not the actual string, it doesn't own the memory)
-CTH_TYPE_GROUP(string_view, _Is_any_of_v<remove_cv_t<T>, string_view, wstring_view>)
-
-
-
-
-//stream
-CTH_TYPE_GROUP(ostream, _Is_any_of_v<remove_cv_t<T>, ostream, wostream>);
 
 
 }
