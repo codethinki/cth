@@ -75,8 +75,6 @@ inline void setLogStream(std::ostream* stream) {
 }
 
 
-
-
 inline void msg(const cth::except::Severity severity, const std::string_view message) {
     if(severity < CTH_LOG_LEVEL) return;
 
@@ -122,7 +120,7 @@ namespace dev {
      */
     template<cth::except::Severity S>
     struct LogObj {
-        explicit LogObj(cth::except::default_exception exception) : _exception(std::move(exception)){}
+        explicit LogObj(cth::except::default_exception exception) : _exception(std::move(exception)) {}
         ~LogObj() {
             if constexpr(static_cast<int>(S) < CTH_LOG_LEVEL) return;
 

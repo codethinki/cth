@@ -37,12 +37,12 @@ TEST(headerString, funcSplit) {
 
     auto res = str::split("asdf  asdf asdf dht", " ");
 
-    const std::array<std::string_view, 4> validRes = {{"asdf", "asdf", "asdf", "dht"}};
+    constexpr std::array<std::string_view, 4> validRes = {{"asdf", "asdf", "asdf", "dht"}};
 
     for(size_t i = 0; i < res.size(); ++i)
         EXPECT_EQ(res[i], validRes[i]);
 
-    auto res2 = str::split(L"asdf  asdf asdf dht", L' ');
+    [[maybe_unused]] auto res2 = str::split(L"asdf  asdf asdf dht", L' ');
 
     for(size_t i = 0; i < res.size(); ++i)
         EXPECT_EQ(res[i], validRes[i]);

@@ -10,7 +10,7 @@ namespace cth::img {
 struct stb_image {
 
     stb_image(const std::string_view path, const int desired_channels) {
-        CTH_ERR(!filesystem::exists(path), "file not found") throw details->exception();
+        CTH_ERR(!std::filesystem::exists(path), "file not found") throw details->exception();
 
         int width = 0, height = 0, channels = 0;
         uint8_t* ptr = stbi_load(path.data(), &width, &height, &channels, desired_channels);

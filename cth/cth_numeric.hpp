@@ -80,7 +80,7 @@ namespace num {
 
     template<integral_t T>
     [[nodiscard]] constexpr T cycle(const T x, const T a, const T b) {
-        CTH_ERR(b <= a, "invalid input: a must be the lower value") throw cth::except::data_exception{ std::pair<float, float>{a, b}, details->exception() };
+        CTH_ERR(b <= a, "invalid input: ({0}) a < b ({1}) required", a, b) throw details->exception();
         const T off = (x - a) % (b - a);
         return off < 0 ? b + off : a + off;
     }
@@ -92,7 +92,7 @@ namespace num {
         while(num::abs(term) > precision) {
             result += term;
             ++n;
-            term *= x / n;
+            term *= x / static_cast<T>(n);
         }
         return result;
     }
@@ -100,7 +100,7 @@ namespace num {
     template<floating_point_t T>
     [[nodiscard]] constexpr T heronSqrt(const T x, const T precision) {
 
-        CTH_ERR(x < 0, "heronSqrt: x >= 0 required") throw except::data_exception{x, details->exception()};
+        CTH_ERR(x < 0, "heronSqrt: x ({}) >= 0 required", x) throw details->exception();
 
         T val = x * static_cast<T>(0.5);
         while(val * val < x - precision || val * val > x + precision) val = (val + x / val) * static_cast<T>(0.5);
@@ -132,7 +132,7 @@ namespace num {
 
     template<integral_t T, unsigned_integral_t U, unsigned_integral_t V>
     [[nodiscard]] constexpr T sqam(const T base, const U power, const V mod) {
-        CTH_ERR(mod < 0, "invalid input: mod > 0 required") throw except::data_exception{mod, details->exception()};
+        CTH_ERR(mod < 0, "invalid input: mod ({}) > 0 required", mod) throw details->exception();
 
         auto bitArr = bits::toBitArr(power);
 
@@ -160,7 +160,7 @@ namespace num {
             constexpr uint32_t bitLength = sizeof(T) * 8;
             std::array<bool, bitLength> bits{};
 
-            for(int i = 0; i < bitLength; i++) bits[i] = ((static_cast<T>(1) << (bitLength - 1 - i)) & val) > 0;
+            for(uint32_t i = 0; i < bitLength; i++) bits[i] = ((static_cast<T>(1) << (bitLength - 1 - i)) & val) > 0;
 
             return bits;
         }

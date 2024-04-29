@@ -200,7 +200,7 @@ struct col_stream_state {
 
     constexpr void setTextCol(const Text_Colors text_color) { _textCol = text_color; }
     constexpr void setBGCol(const BG_Colors bg_color) { _bgCol = bg_color; }
-    constexpr void resetStyle() { _textStyles.fill(0); }
+    constexpr void resetStyle() { _textStyles.fill(false); }
 
     constexpr void setTextStyles(const std::array<bool, TEXT_STYLE_SIZE>& text_styles) { _textStyles = text_styles; }
 
@@ -300,7 +300,7 @@ void col_stream::setState(const col_stream_state new_state) const {
     if constexpr(Cache) *_current = new_state;
     setTextCol<false>(new_state.textCol());
     setBGCol<false>(new_state.bgCol());
-    for(uint32_t i = 0; i < TEXT_STYLE_SIZE; i++) setTextStyle<false>((Text_Styles) i, new_state.styleActive((Text_Styles) i));
+    for(uint32_t i = 0; i < TEXT_STYLE_SIZE; i++) setTextStyle<false>(static_cast<Text_Styles>(i), new_state.styleActive(static_cast<Text_Styles>(i)));
 }
 
 inline void col_stream::print(const Text_Colors col, const string_view str) const {

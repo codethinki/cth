@@ -1,5 +1,5 @@
 // ReSharper disable CppNoDiscardExpression
-// ReSharper disable CppClangTidyModernizeUseBoolLiterals
+// ReSharper disable CppCompileTimeConstantCanBeReplacedWithBooleanConstant
 #pragma once
 #include <gtest/gtest.h>
 

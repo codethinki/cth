@@ -1,3 +1,5 @@
+// ReSharper disable CppAssignedValueIsNeverUsed
+// ReSharper disable CppInitializedValueIsAlwaysRewritten
 #pragma once
 #include <gtest/gtest.h>
 
@@ -9,8 +11,7 @@ namespace cth {
 
 TEST(headerWindows, funcIsElevatedProc) {
     EXPECT_FALSE(cth::win::proc::elevated());
-
-    [[maybe_unused]] auto x = win::cmd::hidden("hello");
+    int x = win::cmd::hidden("hello");
     x = win::cmd::hidden("hello {}", "asdf");
 
     x = win::cmd::hidden_dir(std::filesystem::current_path().string(), "hello");
@@ -23,7 +24,9 @@ TEST(headerWindows, funcLoadTxt) {
         [[maybe_unused]] const auto text = win::file::loadTxt("hello.txt");
         [[maybe_unused]] auto text2 = win::file::loadTxt(L"hello.txt");
     }
-    catch(...) {}
+    catch(...) {
+        std::terminate();
+    }
 }
 
 inline std::vector<char> loadFileIntoVector(const std::string_view file_path) {

@@ -105,7 +105,7 @@ struct CallbackEventQueueTemplate {
     using template_event_t = std::conditional_t<Raw, raw_event_t, event_t>;
     using template_callback_t = std::conditional_t<Raw, raw_callback_t, callback_t>;
 
-    explicit CallbackEventQueueTemplate(std::function<template_callback_t> callback_function) : callback(callback_function) {}
+    explicit CallbackEventQueueTemplate(std::function<template_callback_t> callback_function) : callback(std::move(callback_function)) {}
 
     [[nodiscard]] bool empty() const { return eventQueue.empty(); }
 
@@ -149,7 +149,7 @@ auto EventQueueTemplate<Raw>::pop()->template_event_t {
 }
 template<bool Raw>
 auto EventQueueTemplate<Raw>::popQueue()->std::vector<template_event_t> {
-    std::lock_guard<std::mutex> lock(_queueMtx);
+    std::lock_guard lock(_queueMtx);
 
     if constexpr(!Raw) _lastKey = 0;
 
@@ -169,13 +169,13 @@ void EventQueueTemplate<Raw>::clear() {
 }
 template<bool Raw>
 void EventQueueTemplate<Raw>::dumpFront() {
-    std::lock_guard<std::mutex> lock(_queueMtx);
+    std::lock_guard lock(_queueMtx);
 
     _baseQueue.pop();
 }
 template<bool Raw>
 void EventQueueTemplate<Raw>::push(template_event_t event) {
-    std::lock_guard<std::mutex> queueLock(_queueMtx);
+    std::lock_guard queueLock(_queueMtx);
 
     if constexpr(!Raw)
         if(event.action > 0) {
@@ -194,7 +194,7 @@ void EventQueueTemplate<Raw>::addEventQueue(EventQueueTemplate* queue) {
     CTH_STABLE_ERR(keyboardHookThread.get_id() != threadId, "hook thread crashed")
         throw details->exception();
 
-    std::lock_guard<std::mutex> lock(_queuesMtx);
+    std::lock_guard lock(_queuesMtx);
     queue->_id = _queues.size();
     _queues.push_back(queue);
 }
@@ -203,9 +203,9 @@ void EventQueueTemplate<Raw>::eraseEventQueue(size_t id) {
     CTH_STABLE_ERR(keyboardHookThread.get_id() != threadId, "hook thread crashed") throw details->exception();
     CTH_ERR(queueCount <= 0, "no queues active") throw details->exception();
 
-    std::lock_guard<std::mutex> lock(_queuesMtx);
+    std::lock_guard lock(_queuesMtx);
     _queues.erase(_queues.begin() + id);
-    for_each(_queues.begin() + id, _queues.end(), [](auto q) { q->id -= 1; });
+    std::ranges::for_each(_queues.begin() + id, _queues.end(), [](auto q) { q->id -= 1; });
 
 
     if(--queueCount == 0) unhook();

@@ -32,7 +32,6 @@ TEST(headerLog, LogMacros) {
 }
 TEST(headerLog, StableLogMacros) {
     int x = 0;
-   
 
 
     CTH_STABLE_LOG(true, "stable log {}", x) x = 1;
