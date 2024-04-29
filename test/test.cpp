@@ -1,3 +1,4 @@
+// ReSharper disable CppUnusedIncludeDirective
 #include "tests_concepts.hpp"
 #include "test_algorithm.hpp"
 #include "test_console.hpp"

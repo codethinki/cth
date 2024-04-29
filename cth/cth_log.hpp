@@ -18,6 +18,7 @@
 #endif
 
 #include <string>
+#include <utility>
 
 namespace cth::log {
 
@@ -96,21 +97,21 @@ inline void msg(const cth::except::Severity severity, const std::string_view mes
     }
 }
 template<cth::except::Severity S = cth::except::LOG>
-void msg(const std::string_view message) {
+void msg(const std::string_view message) noexcept {
     if constexpr(S < CTH_LOG_LEVEL) return;
 
     cth::log::msg(S, message);
 }
-template<typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void>
-msg(const cth::except::Severity severity, std::format_string<Types...> f_str, Types&&... types) {
+template<typename... Args> requires (sizeof...(Args) > 0u)
+void msg(const cth::except::Severity severity, std::format_string<Args...> f_str, Args&&... args) noexcept {
     if(severity < CTH_LOG_LEVEL) return;
-    log::msg(severity, std::format(f_str, std::forward<Types>(types)...));
+    log::msg(severity, std::format(f_str, std::forward<Args>(args)...));
 }
 
-template<cth::except::Severity S = cth::except::LOG, typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void>
-msg(std::format_string<Types...> f_str, Types&&... types) {
+template<cth::except::Severity S = cth::except::LOG, typename... Args> requires(sizeof...(Args) > 0u)
+void msg(std::format_string<Args...> f_str, Args&&... args) noexcept {
     if constexpr(S < CTH_LOG_LEVEL) return;
-    log::msg<S>(std::format(f_str, std::forward<Types>(types)...));
+    log::msg<S>(std::format(f_str, std::forward<Args>(args)...));
 }
 
 
@@ -149,9 +150,9 @@ namespace dev {
 
             if constexpr(S == cth::except::Severity::CRITICAL) std::terminate();
         }
-        void add(const std::string_view message) { _exception.add(message.data()); }
-        template<typename... Types> std::enable_if_t<(sizeof...(Types) > 0u), void> add(const std::format_string<Types...> f_str,
-            Types&&... types) { _exception.add(f_str, std::forward<Types>(types)...); }
+        void add(const std::string_view message) noexcept { _exception.add(message.data()); }
+        template<typename... Types> requires (sizeof...(Types) > 0u)
+        void add(const std::format_string<Types...> f_str, Types&&... types) { _exception.add(f_str, std::forward<Types>(types)...); }
 
     private:
         cth::except::default_exception _exception;

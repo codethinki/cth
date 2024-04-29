@@ -3,6 +3,7 @@
 #include "../cth/cth_string.hpp"
 
 namespace cth {
+using std::nullopt;
 
 TEST(headerString, namespaceConv) {
     EXPECT_EQ(cth::str::conv::toN(L"asdf"), "asdf");
@@ -36,7 +37,7 @@ TEST(headerString, funcSplit) {
 
     auto res = str::split("asdf  asdf asdf dht", " ");
 
-    const array<string_view, 4> validRes = {{"asdf", "asdf", "asdf", "dht"}};
+    const std::array<std::string_view, 4> validRes = {{"asdf", "asdf", "asdf", "dht"}};
 
     for(size_t i = 0; i < res.size(); ++i)
         EXPECT_EQ(res[i], validRes[i]);

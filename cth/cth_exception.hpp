@@ -7,7 +7,7 @@
 #include <string>
 
 namespace cth::except {
-using namespace std;
+
 
 enum Severity {
     LOG,
@@ -29,6 +29,8 @@ constexpr static std::string_view to_string(const Severity sev) {
             return "ERROR";
         case CRITICAL:
             return "CRITICAL ERROR";
+        default:
+            std::unreachable();
     }
     return "UNKNOWN";
 }
@@ -37,38 +39,38 @@ constexpr static std::string_view to_string(const Severity sev) {
 class default_exception : public std::exception {
 public:
     explicit default_exception(const Severity severity, std::string msg, std::source_location loc = std::source_location::current(),
-        std::stacktrace trace = std::stacktrace::current()) : severity_(severity), logMsg{std::format(" {0}\n", msg)},
-        loc{loc}, trace{(trace)} {}
+        std::stacktrace trace = std::stacktrace::current()) : _severity(severity), _logMsg{std::format(" {0}\n", msg)},
+        _loc{loc}, _trace{std::move(trace)} {}
 
 
-    void add(std::string msg) {
+    void add(std::string msg) noexcept {
         addNoCpy(msg);
     }
-    template<typename... Types> enable_if_t<(sizeof...(Types) > 0u), void>
-    add(const format_string<Types...> f_str, Types&&... types) {
-        this->addNoCpy(std::format(f_str, std::forward<Types>(types)...));
+    template<typename... Args> requires (sizeof...(Args) > 0u)
+    void add(const std::format_string<Args...> f_str, Args&&... types) noexcept {
+        this->addNoCpy(std::format(f_str, std::forward<Args>(types)...));
     }
 
-    [[nodiscard]] Severity severity() const { return severity_; }
-    [[nodiscard]] const char* what() const override { return logMsg.c_str(); }
-    [[nodiscard]] std::string details() const { return detailsMsg; }
+    [[nodiscard]] Severity severity() const noexcept { return _severity; }
+    [[nodiscard]] const char* what() const noexcept override { return _logMsg.c_str(); }
+    [[nodiscard]] std::string details() const noexcept { return _detailsMsg; }
 
-    [[nodiscard]] std::stacktrace stacktrace() const { return trace; }
-    [[nodiscard]] std::source_location location() const { return loc; }
+    [[nodiscard]] std::stacktrace stacktrace() const noexcept { return _trace; }
+    [[nodiscard]] std::source_location location() const noexcept { return _loc; }
 
-    [[nodiscard]] std::string string() const { return std::format("{0} {1} {2} {3} {4}", logMsg, detailsMsg, func_string(), loc_string(), trace_string()); }
-    [[nodiscard]] std::string loc_string() const {
-        const std::string filename = std::string(loc.file_name());
+    [[nodiscard]] std::string string() const noexcept { return std::format("{0} {1} {2} {3} {4}", _logMsg, _detailsMsg, func_string(), loc_string(), trace_string()); }
+    [[nodiscard]] std::string loc_string() const noexcept {
+        const std::string filename = std::string(_loc.file_name());
         return std::format("LOCATION: {0}({1}:{2})\n", filename.substr(filename.find_last_of('\\') + 1),
-            loc.line(), loc.column());
+            _loc.line(), _loc.column());
     }
-    [[nodiscard]] std::string func_string() const {
-        return std::format("FUNCTION: {0}\n", loc.function_name());
+    [[nodiscard]] std::string func_string() const noexcept {
+        return std::format("FUNCTION: {0}\n", _loc.function_name());
     }
-    [[nodiscard]] std::string trace_string() const {
+    [[nodiscard]] std::string trace_string() const noexcept {
         std::string str = "STACKTRACE:\n";
 
-        std::for_each(trace.begin(), trace.end() - 2, [&](const auto& entry) {
+        std::for_each(_trace.begin(), _trace.end() - 2, [&](const auto& entry) {
             const std::filesystem::path path{entry.source_file()};
             str += std::format("\t{2} : {0}({1})\n", path.filename().string(), entry.source_line(), entry.description());
         });
@@ -76,29 +78,29 @@ public:
     }
 
 private:
-    void addNoCpy(const std::string& msg) {
-        if(detailsMsg.empty()) detailsMsg = "DETAILS:\n";
-        detailsMsg += '\t';
-        detailsMsg += msg;
-        detailsMsg += '\n';
+    void addNoCpy(const std::string& msg) noexcept {
+        if(_detailsMsg.empty()) _detailsMsg = "DETAILS:\n";
+        _detailsMsg += '\t';
+        _detailsMsg += msg;
+        _detailsMsg += '\n';
     }
 
-    Severity severity_;
-    std::string logMsg;
-    std::string detailsMsg{};
-    std::source_location loc;
-    std::stacktrace trace;
+    Severity _severity;
+    std::string _logMsg;
+    std::string _detailsMsg{};
+    std::source_location _loc;
+    std::stacktrace _trace;
 };
 template<typename T>
 class data_exception : public default_exception {
 public:
-    data_exception(Severity severity, std::string msg, T data, std::source_location loc = std::source_location::current(),
+    data_exception(const Severity severity, std::string msg, T data, std::source_location loc = std::source_location::current(),
         std::stacktrace trace = std::stacktrace::current()) : default_exception{severity, std::move(msg), std::move(loc), std::move(trace)},
-        dataObj{std::move(data)} {}
-    data_exception(T data, default_exception exception) : default_exception{exception}, dataObj{data} {}
-    [[nodiscard]] T data() const { return dataObj; }
+        _dataObj{std::move(data)} {}
+    data_exception(T data, default_exception exception) : default_exception{std::move(exception)}, _dataObj{std::move(data)} {}
+    [[nodiscard]] T data() const noexcept { return _dataObj; }
 private:
-    T dataObj;
+    T _dataObj;
 };
 
 

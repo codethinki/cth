@@ -22,7 +22,6 @@ namespace net {
         array<uint8_t, 6> byteMAC{};
 
         for(size_t i = 0, k = 0; i < 6; i++) {
-            string x = mac.substr(k, 2);
             byteMAC[i] = static_cast<uint8_t>(std::stoul(mac.substr(k, 2), nullptr, 16));
             k += 3;
         }

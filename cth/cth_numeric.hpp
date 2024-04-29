@@ -1,5 +1,4 @@
 #pragma once
-#include <algorithm>
 #include <array>
 #include <cassert>
 #include <string>
@@ -10,7 +9,7 @@
 
 namespace cth {
 using namespace cth::type;
-using namespace std;
+
 
 //------------------
 // DECLARATIONS
@@ -64,11 +63,11 @@ namespace num {
         void printBits(T val);
 
         template<integral_t T>
-        constexpr array<bool, sizeof(T) * 8> toBitArr(T val);
+        constexpr std::array<bool, sizeof(T) * 8> toBitArr(T val);
 
         template<unsigned_integral_t T>
         constexpr size_t firstSetBit(T x);
-    }
+    } //namespace bits
 
 } // namespace num
 
@@ -150,16 +149,16 @@ namespace num {
     namespace bits {
         template<integral_t T>
         void printBits(const T val) {
-            array<bool, sizeof(T) * 8> arr = bits::toBitArr(val);
+            std::array<bool, sizeof(T) * 8> arr = bits::toBitArr(val);
 
-            ranges::for_each(arr, [](const bool b) { cout << (b ? '1' : '0'); });
-            cout << ": " << std::to_string(val) << '\n';
+            std::ranges::for_each(arr, [](const bool b) { std::cout << (b ? '1' : '0'); });
+            std::cout << ": " << std::to_string(val) << '\n';
         }
 
         template<integral_t T>
-        constexpr array<bool, sizeof(T) * 8> toBitArr(const T val) {
+        constexpr std::array<bool, sizeof(T) * 8> toBitArr(const T val) {
             constexpr uint32_t bitLength = sizeof(T) * 8;
-            array<bool, bitLength> bits{};
+            std::array<bool, bitLength> bits{};
 
             for(int i = 0; i < bitLength; i++) bits[i] = ((static_cast<T>(1) << (bitLength - 1 - i)) & val) > 0;
 

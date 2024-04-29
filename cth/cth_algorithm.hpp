@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <unordered_set>
 
-#include "cth_concepts.hpp"
 #include "cth_log.hpp"
 
 
@@ -15,10 +14,10 @@ void combine(std::size_t& seed, const T& v, const Rest&... rest) {
     (cth::algorithm::hash::combine(seed, rest), ...);
 }
 
-}
+} // namespace cth::algorithm::hash
 
 namespace cth::algorithm {
-using namespace std;
+
 
 /**
 * \brief creates a vector of unique elements with exactly one element from each given selection. order is preserved
@@ -53,9 +52,9 @@ auto uniqueSelect(const Rng& selections) {
     std::vector<T> out{};
     out.reserve(std::size(selections));
 
-    for(auto [index, selection] : views::zip(indexIndices, selections))
+    for(auto [index, selection] : std::views::zip(indexIndices, selections))
         out.push_back(selection[index]);
 
     return out;
 }
-}
+} // namespace cth::algorithm

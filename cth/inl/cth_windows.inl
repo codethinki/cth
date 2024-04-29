@@ -1,6 +1,5 @@
 #pragma once
 
-#include <filesystem>
 #include <fstream>
 #include "../cth_log.hpp"
 
@@ -10,12 +9,12 @@
 namespace cth::win {
 namespace cmd {
 
-    inline int hidden_dir(const string_view dir, const string_view command) {
+    inline int hidden_dir(const std::string_view dir, const std::string_view command) {
         PROCESS_INFORMATION pInfo{};
         STARTUPINFOA sInfo{};
         sInfo.cb = sizeof(sInfo);
 
-        string cmd = std::format("cmd /c \"{}\"", command);
+        std::string cmd = std::format("cmd /c \"{}\"", command);
 
         const bool res = CreateProcessA(nullptr, cmd.data(),
             nullptr, nullptr, false, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW,
@@ -40,12 +39,12 @@ namespace cmd {
         return static_cast<int>(returnValue);
     }
 
-}
+} // namespace cmd
 
 
 namespace clipbd {
-    inline string getText() {
-        string text;
+    inline std::string getText() {
+        std::string text;
 
         CTH_STABLE_WARN(!OpenClipboard(nullptr), "getClipboardText: no clipboard access");
 
@@ -58,11 +57,11 @@ namespace clipbd {
         CloseClipboard();
         return text;
     }
-}
+} // namespace clipbd
 
 
 namespace proc {
-    inline bool active(const wstring_view process_name) {
+    inline bool active(const std::wstring_view process_name) {
         PROCESSENTRY32 proc;
         proc.dwSize = sizeof(PROCESSENTRY32);
         HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -71,7 +70,7 @@ namespace proc {
             Process32Next(snapshot, &proc);
         return process_name == proc.szExeFile;
     }
-    inline uint32_t instances(const wstring_view process_name) {
+    inline uint32_t instances(const std::wstring_view process_name) {
         uint32_t processCount = 0;
 
         PROCESSENTRY32 proc;
@@ -87,7 +86,7 @@ namespace proc {
 
 namespace file {
 
-    inline void readUnbuffered(const string_view path, vector<char>& buffer) {
+    inline void readUnbuffered(const std::string_view path, std::vector<char>& buffer) {
         HANDLE handle = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
         CTH_STABLE_ERR(handle == INVALID_HANDLE_VALUE, "failed to create handle for file ({})", path) throw details->exception();
 
@@ -121,11 +120,11 @@ namespace file::dev {
 
 
     template<type::char_t T>
-    vector<basic_string<T>> loadTxt(const basic_string_view<T> path) {
-        basic_ifstream<T> file(path.data());
-        if(is_same_v<T, wchar_t>) file.imbue(locale(locale::empty(), new std::codecvt_utf8<wchar_t>));
-        basic_string<T> s;
-        vector<basic_string<T>> strings;
+    std::vector<std::basic_string<T>> loadTxt(const std::basic_string_view<T> path) {
+        std::basic_ifstream<T> file(path.data());
+        if(std::is_same_v<T, wchar_t>) file.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t>));
+        std::basic_string<T> s;
+        std::vector<std::basic_string<T>> strings;
 
         while(std::getline(file, s)) strings.push_back(s);
 

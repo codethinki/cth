@@ -21,4 +21,4 @@ struct visitor : Ts {
 template<class Ts>
 visitor(Ts f)->visitor<Ts>;
 
-}
+} // namespace cth::var

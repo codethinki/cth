@@ -9,7 +9,7 @@ namespace cth {
 
 TEST(headerLog, LogMacros) {
 #ifdef _DEBUG
-    int x = 0;
+    int x;
 
     CTH_LOG(true, "log") x = 1;
     ASSERT_EQ(x, 1);

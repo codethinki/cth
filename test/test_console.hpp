@@ -5,6 +5,8 @@
 #include "../cth/cth_console.hpp"
 
 namespace cth {
+using std::println;
+using std::print;
 
 TEST(headerConsole, textColor) {
     using namespace cth::out;

@@ -1,4 +1,5 @@
 // ReSharper disable CppNoDiscardExpression
+// ReSharper disable CppClangTidyModernizeUseBoolLiterals
 #pragma once
 #include <gtest/gtest.h>
 
@@ -67,7 +68,8 @@ TEST(headerNumeric, funcFirstSetBit) {
 TEST(headerNumeric, funcToBitArr) {
     bool valid = true;
 
-    constexpr array<bool, 32> arr300{
+
+    constexpr std::array<bool, 32> arr300{
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 1,
@@ -77,7 +79,7 @@ TEST(headerNumeric, funcToBitArr) {
 
     EXPECT_TRUE(valid);
 
-    constexpr array<bool, 64> arrLarge{
+    constexpr std::array<bool, 64> arrLarge{
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1,
         1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,

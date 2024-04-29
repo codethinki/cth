@@ -6,7 +6,7 @@
 //ik this test file is incomplete but idc
 
 namespace cth {
-using namespace std;
+
 
 #define TRAITS_TEST(trait, correct, wrong) \
     EXPECT_TRUE(type::trait##_v<correct>); \
@@ -32,4 +32,4 @@ TEST(HeaderTypeTraits, TestChar) {
 //}
 
 
-}
+} // namespace cth

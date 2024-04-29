@@ -12,25 +12,24 @@
 
 
 namespace cth::str::conv {
-using namespace std;
 
 namespace dev {
-    inline static wstring_convert<codecvt_utf8_utf16<wchar_t>> converter{};
+    inline static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter{};
 }
 
-[[nodiscard]] inline string toN(const wstring_view str) { return dev::converter.to_bytes(str.data()); }
-[[nodiscard]] inline wstring toW(const string_view str) { return dev::converter.from_bytes(str.data()); }
+[[nodiscard]] inline std::string toN(const std::wstring_view str) { return dev::converter.to_bytes(str.data()); }
+[[nodiscard]] inline std::wstring toW(const std::string_view str) { return dev::converter.from_bytes(str.data()); }
 
-[[nodiscard]] inline wstring wide(const string_view nstring) { return dev::converter.from_bytes(nstring.data()); }
-[[nodiscard]] inline string narrow(const wstring_view wstring) { return dev::converter.to_bytes(wstring.data()); }
+[[nodiscard]] inline std::wstring wide(const std::string_view nstring) { return dev::converter.from_bytes(nstring.data()); }
+[[nodiscard]] inline std::string narrow(const std::wstring_view wstring) { return dev::converter.to_bytes(wstring.data()); }
 } // namespace cth::str::conv
 
 
 namespace cth::str {
-using namespace std;
+
 
 template<type::arithmetic_t T>
-[[nodiscard]] constexpr optional<T> to_num(const string_view str) {
+[[nodiscard]] constexpr std::optional<T> to_num(const std::string_view str) {
     T num = 0;
     size_t i = 0;
     for(; i < str.size(); i++) {
@@ -40,7 +39,7 @@ template<type::arithmetic_t T>
     }
     if(i == str.size()) return num;
 
-    if constexpr(type::is_floating_point_v<T>) {
+    if constexpr(std::is_floating_point_v<T>) {
         if(str[i++] != '.') goto failed;
 
         T d;
@@ -69,7 +68,7 @@ template<type::arithmetic_t T>
     }
     if(i == str.size()) return num;
 
-    if constexpr(!type::is_floating_point_v<T>) return std::nullopt;
+    if constexpr(!std::is_floating_point_v<T>) return std::nullopt;
 
     if(str[i++] != L'.') return std::nullopt;
 
@@ -90,19 +89,19 @@ template<type::arithmetic_t T>
  */
 template<type::string_view_t T, type::literal_t U>
 [[nodiscard]] auto split(const T& str, const U& delimiter) {
-    using view_t = decltype(basic_string_view(str));
-    using ret_t = vector<basic_string<typename view_t::value_type>>;
+    using view_t = decltype(std::basic_string_view(str));
+    using ret_t = std::vector<std::basic_string<typename view_t::value_type>>;
 
 
-    constexpr bool isChar = type::is_char_v<decay_t<U>>;
-    conditional_t<isChar, U, view_t> v; 
-    if constexpr (isChar) v = delimiter;
+    constexpr bool isChar = type::is_char_v<std::decay_t<U>>;
+    std::conditional_t<isChar, U, view_t> v;
+    if constexpr(isChar) v = delimiter;
     else v = view_t(delimiter);
 
     ret_t result = view_t(str)
-        | views::split(v) //error here
-        | views::filter([](const auto string_part) { return !string_part.empty(); })
-        | ranges::to<ret_t>();
+        | std::views::split(v) //error here
+        | std::views::filter([](const auto string_part) { return !string_part.empty(); })
+        | std::ranges::to<ret_t>();
 
     return result;
 }
@@ -114,14 +113,14 @@ template<type::string_view_t T, type::literal_t U>
 
 
 namespace cth::expr::str {
-using namespace std;
+
 template<type::arithmetic_t T>
-[[nodiscard]] constexpr optional<T> to_num(string_view str);
+[[nodiscard]] constexpr std::optional<T> to_num(std::string_view str);
 template<type::arithmetic_t T>
 [[nodiscard]] constexpr std::optional<T> to_num(std::wstring_view str);
 
 template<type::arithmetic_t T>
-[[nodiscard]] constexpr optional<T> to_num(const string_view str) { return cth::str::to_num<T>(str); }
+[[nodiscard]] constexpr std::optional<T> to_num(const std::string_view str) { return cth::str::to_num<T>(str); }
 template<type::arithmetic_t T>
 [[nodiscard]] constexpr std::optional<T> to_num(const std::wstring_view str) { return cth::str::to_num<T>(str); }
 

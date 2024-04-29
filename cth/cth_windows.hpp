@@ -2,7 +2,6 @@
 #include"cth_concepts.hpp"
 
 #include <filesystem>
-#include <string>
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -11,7 +10,7 @@
 
 
 namespace cth::win {
-using namespace std;
+
 
 
 namespace cmd {
@@ -20,14 +19,14 @@ namespace cmd {
     * \param command = "cmd.exe /c (...)"
     * \note paths only work with '\' NOT '/'
     */
-    [[nodiscard]] inline int hidden_dir(string_view dir, string_view command);
+    [[nodiscard]] inline int hidden_dir(std::string_view dir, std::string_view command);
     /**
     * \brief executes a cmd command with location in the background
     * \param command = "cmd.exe /c (...)"
     * \note paths only work with '\' NOT '/'
     */
-    template<typename... Types> enable_if_t<(sizeof...(Types) > 0u), int>
-    [[nodiscard]] hidden_dir(const string_view dir, std::format_string<Types...> command, Types&&... types) {
+    template<typename... Types> requires (sizeof...(Types) > 0u)
+    [[nodiscard]] int hidden_dir(const std::string_view dir, std::format_string<Types...> command, Types&&... types) {
         return cth::win::cmd::hidden_dir(dir, std::format(command, std::forward<Types>(types)...));
     }
 
@@ -36,7 +35,7 @@ namespace cmd {
     * \param command = "cmd.exe /c (...)"
     * \note paths only work with '\' NOT '/'
     */
-    [[nodiscard]] inline int hidden(const string_view command) {
+    [[nodiscard]] inline int hidden(const std::string_view command) {
         return cth::win::cmd::hidden_dir(std::filesystem::current_path().string(), command);
     }
     /**
@@ -45,16 +44,16 @@ namespace cmd {
     * \note command is executed in the proc dir
     * \note paths only work with '\' NOT '/'
     */
-    template<typename... Types> enable_if_t<(sizeof...(Types) > 0u), int>
-    [[nodiscard]] hidden(std::format_string<Types...> command, Types&&... types) {
+    template<typename... Types> requires(sizeof...(Types) > 0u)
+    [[nodiscard]] int hidden(std::format_string<Types...> command, Types&&... types) {
         return cth::win::cmd::hidden(std::format(command, std::forward<Types>(types)...));
     }
 
-}
+} // namespace cmd
 
 
 namespace clipbd {
-    string getText();
+    std::string getText();
 } // namespace clipbd
 
 namespace proc {
@@ -75,8 +74,8 @@ namespace proc {
         return isAdmin;
     }
 
-    inline bool active(wstring_view process_name);
-    inline uint32_t instances(wstring_view process_name);
+    inline bool active(std::wstring_view process_name);
+    inline uint32_t instances(std::wstring_view process_name);
 } // namespace proc
 
 namespace desktop {
@@ -91,16 +90,16 @@ namespace desktop {
 
 
 namespace file {
-    void readUnbuffered(string_view path, vector<char>& buffer);
+    void readUnbuffered(std::string_view path, std::vector<char>& buffer);
 
     namespace dev {
         template<type::char_t T>
-        vector<basic_string<T>> loadTxt(basic_string_view<T> path);
+        std::vector<std::basic_string<T>> loadTxt(std::basic_string_view<T> path);
     }
 
 
-    inline vector<string> loadTxt(const string_view path) { return dev::loadTxt<char>(path); }
-    inline vector<wstring> loadTxt(const wstring_view path) { return dev::loadTxt<wchar_t>(path); }
+    inline std::vector<std::string> loadTxt(const std::string_view path) { return dev::loadTxt<char>(path); }
+    inline std::vector<std::wstring> loadTxt(const std::wstring_view path) { return dev::loadTxt<wchar_t>(path); }
 }
 
 } // namespace cth::win

@@ -9,9 +9,9 @@ namespace cth {
 
 TEST(textVariant, overload) {
     using variant_t = std::variant<int, float, double>;
-    const variant_t x = 42;
-    const variant_t y = 42.0;
-    const variant_t z = 42.f;
+    constexpr variant_t x = 42;
+    constexpr variant_t y = 42.0;
+    constexpr variant_t z = 42.f;
 
     auto overloadTest = [](const variant_t& v) {
         return std::visit(cth::var::overload{

@@ -46,4 +46,4 @@ concept literal_t = is_string_view_convertable_v<T> || is_char_v<T>;
 //template<typename T>
 //concept ostream_t = type::is_ostream_v<T>;
 
-} 
+} // namespace cth::type
