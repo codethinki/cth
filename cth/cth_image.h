@@ -19,9 +19,9 @@ struct stb_image {
 
         CTH_WARN(desired_channels != channels, "desired_chanels ({0}) != ({1}) loaded_channels", desired_channels, channels);
 
-        this->_width = width;
-        this->_height = height;
-        this->_channels = channels;
+        _width = width;
+        _height = height;
+        _channels = channels;
         _pixels = std::span{ptr, static_cast<size_t>(width * height * channels)};
     }
     stb_image(const int width, const int height, const int channels, uint8_t* ptr) : _width(width), _height(height), _channels(channels),
@@ -42,6 +42,9 @@ public:
         return std::span{reinterpret_cast<char*>(_pixels.data()), static_cast<size_t>(_width * _height * _channels)};
     }
 
+    [[nodiscard]] uint32_t width() const { return _width; }
+    [[nodiscard]] uint32_t height() const { return _height; }
+    [[nodiscard]] uint32_t channels() const { return _channels; }
     [[nodiscard]] std::span<uint8_t> pixels() const { return _pixels; }
 
     stb_image(const stb_image& other) = delete;

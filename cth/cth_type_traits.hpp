@@ -2,6 +2,11 @@
 
 #include <type_traits>
 
+//it doesn't see that the macro needs std::string_view
+// ReSharper disable once CppUnusedIncludeDirective
+#include <string>
+
+
 /**
  * \brief ... is the variable for the expression
  */
