@@ -50,5 +50,8 @@
     <ClInclude Include="test_variant.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="test_memory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

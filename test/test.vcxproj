@@ -167,6 +167,7 @@
     <ClInclude Include="test_console.hpp" />
     <ClInclude Include="test_keybd.hpp" />
     <ClInclude Include="test_log.hpp" />
+    <ClInclude Include="test_memory.hpp" />
     <ClInclude Include="test_numeric.hpp" />
     <ClInclude Include="test_string.hpp" />
     <ClInclude Include="test_type_traits.hpp" />
