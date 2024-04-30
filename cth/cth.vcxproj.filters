@@ -54,7 +54,7 @@
     <ClInclude Include="cth_exception.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_image.h">
+    <ClInclude Include="cth_image.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cth_variant.hpp">

@@ -23,7 +23,6 @@ TEST(HeaderTypeTraits, TestChar) {
 
 
     TRAITS_TEST(is_wchar, wchar_t, char);
-
 }
 //TEST(HeaderTypeTraits, TestString) {
 //    TRAITS_TEST(is_nstring, string, wstring);
