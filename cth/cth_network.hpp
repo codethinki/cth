@@ -39,8 +39,8 @@ namespace net {
     //TODO create a sendUDP packet function and use it
     inline void sendWOL(const string& target_mac, const uint8_t port = 9, const string& broadcast_ip = "255.255.255.255") {
         int broadcast = 1;
-        boost::asio::io_context io_context;
-        boost::asio::ip::udp::socket udpSocket(io_context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
+        boost::asio::io_context ioContext;
+        boost::asio::ip::udp::socket udpSocket(ioContext, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
 
         if(setsockopt(udpSocket.native_handle(), SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&broadcast), sizeof(broadcast)) < 0) {
             std::cerr << "Error in setting Broadcast option.\n";

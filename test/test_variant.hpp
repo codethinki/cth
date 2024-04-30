@@ -3,11 +3,11 @@
 
 #include <gtest/gtest.h>
 
-namespace cth {
+namespace cth::var {
 
 
 
-TEST(textVariant, overload) {
+TEST(class_overload, main) {
     using variant_t = std::variant<int, float, double>;
     constexpr variant_t x = 42;
     constexpr variant_t y = 42.0;
@@ -23,7 +23,12 @@ TEST(textVariant, overload) {
     EXPECT_EQ(overloadTest(x), "int");
     EXPECT_EQ(overloadTest(y), "double");
     EXPECT_EQ(overloadTest(z), "float");
-
+}
+TEST(class_visitor, main) {
+    using variant_t = std::variant<int, float, double>;
+    constexpr variant_t x = 42;
+    constexpr variant_t y = 42.0;
+    constexpr variant_t z = 42.f;
     auto visitorTest = [](const variant_t& v) {
         return std::visit(cth::var::visitor{
             []<typename T>(const T& var) {

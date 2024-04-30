@@ -5,9 +5,9 @@
 
 //this header is missing tests but idc because it's just concepts
 
-namespace cth {
+namespace cth::concepts {
 
-TEST(headerConcepts, conceptTests) {
+TEST(concepts, main) {
     using namespace cth::type;
 
     EXPECT_FALSE(arithmetic_t<char*>);

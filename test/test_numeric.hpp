@@ -5,28 +5,26 @@
 
 #include "../cth/cth_numeric.hpp"
 
-namespace cth {
+namespace cth::num {
 
-using namespace cth::num;
-
-TEST(headerNumeric, funcAbs) {
+TEST(func_abs, main) {
     EXPECT_EQ(abs(-5), 5);
     EXPECT_EQ(abs(0), 0);
     EXPECT_EQ(abs(5), 5);
 }
 
-TEST(headerNumeric, funcCycle) {
+TEST(func_cycle, main) {
     EXPECT_EQ(cycle(5, 0, 10), 5);
     EXPECT_EQ(cycle(15, 0, 10), 5);
     EXPECT_EQ(cycle(-5, 0, 10), 5);
 }
 
-TEST(headerNumeric, funcHeronSqrt) {
+TEST(func_heronSqrt, main) {
     EXPECT_NEAR(heronSqrt(4.f), 2, 0.0001);
     EXPECT_NEAR(heronSqrt(9.f), 3, 0.0001);
 }
 
-TEST(headerNumeric, funcExp) {
+TEST(func_exp, main) {
     EXPECT_NEAR(exp(0.f), 1, 0.0001);
     EXPECT_NEAR(exp(1.f), 2.71828, 0.0001);
     EXPECT_NEAR(exp(3.2f), 24.53253, 0.0001);
@@ -34,38 +32,38 @@ TEST(headerNumeric, funcExp) {
     EXPECT_NEAR(exp(-3.2f), 0.040762, 0.0001);
 }
 
-TEST(headerNumeric, funcMap) {
+TEST(func_map, main) {
     EXPECT_NEAR(map(5.f, 0.f, 10.f, 0.f, 20.f), 10, 1e-6f);
     EXPECT_NEAR(map(5.f, 0.f, 10.f, -10.f, 20.f), 5, 1e-6f);
 }
 
-TEST(headerNumeric, funcDist) {
+TEST(func_dist, main) {
     EXPECT_NEAR(dist(0, 0, 3, 4), 5, 0.0001);
     EXPECT_NEAR(dist(0, 0, -3, -4), 5, 0.0001);
 }
 
-TEST(headerNumeric, funcInRange) {
+TEST(func_InRange, main) {
     EXPECT_TRUE(inRange(-5, -10, 0));
     EXPECT_FALSE(inRange(15, 0, 10));
 }
 
-TEST(headerNumeric, funcInRange2d) {
+TEST(func_inRange2d, main) {
     EXPECT_TRUE(inRange2d(5, 0, 5, -2, -4, 10));
     EXPECT_FALSE(inRange2d(15, 0, 5, -1, 0, 10));
 }
 
-TEST(headerNumeric, funcSqam) {
+TEST(func_sqam, main) {
     EXPECT_EQ(sqam(3, 4u, 25u), 6);
     EXPECT_EQ(sqam(30, 300u, 39u), 27);
     EXPECT_EQ(sqam(30, 3873457565679u, 39u), 12);
 }
 
-TEST(headerNumeric, funcFirstSetBit) {
+TEST(func_firstSetBit, main) {
     EXPECT_EQ(bits::firstSetBit(300u), 23);
     EXPECT_EQ(bits::firstSetBit(3873457565679u), 22);
 }
 
-TEST(headerNumeric, funcToBitArr) {
+TEST(func_toBitArr, main) {
     bool valid = true;
 
 

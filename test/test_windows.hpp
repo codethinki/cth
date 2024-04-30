@@ -6,10 +6,10 @@
 #include "../cth/cth_windows.hpp"
 
 
-namespace cth {
+namespace cth::win {
 
-
-TEST(headerWindows, funcIsElevatedProc) {
+namespace proc {
+TEST(func_elevated, main) {
     EXPECT_FALSE(cth::win::proc::elevated());
     int x = win::cmd::hidden("hello");
     x = win::cmd::hidden("hello {}", "asdf");
@@ -19,7 +19,10 @@ TEST(headerWindows, funcIsElevatedProc) {
 
 
 }
-TEST(headerWindows, funcLoadTxt) {
+
+}
+
+TEST(func_loadTxt, main) {
     try {
         [[maybe_unused]] const auto text = win::file::loadTxt("hello.txt");
         [[maybe_unused]] auto text2 = win::file::loadTxt(L"hello.txt");
@@ -51,7 +54,7 @@ inline std::vector<char> loadFileIntoVector(const std::string_view file_path) {
     return buffer;
 }
 
-TEST(headerWindows, readUnbuffered) {
+TEST(func_readUnbuffered, main) {
 
 
     log::msg("testing io on 1.4mb file");

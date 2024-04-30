@@ -4,11 +4,11 @@
 #include "test_keybd.hpp"
 #include "../cth/cth_console.hpp"
 
-namespace cth {
+namespace cth::out {
 using std::println;
 using std::print;
 
-TEST(headerConsole, textColor) {
+TEST(class_console, text_col) {
     using namespace cth::out;
     console.println(BLACK_TEXT_COL, "i am black");
     console.println(DARK_RED_TEXT_COL, "i am dark red");
@@ -30,7 +30,7 @@ TEST(headerConsole, textColor) {
     console.println(DEFAULT_TEXT_COL, "i am default");
 
 }
-TEST(headerConsole, textBackground) {
+TEST(class_console, background) {
     using namespace cth::out;
 
 
@@ -72,7 +72,7 @@ TEST(headerConsole, textBackground) {
     console.println("");
 }
 
-TEST(headerConsole, textStyle) {
+TEST(class_console, text_style) {
     using namespace cth::out;
     error.setTextStyle(BOLD_TEXT_STYLE);
     println("i am BOLD_TEXT");
@@ -137,7 +137,7 @@ TEST(headerConsole, textStyle) {
 
 }
 
-TEST(headerConsole, consoleState) {
+TEST(class_console, state) {
     using namespace cth::out;
     error.pushState();
 

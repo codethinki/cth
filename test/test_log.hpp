@@ -4,10 +4,10 @@
 
 #define FMT_ARGS(message, ...) std::format(message, __VA_ARGS__);
 
-namespace cth {
+namespace cth::log {
 
 
-TEST(headerLog, LogMacros) {
+TEST(log_macros, debug) {
 #ifdef _DEBUG
     int x;
 
@@ -30,7 +30,7 @@ TEST(headerLog, LogMacros) {
     ASSERT_EQ(1, 1);
 
 }
-TEST(headerLog, StableLogMacros) {
+TEST(log_macros, stable) {
     int x = 0;
 
 

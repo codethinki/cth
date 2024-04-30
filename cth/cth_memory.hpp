@@ -49,16 +49,8 @@ constexpr void swap(basic_ptr<T>& left, basic_ptr<T>& right) noexcept { left.swa
 
 template<typename T, typename U>
 [[nodiscard]] constexpr bool operator==(const basic_ptr<T>& ptr, const basic_ptr<U>& other) { return ptr.get() == other.get(); }
-
 template<typename T, typename U>
 [[nodiscard]] constexpr bool operator!=(const basic_ptr<T>& left, const basic_ptr<U>& right) { return !(left.get() == right.get()); }
-
-template<typename T>
-[[nodiscard]] constexpr bool operator==(const basic_ptr<T>& ptr, std::nullptr_t) { return !ptr.get(); }
-
-template<typename T>
-[[nodiscard]] constexpr bool operator!=(const basic_ptr<T>& ptr, std::nullptr_t) { return ptr.get(); }
-
 template<typename T, typename U>
 [[nodiscard]] constexpr bool operator<(const basic_ptr<T>& left, const basic_ptr<U>& right) {
     using left_t = typename basic_ptr<T>::pointer;
@@ -69,22 +61,42 @@ template<typename T, typename U>
 }
 template<typename T, typename U>
 [[nodiscard]] constexpr bool operator>(const basic_ptr<T>& left, const basic_ptr<U>& right) { return right < left; }
-
 template<typename T, typename U>
 [[nodiscard]] constexpr bool operator<=(const basic_ptr<T>& left, const basic_ptr<U>& right) { return !(right < left); }
 template<typename T, typename U>
 [[nodiscard]] constexpr bool operator>=(const basic_ptr<T>& left, const basic_ptr<U>& right) { return !(left < right); }
+
+template<typename T>
+[[nodiscard]] constexpr bool operator==(const basic_ptr<T>& ptr, std::nullptr_t) { return !ptr.get(); }
+template<typename T>
+[[nodiscard]] constexpr bool operator==(std::nullptr_t, const basic_ptr<T>& ptr) { return !ptr.get(); }
+template<typename T>
+[[nodiscard]] constexpr bool operator!=(const basic_ptr<T>& ptr, std::nullptr_t) { return ptr.get(); }
+template<typename T>
+[[nodiscard]] constexpr bool operator!=(std::nullptr_t, const basic_ptr<T>& ptr) { return ptr.get(); }
 template<typename T>
 [[nodiscard]] constexpr bool operator<(const basic_ptr<T>& left, nullptr_t) {
     using ptr_t = typename basic_ptr<T>::pointer;
     return std::less<ptr_t>{}(left.get(), nullptr);
 }
 template<typename T>
+[[nodiscard]] constexpr bool operator<(nullptr_t, const basic_ptr<T>& right) {
+    using ptr_t = typename basic_ptr<T>::pointer;
+    return std::less<ptr_t>{}(nullptr, right.get());
+}
+template<typename T>
 [[nodiscard]] constexpr bool operator>(const basic_ptr<T>& left, nullptr_t) { return nullptr < left; }
+template<typename T>
+[[nodiscard]] constexpr bool operator>(nullptr_t, const basic_ptr<T>& right) { return right < nullptr; }
 template<typename T>
 [[nodiscard]] constexpr bool operator<=(const basic_ptr<T>& left, nullptr_t) { return !(nullptr < left); }
 template<typename T>
+[[nodiscard]] constexpr bool operator<=(nullptr_t, const basic_ptr<T>& right) { return !(right < nullptr); }
+template<typename T>
 [[nodiscard]] constexpr bool operator>=(const basic_ptr<T>& left, nullptr_t) { return !(left < nullptr); }
+template<typename T>
+[[nodiscard]] constexpr bool operator>=(nullptr_t, const basic_ptr<T>& right) { return !(nullptr < right); }
+
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const basic_ptr<T>& ptr) {
     os << ptr;
@@ -94,12 +106,10 @@ std::ostream& operator<<(std::ostream& os, const basic_ptr<T>& ptr) {
 
 }
 
-namespace std {
-
 template<typename T>
-struct hash<cth::memory::basic_ptr<T>> {
+struct std::hash<cth::memory::basic_ptr<T>> {  // NOLINT(cert-dcl58-cpp) this is a valid overload for std::hash
     std::size_t operator()(const cth::memory::basic_ptr<T>& ptr) const noexcept {
-        return std::hash<T*>{}(ptr.get());
+        using ptr_t = typename cth::memory::basic_ptr<T>::pointer;
+        return std::hash<ptr_t>{}(ptr.get());
     }
 };
-}

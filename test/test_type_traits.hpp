@@ -6,7 +6,7 @@
 
 //ik this test file is incomplete but idc
 
-namespace cth {
+namespace cth::type {
 
 
 #define TRAITS_TEST(trait, correct, wrong) \
@@ -19,7 +19,7 @@ namespace cth {
     EXPECT_FALSE(type::trait##_v<wrong1>); \
     EXPECT_FALSE(type::trait##_v<wrong2>)
 
-TEST(HeaderTypeTraits, TestChar) {
+TEST(traits, char) {
     TRAITS_TEST(is_nchar, char, wchar_t);
 
 

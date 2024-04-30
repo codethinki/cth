@@ -2,15 +2,15 @@
 #include <gtest/gtest.h>
 #include "../cth/cth_string.hpp"
 
-namespace cth {
+namespace cth::str {
 using std::nullopt;
 
-TEST(headerString, namespaceConv) {
+TEST(func_convert, wide_narrow) {
     EXPECT_EQ(cth::str::conv::toN(L"asdf"), "asdf");
     EXPECT_EQ(cth::str::conv::toW("asdf"), L"asdf");
 }
 
-TEST(headerString, funcToNum) {
+TEST(func_to_num, main) {
     EXPECT_EQ(cth::str::to_num<uint32_t>("1234"), 1234u);
     EXPECT_EQ(cth::str::to_num<float>("1234"), 1234.f);
     EXPECT_EQ(cth::str::to_num<float>("1234.5"), 1234.5f);
@@ -32,7 +32,7 @@ TEST(headerString, funcToNum) {
     EXPECT_EQ(cth::str::to_num<double>(L"8402.81ABN237"), nullopt);
 }
 
-TEST(headerString, funcSplit) {
+TEST(func_split, main) {
 
 
     auto res = str::split("asdf  asdf asdf dht", " ");

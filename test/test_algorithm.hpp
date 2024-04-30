@@ -4,9 +4,9 @@
 #include "../cth/cth_algorithm.hpp"
 
 
-namespace cth {
+namespace cth::algorithm {
 
-TEST(headerAlgorithm, uniqueCombine) {
+TEST(func_uniqueSelect, main) {
     const std::vector<std::vector<uint32_t>> input = {{5, 5, 5}, {5, 5, 4}, {5, 5, 3}};
     const auto solution = std::vector<uint32_t>{5, 4, 3};
     EXPECT_EQ(algorithm::uniqueSelect(input), solution);
