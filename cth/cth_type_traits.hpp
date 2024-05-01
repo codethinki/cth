@@ -6,6 +6,7 @@
 //it doesn't see that the macro needs std::string_view
 // ReSharper disable once CppUnusedIncludeDirective
 #include <string>
+#include <boost/type_traits/conditional.hpp>
 
 
 /**
@@ -34,62 +35,7 @@ namespace dev {
 template<bool V>
 using bool_constant = dev::constant<bool, V>;
 
-template<typename T, typename... Ts> struct is_any_of : bool_constant<std::disjunction_v<std::is_same<T, Ts>...>> {};
-template<typename T, typename... Ts> constexpr bool is_any_of_v = is_any_of<T, Ts...>::value;
-template<typename T, typename... Ts> requires (is_any_of_v<T, Ts...>)
-struct any_of {
-    using type = T;
-};
-template<typename T, typename... Ts> using any_of_t = typename any_of<T, Ts...>::type;
 
-
-
-template<typename T, typename... Ts> struct is_convertible_to_any_of : bool_constant<(... || std::convertible_to<T, Ts>)> {};
-template<typename T, typename... Ts> constexpr bool is_convertible_to_any_of_v = is_convertible_to_any_of<T, Ts...>::value;
-
-//template<typename T, typename First, typename... Rest>
-//struct is_convertible_to_any_of_helper {
-//    using type = std::conditional_t<std::convertible_to<T, First>, First, typename is_convertible_to_any_of_helper<T, Rest...>::type>;
-//};
-//
-//template<typename T, typename First>
-//struct is_convertible_to_any_of_helper<T, First> {
-//    //static_assert(std::convertible_to<T, First>, "No type in the list is convertible to T");
-//    using type = First;
-//};
-//
-//template<typename T, typename... Ts> requires (is_convertible_to_any_of_v<T, Ts...>)
-//struct convertible_to_any_of {
-//    using type = typename is_convertible_to_any_of_helper<T, Ts...>::type;
-//};
-//template<typename T, typename... Ts> using convertible_to_any_of_t = typename is_convertible_to_any_of_helper<T, Ts...>::type;
-template<typename T, typename... Ts>
-struct convertible_to_any_of;
-
-template<typename T, typename First, typename... Rest>
-struct convertible_to_any_of<T, First, Rest...> {
-    using type = std::conditional_t<std::is_convertible_v<T, First>, First, typename convertible_to_any_of<T, Rest...>::type>;
-};
-
-template<typename T>
-struct convertible_to_any_of<T> {
-    using type = void;
-    static_assert(std::is_same_v<T, void>, "None of the list types are convertible to T");
-};
-
-template<typename T, typename... Ts>
-using convertible_to_any_of_t = typename convertible_to_any_of<T, Ts...>::type;
-
-template<typename T, typename Ts> requires (is_any_of_v<T, Ts>)
-auto to_same_of(T&& arg) { return std::forward<T>(arg); }
-
-template<typename T, typename... Ts>
-auto to_convertible(T&& arg) {
-    if constexpr(is_any_of_v<T, Ts...>) return cth::type::to_same_of<T, Ts...>(std::forward<T>(arg));
-    else return static_cast<convertible_to_any_of_t<T, Ts...>>(std::move(arg));
-}
-
-int x = to_convertible<int, float, double>(10);
 
 //char
 CTH_TYPE_GROUP(wchar, std::_Is_any_of_v<std::decay_t<T>, wchar_t>)
@@ -107,5 +53,223 @@ CTH_TYPE_GROUP(char, is_nchar_v<T> || is_wchar_v<T>)
 CTH_TYPE_GROUP(string_view_convertable, std::is_convertible_v<T, std::wstring_view> || std::is_convertible_v<T, std::string_view>)
 
 
+//
+//any_of
+//
 
+template<typename T, typename... Ts> struct is_any_of : bool_constant<std::disjunction_v<std::is_same<T, Ts>...>> {};
+template<typename T, typename... Ts> constexpr bool is_any_of_v = is_any_of<T, Ts...>::value;
+
+/**
+ * \brief ::type is equal to first of Ts... that's equal to T or Fallback if none are
+ * \tparam Fallback if none of Ts... are equal to T
+ */
+template<typename Fallback, typename T, typename... Ts>
+struct fallback_any_of {
+    using type = std::conditional_t<is_any_of_v<T, Ts...>, T, Fallback>;
+};
+/**
+ * \brief equal to first of Ts... that's equal to T or Fallback if none are
+ * \tparam Fallback if none of Ts... are equal to T
+ */
+template<typename Fallback, typename T, typename... Ts>
+using fallback_any_of_t = typename fallback_any_of<Fallback, T, Ts...>::type;
+
+/**
+ * \brief ::type is equal to first of Ts... that's equal to T
+ */
+template<typename T, typename... Ts>
+struct any_of {
+    using type = typename fallback_any_of<void, T, Ts...>::type;
+    static_assert(!std::is_same_v<type, void>, "None of the types are the same as T");
+};
+/**
+ * \brief equal to first of Ts... that's equal to T
+ */
+template<typename T, typename... Ts> using any_of_t = typename any_of<T, Ts...>::type;
+
+
+//
+//convert_to_any
+//
+
+template<typename T, typename... Ts> struct is_any_convertible_to : bool_constant<std::disjunction_v<std::is_convertible<T, Ts>...>> {};
+template<typename T, typename... Ts> constexpr bool is_any_convertible_to_v = (is_any_convertible_to<T, Ts...>::value);
+template<typename T, typename... Ts>
+concept any_convertible_to = is_any_convertible_to_v<T, Ts...>;
+
+template<typename Fallback, typename T, typename... Ts>
+struct fallback_convert_to_any_helper;
+template<typename Fallback, typename T, typename First, typename... Rest>
+struct fallback_convert_to_any_helper<Fallback, T, First, Rest...> {
+    using type = std::conditional_t<std::is_convertible_v<T, First>, First, typename fallback_convert_to_any_helper<Fallback, T, Rest...>::type>;
+};
+template<typename Fallback, typename T>
+struct fallback_convert_to_any_helper<Fallback, T> {
+    using type = Fallback;
+};
+template<typename Fallback, typename T, typename... Ts>
+using fallback_convert_to_any_of_helper_t = typename fallback_convert_to_any_helper<Fallback, T, Ts...>::type;
+
+/**
+ * \brief ::type is equal to first of Ts... that's convertible from T or Fallback if none are
+ * \tparam Fallback if none of Ts... are convertible from T
+ * \tparam T from
+ * \tparam Ts to any of
+ * \note prioritizes any_of_t<T, Ts...> if available
+ */
+template<typename Fallback, typename T, typename... Ts>
+struct fallback_convert_to_any {
+    using type = std::conditional_t<is_any_of_v<T, Ts...>,
+        fallback_any_of_t<Fallback, T, Ts...>,
+        fallback_convert_to_any_of_helper_t<Fallback, T, Ts...>
+    >;
+};
+/**
+ * \brief equal to first of Ts... that's convertible from T or Fallback if none are
+ * \tparam Fallback if none of Ts... are convertible from T
+ * \tparam T from
+ * \tparam Ts to any of Ts...
+ * \note prioritizes any_of_t<T, Ts...> if available
+ */
+template<typename Fallback, typename T, typename... Ts>
+using fallback_convert_to_any_t = typename fallback_convert_to_any<Fallback, T, Ts...>::type;
+
+/**
+ * \brief ::type is equal to first of Ts... that's convertible from T
+ * \tparam T from
+ * \tparam Ts to any of Ts...
+ * \note prioritizes any_of_t<T, Ts...> if available
+ */
+template<typename T, typename... Ts>
+struct convert_to_any {
+    using type = fallback_convert_to_any_t<void, T, Ts...>;
+    static_assert(!std::is_same_v<type, void>, "None of the types are convertible to T");
+};
+/**
+ * \brief equal to first of Ts... that's convertible from T
+ * \tparam T from
+ * \tparam Ts to any of Ts...
+ * \note prioritizes any_of_t<T, Ts...> if available
+ */
+template<typename T, typename... Ts>
+using convert_to_any_t = typename convert_to_any<T, Ts...>::type;
+
+//
+//construct_any_from
+//
+
+
+template<typename T, typename... Ts> struct is_any_constructible_from : bool_constant<std::disjunction_v<std::is_constructible<Ts, T>...>> {};
+template<typename T, typename... Ts> constexpr bool is_any_constructible_from_v = is_any_constructible_from<T, Ts...>::value;
+template<typename T, typename... Ts>
+concept any_constructible_from = is_any_constructible_from_v<T, Ts...>;
+
+template<typename Fallback, typename T, typename... Ts>
+struct fallback_construct_any_from_helper;
+template<typename Fallback, typename T, typename First, typename... Rest>
+struct fallback_construct_any_from_helper<Fallback, T, First, Rest...> {
+    using type = std::conditional_t<std::constructible_from<T, First>,
+        First,
+        typename fallback_construct_any_from_helper<Fallback, T, Rest...>::type
+    >;
+};
+template<typename Fallback, typename T>
+struct fallback_construct_any_from_helper<Fallback, T> {
+    using type = Fallback;
+};
+template<typename Fallback, typename T, typename... Ts>
+using fallback_construct_any_from_helper_t = typename fallback_construct_any_from_helper<Fallback, T, Ts...>::type;
+
+/**
+ * \brief ::type is equal to first of Ts... that's constructible from T or Fallback if none are 
+ * \tparam Fallback if none of Ts... are constructible from T
+ * \tparam T from
+ * \tparam Ts to any of Ts...
+ * \note prioritizes convert_any_from_t<T, Ts...> if available
+ */
+template<typename Fallback, typename T, typename... Ts>
+struct fallback_construct_any_from {
+    using type = std::conditional_t<is_any_convertible_to_v<T, Ts...>,
+        fallback_convert_to_any_t<Fallback, T, Ts...>,
+        fallback_construct_any_from_helper_t<Fallback, T, Ts...>
+    >;
+
+};
+
+/**
+ * \brief equal to first of Ts... that's constructible from T or Fallback if none are 
+ * \tparam Fallback if none of Ts... are constructible from T
+ * \tparam T from
+ * \tparam Ts to any of Ts...
+ * \note prioritizes convert_any_from_t<T, Ts...> if available
+ */
+template<typename Fallback, typename T, typename... Ts>
+using fallback_construct_any_from_t = typename fallback_construct_any_from<Fallback, T, Ts...>::type;
+
+
+/**
+ * \brief ::type is equal to first type of Ts... that is constructible from T
+ * \tparam T from
+ * \tparam Ts to any of Ts...
+ * \note prioritizes convert_any_from_t<T, Ts...> if available
+ */
+template<typename T, typename... Ts>
+struct construct_any_from {
+    using type = fallback_construct_any_from_t<void, T, Ts...>;
+    static_assert(!std::is_same_v<type, void>, "None of the types are constructable from T");
+};
+
+/**
+ * \brief equal to first type of Ts... that is constructible from T
+ * \tparam T from
+ * \tparam Ts to any of Ts...
+ * \note prioritizes convert_any_from_t<T, Ts...> if available
+ */
+template<typename T, typename... Ts>
+using construct_any_from_t = typename construct_any_from<T, Ts...>::type;
+
+
+}
+
+
+
+//--------------
+//   functions
+//--------------
+
+
+namespace cth::type {
+/**
+ * \brief converts to the first type of Ts... that is the same as T
+ * \tparam Ts to any of Ts...
+ * \tparam T from
+ */
+template<typename T, typename... Ts> requires (is_any_of_v<T, Ts...>)
+auto to_same_of(T&& arg) { return std::forward<T>(arg); }
+
+/**
+ * \brief converts to the first type of Ts... that is convertible from T
+ * \tparam Ts to any of Ts...
+ * \tparam T from
+ * \note prioritizes to_same_of<T, Ts...> if available
+ */
+template<typename T, typename... Ts> requires(is_any_convertible_to_v<T, Ts...>)
+auto to_convertible(T&& arg) {
+    if constexpr(is_any_of_v<T, Ts...>) return cth::type::to_same_of<T, Ts...>(std::forward<T>(arg));
+    else return static_cast<convert_to_any_t<T, Ts...>>(arg);
+}
+
+/**
+ * \brief constructs the first type of Ts... that is constructible from T
+ * \tparam Ts to any of Ts...
+ * \tparam T from
+ * \note prioritizes to_convertible<T, Ts...> if available
+ */
+template<typename... Ts, typename T> requires(is_any_constructible_from_v<T, Ts...>)
+auto to_constructible(T&& arg) {
+    if constexpr(is_any_of_v<T, Ts...>) return cth::type::to_same_of<T, Ts...>(std::forward<T>(arg));
+    if constexpr(is_any_convertible_to_v<T, Ts...>) return cth::type::to_convertible<T, Ts...>(std::forward<T>(arg));
+    else return construct_any_from_t<T, Ts...>{arg};
+}
 }
