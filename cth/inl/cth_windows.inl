@@ -61,6 +61,18 @@ namespace clipbd {
 
 
 namespace proc {
+    inline bool elevated() {
+        SID_IDENTIFIER_AUTHORITY ntAuthority = SECURITY_NT_AUTHORITY;
+        PSID adminGroup = nullptr;
+        BOOL isAdmin = AllocateAndInitializeSid(&ntAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID,
+            DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &adminGroup);
+
+        if(isAdmin && !CheckTokenMembership(nullptr, adminGroup, &isAdmin)) isAdmin = false;
+
+        FreeSid(adminGroup);
+
+        return isAdmin;
+    }
     inline bool active(const std::wstring_view process_name) {
         PROCESSENTRY32 proc;
         proc.dwSize = sizeof(PROCESSENTRY32);
@@ -83,6 +95,15 @@ namespace proc {
     }
 }
 
+namespace desktop {
+    void getResolution(uint32_t& horizontal, uint32_t& vertical) {
+        RECT desktop;
+        HWND hDesktop = GetDesktopWindow();
+        GetWindowRect(hDesktop, &desktop);
+        horizontal = desktop.right;
+        vertical = desktop.bottom;
+    }
+}
 
 namespace file {
 
@@ -102,8 +123,9 @@ namespace file {
 
         DWORD bytesRead = 0;
         ReadFile(handle, buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead, &overlapped);
+        const BOOL result = GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE);
 
-        CTH_STABLE_ERR(!GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE), "failed to read file ({})", path) {
+        CTH_STABLE_ERR(!result, "failed to read file ({})", path) {
             details->add("file size: {}", fileSize);
             details->add("buffer size: {}", buffer.size());
             details->add("last error: {}", GetLastError());

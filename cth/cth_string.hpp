@@ -87,7 +87,7 @@ template<type::arithmetic_t T>
  * \brief splits a string into a vector of strings
  * \tparam U the delimiter type
  */
-template<type::string_view_t T, type::literal_t U>
+template<type::string_view_convertable_t T, type::literal_t U>
 [[nodiscard]] auto split(const T& str, const U& delimiter) {
     using view_t = decltype(std::basic_string_view(str));
     using ret_t = std::vector<std::basic_string<typename view_t::value_type>>;

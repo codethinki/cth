@@ -61,31 +61,14 @@ namespace proc {
      * \brief returns elevation status
      * \return true := admin
      */
-    inline bool elevated() {
-        SID_IDENTIFIER_AUTHORITY ntAuthority = SECURITY_NT_AUTHORITY;
-        PSID adminGroup = nullptr;
-        BOOL isAdmin = AllocateAndInitializeSid(&ntAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID,
-            DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &adminGroup);
-
-        if(isAdmin && !CheckTokenMembership(nullptr, adminGroup, &isAdmin)) isAdmin = false;
-
-        FreeSid(adminGroup);
-
-        return isAdmin;
-    }
+    inline bool elevated();
 
     inline bool active(std::wstring_view process_name);
     inline uint32_t instances(std::wstring_view process_name);
 } // namespace proc
 
 namespace desktop {
-    inline void getResolution(uint32_t& horizontal, uint32_t& vertical) {
-        RECT desktop;
-        HWND hDesktop = GetDesktopWindow();
-        GetWindowRect(hDesktop, &desktop);
-        horizontal = desktop.right;
-        vertical = desktop.bottom;
-    }
+    inline void getResolution(uint32_t& horizontal, uint32_t& vertical);
 }
 
 
@@ -98,7 +81,9 @@ namespace file {
     }
 
 
-    inline std::vector<std::string> loadTxt(const std::string_view path) { return dev::loadTxt<char>(path); }
+    inline std::vector<std::string> loadTxt(const std::string_view path) {
+        return dev::loadTxt<char>(path);
+    }
     inline std::vector<std::wstring> loadTxt(const std::wstring_view path) { return dev::loadTxt<wchar_t>(path); }
 }
 
