@@ -6,7 +6,8 @@
 //it doesn't see that the macro needs std::string_view
 // ReSharper disable once CppUnusedIncludeDirective
 #include <string>
-#include <boost/type_traits/conditional.hpp>
+
+
 
 
 /**
@@ -249,27 +250,54 @@ template<typename T, typename... Ts> requires (is_any_of_v<T, Ts...>)
 auto to_same_of(T&& arg) { return std::forward<T>(arg); }
 
 /**
+ * \brief converts to the first type of Ts... that is the same as T
+ * \tparam Ts to any of Ts...
+ * \tparam T from
+ */
+template<typename... Ts, typename T>
+auto to_same(T&& arg) { return type::to_same_of<T, Ts...>(std::forward<T>(arg)); }
+
+/**
+ * \brief converts to the first type of Ts... that is convertible from T
+ * \tparam Ts to any of Ts...
+ * \tparam U from
+ * \note prioritizes to_same_of<T, Ts...> if available
+ */
+template<typename U, typename... Ts, typename T> requires(is_any_convertible_to_v<T, Ts...>)
+auto to_convertible_from(T&& arg) {
+    if constexpr(is_any_of_v<T, Ts...>) return type::to_same_of<T, Ts...>(std::forward<T>(arg));
+    else return static_cast<convert_to_any_t<U, Ts...>>(arg);
+}
+/**
  * \brief converts to the first type of Ts... that is convertible from T
  * \tparam Ts to any of Ts...
  * \tparam T from
  * \note prioritizes to_same_of<T, Ts...> if available
  */
-template<typename T, typename... Ts> requires(is_any_convertible_to_v<T, Ts...>)
+template<typename... Ts, typename T>
 auto to_convertible(T&& arg) {
-    if constexpr(is_any_of_v<T, Ts...>) return cth::type::to_same_of<T, Ts...>(std::forward<T>(arg));
-    else return static_cast<convert_to_any_t<T, Ts...>>(arg);
+    return type::to_convertible_from<T, Ts...>(std::forward<T>(arg));
 }
 
+/**
+ * \brief constructs the first type of Ts... that is constructible from T
+ * \tparam Ts to any of Ts...
+ * \tparam U from
+ * \note prioritizes to_convertible<T, Ts...> if available
+ */
+template<typename U, typename... Ts, typename T> requires(is_any_constructible_from_v<T, Ts...>)
+auto to_constructible_from(T&& arg) {;
+    if constexpr(is_any_convertible_to_v<U, Ts...>) return cth::type::to_convertible_from<U, Ts...>(std::forward<T>(arg));
+    else return construct_any_from_t<U, Ts...>{arg};
+}
 /**
  * \brief constructs the first type of Ts... that is constructible from T
  * \tparam Ts to any of Ts...
  * \tparam T from
  * \note prioritizes to_convertible<T, Ts...> if available
  */
-template<typename... Ts, typename T> requires(is_any_constructible_from_v<T, Ts...>)
+template<typename... Ts, typename T>
 auto to_constructible(T&& arg) {
-    if constexpr(is_any_of_v<T, Ts...>) return cth::type::to_same_of<T, Ts...>(std::forward<T>(arg));
-    if constexpr(is_any_convertible_to_v<T, Ts...>) return cth::type::to_convertible<T, Ts...>(std::forward<T>(arg));
-    else return construct_any_from_t<T, Ts...>{arg};
+    return type::to_constructible_from<T, Ts...>(std::forward<T>(arg));
 }
 }

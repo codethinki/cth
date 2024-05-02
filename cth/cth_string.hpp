@@ -28,7 +28,7 @@ namespace dev {
 namespace cth::str {
 
 
-template<type::arithmetic_t T>
+template<cth::type::arithmetic_t T>
 [[nodiscard]] constexpr std::optional<T> to_num(const std::string_view str) {
     T num = 0;
     size_t i = 0;
@@ -89,21 +89,14 @@ template<type::arithmetic_t T>
  */
 template<type::string_view_convertable_t T, type::literal_t U>
 [[nodiscard]] auto split(const T& str, const U& delimiter) {
-    using view_t = decltype(std::basic_string_view(str));
-    using ret_t = std::vector<std::basic_string<typename view_t::value_type>>;
+    const auto view = type::to_constructible<std::string_view, std::wstring_view>(str);
+    using ret_t = std::vector<std::basic_string<typename decltype(view)::value_type>>;
 
+    const auto d = type::to_constructible_from<std::decay_t<U>, char, wchar_t, std::string_view, std::wstring_view>(delimiter);
 
-    constexpr bool isChar = type::is_char_v<std::decay_t<U>>;
-    std::conditional_t<isChar, U, view_t> v;
-    if constexpr(isChar) v = delimiter;
-    else v = view_t(delimiter);
-
-    ret_t result = view_t(str)
-        | std::views::split(v) //error here
+    return view | std::views::split(d)
         | std::views::filter([](const auto string_part) { return !string_part.empty(); })
         | std::ranges::to<ret_t>();
-
-    return result;
 }
 
 

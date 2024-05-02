@@ -57,13 +57,14 @@ TEST(trait_convert_any_of, type) {
     EXPECT_TRUE((std::is_same_v<void, type::fallback_convert_to_any_t<void, double, std::string, std::string_view, std::wstring>>));
 }
 TEST(func_to_convertible, main) {
+    
     double b = 10.0;
     int a = b;
     [[maybe_unused]] constexpr bool y = std::is_constructible_v<int, double>;
 
     [[maybe_unused]] bool x = is_any_constructible_from_v<int, double>;
 
-    auto z = to_constructible<int>(10.0);
+    auto z = to_constructible<std::string, std::string_view, int>(10);
 
     EXPECT_TRUE((std::is_same_v<decltype(z), int>));
 
@@ -85,4 +86,4 @@ TEST(func_to_convertible, main) {
 //}
 
 
-} // namespace cth
+} // namespace cth::type

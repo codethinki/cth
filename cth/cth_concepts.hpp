@@ -27,20 +27,4 @@ concept literal_t = is_string_view_convertable_v<T> || is_char_v<T>;
 
 } // namespace cth::type
 
-namespace cth::type::conv {
 
-    
-
-    template<typename T, typename... To> requires(((std::is_convertible_v<T, To>) || ...))
-    constexpr auto to_any(T&& value) {
-        if constexpr ((std::is_same_v<T, To> || ...)) {
-            
-        }
-    }
-
-
-template<string_view_convertable_t T>
-    constexpr auto to_string_view(auto&& value) {
-        
-    }
-}
