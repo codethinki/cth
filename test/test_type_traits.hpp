@@ -59,7 +59,6 @@ TEST(trait_convert_any_of, type) {
 TEST(func_to_convertible, main) {
     
     double b = 10.0;
-    int a = b;
     [[maybe_unused]] constexpr bool y = std::is_constructible_v<int, double>;
 
     [[maybe_unused]] bool x = is_any_constructible_from_v<int, double>;
