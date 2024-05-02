@@ -12,12 +12,13 @@ template<typename T>
 struct basic_ptr {
     using pointer = T*;
     using element_type = T;
+    constexpr basic_ptr() noexcept = default;
     // ReSharper disable once CppNonExplicitConvertingConstructor
     constexpr basic_ptr(T* ptr) : _ptr(ptr) {}
     constexpr ~basic_ptr() = default;
 
 private:
-    T* _ptr;
+    T* _ptr = nullptr;
 
 public:
     constexpr void swap(basic_ptr& other) noexcept { std::swap(_ptr, other._ptr); }
