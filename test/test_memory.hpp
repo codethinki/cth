@@ -130,9 +130,9 @@ TEST(class_protected_ptr, comparison) {
     asdf* a = new asdf{10};
     asdf2* b = new asdf2{10};
 
-    protected_ptr px = a < b ? a : b;
-    protected_ptr px2 = a < b ? a : b;
-    protected_ptr py = a > b ? a : b;
+    const_ptr px = a < b ? a : b;
+    const_ptr px2 = a < b ? a : b;
+    const_ptr py = a > b ? a : b;
 
 
     EXPECT_TRUE(px == px2);
@@ -150,7 +150,7 @@ TEST(class_protected_ptr, comparison) {
     EXPECT_TRUE(py >= px);
     EXPECT_FALSE(px >= py);
 
-    protected_ptr<TestStruct> nullPtr(nullptr);
+    const_ptr<TestStruct> nullPtr(nullptr);
     ASSERT_TRUE(nullPtr == nullptr);
     ASSERT_FALSE(nullPtr != nullptr);
     ASSERT_FALSE(nullPtr < nullptr);
@@ -166,21 +166,21 @@ TEST(class_protected_ptr, comparison) {
 
 TEST(class_protected_ptr, operator_arrow) {
     TestStruct data{10};
-    protected_ptr<TestStruct> ptr(&data);
+    const_ptr<TestStruct> ptr(&data);
     ASSERT_EQ(ptr->value, 10);
 }
 
 //TEST(class_protected_ptr, operator_deref) {
 //    TestStruct rawStruct{10};
-//    protected_ptr<TestStruct> ptr(&rawStruct);
+//    const_ptr<TestStruct> ptr(&rawStruct);
 //    ASSERT_EQ((*ptr).value, 10);
 //}
 
 TEST(class_protected_ptr, bool_convert) {
-    protected_ptr<TestStruct> ptr = make_protected<TestStruct>(10);
+    const_ptr<TestStruct> ptr = make_const<TestStruct>(10);
     ASSERT_TRUE(ptr);
 
-    protected_ptr<TestStruct> nullPtr(nullptr);
+    const_ptr<TestStruct> nullPtr(nullptr);
     ASSERT_FALSE(nullPtr);
 }
 }

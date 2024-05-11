@@ -117,8 +117,7 @@ std::ostream& operator<<(std::ostream& os, const basic_ptr<T>& ptr) {
 
 
 template<typename T>
-// NOLINT(cert-dcl58-cpp) this is a valid overload for std::hash
-struct std::hash<cth::mem::basic_ptr<T>> {
+struct std::hash<cth::mem::basic_ptr<T>> /* NOLINT(cert-dcl58-cpp) this is a valid overload for std::hash */ {
     std::size_t operator()(const cth::mem::basic_ptr<T>& ptr) const noexcept {
         using ptr_t = typename cth::mem::basic_ptr<T>::pointer;
         return std::hash<ptr_t>{}(ptr.get());
@@ -214,104 +213,9 @@ std::ostream& operator<<(std::ostream& os, const const_ptr<T>& ptr) {
 
 
 template<typename T>
-// NOLINT(cert-dcl58-cpp) this is a valid overload for std::hash
-struct std::hash<cth::mem::const_ptr<T>> {
+struct std::hash<cth::mem::const_ptr<T>> /* NOLINT(cert-dcl58-cpp) this is a valid overload for std::hash */ {
     std::size_t operator()(const cth::mem::const_ptr<T>& ptr) const noexcept {
         using ptr_t = const typename cth::mem::const_ptr<T>::pointer;
         return std::hash<ptr_t>{}(ptr.get());
     }
 };
-
-
-namespace cth::mem {
-//template<typename T>
-//struct protected_ptr {
-//    using pointer = const T*;
-//    using element_type = T;
-//
-//    constexpr protected_ptr() noexcept = default;
-//    // ReSharper disable once CppNonExplicitConvertingConstructor
-//    constexpr protected_ptr(const T* ptr) noexcept : _ptr(ptr) {}
-//    constexpr ~protected_ptr() = default;
-//
-//private:
-//    const T* _ptr = nullptr;
-//    [[nodiscard]] constexpr const T* get() const { return _ptr; }
-//
-//public:
-//    [[nodiscard]] constexpr const T* operator->() const { return _ptr; }
-//    //[[nodiscard]] constexpr const T& operator*() const { return *_ptr; }
-//    [[nodiscard]] explicit constexpr operator bool() const { return static_cast<bool>(_ptr); }
-//
-//    protected_ptr(const protected_ptr& other) noexcept = default;
-//    protected_ptr& operator=(const protected_ptr& other) noexcept = default;
-//
-//    protected_ptr(protected_ptr&& other) noexcept = default;
-//    protected_ptr& operator=(protected_ptr&& other) noexcept = default;
-//
-//
-//
-//    template<typename U>
-//    friend constexpr bool operator==(const protected_ptr& ptr, const protected_ptr<U>& other) { return ptr.get() == other.get(); }
-//
-//    template<typename U>
-//    friend constexpr bool operator!=(const protected_ptr& left, const protected_ptr<U>& right) { return !(left.get() == right.get()); }
-//
-//    template<typename U>
-//    friend constexpr bool operator<(const protected_ptr& left, const protected_ptr<U>& right) {
-//        using left_t = pointer;
-//        using right_t = typename protected_ptr<U>::pointer;
-//        using ptr_t = std::common_type_t<left_t, right_t>;
-//
-//        return std::less<ptr_t>{}(left.get(), right.get());
-//    }
-//
-//    template<typename U>
-//    friend constexpr bool operator>(const protected_ptr& left, const protected_ptr<U>& right) { return right < left; }
-//
-//    template<typename U>
-//    friend constexpr bool operator<=(const protected_ptr& left, const protected_ptr<U>& right) { return !(right < left); }
-//
-//    template<typename U>
-//    friend constexpr bool operator>=(const protected_ptr& left, const protected_ptr<U>& right) { return !(left < right); }
-//
-//    friend constexpr bool operator==(const protected_ptr& ptr, std::nullptr_t) { return !ptr.get(); }
-//
-//    friend constexpr bool operator==(std::nullptr_t, const protected_ptr& ptr) { return !ptr.get(); }
-//
-//    friend constexpr bool operator!=(const protected_ptr& ptr, std::nullptr_t) { return ptr.get(); }
-//
-//    friend constexpr bool operator!=(std::nullptr_t, const protected_ptr& ptr) { return ptr.get(); }
-//
-//    friend constexpr bool operator<(const protected_ptr& left, nullptr_t) {
-//        using ptr_t = pointer;
-//        return std::less<ptr_t>{}(left.get(), nullptr);
-//    }
-//
-//    friend constexpr bool operator<(nullptr_t, const protected_ptr& right) {
-//        using ptr_t = pointer;
-//        return std::less<ptr_t>{}(nullptr, right.get());
-//    }
-//
-//    friend constexpr bool operator>(const protected_ptr& left, nullptr_t) { return nullptr < left; }
-//
-//    friend constexpr bool operator>(nullptr_t, const protected_ptr& right) { return right < nullptr; }
-//
-//    friend constexpr bool operator<=(const protected_ptr& left, nullptr_t) { return !(nullptr < left); }
-//
-//    friend constexpr bool operator<=(nullptr_t, const protected_ptr& right) { return !(right < nullptr); }
-//
-//    friend constexpr bool operator>=(const protected_ptr& left, nullptr_t) { return !(left < nullptr); }
-//
-//    friend constexpr bool operator>=(nullptr_t, const protected_ptr& right) { return !(nullptr < right); }
-//
-//    friend std::ostream& operator<<(std::ostream& os, const protected_ptr& ptr) {
-//        os << ptr;
-//        return os;
-//    }
-//};
-//
-//template<typename T, typename... Args>
-//constexpr protected_ptr<T> make_protected(Args&&... args) { return protected_ptr(new T{std::forward<Args>(args)...}); }
-
-} // namespace cth::mem
