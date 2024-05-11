@@ -76,7 +76,7 @@ namespace file {
     void readUnbuffered(std::string_view path, std::vector<char>& buffer);
 
     namespace dev {
-        template<type::char_t T>
+        template<type::character T>
         std::vector<std::basic_string<T>> loadTxt(std::basic_string_view<T> path);
     }
 

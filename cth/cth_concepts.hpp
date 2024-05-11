@@ -1,30 +1,40 @@
 #pragma once
 #include "cth_type_traits.hpp"
 
+#define cpt(concept) []<concept>{}
+
+
 namespace cth::type {
+template<typename T>
+concept arithmetic = std::is_arithmetic_v<T>;
+
+template<class T, auto TCpt>
+concept satisfies = requires {
+    TCpt.template operator()<T>();
+};
+template<class Rng, class T>
+concept range_over = std::ranges::range<Rng> and std::is_same_v<std::ranges::range_value_t<Rng>, T>;
+
+template<class Rng, auto TCpt>
+concept range_over_cpt = std::ranges::range<Rng> and satisfies<std::ranges::range_value_t<Rng>, TCpt>;
+
+
+template<class Rng, class T>
+concept range2d_over = std::ranges::range<Rng> and range_over<std::ranges::range_value_t<Rng>, T>;
+
+template<class Rng, auto TCpt>
+concept range2d_over_cpt = std::ranges::range<Rng> and range_over_cpt<std::ranges::range_value_t<Rng>, TCpt>;
+
+
 
 template<typename T>
-concept arithmetic_t = std::is_arithmetic_v<T>;
-
-template<typename T>
-concept floating_point_t = std::is_floating_point_v<T>;
-
-template<typename T>
-concept integral_t = std::is_integral_v<T>;
-
-template<typename T>
-concept unsigned_integral_t = std::is_unsigned_v<T>;
-
-template<typename T>
-concept char_t = std::_Is_any_of_v<std::remove_cv_t<T>, char, wchar_t>;
+concept character = std::_Is_any_of_v<std::remove_cv_t<T>, char, wchar_t>;
 
 
 template<typename T>
-concept string_view_convertable_t = is_string_view_convertable_v<T>;
+concept string_view_convertable = is_string_view_convertable_v<T>;
 
 template<typename T>
-concept literal_t = is_string_view_convertable_v<T> || is_char_v<T>;
+concept literal = is_string_view_convertable_v<T> || is_char_v<T>;
 
 } // namespace cth::type
-
-

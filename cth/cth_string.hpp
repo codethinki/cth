@@ -28,7 +28,7 @@ namespace dev {
 namespace cth::str {
 
 
-template<cth::type::arithmetic_t T>
+template<cth::type::arithmetic T>
 [[nodiscard]] constexpr std::optional<T> to_num(const std::string_view str) {
     T num = 0;
     size_t i = 0;
@@ -57,7 +57,7 @@ template<cth::type::arithmetic_t T>
 
     return std::nullopt;
 }
-template<type::arithmetic_t T>
+template<type::arithmetic T>
 [[nodiscard]] constexpr std::optional<T> to_num(const std::wstring_view str) {
     T num = 0;
     size_t i = 0;
@@ -87,7 +87,7 @@ template<type::arithmetic_t T>
  * \brief splits a string into a vector of strings
  * \tparam U the delimiter type
  */
-template<type::string_view_convertable_t T, type::literal_t U>
+template<type::string_view_convertable T, type::literal U>
 [[nodiscard]] auto split(const T& str, const U& delimiter) {
     const auto view = type::to_constructible<std::string_view, std::wstring_view>(str);
     using char_t = typename decltype(view)::value_type;
@@ -108,14 +108,14 @@ template<type::string_view_convertable_t T, type::literal_t U>
 
 namespace cth::expr::str {
 
-template<type::arithmetic_t T>
+template<type::arithmetic T>
 [[nodiscard]] constexpr std::optional<T> to_num(std::string_view str);
-template<type::arithmetic_t T>
+template<type::arithmetic T>
 [[nodiscard]] constexpr std::optional<T> to_num(std::wstring_view str);
 
-template<type::arithmetic_t T>
+template<type::arithmetic T>
 [[nodiscard]] constexpr std::optional<T> to_num(const std::string_view str) { return cth::str::to_num<T>(str); }
-template<type::arithmetic_t T>
+template<type::arithmetic T>
 [[nodiscard]] constexpr std::optional<T> to_num(const std::wstring_view str) { return cth::str::to_num<T>(str); }
 
 

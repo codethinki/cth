@@ -9,13 +9,13 @@
 
 
 
-
 /**
  * \brief ... is the variable for the expression
  */
 #define CTH_TYPE_GROUP(name, ...) \
 template<typename T> static constexpr bool is_##name##_v = __VA_ARGS__; \
 template<typename T> struct is_##name : std::bool_constant<is_##name##_v<T>> {};
+
 
 
 namespace cth::type {
@@ -231,8 +231,12 @@ template<typename T, typename... Ts>
 using construct_any_from_t = typename construct_any_from<T, Ts...>::type;
 
 
-}
 
+template<typename Rng>
+using range2d_value_t = std::ranges::range_value_t<std::ranges::range_value_t<Rng>>;
+
+
+}
 
 
 //--------------
@@ -275,9 +279,7 @@ auto to_convertible_from(T&& arg) {
  * \note prioritizes to_same_of<T, Ts...> if available
  */
 template<typename... Ts, typename T>
-auto to_convertible(T&& arg) {
-    return type::to_convertible_from<T, Ts...>(std::forward<T>(arg));
-}
+auto to_convertible(T&& arg) { return type::to_convertible_from<T, Ts...>(std::forward<T>(arg)); }
 
 /**
  * \brief constructs the first type of Ts... that is constructible from T
@@ -286,7 +288,8 @@ auto to_convertible(T&& arg) {
  * \note prioritizes to_convertible<T, Ts...> if available
  */
 template<typename U, typename... Ts, typename T> requires(is_any_constructible_from_v<T, Ts...>)
-auto to_constructible_from(T&& arg) {;
+auto to_constructible_from(T&& arg) {
+    ;
     if constexpr(is_any_convertible_to_v<U, Ts...>) return cth::type::to_convertible_from<U, Ts...>(std::forward<T>(arg));
     else return construct_any_from_t<U, Ts...>{arg};
 }
@@ -297,7 +300,5 @@ auto to_constructible_from(T&& arg) {;
  * \note prioritizes to_convertible<T, Ts...> if available
  */
 template<typename... Ts, typename T>
-auto to_constructible(T&& arg) {
-    return type::to_constructible_from<T, Ts...>(std::forward<T>(arg));
-}
+auto to_constructible(T&& arg) { return type::to_constructible_from<T, Ts...>(std::forward<T>(arg)); }
 }

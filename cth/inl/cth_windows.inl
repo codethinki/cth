@@ -141,7 +141,7 @@ namespace file::dev {
 
 
 
-    template<type::char_t T>
+    template<type::character T>
     std::vector<std::basic_string<T>> loadTxt(const std::basic_string_view<T> path) {
         std::basic_ifstream<T> file(path.data());
         if(std::is_same_v<T, wchar_t>) file.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t>));

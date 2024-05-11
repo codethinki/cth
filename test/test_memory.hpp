@@ -3,7 +3,7 @@
 
 #include "../cth/cth_memory.hpp"
 
-namespace cth::memory {
+namespace cth::mem {
 
 struct TestStruct {
     int value;
@@ -12,9 +12,9 @@ TEST(class_basic_ptr, comparison) {
     int a = 10;
     int b = 10;
 
-    memory::basic_ptr px = &a < &b ? &a : &b;
-    memory::basic_ptr px2 = &a < &b ? &a : &b;
-    memory::basic_ptr py = &a > &b ? &a : &b;
+    mem::basic_ptr px = &a < &b ? &a : &b;
+    mem::basic_ptr px2 = &a < &b ? &a : &b;
+    mem::basic_ptr py = &a > &b ? &a : &b;
 
 
     EXPECT_TRUE(px == px2);
@@ -115,6 +115,72 @@ TEST(class_basic_ptr, move_assignment) {
     basic_ptr<TestStruct> ptr(new TestStruct{10});
     basic_ptr<TestStruct> movedPtr = std::move(ptr);
     ASSERT_TRUE(movedPtr);
-    ASSERT_FALSE(ptr);  // NOLINT(bugprone-use-after-move)
+    ASSERT_FALSE(ptr); // NOLINT(bugprone-use-after-move)
+}
+}
+
+namespace cth::mem {
+TEST(class_protected_ptr, comparison) {
+    struct asdf {
+        int a = 10;
+    };
+    struct asdf2 : asdf {
+        int b = 10;
+    };
+    asdf* a = new asdf{10};
+    asdf2* b = new asdf2{10};
+
+    protected_ptr px = a < b ? a : b;
+    protected_ptr px2 = a < b ? a : b;
+    protected_ptr py = a > b ? a : b;
+
+
+    EXPECT_TRUE(px == px2);
+    EXPECT_FALSE(px != px2);
+    EXPECT_FALSE(px == py);
+    EXPECT_TRUE(px != py);
+
+    EXPECT_TRUE(px < py);
+    EXPECT_FALSE(py < px);
+    EXPECT_TRUE(px <= py);
+    EXPECT_FALSE(py <= px);
+
+    EXPECT_TRUE(py > px);
+    EXPECT_FALSE(px > py);
+    EXPECT_TRUE(py >= px);
+    EXPECT_FALSE(px >= py);
+
+    protected_ptr<TestStruct> nullPtr(nullptr);
+    ASSERT_TRUE(nullPtr == nullptr);
+    ASSERT_FALSE(nullPtr != nullptr);
+    ASSERT_FALSE(nullPtr < nullptr);
+    ASSERT_FALSE(nullPtr > nullptr);
+    ASSERT_TRUE(nullPtr <= nullptr);
+    ASSERT_TRUE(nullPtr >= nullptr);
+
+    delete a;
+    delete b;
+}
+
+
+
+TEST(class_protected_ptr, operator_arrow) {
+    TestStruct data{10};
+    protected_ptr<TestStruct> ptr(&data);
+    ASSERT_EQ(ptr->value, 10);
+}
+
+//TEST(class_protected_ptr, operator_deref) {
+//    TestStruct rawStruct{10};
+//    protected_ptr<TestStruct> ptr(&rawStruct);
+//    ASSERT_EQ((*ptr).value, 10);
+//}
+
+TEST(class_protected_ptr, bool_convert) {
+    protected_ptr<TestStruct> ptr = make_protected<TestStruct>(10);
+    ASSERT_TRUE(ptr);
+
+    protected_ptr<TestStruct> nullPtr(nullptr);
+    ASSERT_FALSE(nullPtr);
 }
 }

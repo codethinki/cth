@@ -152,17 +152,17 @@ namespace dev {
         L"\033[9m", L"\033[29m" //strikeout, clear strikeout
     }};
 
-    template<type::char_t T = char>
+    template<type::character T = char>
     static constexpr basic_string_view<T> ansiCode(const Text_Colors color) {
         if constexpr(type::is_nchar_v<T>) return TEXT_COLOR_CODES_N[color];
         else return TEXT_COLOR_CODES_W[color];
     }
-    template<type::char_t T = char>
+    template<type::character T = char>
     static constexpr basic_string_view<T> ansiCode(const BG_Colors color) {
         if constexpr(is_same_v<char, remove_cv_t<T>>) return BG_COLOR_CODES_N[color];
         else return BG_COLOR_CODES_W[color];
     }
-    template<type::char_t T = char>
+    template<type::character T = char>
     static constexpr basic_string_view<T> ansiCode(const Text_Styles color) {
         if constexpr(is_same_v<char, remove_cv_t<T>>) return TEXT_STYLE_CODES_N[color];
         else return TEXT_STYLE_CODES_W[color];
