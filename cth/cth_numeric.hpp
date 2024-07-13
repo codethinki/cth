@@ -2,10 +2,9 @@
 #include <array>
 #include <cassert>
 #include <string>
-#include <type_traits>
 
-#include "cth_concepts.hpp"
-#include "cth_log.hpp"
+#include "cth_concept.hpp"
+#include "io/cth_log.hpp"
 
 namespace cth {
 //------------------
@@ -55,10 +54,6 @@ namespace num {
     [[nodiscard]] constexpr T sqam(T base, U power, V mod);
 
     namespace bits {
-        //no unit tests written
-        template<std::integral T>
-        void printBits(T val);
-
         template<std::integral T>
         constexpr std::array<bool, sizeof(T) * 8> toBitArr(T val);
 
@@ -144,14 +139,6 @@ namespace num {
     }
 
     namespace bits {
-        template<std::integral T>
-        void printBits(const T val) {
-            std::array<bool, sizeof(T) * 8> arr = bits::toBitArr(val);
-
-            std::ranges::for_each(arr, [](const bool b) { std::cout << (b ? '1' : '0'); });
-            std::cout << ": " << std::to_string(val) << '\n';
-        }
-
         template<std::integral T>
         constexpr std::array<bool, sizeof(T) * 8> toBitArr(const T val) {
             constexpr uint32_t bitLength = sizeof(T) * 8;

@@ -1,12 +1,12 @@
 #pragma once
+#include "cth_type_trait.hpp"
+#include "io/cth_log.hpp"
+
 #include <algorithm>
 #include <numeric>
 #include <ranges>
 #include <unordered_set>
 
-
-#include "cth_log.hpp"
-#include "cth_type_traits.hpp"
 
 
 namespace cth::algorithm::hash {
@@ -62,7 +62,7 @@ template<type::range2d_over_cpt<cpt(std::equality_comparable)> Rng>
 }
 
 /**
- * \brief assigns a to b based of a's options for b's
+ * \brief assigns a's to b's based of every a's options for b's
  * \tparam Rng1 rng<rng<std::integral>>
  * \tparam Rng2 rng<std::integral>
  * \param a_b_options range of b options from a's
@@ -70,28 +70,33 @@ template<type::range2d_over_cpt<cpt(std::equality_comparable)> Rng>
  * \return vector<integral> based on Rng1
  */
 template<type::range2d_over_cpt<cpt(std::integral)> Rng1, type::range_over_cpt<cpt(std::integral)> Rng2>
-auto assign(const Rng1& a_b_options, const Rng2& b_max)->std::vector<type::range2d_value_t<Rng1>> {
+auto assign(const Rng1& a_b_options, const Rng2& b_max) -> std::vector<type::range2d_value_t<Rng1>> {
     using T = type::range2d_value_t<Rng1>;
 
-    CTH_ERR(std::ranges::any_of(a_b_options, [b_max](const std::span<const T> b_options) {
-        return std::ranges::any_of(b_options, [b_max](const auto index){ return 0 <= index && index < std::ranges::size(b_max); });
-        }), "0 <= indices < size(b_max) required");
+    CTH_ERR(!std::ranges::all_of(a_b_options, [&b_max](const std::span<const T> b_options) {
+        return std::ranges::all_of(b_options, [&b_max](const auto index){ return 0 <= index && index < std::ranges::size(b_max); });
+        }), "0 <= indices < size(b_max) required") {
+        details->add("size(b_max): {}", std::ranges::size(b_max));
+        throw details->exception();
+    }
 
 
     std::vector<T> bOptionsIndices(std::ranges::size(a_b_options));
     std::ranges::iota(bOptionsIndices, 0);
 
-    auto valid = [a_b_options, b_max](const std::span<const T> b_options_indices) {
-        const auto aBOptions = b_options_indices | std::views::transform([a_b_options](const T index) { return a_b_options[index]; });
+    auto valid = [&a_b_options, &b_max](const std::span<const T> b_options_indices) {
+
 
         std::vector<T> assignments(std::ranges::size(b_max), 0);
-        std::vector<T> combination(std::ranges::size(b_max), 0);
+        std::vector<T> combination(std::ranges::size(a_b_options), 0);
 
-        for(auto [bOptions, result] : std::views::zip(aBOptions, combination)) {
+        for(size_t i = 0; i < std::ranges::size(a_b_options); i++) {
+            const auto& bOptions = a_b_options[b_options_indices[i]];
+
             for(const T b : bOptions) {
                 if(assignments[b] >= b_max[b]) continue;
                 ++assignments[b];
-                result = b;
+                combination[b_options_indices[i]] = b;
                 goto next;
             }
             return std::vector<T>{};
@@ -104,10 +109,10 @@ auto assign(const Rng1& a_b_options, const Rng2& b_max)->std::vector<type::range
 
 
     while(std::ranges::next_permutation(bOptionsIndices).found) {
-        auto result = valid(bOptionsIndices);
+        const auto& result = valid(bOptionsIndices);
         if(!result.empty()) return result;
     }
-    return {};
+    return std::vector<T>{};
 }
 
 

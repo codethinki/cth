@@ -1,9 +1,9 @@
 #pragma once
 //you have to define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING in the preprocessor or source file for this to work
-#include "cth_concepts.hpp"
+#include "cth_concept.hpp"
 
 #include <codecvt>
-
+#include <format>
 #include <optional>
 #include <ranges>
 #include <string>
@@ -26,7 +26,23 @@ namespace dev {
 
 
 namespace cth::str {
+template<std::ranges::range Rng> requires(!std::ranges::range<std::ranges::range_value_t<Rng>>)
+[[nodiscard]] std::string to_string(const Rng& range) {
+    std::string str = "[";
+    for(auto&& element : range) str += std::format("{0}, ", element);
+    str.pop_back();
+    str.back() = ']';
+    return str;
+}
 
+template<std::ranges::range Rng> requires(std::ranges::range<std::ranges::range_value_t<Rng>>)
+[[nodiscard]] std::string to_string(const Rng& range_of_ranges) {
+    std::string str = "[";
+    for(const auto& range : range_of_ranges) str += std::format<std::string_view>("{0}, ", cth::str::to_string(range));
+    str.pop_back();
+    str.back() = ']';
+    return str;
+}
 
 template<cth::type::arithmetic T>
 [[nodiscard]] constexpr std::optional<T> to_num(const std::string_view str) {

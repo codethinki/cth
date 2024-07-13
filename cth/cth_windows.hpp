@@ -1,5 +1,5 @@
 #pragma once
-#include"cth_concepts.hpp"
+#include"cth_concept.hpp"
 
 #include <filesystem>
 #ifndef NOMINMAX
@@ -74,20 +74,9 @@ namespace desktop {
 
 namespace file {
     void readUnbuffered(std::string_view path, std::vector<char>& buffer);
-
-    namespace dev {
-        template<type::character T>
-        std::vector<std::basic_string<T>> loadTxt(std::basic_string_view<T> path);
-    }
-
-
-    inline std::vector<std::string> loadTxt(const std::string_view path) {
-        return dev::loadTxt<char>(path);
-    }
-    inline std::vector<std::wstring> loadTxt(const std::wstring_view path) { return dev::loadTxt<wchar_t>(path); }
 }
 
 } // namespace cth::win
 
 
-#include "inl/cth_windows.inl"
+#include "windows/cth_windows.inl"

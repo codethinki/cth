@@ -28,17 +28,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cth_algorithm.hpp" />
-    <ClInclude Include="cth_concepts.hpp" />
-    <ClInclude Include="cth_console.hpp" />
+    <ClInclude Include="cth_concept.hpp" />
+    <ClInclude Include="io\cth_console.hpp" />
     <ClInclude Include="cth_exception.hpp" />
     <ClInclude Include="cth_image.hpp" />
-    <ClInclude Include="cth_keybd.hpp" />
-    <ClInclude Include="cth_log.hpp" />
-    <ClInclude Include="cth_memory.hpp" />
+    <ClInclude Include="cth_io.hpp" />
+    <ClInclude Include="io\cth_read.hpp" />
+    <ClInclude Include="io\cth_keybd.hpp" />
+    <ClInclude Include="io\cth_log.hpp" />
+    <ClInclude Include="cth_pointer.hpp" />
     <ClInclude Include="cth_network.hpp" />
     <ClInclude Include="cth_numeric.hpp" />
     <ClInclude Include="cth_string.hpp" />
-    <ClInclude Include="cth_type_traits.hpp" />
+    <ClInclude Include="cth_type_trait.hpp" />
     <ClInclude Include="cth_variant.hpp" />
     <ClInclude Include="cth_windows.hpp" />
   </ItemGroup>
@@ -46,7 +48,8 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="inl\cth_windows.inl" />
+    <None Include="io\inl\cth_read.inl" />
+    <None Include="windows\cth_windows.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -121,28 +124,28 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\out\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\out\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\out\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\out\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\out\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\out\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\out\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\out\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\out\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\out\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\out\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\out\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

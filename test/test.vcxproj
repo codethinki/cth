@@ -71,20 +71,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\test\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\test\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\test\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\test\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\test\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\test\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\test\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\test\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -163,20 +163,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="tests_concepts.hpp" />
-    <ClInclude Include="test_algorithm.hpp" />
-    <ClInclude Include="test_console.hpp" />
-    <ClInclude Include="test_keybd.hpp" />
-    <ClInclude Include="test_log.hpp" />
-    <ClInclude Include="test_memory.hpp" />
-    <ClInclude Include="test_numeric.hpp" />
-    <ClInclude Include="test_string.hpp" />
-    <ClInclude Include="test_type_traits.hpp" />
-    <ClInclude Include="test_variant.hpp" />
-    <ClInclude Include="test_windows.hpp" />
+    <ClCompile Include="cth_concept_test.cpp" />
+    <ClCompile Include="cth_algorithm_test.cpp" />
+    <ClCompile Include="cth_pointer_test.cpp" />
+    <ClCompile Include="cth_numeric_test.cpp" />
+    <ClCompile Include="cth_string_test.cpp" />
+    <ClCompile Include="cth_type_traits_test.cpp" />
+    <ClCompile Include="cth_variant_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cth\cth.vcxproj">

@@ -24,16 +24,16 @@
     <ClInclude Include="cth_algorithm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_concepts.hpp">
+    <ClInclude Include="cth_concept.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_console.hpp">
+    <ClInclude Include="io\cth_console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_keybd.hpp">
+    <ClInclude Include="io\cth_keybd.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_log.hpp">
+    <ClInclude Include="io\cth_log.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cth_network.hpp">
@@ -45,7 +45,7 @@
     <ClInclude Include="cth_string.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_type_traits.hpp">
+    <ClInclude Include="cth_type_trait.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cth_windows.hpp">
@@ -60,7 +60,13 @@
     <ClInclude Include="cth_variant.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_memory.hpp">
+    <ClInclude Include="cth_pointer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cth_io.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="io\cth_read.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -70,8 +76,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="inl\cth_windows.inl">
+    <None Include="windows\cth_windows.inl">
       <Filter>Source Files\inl</Filter>
+    </None>
+    <None Include="io\inl\cth_read.inl">
+      <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
 </Project>

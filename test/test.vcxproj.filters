@@ -15,43 +15,26 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="test.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="cth_algorithm_test.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="test_type_traits.hpp">
+    <ClCompile Include="cth_concept_test.cpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tests_concepts.hpp">
+    </ClCompile>
+    <ClCompile Include="cth_numeric_test.cpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="test_numeric.hpp">
+    </ClCompile>
+    <ClCompile Include="cth_pointer_test.cpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="test_console.hpp">
+    </ClCompile>
+    <ClCompile Include="cth_string_test.cpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="test_log.hpp">
+    </ClCompile>
+    <ClCompile Include="cth_type_traits_test.cpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="test_windows.hpp">
+    </ClCompile>
+    <ClCompile Include="cth_variant_test.cpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="test_string.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="test_keybd.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="test_algorithm.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="test_variant.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="test_memory.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    </ClCompile>
   </ItemGroup>
 </Project>
