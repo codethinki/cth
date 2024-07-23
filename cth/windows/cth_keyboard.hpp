@@ -6,7 +6,7 @@
 #include <vector>
 #include <Windows.h>
 
-#include "cth_log.hpp"
+#include "../io/cth_log.hpp"
 
 
 namespace cth::win::keybd {

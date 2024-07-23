@@ -1,5 +1,5 @@
 #pragma once
-#include "cth_log.hpp"
+#include "io/cth_log.hpp"
 
 #include <cstdint>
 #include <stb_image.h>
@@ -17,7 +17,7 @@ struct stb_image {
 
         CTH_ERR(width == 0 || height == 0, "failed to load file") throw details->exception();
 
-        CTH_WARN(desired_channels != channels, "desired_chanels ({0}) != ({1}) loaded_channels", desired_channels, channels);
+        CTH_WARN(desired_channels != channels, "desired_chanels ({0}) != ({1}) loaded_channels", desired_channels, channels) {}
 
         _width = width;
         _height = height;

@@ -159,7 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="io\cth_keyboard_test.cpp" />
+    <ClCompile Include="windows\cth_keyboard_test.cpp" />
     <ClCompile Include="io\cth_log_test.cpp" />
     <ClCompile Include="io\cth_console_test.cpp" />
     <ClCompile Include="windows\cth_windows_test.cpp" />

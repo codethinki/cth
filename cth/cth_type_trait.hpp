@@ -236,6 +236,9 @@ template<typename Rng>
 using range2d_value_t = std::ranges::range_value_t<std::ranges::range_value_t<Rng>>;
 
 
+template<typename T>
+using pure_t = std::remove_cv_t<std::decay_t<T>>;
+
 }
 
 

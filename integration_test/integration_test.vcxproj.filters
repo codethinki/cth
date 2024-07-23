@@ -27,7 +27,7 @@
     <ClCompile Include="io\cth_read_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="io\cth_keyboard_test.cpp">
+    <ClCompile Include="windows\cth_keyboard_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="io\cth_log_test.cpp">

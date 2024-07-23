@@ -1,5 +1,5 @@
 #pragma once
-//you have to define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING in the preprocessor or source file for this to work
+//you have to define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING in the preprocessor or source io for this to work
 #include "cth_concept.hpp"
 
 #include <codecvt>
@@ -28,6 +28,8 @@ namespace dev {
 namespace cth::str {
 template<std::ranges::range Rng> requires(!std::ranges::range<std::ranges::range_value_t<Rng>>)
 [[nodiscard]] std::string to_string(const Rng& range) {
+    if(std::ranges::empty(range)) return "[ ]";
+
     std::string str = "[";
     for(auto&& element : range) str += std::format("{0}, ", element);
     str.pop_back();

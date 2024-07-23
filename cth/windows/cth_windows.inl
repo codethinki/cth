@@ -105,11 +105,11 @@ namespace desktop {
     }
 }
 
-namespace file {
+namespace io {
 
     inline void readUnbuffered(const std::string_view path, std::vector<char>& buffer) {
         HANDLE handle = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
-        CTH_STABLE_ERR(handle == INVALID_HANDLE_VALUE, "failed to create handle for file ({})", path) throw details->exception();
+        CTH_STABLE_ERR(handle == INVALID_HANDLE_VALUE, "failed to create handle for io ({})", path) throw details->exception();
 
 
         DWORD fileSize = GetFileSize(handle, nullptr);
@@ -125,8 +125,8 @@ namespace file {
         ReadFile(handle, buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead, &overlapped);
         const BOOL result = GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE);
 
-        CTH_STABLE_ERR(!result, "failed to read file ({})", path) {
-            details->add("file size: {}", fileSize);
+        CTH_STABLE_ERR(!result, "failed to read io ({})", path) {
+            details->add("io size: {}", fileSize);
             details->add("buffer size: {}", buffer.size());
             details->add("last error: {}", GetLastError());
             throw details->exception();

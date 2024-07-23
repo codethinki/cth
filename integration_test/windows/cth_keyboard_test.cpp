@@ -3,7 +3,7 @@
 
 #include <print>
 
-#include "../../cth/io/cth_keybd.hpp"
+#include "../../cth/windows/cth_keyboard.hpp"
 
 namespace cth::keybd {
 inline void callback(const uint32_t key, uint32_t data) { std::println("callback: key \'{0}\', action: {1}", static_cast<char>(key), data); }

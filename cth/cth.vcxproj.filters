@@ -30,7 +30,7 @@
     <ClInclude Include="io\cth_console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="io\cth_keybd.hpp">
+    <ClInclude Include="windows\cth_keyboard.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="io\cth_log.hpp">
@@ -67,6 +67,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="io\cth_read.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cth.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

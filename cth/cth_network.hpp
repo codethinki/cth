@@ -8,6 +8,8 @@
 #endif
 #include <boost/asio.hpp>
 
+#include "io/cth_log.hpp"
+
 //TODO write tests for this
 
 
@@ -37,10 +39,11 @@ inline void sendWOL(const std::string_view target_mac, const uint8_t port = 9, c
     boost::asio::io_context ioContext;
     boost::asio::ip::udp::socket udpSocket(ioContext, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
 
-    if(setsockopt(udpSocket.native_handle(), SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&broadcast), sizeof(broadcast)) < 0) {
-        std::cerr << "Error in setting Broadcast option.\n";
+
+    const auto result = setsockopt(udpSocket.native_handle(), SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&broadcast), sizeof(broadcast));
+    CTH_STABLE_ERR(result < 0, "failed to set broadcast option") {
         closesocket(udpSocket.native_handle());
-        return;
+        throw details->exception();
     }
 
     boost::asio::ip::udp::endpoint udpServer(boost::asio::ip::address::from_string(broadcast_ip.data()), port);

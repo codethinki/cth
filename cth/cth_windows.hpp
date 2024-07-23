@@ -72,7 +72,7 @@ namespace desktop {
 }
 
 
-namespace file {
+namespace io {
     void readUnbuffered(std::string_view path, std::vector<char>& buffer);
 }
 

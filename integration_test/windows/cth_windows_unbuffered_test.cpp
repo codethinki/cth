@@ -11,22 +11,22 @@
 namespace cth::win {
 
 std::vector<char> loadFileIntoVector(const std::string_view file_path) {
-    // Open the file in binary mode at the end of the file
+    // Open the io in binary mode at the end of the io
     std::ifstream file(file_path.data(), std::ios::binary | std::ios::ate);
     if(!file) {
         // Handle error or throw an exception
-        throw std::runtime_error("Failed to open file");
+        throw std::runtime_error("Failed to open io");
     }
 
-    // Determine the file size
+    // Determine the io size
     const std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg); // Seek back to the start of the file
+    file.seekg(0, std::ios::beg); // Seek back to the start of the io
 
-    // Reserve space in the vector and read the file
+    // Reserve space in the vector and read the io
     std::vector<char> buffer(size);
     if(!file.read(buffer.data(), size)) {
         // Handle error or throw an exception
-        throw std::runtime_error("Failed to read file: ");
+        throw std::runtime_error("Failed to read io: ");
     }
 
     return buffer;
@@ -34,14 +34,14 @@ std::vector<char> loadFileIntoVector(const std::string_view file_path) {
 
 
 TEST(readUnbuffered, main) {
-    log::msg("testing io on 1.4mb file");
+    log::msg("testing io on 1.4mb io");
     constexpr std::string_view smallFilePath = "res/testImage.jpg";
 
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
 
     std::vector<char> dataUnbuffered{};
-    win::file::readUnbuffered(smallFilePath, dataUnbuffered);
+    win::io::readUnbuffered(smallFilePath, dataUnbuffered);
     std::chrono::time_point<std::chrono::high_resolution_clock> end = std::chrono::high_resolution_clock::now();
 
     log::msg("unbuffered io: {}s", std::chrono::duration<float>(end - start).count());
@@ -55,13 +55,13 @@ TEST(readUnbuffered, main) {
     std::vector<char> dataUnbuffered2{};
     std::vector<char> dataBuffered2{};
 
-    log::msg("testing io on 76mb file");
+    log::msg("testing io on 76mb io");
     constexpr std::string_view largeFilePath = "res/Browse.VC.db";
 
 
     start = std::chrono::high_resolution_clock::now();
 
-    win::file::readUnbuffered(largeFilePath, dataUnbuffered2);
+    win::io::readUnbuffered(largeFilePath, dataUnbuffered2);
 
     end = std::chrono::high_resolution_clock::now();
     log::msg("unbuffered io: {}s", std::chrono::duration<float>(end - start).count());

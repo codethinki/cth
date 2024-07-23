@@ -85,8 +85,6 @@ auto assign(const Rng1& a_b_options, const Rng2& b_max) -> std::vector<type::ran
     std::ranges::iota(bOptionsIndices, 0);
 
     auto valid = [&a_b_options, &b_max](const std::span<const T> b_options_indices) {
-
-
         std::vector<T> assignments(std::ranges::size(b_max), 0);
         std::vector<T> combination(std::ranges::size(a_b_options), 0);
 
@@ -108,10 +106,12 @@ auto assign(const Rng1& a_b_options, const Rng2& b_max) -> std::vector<type::ran
     };
 
 
-    while(std::ranges::next_permutation(bOptionsIndices).found) {
+    do {
         const auto& result = valid(bOptionsIndices);
         if(!result.empty()) return result;
-    }
+    } while(std::ranges::next_permutation(bOptionsIndices).found);
+
+
     return std::vector<T>{};
 }
 

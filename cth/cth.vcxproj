@@ -27,6 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cth.hpp" />
     <ClInclude Include="cth_algorithm.hpp" />
     <ClInclude Include="cth_concept.hpp" />
     <ClInclude Include="io\cth_console.hpp" />
@@ -34,7 +35,7 @@
     <ClInclude Include="cth_image.hpp" />
     <ClInclude Include="cth_io.hpp" />
     <ClInclude Include="io\cth_read.hpp" />
-    <ClInclude Include="io\cth_keybd.hpp" />
+    <ClInclude Include="windows\cth_keyboard.hpp" />
     <ClInclude Include="io\cth_log.hpp" />
     <ClInclude Include="cth_pointer.hpp" />
     <ClInclude Include="cth_network.hpp" />
