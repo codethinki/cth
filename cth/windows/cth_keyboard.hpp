@@ -41,7 +41,7 @@ using raw_event_t = struct {
     WPARAM action;
 };
 using callback_t = void(uint32_t, uint32_t); //key, action
-using raw_callback_t = void(const KBDLLHOOKSTRUCT&, WPARAM); //key, action
+using raw_callback_t = void(KBDLLHOOKSTRUCT const&, WPARAM); //key, action
 
 } //namespace cth::win::keybd
 
@@ -50,7 +50,7 @@ using raw_callback_t = void(const KBDLLHOOKSTRUCT&, WPARAM); //key, action
 //-------------------------
 namespace cth::win::keybd::dev {
 inline LRESULT CALLBACK hookFunc(int n_code, WPARAM action, LPARAM l_param);
-inline void threadProc(const std::stop_token& stop);
+inline void threadProc(std::stop_token const& stop);
 
 inline void hook();
 inline void unhook();
@@ -211,7 +211,7 @@ void EventQueueTemplate<Raw>::eraseEventQueue(size_t id) {
     if(--queueCount == 0) unhook();
 }
 template<bool Raw>
-int EventQueueTemplate<Raw>::eraseEventQueue(size_t id, const int error_code) {
+int EventQueueTemplate<Raw>::eraseEventQueue(size_t id, int const error_code) {
     if(keyboardHookThread.get_id() != threadId) return error_code;
     if(queueCount <= 0) return error_code;
 
@@ -235,16 +235,16 @@ void CallbackEventQueueTemplate<Raw>::process() {
 }
 template<bool Raw>
 void CallbackEventQueueTemplate<Raw>::processQueue() {
-    for(auto events = eventQueue.popQueue(); const auto& e : events)
+    for(auto events = eventQueue.popQueue(); auto const& e : events)
         callback(e.key, e.action);
 }
 
 
-LRESULT CALLBACK hookFunc(const int n_code, const WPARAM action, const LPARAM l_param) {
+LRESULT CALLBACK hookFunc(int const n_code, WPARAM const action, LPARAM const l_param) {
     if(n_code == HC_ACTION) {
-        const auto keyStruct = *reinterpret_cast<KBDLLHOOKSTRUCT*>(l_param);
-        const bool keyUp = keyStruct.flags & LLKHF_UP;
-        const uint32_t vkCode = keyStruct.vkCode;
+        auto const keyStruct = *reinterpret_cast<KBDLLHOOKSTRUCT*>(l_param);
+        bool const keyUp = keyStruct.flags & LLKHF_UP;
+        uint32_t const vkCode = keyStruct.vkCode;
 
         pressedKeys[vkCode] = 0;
 
@@ -259,7 +259,7 @@ LRESULT CALLBACK hookFunc(const int n_code, const WPARAM action, const LPARAM l_
     return CallNextHookEx(nullptr, n_code, action, l_param);
 }
 
-void threadProc(const std::stop_token& stop) {
+void threadProc(std::stop_token const& stop) {
     static HHOOK hookHandle = nullptr;
 
     try {

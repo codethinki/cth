@@ -9,14 +9,14 @@
 namespace cth::win {
 namespace cmd {
 
-    inline int hidden_dir(const std::string_view dir, const std::string_view command) {
+    inline int hidden_dir(std::string_view const dir, std::string_view const command) {
         PROCESS_INFORMATION pInfo{};
         STARTUPINFOA sInfo{};
         sInfo.cb = sizeof(sInfo);
 
         std::string cmd = std::format("cmd /c \"{}\"", command);
 
-        const bool res = CreateProcessA(nullptr, cmd.data(),
+        bool const res = CreateProcessA(nullptr, cmd.data(),
             nullptr, nullptr, false, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW,
             nullptr, dir.data(), &sInfo, &pInfo);
 
@@ -48,8 +48,8 @@ namespace clipbd {
 
         CTH_STABLE_WARN(!OpenClipboard(nullptr), "getClipboardText: no clipboard access") {}
 
-        const HANDLE hData = GetClipboardData(CF_TEXT);
-        const char* pszText = static_cast<char*>(GlobalLock(hData));
+        HANDLE const hData = GetClipboardData(CF_TEXT);
+        char const* pszText = static_cast<char*>(GlobalLock(hData));
 
         if(pszText != nullptr) text = pszText;
 
@@ -73,7 +73,7 @@ namespace proc {
 
         return isAdmin;
     }
-    inline bool active(const std::wstring_view process_name) {
+    inline bool active(std::wstring_view const process_name) {
         PROCESSENTRY32 proc;
         proc.dwSize = sizeof(PROCESSENTRY32);
         HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -82,7 +82,7 @@ namespace proc {
             Process32Next(snapshot, &proc);
         return process_name == proc.szExeFile;
     }
-    inline uint32_t instances(const std::wstring_view process_name) {
+    inline uint32_t instances(std::wstring_view const process_name) {
         uint32_t processCount = 0;
 
         PROCESSENTRY32 proc;
@@ -107,7 +107,7 @@ namespace desktop {
 
 namespace io {
 
-    inline void readUnbuffered(const std::string_view path, std::vector<char>& buffer) {
+    inline void readUnbuffered(std::string_view const path, std::vector<char>& buffer) {
         HANDLE handle = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
         CTH_STABLE_ERR(handle == INVALID_HANDLE_VALUE, "failed to create handle for io ({})", path) throw details->exception();
 
@@ -123,7 +123,7 @@ namespace io {
 
         DWORD bytesRead = 0;
         ReadFile(handle, buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead, &overlapped);
-        const BOOL result = GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE);
+        BOOL const result = GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE);
 
         CTH_STABLE_ERR(!result, "failed to read io ({})", path) {
             details->add("io size: {}", fileSize);

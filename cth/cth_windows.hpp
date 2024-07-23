@@ -26,7 +26,7 @@ namespace cmd {
     * \note paths only work with '\' NOT '/'
     */
     template<typename... Types> requires (sizeof...(Types) > 0u)
-    [[nodiscard]] int hidden_dir(const std::string_view dir, std::format_string<Types...> command, Types&&... types) {
+    [[nodiscard]] int hidden_dir(std::string_view const dir, std::format_string<Types...> command, Types&&... types) {
         return cth::win::cmd::hidden_dir(dir, std::format(command, std::forward<Types>(types)...));
     }
 
@@ -35,7 +35,7 @@ namespace cmd {
     * \param command = "cmd.exe /c (...)"
     * \note paths only work with '\' NOT '/'
     */
-    [[nodiscard]] inline int hidden(const std::string_view command) {
+    [[nodiscard]] inline int hidden(std::string_view const command) {
         return cth::win::cmd::hidden_dir(std::filesystem::current_path().string(), command);
     }
     /**

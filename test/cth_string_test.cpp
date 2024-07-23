@@ -7,14 +7,14 @@ namespace cth::str {
 using std::nullopt;
 
 TEST(to_string, range) {
-    const std::vector<int> vec = {1, 2, 3, 4, 5};
-    const std::string str = cth::str::to_string(vec);
+    std::vector<int> const vec = {1, 2, 3, 4, 5};
+    std::string const str = cth::str::to_string(vec);
     EXPECT_EQ(str, "[1, 2, 3, 4, 5]");
 }
 
 TEST(to_string, 2drange) {
-    const std::vector<std::vector<int>> vec = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-    const std::string str = cth::str::to_string(vec);
+    std::vector<std::vector<int>> const vec = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    std::string const str = cth::str::to_string(vec);
     EXPECT_EQ(str, "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]");
 }
 

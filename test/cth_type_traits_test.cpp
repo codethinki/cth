@@ -61,8 +61,8 @@ TEST(to_convertible, main) {
     constexpr auto str = "hello world";
     constexpr char c = 'c';
 
-    [[maybe_unused]] const auto charType = to_constructible<char, std::string_view, std::wstring_view>(c);
-    [[maybe_unused]] const auto stringViewType = to_constructible<char, std::string_view, std::wstring_view>(str);
+    [[maybe_unused]] auto const charType = to_constructible<char, std::string_view, std::wstring_view>(c);
+    [[maybe_unused]] auto const stringViewType = to_constructible<char, std::string_view, std::wstring_view>(str);
     
     EXPECT_TRUE((std::is_same_v<std::decay_t<decltype(charType)>, char>));
     EXPECT_TRUE((std::is_same_v<std::decay_t<decltype(stringViewType)>, std::string_view>));

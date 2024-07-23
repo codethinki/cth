@@ -10,7 +10,7 @@
 
 namespace cth::win {
 
-std::vector<char> loadFileIntoVector(const std::string_view file_path) {
+std::vector<char> loadFileIntoVector(std::string_view const file_path) {
     // Open the io in binary mode at the end of the io
     std::ifstream file(file_path.data(), std::ios::binary | std::ios::ate);
     if(!file) {
@@ -19,7 +19,7 @@ std::vector<char> loadFileIntoVector(const std::string_view file_path) {
     }
 
     // Determine the io size
-    const std::streamsize size = file.tellg();
+    std::streamsize const size = file.tellg();
     file.seekg(0, std::ios::beg); // Seek back to the start of the io
 
     // Reserve space in the vector and read the io

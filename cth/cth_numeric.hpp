@@ -68,17 +68,17 @@ namespace num {
 //-----------------------
 namespace num {
     template<type::arithmetic T>
-    [[nodiscard]] constexpr T abs(const T val) { return val < 0 ? -val : val; }
+    [[nodiscard]] constexpr T abs(T const val) { return val < 0 ? -val : val; }
 
     template<std::integral T>
-    [[nodiscard]] constexpr T cycle(const T x, const T a, const T b) {
+    [[nodiscard]] constexpr T cycle(T const x, T const a, T const b) {
         CTH_ERR(b <= a, "invalid input: ({0}) a < b ({1}) required", a, b) throw details->exception();
-        const T off = (x - a) % (b - a);
+        T const off = (x - a) % (b - a);
         return off < 0 ? b + off : a + off;
     }
 
     template<std::floating_point T>
-    [[nodiscard]] constexpr T exp(const T x, const T precision) {
+    [[nodiscard]] constexpr T exp(T const x, T const precision) {
         uint32_t n = 1;
         T result = 1, term = x;
         while(num::abs(term) > precision) {
@@ -90,7 +90,7 @@ namespace num {
     }
 
     template<std::floating_point T>
-    [[nodiscard]] constexpr T heronSqrt(const T x, const T precision) {
+    [[nodiscard]] constexpr T heronSqrt(T const x, T const precision) {
 
         CTH_ERR(x < 0, "heronSqrt: x ({}) >= 0 required", x) throw details->exception();
 
@@ -101,29 +101,29 @@ namespace num {
     }
 
     template<std::floating_point T>
-    [[nodiscard]] constexpr T map(const T x, const T in_a, const T in_b, const T out_a, const T out_b) {
+    [[nodiscard]] constexpr T map(T const x, T const in_a, T const in_b, T const out_a, T const out_b) {
         return out_a + (out_b - out_a) * ((x - in_a) / (in_b - in_a));
     }
 
     template<type::arithmetic T>
-    [[nodiscard]] T dist(const T x1, const T y1, const T x2, const T y2) {
-        const T dx = x2 - x1, dy = y2 - y1;
+    [[nodiscard]] T dist(T const x1, T const y1, T const x2, T const y2) {
+        T const dx = x2 - x1, dy = y2 - y1;
         return static_cast<T>(std::sqrt(dx * dx + dy * dy));
     }
 
     template<type::arithmetic T>
-    [[nodiscard]] constexpr bool inRange(const T x, const T a, const T b) {
+    [[nodiscard]] constexpr bool inRange(T const x, T const a, T const b) {
         assert(a < b && "invalid input: a <= b required");
         return a <= x && x <= b;
     }
 
     template<type::arithmetic T, type::arithmetic U>
-    [[nodiscard]] constexpr bool inRange2d(const T x, const T a_x, const T b_x, const U y, const U a_y, const U b_y) {
+    [[nodiscard]] constexpr bool inRange2d(T const x, T const a_x, T const b_x, U const y, U const a_y, U const b_y) {
         return num::inRange(x, a_x, b_x) && num::inRange(y, a_y, b_y);
     }
 
     template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
-    [[nodiscard]] constexpr T sqam(const T base, const U power, const V mod) {
+    [[nodiscard]] constexpr T sqam(T const base, U const power, V const mod) {
         CTH_ERR(mod < 0, "invalid input: mod ({}) > 0 required", mod) throw details->exception();
 
         auto bitArr = bits::toBitArr(power);
@@ -140,7 +140,7 @@ namespace num {
 
     namespace bits {
         template<std::integral T>
-        constexpr std::array<bool, sizeof(T) * 8> toBitArr(const T val) {
+        constexpr std::array<bool, sizeof(T) * 8> toBitArr(T const val) {
             constexpr uint32_t bitLength = sizeof(T) * 8;
             std::array<bool, bitLength> bits{};
 
@@ -150,7 +150,7 @@ namespace num {
         }
 
         template<std::unsigned_integral T>
-        constexpr size_t firstSetBit(const T x) {
+        constexpr size_t firstSetBit(T const x) {
             size_t pos = 0;
 
 
@@ -167,39 +167,39 @@ namespace num {
 namespace expr::num {
 
     template<type::arithmetic T>
-    [[nodiscard]] constexpr T map(const T x, const T in_a, const T in_b, const T out_a, const T out_b) {
+    [[nodiscard]] constexpr T map(T const x, T const in_a, T const in_b, T const out_a, T const out_b) {
         return cth::num::map(x, in_a, in_b, out_a, out_b);
     }
 
     template<std::floating_point T>
-    [[nodiscard]] constexpr T heronSqrt(const T x, const T precision = static_cast<T>(1e-6)) { return cth::num::heronSqrt(x, precision); }
+    [[nodiscard]] constexpr T heronSqrt(T const x, T const precision = static_cast<T>(1e-6)) { return cth::num::heronSqrt(x, precision); }
 
     template<std::integral T>
-    [[nodiscard]] constexpr T cycle(const T x, const T a, const T b) { return cth::num::cycle(x, a, b); }
+    [[nodiscard]] constexpr T cycle(T const x, T const a, T const b) { return cth::num::cycle(x, a, b); }
 
     template<type::arithmetic T>
-    [[nodiscard]] constexpr T dist(const T x1, const T y1, const T x2, const T y2, const T precision = static_cast<T>(1e-6)) {
-        const auto dx = static_cast<double>(x2 - x1), dy = static_cast<double>(y2 - y1);
+    [[nodiscard]] constexpr T dist(T const x1, T const y1, T const x2, T const y2, T const precision = static_cast<T>(1e-6)) {
+        auto const dx = static_cast<double>(x2 - x1), dy = static_cast<double>(y2 - y1);
         return static_cast<T>(cth::num::heronSqrt(dx * dx + dy * dy, precision));
     }
 
     template<type::arithmetic T>
-    [[nodiscard]] constexpr bool inRange(const T x, const T a, const T b) { return cth::num::inRange(x, a, b); }
+    [[nodiscard]] constexpr bool inRange(T const x, T const a, T const b) { return cth::num::inRange(x, a, b); }
 
     template<type::arithmetic T>
-    [[nodiscard]] constexpr bool inRange2d(const T x, const T a_x, const T b_x, const T y, const T a_y, const T b_y) {
+    [[nodiscard]] constexpr bool inRange2d(T const x, T const a_x, T const b_x, T const y, T const a_y, T const b_y) {
         return cth::num::inRange2d(x, a_x, b_x, y, a_y, b_y);
     }
 
     template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
-    [[nodiscard]] constexpr T sqam(const T base, const U power, const V mod) { return cth::num::sqam(base, power, mod); }
+    [[nodiscard]] constexpr T sqam(T const base, U const power, V const mod) { return cth::num::sqam(base, power, mod); }
 
     namespace bits {
         template<std::unsigned_integral T>
-        [[nodiscard]] constexpr size_t firstSetBit(const T x) { return cth::num::bits::firstSetBit(x); }
+        [[nodiscard]] constexpr size_t firstSetBit(T const x) { return cth::num::bits::firstSetBit(x); }
 
         template<std::integral T>
-        constexpr std::array<bool, sizeof(T) * 8> toBitArr(const T val) { return cth::num::bits::toBitArr(val); }
+        constexpr std::array<bool, sizeof(T) * 8> toBitArr(T const val) { return cth::num::bits::toBitArr(val); }
     }
 
 } // namespace expr::num

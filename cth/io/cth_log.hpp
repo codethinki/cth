@@ -27,7 +27,7 @@ namespace dev {
     inline static bool colored = true;
     inline static io::col_stream logStream{&std::cerr, io::error.state()};
 
-    static constexpr io::Text_Colors textColor(const cth::except::Severity severity) {
+    static constexpr io::Text_Colors textColor(cth::except::Severity const severity) {
         switch(severity) {
             case cth::except::LOG:
                 return io::WHITE_TEXT_COL;
@@ -44,7 +44,7 @@ namespace dev {
         }
     }
 
-    constexpr static std::string_view label(const cth::except::Severity severity) {
+    constexpr static std::string_view label(cth::except::Severity const severity) {
         switch(severity) {
             case cth::except::Severity::LOG:
                 return "[LOG]";
@@ -65,7 +65,7 @@ namespace dev {
 /**
  * \brief sets a colored log stream. nullptr -> colored console output
  */
-inline void setLogStream(const io::col_stream& stream) {
+inline void setLogStream(io::col_stream const& stream) {
     dev::colored = true;
     dev::logStream = stream;
 }
@@ -75,7 +75,7 @@ inline void setLogStream(std::ostream* stream) {
 }
 
 
-inline void msg(const cth::except::Severity severity, const std::string_view message) {
+inline void msg(cth::except::Severity const severity, std::string_view const message) {
     if(severity < CTH_LOG_LEVEL) return;
 
     if(dev::colored) {
@@ -95,13 +95,13 @@ inline void msg(const cth::except::Severity severity, const std::string_view mes
     }
 }
 template<cth::except::Severity S = cth::except::LOG>
-void msg(const std::string_view message) noexcept {
+void msg(std::string_view const message) noexcept {
     if constexpr(S < CTH_LOG_LEVEL) return;
 
     cth::log::msg(S, message);
 }
 template<typename... Args> requires (sizeof...(Args) > 0u)
-void msg(const cth::except::Severity severity, std::format_string<Args...> f_str, Args&&... args) noexcept {
+void msg(cth::except::Severity const severity, std::format_string<Args...> f_str, Args&&... args) noexcept {
     if(severity < CTH_LOG_LEVEL) return;
     log::msg(severity, std::format(f_str, std::forward<Args>(args)...));
 }
@@ -148,9 +148,9 @@ namespace dev {
 
             if constexpr(S == cth::except::Severity::CRITICAL) std::terminate();
         }
-        void add(const std::string_view message) noexcept { _exception.add(message.data()); }
+        void add(std::string_view const message) noexcept { _exception.add(message.data()); }
         template<typename... Types> requires (sizeof...(Types) > 0u)
-        void add(const std::format_string<Types...> f_str, Types&&... types) { _exception.add(f_str, std::forward<Types>(types)...); }
+        void add(std::format_string<Types...> const f_str, Types&&... types) { _exception.add(f_str, std::forward<Types>(types)...); }
 
     private:
         cth::except::default_exception _exception;

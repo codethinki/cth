@@ -9,7 +9,7 @@ namespace cth::img {
 
 struct stb_image {
 
-    stb_image(const std::string_view path, const int desired_channels) {
+    stb_image(std::string_view const path, int const desired_channels) {
         CTH_ERR(!std::filesystem::exists(path), "file not found") throw details->exception();
 
         int width = 0, height = 0, channels = 0;
@@ -24,7 +24,7 @@ struct stb_image {
         _channels = channels;
         _pixels = std::span{ptr, static_cast<size_t>(width * height * channels)};
     }
-    stb_image(const int width, const int height, const int channels, uint8_t* ptr) : _width(width), _height(height), _channels(channels),
+    stb_image(int const width, int const height, int const channels, uint8_t* ptr) : _width(width), _height(height), _channels(channels),
         _pixels{ptr, static_cast<size_t>(width * height * channels)} {}
     ~stb_image() { stbi_image_free(_pixels.data()); }
 
@@ -47,9 +47,9 @@ public:
     [[nodiscard]] uint32_t channels() const { return _channels; }
     [[nodiscard]] std::span<uint8_t> pixels() const { return _pixels; }
 
-    stb_image(const stb_image& other) = delete;
+    stb_image(stb_image const& other) = delete;
     stb_image(stb_image&& other) = default;
-    stb_image& operator=(const stb_image& other) = delete;
+    stb_image& operator=(stb_image const& other) = delete;
     stb_image& operator=(stb_image&& other) = default;
 };
 } // namespace cth::img

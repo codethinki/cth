@@ -12,7 +12,7 @@
 namespace cth::algorithm::hash {
 // from: https://stackoverflow.com/a/57595105
 template<typename T, typename... Rest>
-void combine(std::size_t& seed, const T& v, const Rest&... rest) {
+void combine(std::size_t& seed, T const& v, Rest const&... rest) {
     seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     (cth::algorithm::hash::combine(seed, rest), ...);
 }
@@ -29,7 +29,7 @@ namespace cth::algorithm {
 * \note this is bruteforce
 */
 template<type::range2d_over_cpt<cpt(std::equality_comparable)> Rng>
-[[nodiscard]] auto uniqueCombine(const Rng& selections) {
+[[nodiscard]] auto uniqueCombine(Rng const& selections) {
     using T = std::remove_cvref_t<type::range2d_value_t<Rng>>;
 
 
@@ -70,7 +70,7 @@ template<type::range2d_over_cpt<cpt(std::equality_comparable)> Rng>
  * \return vector<integral> based on Rng1
  */
 template<type::range2d_over_cpt<cpt(std::integral)> Rng1, type::range_over_cpt<cpt(std::integral)> Rng2>
-auto assign(const Rng1& a_b_options, const Rng2& b_max) -> std::vector<type::range2d_value_t<Rng1>> {
+auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::range2d_value_t<Rng1>> {
     using T = type::range2d_value_t<Rng1>;
 
     CTH_ERR(!std::ranges::all_of(a_b_options, [&b_max](const std::span<const T> b_options) {
@@ -84,14 +84,14 @@ auto assign(const Rng1& a_b_options, const Rng2& b_max) -> std::vector<type::ran
     std::vector<T> bOptionsIndices(std::ranges::size(a_b_options));
     std::ranges::iota(bOptionsIndices, 0);
 
-    auto valid = [&a_b_options, &b_max](const std::span<const T> b_options_indices) {
+    auto valid = [&a_b_options, &b_max](std::span<T const> const b_options_indices) {
         std::vector<T> assignments(std::ranges::size(b_max), 0);
         std::vector<T> combination(std::ranges::size(a_b_options), 0);
 
         for(size_t i = 0; i < std::ranges::size(a_b_options); i++) {
-            const auto& bOptions = a_b_options[b_options_indices[i]];
+            auto const& bOptions = a_b_options[b_options_indices[i]];
 
-            for(const T b : bOptions) {
+            for(T const b : bOptions) {
                 if(assignments[b] >= b_max[b]) continue;
                 ++assignments[b];
                 combination[b_options_indices[i]] = b;
@@ -107,7 +107,7 @@ auto assign(const Rng1& a_b_options, const Rng2& b_max) -> std::vector<type::ran
 
 
     do {
-        const auto& result = valid(bOptionsIndices);
+        auto const& result = valid(bOptionsIndices);
         if(!result.empty()) return result;
     } while(std::ranges::next_permutation(bOptionsIndices).found);
 
