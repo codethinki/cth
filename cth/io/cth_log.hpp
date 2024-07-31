@@ -5,6 +5,14 @@
 #include "cth_console.hpp"
 #include "../cth_exception.hpp"
 
+#ifdef _DEBUG
+#ifndef CTH_RELEASE_LOG
+#ifndef CTH_DEBUG_LOG
+#define CTH_DEBUG_LOG
+#endif
+#endif
+#endif
+
 #define CTH_LOG_LEVEL_ALL 0
 #define CTH_LOG_LEVEL_DEBUG 0
 #define CTH_LOG_LEVEL_INFO 1
@@ -255,7 +263,10 @@ namespace dev {
 #define CTH_LOG(expression, message, ...) CTH_DEV_DISABLED_LOG_TEMPLATE()
 
 
-#ifdef _DEBUG
+#ifdef CTH_DEBUG_LOG
+#ifdef CTH_RELEASE_LOG
+#warning "CTH_DEBUG_LOG overrides CTH_RELEASE_LOG"
+#endif
 
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_NONE
 

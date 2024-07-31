@@ -11,8 +11,8 @@ namespace cth::io {
         std::vector<std::basic_string<T>> loadTxt(std::basic_string_view<T> path);
     }
 
-    inline std::vector<std::string> loadTxt(std::string_view const path) { return dev::loadTxt<char>(path); }
-    inline std::vector<std::wstring> loadTxt(std::wstring_view const path) { return dev::loadTxt<wchar_t>(path); }
+    inline std::vector<std::string> readText(std::string_view const path) { return dev::loadTxt<char>(path); }
+    inline std::vector<std::wstring> readText(std::wstring_view const path) { return dev::loadTxt<wchar_t>(path); }
 
 
 } //namespace cth::io

@@ -1,6 +1,4 @@
 #pragma once
-#include <gsl/pointers>
-
 #include <memory>
 #include <type_traits>
 
