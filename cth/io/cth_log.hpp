@@ -178,8 +178,8 @@ namespace dev {
      */
 #define CTH_DEV_DELAYED_LOG_TEMPLATE(severity, expression, message_str, ...) \
     if(const auto details =\
-        (static_cast<bool>(expression) ? std::make_unique<cth::log::dev::LogObj<severity>>(cth::except::default_exception{severity, std::format(message_str, __VA_ARGS__),\
-        std::source_location::current(), std::stacktrace::current()}) : nullptr);\
+        (static_cast<bool>(expression) ? std::make_unique<cth::log::dev::LogObj<severity>>(cth::except::default_exception{std::format(message_str, __VA_ARGS__),\
+        severity, std::source_location::current(), std::stacktrace::current()}) : nullptr);\
         static_cast<bool>(expression)) //{...}
 #define CTH_DEV_DISABLED_LOG_TEMPLATE() if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; false) //{...}
 
