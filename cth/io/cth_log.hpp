@@ -28,6 +28,7 @@
 #include <string>
 #include <utility>
 
+
 namespace cth::log {
 
 
@@ -167,20 +168,18 @@ namespace dev {
         [[nodiscard]] std::string string() const { return _exception.string(); }
         [[nodiscard]] cth::except::default_exception exception() const { return _exception; }
     };
-
-
-
     /**
      * \brief wrapper for dev::LogObj
      * \param expression (expression) == false -> code execution + delayed log message
      * \param message log message
      * \param severity log severity
      */
-#define CTH_DEV_DELAYED_LOG_TEMPLATE(severity, expression, message_str, ...) \
-    if(const auto details =\
-        (static_cast<bool>(expression) ? std::make_unique<cth::log::dev::LogObj<severity>>(cth::except::default_exception{std::format(message_str, __VA_ARGS__),\
-        severity, std::source_location::current(), std::stacktrace::current()}) : nullptr);\
-        static_cast<bool>(expression)) //{...}
+#define CTH_DEV_DELAYED_LOG_TEMPLATE(severity, expr, message_str, ...) \
+    if(bool const expression = static_cast<bool>(expr); expression) [[unlikely]]\
+     if(auto const details =\
+        (expression ? std::make_unique<cth::log::dev::LogObj<severity>>(cth::except::default_exception{ std::format(message_str, __VA_ARGS__),\
+            severity, std::source_location::current(), std::stacktrace::current()}) : nullptr);\
+            expression) //{...}
 #define CTH_DEV_DISABLED_LOG_TEMPLATE() if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; false) //{...}
 
 
