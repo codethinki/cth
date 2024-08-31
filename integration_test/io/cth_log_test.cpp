@@ -47,4 +47,6 @@ TEST(log_macros, stable) {
     ASSERT_EQ(x, 4);
 }
 
+
+
 } // namespace cth

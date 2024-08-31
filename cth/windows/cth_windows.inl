@@ -9,7 +9,7 @@
 namespace cth::win {
 namespace cmd {
 
-    inline int hidden_dir(std::string_view const dir, std::string_view const command) {
+    inline int hidden_dir(std::string_view dir, std::string_view command) {
         PROCESS_INFORMATION pInfo{};
         STARTUPINFOA sInfo{};
         sInfo.cb = sizeof(sInfo);
@@ -73,7 +73,7 @@ namespace proc {
 
         return isAdmin;
     }
-    inline bool active(std::wstring_view const process_name) {
+    inline bool active(std::wstring_view process_name) {
         PROCESSENTRY32 proc;
         proc.dwSize = sizeof(PROCESSENTRY32);
         HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -82,7 +82,7 @@ namespace proc {
             Process32Next(snapshot, &proc);
         return process_name == proc.szExeFile;
     }
-    inline uint32_t instances(std::wstring_view const process_name) {
+    inline uint32_t instances(std::wstring_view process_name) {
         uint32_t processCount = 0;
 
         PROCESSENTRY32 proc;
@@ -107,7 +107,7 @@ namespace desktop {
 
 namespace io {
 
-    inline void readUnbuffered(std::string_view const path, std::vector<char>& buffer) {
+    inline void readUnbuffered(std::string_view path, std::vector<char>& buffer) {
         HANDLE handle = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
         CTH_STABLE_ERR(handle == INVALID_HANDLE_VALUE, "failed to create handle for io ({})", path) throw details->exception();
 

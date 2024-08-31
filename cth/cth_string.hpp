@@ -17,11 +17,11 @@ namespace dev {
     inline static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter{};
 }
 
-[[nodiscard]] inline std::string toN(std::wstring_view const str) { return dev::converter.to_bytes(str.data()); }
-[[nodiscard]] inline std::wstring toW(std::string_view const str) { return dev::converter.from_bytes(str.data()); }
+[[nodiscard]] inline std::string toN(std::wstring_view str) { return dev::converter.to_bytes(str.data()); }
+[[nodiscard]] inline std::wstring toW(std::string_view str) { return dev::converter.from_bytes(str.data()); }
 
-[[nodiscard]] inline std::wstring wide(std::string_view const nstring) { return dev::converter.from_bytes(nstring.data()); }
-[[nodiscard]] inline std::string narrow(std::wstring_view const wstring) { return dev::converter.to_bytes(wstring.data()); }
+[[nodiscard]] inline std::wstring wide(std::string_view nstring) { return dev::converter.from_bytes(nstring.data()); }
+[[nodiscard]] inline std::string narrow(std::wstring_view wstring) { return dev::converter.to_bytes(wstring.data()); }
 } // namespace cth::str::conv
 
 
@@ -47,7 +47,7 @@ template<std::ranges::range Rng> requires(std::ranges::range<std::ranges::range_
 }
 
 template<cth::type::arithmetic T>
-[[nodiscard]] constexpr std::optional<T> to_num(std::string_view const str) {
+[[nodiscard]] constexpr std::optional<T> to_num(std::string_view str) {
     T num = 0;
     size_t i = 0;
     for(; i < str.size(); i++) {
@@ -76,7 +76,7 @@ template<cth::type::arithmetic T>
     return std::nullopt;
 }
 template<type::arithmetic T>
-[[nodiscard]] constexpr std::optional<T> to_num(std::wstring_view const str) {
+[[nodiscard]] constexpr std::optional<T> to_num(std::wstring_view str) {
     T num = 0;
     size_t i = 0;
     for(; i < str.size(); i++) {
@@ -114,7 +114,7 @@ template<type::string_view_convertable T, type::literal U>
     auto const d = type::to_constructible_from<std::decay_t<U>, char_t, std::basic_string_view<char_t>>(delimiter);
 
     return view | std::views::split(d)
-        | std::views::filter([](auto const string_part) { return !string_part.empty(); })
+        | std::views::filter([](auto string_part) { return !string_part.empty(); })
         | std::ranges::to<ret_t>();
 }
 
@@ -132,9 +132,9 @@ template<type::arithmetic T>
 [[nodiscard]] constexpr std::optional<T> to_num(std::wstring_view str);
 
 template<type::arithmetic T>
-[[nodiscard]] constexpr std::optional<T> to_num(std::string_view const str) { return cth::str::to_num<T>(str); }
+[[nodiscard]] constexpr std::optional<T> to_num(std::string_view str) { return cth::str::to_num<T>(str); }
 template<type::arithmetic T>
-[[nodiscard]] constexpr std::optional<T> to_num(std::wstring_view const str) { return cth::str::to_num<T>(str); }
+[[nodiscard]] constexpr std::optional<T> to_num(std::wstring_view str) { return cth::str::to_num<T>(str); }
 
 
 } // namespace cth::expr::str

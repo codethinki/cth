@@ -86,4 +86,7 @@
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="utility\regex\remove_const_func_param.txt" />
+  </ItemGroup>
 </Project>

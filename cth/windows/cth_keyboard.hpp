@@ -211,7 +211,7 @@ void EventQueueTemplate<Raw>::eraseEventQueue(size_t id) {
     if(--queueCount == 0) unhook();
 }
 template<bool Raw>
-int EventQueueTemplate<Raw>::eraseEventQueue(size_t id, int const error_code) {
+int EventQueueTemplate<Raw>::eraseEventQueue(size_t id, int error_code) {
     if(keyboardHookThread.get_id() != threadId) return error_code;
     if(queueCount <= 0) return error_code;
 
@@ -240,7 +240,7 @@ void CallbackEventQueueTemplate<Raw>::processQueue() {
 }
 
 
-LRESULT CALLBACK hookFunc(int const n_code, WPARAM const action, LPARAM const l_param) {
+LRESULT CALLBACK hookFunc(int n_code, WPARAM action, LPARAM l_param) {
     if(n_code == HC_ACTION) {
         auto const keyStruct = *reinterpret_cast<KBDLLHOOKSTRUCT*>(l_param);
         bool const keyUp = keyStruct.flags & LLKHF_UP;

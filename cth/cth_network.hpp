@@ -15,7 +15,7 @@
 
 
 namespace cth::net {
-inline std::array<uint8_t, 6> parseMAC(std::string_view const mac) {
+inline std::array<uint8_t, 6> parseMAC(std::string_view mac) {
     std::array<uint8_t, 6> byteMAC{};
 
     for(size_t i = 0, k = 0; i < 6; i++) {
@@ -34,7 +34,7 @@ inline std::array<uint8_t, 102> createWOLPacket(std::array<uint8_t, 6> const& by
 }
 
 //TODO create a sendUDP packet function and use it
-inline void sendWOL(std::string_view const target_mac, uint8_t const port = 9, std::string_view const broadcast_ip = "255.255.255.255") {
+inline void sendWOL(std::string_view target_mac, uint8_t const port = 9, std::string_view const broadcast_ip = "255.255.255.255") {
     int broadcast = 1;
     boost::asio::io_context ioContext;
     boost::asio::ip::udp::socket udpSocket(ioContext, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));

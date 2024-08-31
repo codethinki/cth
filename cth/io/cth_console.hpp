@@ -148,17 +148,17 @@ namespace dev {
     }};
 
     template<type::character T = char>
-    static constexpr std::basic_string_view<T> ansiCode(Text_Colors const color) {
+    static constexpr std::basic_string_view<T> ansiCode(Text_Colors color) {
         if constexpr(type::is_nchar_v<T>) return TEXT_COLOR_CODES_N[color];
         else return TEXT_COLOR_CODES_W[color];
     }
     template<type::character T = char>
-    static constexpr std::basic_string_view<T> ansiCode(BG_Colors const color) {
+    static constexpr std::basic_string_view<T> ansiCode(BG_Colors color) {
         if constexpr(std::is_same_v<char, std::remove_cv_t<T>>) return BG_COLOR_CODES_N[color];
         else return BG_COLOR_CODES_W[color];
     }
     template<type::character T = char>
-    static constexpr std::basic_string_view<T> ansiCode(Text_Styles const color) {
+    static constexpr std::basic_string_view<T> ansiCode(Text_Styles color) {
         if constexpr(std::is_same_v<char, std::remove_cv_t<T>>) return TEXT_STYLE_CODES_N[color];
         else return TEXT_STYLE_CODES_W[color];
     }
@@ -191,15 +191,15 @@ struct col_stream_state {
 
     [[nodiscard]] constexpr Text_Colors textCol() const { return _textCol; }
     [[nodiscard]] constexpr BG_Colors bgCol() const { return _bgCol; }
-    [[nodiscard]] constexpr bool styleActive(Text_Styles const id) const { return _textStyles[id]; }
+    [[nodiscard]] constexpr bool styleActive(Text_Styles id) const { return _textStyles[id]; }
 
-    constexpr void setTextCol(Text_Colors const text_color) { _textCol = text_color; }
-    constexpr void setBGCol(BG_Colors const bg_color) { _bgCol = bg_color; }
+    constexpr void setTextCol(Text_Colors text_color) { _textCol = text_color; }
+    constexpr void setBGCol(BG_Colors bg_color) { _bgCol = bg_color; }
     constexpr void resetStyle() { _textStyles.fill(false); }
 
     constexpr void setTextStyles(std::array<bool, TEXT_STYLE_SIZE> const& text_styles) { _textStyles = text_styles; }
 
-    constexpr void setStyle(Text_Styles const style, bool const activate = true) { _textStyles[style] = activate; }
+    constexpr void setStyle(Text_Styles style, bool const activate = true) { _textStyles[style] = activate; }
 
 private:
     Text_Colors _textCol = DEFAULT_TEXT_COL;
@@ -246,16 +246,16 @@ public:
     [[nodiscard]] std::shared_ptr<col_stream_state> state() { return _current; }
     [[nodiscard]] std::ostream& stream() const { return *_oStream; }
 
-    void print(std::string_view const str) const { *_oStream << str; }
-    void println(std::string_view const str) const { *_oStream << str << '\n'; }
-    void print(std::wstring_view const str) const { *_oStream << str::conv::narrow(str.data()); }
-    void println(std::wstring_view const str) const { *_oStream << str::conv::narrow(str.data()) << '\n'; }
+    void print(std::string_view str) const { *_oStream << str; }
+    void println(std::string_view str) const { *_oStream << str << '\n'; }
+    void print(std::wstring_view str) const { *_oStream << str::conv::narrow(str.data()); }
+    void println(std::wstring_view str) const { *_oStream << str::conv::narrow(str.data()) << '\n'; }
 
 
     void print(Text_Colors col, std::string_view str) const;
     void println(Text_Colors col, std::string_view str) const;
-    void print(Text_Colors const col, std::wstring_view const str) const { print(col, str::conv::narrow(str)); }
-    void println(Text_Colors const col, std::wstring_view const str) const { println(col, str::conv::narrow(str)); }
+    void print(Text_Colors col, std::wstring_view str) const { print(col, str::conv::narrow(str)); }
+    void println(Text_Colors col, std::wstring_view str) const { println(col, str::conv::narrow(str)); }
 
 
     template<typename... Types> requires(sizeof...(Types) > 0u)
@@ -276,44 +276,44 @@ namespace cth::io {
 
 //TEMP left off here, the styles are bugged fix them
 template<bool Cache>
-void col_stream::setTextCol(Text_Colors const text_col) const {
+void col_stream::setTextCol(Text_Colors text_col) const {
     if constexpr(Cache) _current->setTextCol(text_col);
     *_oStream << dev::ansiCode(text_col);
 }
 template<bool Cache>
-void col_stream::setBGCol(BG_Colors const bg_col) const {
+void col_stream::setBGCol(BG_Colors bg_col) const {
     if constexpr(Cache) _current->setBGCol(bg_col);
     *_oStream << dev::ansiCode(bg_col);
 }
 template<bool Cache>
-void col_stream::setTextStyle(Text_Styles const style, bool const activate) const {
+void col_stream::setTextStyle(Text_Styles style, bool activate) const {
     if constexpr(Cache) _current->setStyle(style, activate);
     *_oStream << dev::ansiCode(static_cast<Text_Styles>(style * 2 + (activate ? 0 : 1)));
 }
 template<bool Cache>
-void col_stream::setState(col_stream_state const new_state) const {
+void col_stream::setState(col_stream_state new_state) const {
     if constexpr(Cache) *_current = new_state;
     setTextCol<false>(new_state.textCol());
     setBGCol<false>(new_state.bgCol());
     for(uint32_t i = 0; i < TEXT_STYLE_SIZE; i++) setTextStyle<false>(static_cast<Text_Styles>(i), new_state.styleActive(static_cast<Text_Styles>(i)));
 }
 
-inline void col_stream::print(Text_Colors const col, std::string_view const str) const {
+inline void col_stream::print(Text_Colors col, std::string_view str) const {
     *_oStream << dev::ansiCode(col) << str << dev::ansiCode(_current->textCol());
 }
 
-inline void col_stream::println(Text_Colors const col, std::string_view const str) const {
+inline void col_stream::println(Text_Colors col, std::string_view str) const {
     print(col, str);
     *_oStream << '\n';
 }
 
 
 template<typename... Types> requires (sizeof...(Types) > 0u)
-void col_stream::print(Text_Colors const col, std::format_string<Types...> const f_str, Types&&... types) {
+void col_stream::print(Text_Colors col, std::format_string<Types...> f_str, Types&&... types) {
     col_stream::print(col, std::format(f_str, std::forward<Types>(types)...));
 }
 template<typename... Types> requires (sizeof...(Types) > 0u)
-void col_stream::println(Text_Colors const col, std::format_string<Types...> const f_str, Types&&... types) {
+void col_stream::println(Text_Colors col, std::format_string<Types...> f_str, Types&&... types) {
     col_stream::println(col, std::format(f_str, std::forward<Types>(types)...));
 }
 

@@ -1,6 +1,10 @@
 #pragma once
+
+// ReSharper disable CppClangTidyPerformanceUnnecessaryValueParam
+// ReSharper disable CppClangTidyBugproneExceptionEscape
 // ReSharper disable CppPassValueParameterByConstReference
 // ReSharper disable CppClangTidyModernizePassByValue
+
 //exception throw causes stack unwind -> dangling reference
 #include <filesystem>
 #include <source_location>
@@ -18,8 +22,9 @@ enum Severity {
     CRITICAL,
     SEVERITY_SIZE,
 };
-constexpr static std::string_view to_string(Severity const sev) {
+constexpr static std::string_view to_string(Severity sev) {
     switch(sev) {
+        // NOLINT(clang-diagnostic-switch-enum)
         case LOG:
             return "LOG";
         case INFO:
@@ -45,20 +50,18 @@ public:
         _sourceLocation{loc}, _trace{std::move(trace)} {}
 
 
-    void add(std::string msg) noexcept {
-        addNoCpy(msg);
-    }
+    default_exception& add(std::string msg) noexcept { return addNoCpy(msg); }
     template<typename... Args> requires (sizeof...(Args) > 0u)
-    void add(std::format_string<Args...> const f_str, Args&&... types) noexcept { this->addNoCpy(std::format(f_str, std::forward<Args>(types)...)); }
+    default_exception& add(std::format_string<Args...> f_str, Args&&... types) noexcept {
+        return this->addNoCpy(std::format(f_str, std::forward<Args>(types)...));
+    }
 
 
 
     [[nodiscard]] std::string string() const noexcept {
         return std::format("{0} {1} {2} {3} {4}", _msg, _details, func_string(), loc_string(), trace_string());
     }
-    [[nodiscard]] std::string brief() const noexcept {
-        return std::format("{0} {1} {2}", _msg, func_string(), loc_string());
-    }
+    [[nodiscard]] std::string brief() const noexcept { return std::format("{0} {1} {2}", _msg, func_string(), loc_string()); }
 
     [[nodiscard]] std::string loc_string() const noexcept {
         std::string const filename = std::string(_sourceLocation.file_name());
@@ -76,18 +79,13 @@ public:
         return str;
     }
 
-
-
-
-
 private:
-    void addNoCpy(std::string const& msg) noexcept {
+    default_exception& addNoCpy(std::string const& msg) noexcept {
         if(_details.empty()) _details = "DETAILS:\n";
-        _details += '\t';
-        _details += msg;
-        _details += '\n';
+        _details += std::format("\t{}\n", msg);
 
         _what = string();
+        return *this;
     }
 
     Severity _severity;
@@ -108,6 +106,10 @@ public:
 
     [[nodiscard]] char const* what() const noexcept override { return _what.c_str(); }
 
+    default_exception(default_exception const& other) noexcept = default;
+    default_exception(default_exception&& other) noexcept = default;
+    default_exception& operator=(default_exception const& other) noexcept = default;
+    default_exception& operator=(default_exception&& other) noexcept = default;
 };
 template<typename T>
 class data_exception : public default_exception {

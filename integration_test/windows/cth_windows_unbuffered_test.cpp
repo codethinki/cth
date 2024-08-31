@@ -10,7 +10,7 @@
 
 namespace cth::win {
 
-std::vector<char> loadFileIntoVector(std::string_view const file_path) {
+std::vector<char> loadFileIntoVector(std::string_view file_path) {
     // Open the io in binary mode at the end of the io
     std::ifstream file(file_path.data(), std::ios::binary | std::ios::ate);
     if(!file) {

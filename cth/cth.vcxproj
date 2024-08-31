@@ -52,6 +52,9 @@
     <None Include="io\inl\cth_read.inl" />
     <None Include="windows\cth_windows.inl" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="utility\regex\remove_const_func_param.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
