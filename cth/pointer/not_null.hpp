@@ -17,10 +17,10 @@ template<class T> requires(
 class not_null {
 public:
     using pointer = T;
-    static constexpr bool NOEXCEPT_MOVE = COMPILATION_MODE == MODE_DEBUG ? std::is_nothrow_move_constructible_v<T> : false;
-    static constexpr bool NOEXCEPT_MOVE_ASSIGN = COMPILATION_MODE == MODE_DEBUG ? std::is_nothrow_move_assignable_v<T> : false;
-    static constexpr bool NOEXCEPT_ASSIGN = COMPILATION_MODE == MODE_DEBUG ? std::is_nothrow_copy_assignable_v<T> : false;
-    static constexpr bool NOEXCEPT_COPY = COMPILATION_MODE == MODE_DEBUG ? std::is_nothrow_copy_constructible_v<T> : false;
+    static constexpr bool NOEXCEPT_MOVE = COMPILATION_MODE == MODE_RELEASE ? std::is_nothrow_move_constructible_v<T> : false;
+    static constexpr bool NOEXCEPT_MOVE_ASSIGN = COMPILATION_MODE == MODE_RELEASE ? std::is_nothrow_move_assignable_v<T> : false;
+    static constexpr bool NOEXCEPT_ASSIGN = COMPILATION_MODE == MODE_RELEASE ? std::is_nothrow_copy_assignable_v<T> : false;
+    static constexpr bool NOEXCEPT_COPY = COMPILATION_MODE == MODE_RELEASE ? std::is_nothrow_copy_constructible_v<T> : false;
 
     CTH_RELEASE_CONSTEXPR not_null(T ptr) noexcept(NOEXCEPT_MOVE) : _ptr{std::move(ptr)} {
 #ifdef CTH_RELEASE_MODE
