@@ -10,17 +10,18 @@
 
 namespace cth {
 template<class T> requires(
-    std::is_pointer_v<T> and
     std::equality_comparable_with<T, nullptr_t> and
     not std::same_as<T, std::nullptr_t>
 )
 class not_null {
-public:
-    using pointer = T;
     static constexpr bool NOEXCEPT_MOVE = COMPILATION_MODE == MODE_RELEASE ? std::is_nothrow_move_constructible_v<T> : false;
     static constexpr bool NOEXCEPT_MOVE_ASSIGN = COMPILATION_MODE == MODE_RELEASE ? std::is_nothrow_move_assignable_v<T> : false;
     static constexpr bool NOEXCEPT_ASSIGN = COMPILATION_MODE == MODE_RELEASE ? std::is_nothrow_copy_assignable_v<T> : false;
     static constexpr bool NOEXCEPT_COPY = COMPILATION_MODE == MODE_RELEASE ? std::is_nothrow_copy_constructible_v<T> : false;
+    static constexpr bool COPY = std::is_copy_constructible_v<T>;
+public:
+    using pointer = T;
+
 
     CTH_RELEASE_CONSTEXPR not_null(T ptr) noexcept(NOEXCEPT_MOVE) : _ptr{std::move(ptr)} {
 #ifdef CTH_RELEASE_MODE
@@ -34,7 +35,7 @@ public:
     constexpr ~not_null() = default;
 
     constexpr [[nodiscard]] T release() noexcept(NOEXCEPT_ASSIGN) {
-        T ptr = _ptr;
+        T ptr{std::move(_ptr)};
         _ptr = nullptr;
         return ptr;
     }
@@ -60,7 +61,7 @@ private:
     T _ptr;
 
 public:
-    [[nodiscard]] constexpr T get() const noexcept { return _ptr; }
+    [[nodiscard]] constexpr std::conditional_t<COPY, T, const T&> get() const noexcept { return _ptr; }
     [[nodiscard]] constexpr decltype(auto) operator->() const { return get(); }
     [[nodiscard]] constexpr decltype(auto) operator*() const { return *get(); }
 
