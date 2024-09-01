@@ -30,11 +30,14 @@
     <ClInclude Include="cth.hpp" />
     <ClInclude Include="cth_algorithm.hpp" />
     <ClInclude Include="cth_concept.hpp" />
+    <ClInclude Include="cth_constants.hpp" />
     <ClInclude Include="io\cth_console.hpp" />
     <ClInclude Include="cth_exception.hpp" />
     <ClInclude Include="cth_image.hpp" />
     <ClInclude Include="cth_io.hpp" />
     <ClInclude Include="io\cth_read.hpp" />
+    <ClInclude Include="pointer\move_ptr.hpp" />
+    <ClInclude Include="pointer\not_null.hpp" />
     <ClInclude Include="windows\cth_keyboard.hpp" />
     <ClInclude Include="io\cth_log.hpp" />
     <ClInclude Include="cth_pointer.hpp" />

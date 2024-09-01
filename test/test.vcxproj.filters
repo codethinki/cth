@@ -24,7 +24,7 @@
     <ClCompile Include="cth_numeric_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="cth_pointer_test.cpp">
+    <ClCompile Include="pointers\cth_move_ptr_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="cth_string_test.cpp">
@@ -35,6 +35,9 @@
     </ClCompile>
     <ClCompile Include="cth_variant_test.cpp">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pointers\cth_not_null_test.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

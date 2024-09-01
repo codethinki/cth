@@ -3,15 +3,9 @@
 // ReSharper disable CppClangTidyCppcoreguidelinesMacroUsage
 // disabled because this header is forced to use macros
 #include "cth_console.hpp"
+#include "../cth_constants.hpp"
 #include "../cth_exception.hpp"
 
-#ifdef _DEBUG
-#ifndef CTH_RELEASE_LOG
-#ifndef CTH_DEBUG_LOG
-#define CTH_DEBUG_LOG
-#endif
-#endif
-#endif
 
 #define CTH_LOG_LEVEL_ALL 0
 #define CTH_LOG_LEVEL_DEBUG 0
@@ -33,8 +27,8 @@ namespace cth::log {
 
 
 namespace dev {
-    inline static bool colored = true;
-    inline static io::col_stream logStream{&std::cerr, io::error.state()};
+    inline bool colored = true;
+    inline io::col_stream logStream{&std::cerr, io::error.state()}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     static constexpr io::Text_Colors textColor(cth::except::Severity severity) {
         switch(severity) {
@@ -48,8 +42,9 @@ namespace dev {
                 return io::DARK_RED_TEXT_COL;
             case cth::except::Severity::CRITICAL:
                 return io::DARK_RED_TEXT_COL;
+            case except::SEVERITY_SIZE:
             default:
-                return io::WHITE_TEXT_COL;
+                std::unreachable();
         }
     }
 
@@ -65,6 +60,7 @@ namespace dev {
                 return "[ERROR]";
             case cth::except::Severity::CRITICAL:
                 return "[CRITICAL]";
+            case cth::except::Severity::SEVERITY_SIZE:
             default:
                 std::unreachable();
         }
@@ -197,7 +193,7 @@ namespace dev {
 
 
 //------------------------------
-//  CTH_STABLE_ASSERTION
+//  CTH_STABLE_LOGS
 //------------------------------
 /**
  * \brief can execute code before abort (use {} for multiple lines)
@@ -261,7 +257,7 @@ namespace dev {
 
 
 //------------------------------
-//        CTH_ASSERTION
+//        CTH_LOGS
 //------------------------------
 #define CTH_ASSERT(expression, message, ...) CTH_DEV_DISABLED_LOG_TEMPLATE()
 #define CTH_ABORT(expression, message, ...) CTH_DEV_DISABLED_LOG_TEMPLATE()
@@ -271,12 +267,7 @@ namespace dev {
 #define CTH_INFORM(expression, message, ...) CTH_DEV_DISABLED_LOG_TEMPLATE()
 #define CTH_LOG(expression, message, ...) CTH_DEV_DISABLED_LOG_TEMPLATE()
 
-
-#ifdef CTH_DEBUG_LOG
-#ifdef CTH_RELEASE_LOG
-#warning "CTH_DEBUG_LOG overrides CTH_RELEASE_LOG"
-#endif
-
+#ifdef CTH_DEBUG_MODE
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_NONE
 
 #undef CTH_ASSERT

@@ -72,6 +72,15 @@
     <ClInclude Include="cth.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cth_constants.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pointer\not_null.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pointer\move_ptr.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
