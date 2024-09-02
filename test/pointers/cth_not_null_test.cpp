@@ -81,4 +81,6 @@ TEST(not_null, operator_deref) {
     ASSERT_EQ((*ptr).value, EXAMPLE_NUMBER);
 }
 
+
+
 }
