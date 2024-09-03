@@ -47,7 +47,7 @@ public:
     explicit default_exception(std::string msg, Severity const severity = cth::except::ERR,
         std::source_location loc = std::source_location::current(),
         std::stacktrace trace = std::stacktrace::current()) : _severity(severity), _msg{std::format(" {0}\n", msg)},
-        _sourceLocation{loc}, _trace{std::move(trace)} {}
+        _sourceLocation{loc}, _trace{std::move(trace)}, _what{string()}{}
 
 
     default_exception& add(std::string msg) noexcept { return addNoCpy(msg); }

@@ -3,7 +3,7 @@
 #include <cassert>
 #include <string>
 
-#include "cth_concept.hpp"
+#include "cth_concepts.hpp"
 #include "io/cth_log.hpp"
 
 namespace cth {

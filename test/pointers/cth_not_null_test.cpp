@@ -35,8 +35,10 @@ TEST(not_null, comparison) {
     EXPECT_FALSE(px > py);
     EXPECT_TRUE(py >= px);
     EXPECT_FALSE(px >= py);
-
 }
+
+
+
 TEST(not_null, nullptr_crash) {
 #ifdef CTH_DEBUG_MODE
     std::unique_ptr<int> constexpr nullPtr{};
@@ -82,5 +84,30 @@ TEST(not_null, operator_deref) {
 }
 
 
+TEST(unique_not_null, comparison) {
+
+    unique_not_null a{std::make_unique<int>(EXAMPLE_NUMBER)};
+    unique_not_null b{std::make_unique<int>(EXAMPLE_NUMBER)};
+
+
+    unique_not_null const px{std::move(a < b ? a : b)};
+    unique_not_null const py{std::move(a > b ? a : b)};
+
+
+    EXPECT_TRUE(px == px);
+    EXPECT_FALSE(px != px);
+    EXPECT_FALSE(px == py);
+    EXPECT_TRUE(px != py);
+
+    EXPECT_TRUE(px < py);
+    EXPECT_FALSE(py < px);
+    EXPECT_TRUE(px <= py);
+    EXPECT_FALSE(py <= px);
+
+    EXPECT_TRUE(py > px);
+    EXPECT_FALSE(px > py);
+    EXPECT_TRUE(py >= px);
+    EXPECT_FALSE(px >= py);
+}
 
 }

@@ -26,7 +26,20 @@ template<class Rng, auto TCpt>
 concept range2d_over_cpt = std::ranges::range<Rng> and range_over_cpt<std::ranges::range_value_t<Rng>, TCpt>;
 
 
+template<class T>
+concept has_get = requires(T t) {
+    t.get();
+};
 
+template<class T>
+concept has_release = requires(T t) {
+    t.release();
+};
+
+template<class T>
+concept has_deref = requires(T t) {
+    *t;
+};
 
 
 

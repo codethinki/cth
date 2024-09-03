@@ -24,7 +24,7 @@
     <ClInclude Include="cth_algorithm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_concept.hpp">
+    <ClInclude Include="cth_concepts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="io\cth_console.hpp">
