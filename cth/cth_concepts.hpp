@@ -1,5 +1,5 @@
 #pragma once
-#include "cth_type_trait.hpp"
+#include "cth_type_traits.hpp"
 
 #define cpt(concept) []<concept>{}
 

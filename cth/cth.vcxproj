@@ -40,11 +40,11 @@
     <ClInclude Include="pointer\not_null.hpp" />
     <ClInclude Include="windows\cth_keyboard.hpp" />
     <ClInclude Include="io\cth_log.hpp" />
-    <ClInclude Include="cth_pointer.hpp" />
+    <ClInclude Include="cth_pointers.hpp" />
     <ClInclude Include="cth_network.hpp" />
     <ClInclude Include="cth_numeric.hpp" />
     <ClInclude Include="cth_string.hpp" />
-    <ClInclude Include="cth_type_trait.hpp" />
+    <ClInclude Include="cth_type_traits.hpp" />
     <ClInclude Include="cth_variant.hpp" />
     <ClInclude Include="cth_windows.hpp" />
   </ItemGroup>

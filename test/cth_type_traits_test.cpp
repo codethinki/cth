@@ -1,4 +1,4 @@
-#include "../cth/cth_type_trait.hpp"
+#include "../cth/cth_type_traits.hpp"
 
 #include <gtest/gtest.h>
 //ik this test file is incomplete but idc

@@ -45,7 +45,7 @@
     <ClInclude Include="cth_string.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_type_trait.hpp">
+    <ClInclude Include="cth_type_traits.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cth_windows.hpp">
@@ -60,7 +60,7 @@
     <ClInclude Include="cth_variant.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_pointer.hpp">
+    <ClInclude Include="cth_pointers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cth_io.hpp">
