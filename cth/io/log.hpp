@@ -2,9 +2,9 @@
 
 // ReSharper disable CppClangTidyCppcoreguidelinesMacroUsage
 // disabled because this header is forced to use macros
-#include "cth_console.hpp"
-#include "../cth_constants.hpp"
-#include "../cth_exception.hpp"
+#include "console.hpp"
+#include "../constants.hpp"
+#include "../exception.hpp"
 
 
 #define CTH_LOG_LEVEL_ALL 0

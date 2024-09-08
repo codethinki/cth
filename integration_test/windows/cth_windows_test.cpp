@@ -1,19 +1,47 @@
-#include "../../cth/cth_windows.hpp"
-#include "../../cth/io/cth_log.hpp"
+#include "../../cth/windows.hpp"
+#include "../../cth/io/log.hpp"
 
 #include <chrono>
 #include <gtest/gtest.h>
 
 
 
-namespace cth::win {
-
-
-namespace proc {
+namespace cth::win::proc {
     TEST(elevated, main) { EXPECT_FALSE(cth::win::proc::elevated()); }
+
+    TEST(enumerate, main) {
+        auto const& processIds = cth::win::proc::enumerate();
+        EXPECT_FALSE(processIds.empty());
+    }
+
+    TEST(name, main) {
+        auto const& processIds = cth::win::proc::enumerate();
+        size_t names = 0;
+        for(auto const id : processIds) {
+            auto const str = cth::win::proc::name(id, false);
+            if(str.has_value()) ++names;
+        }
+
+        EXPECT_TRUE(names > 0);
+    }
+
+    TEST(instances, main) {
+        for(auto const& procId : enumerate()) {
+            auto name = cth::win::proc::name(procId, false);
+            if(name.has_value()) std::println("{}", str::conv::narrow(name.value()));
+        }
+
+        auto const instances = cth::win::proc::instances(L"explorer.exe");
+        EXPECT_TRUE(instances.has_value());
+        EXPECT_TRUE(instances.value() > 0);
+    }
+    TEST(active, main) {
+        auto const active = cth::win::proc::active(L"explorer.exe");
+        EXPECT_TRUE(active.has_value());
+    }
 }
 
-namespace cmd {
+namespace cth::win::cmd {
     TEST(hidden, main) {
         [[maybe_unused]] int x = 0;
         x = win::cmd::hidden("hello");
@@ -25,6 +53,4 @@ namespace cmd {
         x = win::cmd::hidden_dir(std::filesystem::current_path().string(), "hello");
         x = win::cmd::hidden_dir(std::filesystem::current_path().string(), "hello {}", "hello");
     }
-} //namespace cmd
-
 }

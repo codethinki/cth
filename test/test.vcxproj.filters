@@ -15,28 +15,28 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cth_algorithm_test.cpp">
+    <ClCompile Include="algorithm_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="cth_concept_test.cpp">
+    <ClCompile Include="concepts_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="cth_numeric_test.cpp">
+    <ClCompile Include="numeric_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="pointers\cth_move_ptr_test.cpp">
+    <ClCompile Include="pointers\move_ptr_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="cth_string_test.cpp">
+    <ClCompile Include="string_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="cth_type_traits_test.cpp">
+    <ClCompile Include="type_traits_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="cth_variant_test.cpp">
+    <ClCompile Include="variant_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="pointers\cth_not_null_test.cpp">
+    <ClCompile Include="pointers\not_null_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

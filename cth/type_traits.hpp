@@ -1,6 +1,5 @@
 // ReSharper disable CppInconsistentNaming
 #pragma once
-
 #include <type_traits>
 
 //it doesn't see that the macro needs std::string_view
@@ -36,6 +35,8 @@ namespace dev {
 template<bool V>
 using bool_constant = dev::constant<bool, V>;
 
+using true_type = bool_constant<true>;
+using false_type = bool_constant<false>;
 
 
 //char
@@ -53,6 +54,38 @@ CTH_TYPE_GROUP(char, is_nchar_v<T> || is_wchar_v<T>)
 //string
 CTH_TYPE_GROUP(string_view_convertable, std::is_convertible_v<T, std::wstring_view> || std::is_convertible_v<T, std::string_view>)
 
+
+//
+
+
+template<class Rng, size_t D>
+struct is_md_range : is_md_range<std::ranges::range_value_t<Rng>, D - 1> {
+    static_assert(std::ranges::range<Rng>, "range dimension < D");
+
+};
+
+
+template<class T>
+struct is_md_range<T, 0> : true_type {
+    using range_value_type = T;
+};
+
+
+template<class T, size_t D>
+constexpr bool is_md_range_v = is_md_range<T, D>::value;
+
+template<class Rng, size_t D>
+using md_range_val_t = typename is_md_range<Rng, D>::range_value_type;
+
+template<class Rng>
+using range_val_t = std::ranges::range_value_t<Rng>;
+
+template<class Rng>
+using range2d_val_t = md_range_val_t<Rng, 2>;
+
+
+template<typename T>
+using pure_t = std::remove_cv_t<std::decay_t<T>>;
 
 //
 //any_of
@@ -230,15 +263,6 @@ struct construct_any_from {
 template<typename T, typename... Ts>
 using construct_any_from_t = typename construct_any_from<T, Ts...>::type;
 
-
-
-template<typename Rng>
-using range2d_value_t = std::ranges::range_value_t<std::ranges::range_value_t<Rng>>;
-
-
-template<typename T>
-using pure_t = std::remove_cv_t<std::decay_t<T>>;
-
 }
 
 
@@ -304,4 +328,6 @@ auto to_constructible_from(T&& arg) {
  */
 template<typename... Ts, typename T>
 auto to_constructible(T&& arg) { return type::to_constructible_from<T, Ts...>(std::forward<T>(arg)); }
+
+
 }

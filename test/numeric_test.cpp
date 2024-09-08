@@ -1,6 +1,6 @@
 // ReSharper disable CppNoDiscardExpression
 // ReSharper disable CppCompileTimeConstantCanBeReplacedWithBooleanConstant
-#include "../cth/cth_numeric.hpp"
+#include "../cth/numeric.hpp"
 
 #include <gtest/gtest.h>
 

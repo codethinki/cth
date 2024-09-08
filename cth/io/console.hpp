@@ -1,5 +1,5 @@
 #pragma once
-#include "../cth_string.hpp"
+#include "../string.hpp"
 
 #include <array>
 #include <iostream>

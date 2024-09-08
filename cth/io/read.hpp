@@ -1,5 +1,5 @@
 #pragma once
-#include "../cth_concepts.hpp"
+#include "../concepts.hpp"
 
 #include <string>
 #include <vector>
@@ -17,4 +17,4 @@ namespace cth::io {
 
 } //namespace cth::io
 
-#include "inl/cth_read.inl"
+#include "inl/read.inl"

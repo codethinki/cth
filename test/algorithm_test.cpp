@@ -1,5 +1,5 @@
-#include "../cth/cth_algorithm.hpp"
-#include "../cth/io/cth_log.hpp"
+#include "../cth/algorithm.hpp"
+#include "../cth/io/log.hpp"
 
 #include <gtest/gtest.h>
 

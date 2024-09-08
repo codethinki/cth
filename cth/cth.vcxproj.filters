@@ -21,58 +21,58 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cth_algorithm.hpp">
+    <ClInclude Include="algorithm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_concepts.hpp">
+    <ClInclude Include="concepts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="io\cth_console.hpp">
+    <ClInclude Include="io\console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\cth_keyboard.hpp">
+    <ClInclude Include="windows\keyboard.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="io\cth_log.hpp">
+    <ClInclude Include="io\log.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_network.hpp">
+    <ClInclude Include="network.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_numeric.hpp">
+    <ClInclude Include="numeric.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_string.hpp">
+    <ClInclude Include="string.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_type_traits.hpp">
+    <ClInclude Include="type_traits.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_windows.hpp">
+    <ClInclude Include="windows.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_exception.hpp">
+    <ClInclude Include="exception.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_image.hpp">
+    <ClInclude Include="image.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_variant.hpp">
+    <ClInclude Include="variant.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_pointers.hpp">
+    <ClInclude Include="pointers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cth_io.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="io\cth_read.hpp">
+    <ClInclude Include="io\read.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cth.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_constants.hpp">
+    <ClInclude Include="constants.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pointer\not_null.hpp">
@@ -88,10 +88,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="windows\cth_windows.inl">
+    <None Include="windows\windows.inl">
       <Filter>Source Files\inl</Filter>
     </None>
-    <None Include="io\inl\cth_read.inl">
+    <None Include="io\inl\read.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

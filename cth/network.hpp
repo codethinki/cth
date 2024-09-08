@@ -8,7 +8,7 @@
 #endif
 #include <boost/asio.hpp>
 
-#include "io/cth_log.hpp"
+#include "io/log.hpp"
 
 //TODO write tests for this
 

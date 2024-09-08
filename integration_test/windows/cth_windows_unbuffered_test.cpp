@@ -1,5 +1,5 @@
-#include "../../cth/cth_windows.hpp"
-#include "../../cth/io/cth_log.hpp"
+#include "../../cth/windows.hpp"
+#include "../../cth/io/log.hpp"
 
 #include <fstream>
 #include <ios>

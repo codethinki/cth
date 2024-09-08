@@ -1,4 +1,4 @@
-#include "../../cth/io/cth_console.hpp"
+#include "../../cth/io/console.hpp"
 
 #include <gtest/gtest.h>
 

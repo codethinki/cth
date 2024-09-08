@@ -1,6 +1,9 @@
 #pragma once
-#include "cth_type_traits.hpp"
-#include "io/cth_log.hpp"
+#include "concepts.hpp"
+#include "type_traits.hpp"
+#include "io/log.hpp"
+
+
 
 #include <algorithm>
 #include <numeric>
@@ -30,14 +33,14 @@ namespace cth::algorithm {
 */
 template<type::range2d_over_cpt<cpt(std::equality_comparable)> Rng>
 [[nodiscard]] auto uniqueCombine(Rng const& selections) {
-    using T = std::remove_cvref_t<type::range2d_value_t<Rng>>;
+    using T = std::remove_cvref_t<type::range2d_val_t<Rng>>;
 
 
     std::unordered_set<T> uniqueElements{};
     std::vector<std::size_t> indexIndices(std::size(selections));
 
     auto i = 0u;
-    while(indexIndices[0] < std::size(selections[0])) {
+    while(indexIndices[0] < std::ranges::size(selections[0])) {
         for(; i < indexIndices.size(); i++) {
             for(; uniqueElements.contains(selections[i][indexIndices[i]]); ++indexIndices[i])
                 if(indexIndices[i] >= std::size(selections[i]) - 1) goto notFinished;
@@ -70,11 +73,11 @@ template<type::range2d_over_cpt<cpt(std::equality_comparable)> Rng>
  * \return vector<integral> based on Rng1
  */
 template<type::range2d_over_cpt<cpt(std::integral)> Rng1, type::range_over_cpt<cpt(std::integral)> Rng2>
-auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::range2d_value_t<Rng1>> {
-    using T = type::range2d_value_t<Rng1>;
+auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::range2d_val_t<Rng1>> {
+    using T = type::range2d_val_t<Rng1>;
 
-    CTH_ERR(!std::ranges::all_of(a_b_options, [&b_max](const std::span<const T> b_options) {
-        return std::ranges::all_of(b_options, [&b_max](const auto index){ return 0 <= index && index < std::ranges::size(b_max); });
+    CTH_ERR(!std::ranges::all_of(a_b_options, [&b_max](std::span<T const> b_options) {
+        return std::ranges::all_of(b_options, [&b_max](auto const index){ return 0 <= index && index < std::ranges::size(b_max); });
         }), "0 <= indices < size(b_max) required") {
         details->add("size(b_max): {}", std::ranges::size(b_max));
         throw details->exception();

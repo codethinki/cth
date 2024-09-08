@@ -28,32 +28,32 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cth.hpp" />
-    <ClInclude Include="cth_algorithm.hpp" />
-    <ClInclude Include="cth_concepts.hpp" />
-    <ClInclude Include="cth_constants.hpp" />
-    <ClInclude Include="io\cth_console.hpp" />
-    <ClInclude Include="cth_exception.hpp" />
-    <ClInclude Include="cth_image.hpp" />
+    <ClInclude Include="algorithm.hpp" />
+    <ClInclude Include="concepts.hpp" />
+    <ClInclude Include="constants.hpp" />
+    <ClInclude Include="io\console.hpp" />
+    <ClInclude Include="exception.hpp" />
+    <ClInclude Include="image.hpp" />
     <ClInclude Include="cth_io.hpp" />
-    <ClInclude Include="io\cth_read.hpp" />
+    <ClInclude Include="io\read.hpp" />
     <ClInclude Include="pointer\move_ptr.hpp" />
     <ClInclude Include="pointer\not_null.hpp" />
-    <ClInclude Include="windows\cth_keyboard.hpp" />
-    <ClInclude Include="io\cth_log.hpp" />
-    <ClInclude Include="cth_pointers.hpp" />
-    <ClInclude Include="cth_network.hpp" />
-    <ClInclude Include="cth_numeric.hpp" />
-    <ClInclude Include="cth_string.hpp" />
-    <ClInclude Include="cth_type_traits.hpp" />
-    <ClInclude Include="cth_variant.hpp" />
-    <ClInclude Include="cth_windows.hpp" />
+    <ClInclude Include="windows\keyboard.hpp" />
+    <ClInclude Include="io\log.hpp" />
+    <ClInclude Include="pointers.hpp" />
+    <ClInclude Include="network.hpp" />
+    <ClInclude Include="numeric.hpp" />
+    <ClInclude Include="string.hpp" />
+    <ClInclude Include="type_traits.hpp" />
+    <ClInclude Include="variant.hpp" />
+    <ClInclude Include="windows.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="io\inl\cth_read.inl" />
-    <None Include="windows\cth_windows.inl" />
+    <None Include="io\inl\read.inl" />
+    <None Include="windows\windows.inl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="utility\regex\remove_const_func_param.txt" />
@@ -161,7 +161,7 @@
       <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_WIN32_WINNT=0x0B00;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -179,7 +179,7 @@
       <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_WIN32_WINNT=0x0B00;_RELEASE;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -217,7 +217,7 @@
       <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_WIN32_WINNT=0x0B00;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BrowseInformation>true</BrowseInformation>
     </ClCompile>
@@ -239,7 +239,7 @@
       <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_WIN32_WINNT=0x0B00;_RELEASE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>

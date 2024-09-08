@@ -1,4 +1,8 @@
-#include "../cth/cth_type_traits.hpp"
+#include "../cth/type_traits.hpp"
+
+#include <array>
+#include <span>
+#include <vector>
 
 #include <gtest/gtest.h>
 //ik this test file is incomplete but idc
@@ -16,6 +20,15 @@ TEST(is_char, value) {
 
     TRAITS_TEST(is_wchar, wchar_t, char);
 }
+using md_range_t = std::vector<std::array<std::span<std::vector<std::vector<uint32_t>>>, 10>>;
+
+TEST(md_range, type_trait) {
+    static_assert(is_md_range_v<md_range_t, 5>, "failed to evaluate is_md_range_v");
+    static_assert(std::same_as<md_range_val_t<md_range_t, 5>, uint32_t>, "failed to evaluate md_range_val_t");
+}
+
+
+
 
 TEST(is_any_of, value) {
     EXPECT_TRUE((type::is_any_of_v<int, char, int, double>));
@@ -69,11 +82,7 @@ TEST(to_convertible, main) {
 
     /*auto x = to_constructible<double>(10);*/
 }
-//TEST(HeaderTypeTraits, TestString) {
-//    TRAITS_TEST(is_nstring, string, wstring);
-//    TRAITS_TEST(is_wstring, wstring, string*);
-//    TRAITS_TEST(is_string, string, string_view);
-//}
 
 
-} // namespace cth::type
+
+} // namespace cth::value_type

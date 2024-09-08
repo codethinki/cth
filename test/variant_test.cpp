@@ -1,4 +1,4 @@
-#include "../cth/cth_variant.hpp"
+#include "../cth/variant.hpp"
 
 #include <gtest/gtest.h>
 

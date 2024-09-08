@@ -1,12 +1,16 @@
 #pragma once
-#include"cth_concepts.hpp"
+#include"concepts.hpp"
 
-#include <filesystem>
+
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <Windows.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include<Windows.h>
 
+#include <filesystem>
 
 
 namespace cth::win {
@@ -35,9 +39,7 @@ namespace cmd {
     * \param command = "cmd.exe /c (...)"
     * \note paths only work with '\' NOT '/'
     */
-    [[nodiscard]] inline int hidden(std::string_view command) {
-        return cth::win::cmd::hidden_dir(std::filesystem::current_path().string(), command);
-    }
+    [[nodiscard]] inline int hidden(std::string_view command) { return cth::win::cmd::hidden_dir(std::filesystem::current_path().string(), command); }
     /**
     * \brief executes a cmd command in the background
     * \param command already contains "cmd.exe /c"
@@ -63,8 +65,26 @@ namespace proc {
      */
     inline bool elevated();
 
-    inline bool active(std::wstring_view process_name);
-    inline uint32_t instances(std::wstring_view process_name);
+    /**
+     * @brief enumerates all processes with id's
+     * @return not @ref std::vector::empty() if successful
+     */
+    inline std::vector<DWORD> enumerate();
+
+    inline std::optional<std::wstring> name(DWORD process_id, bool full_path = false);
+
+    /**
+     * @brief checks if @param process_name is active
+     * @return result if successful, else @ref std::nullopt
+     */
+    inline std::optional<bool> active(std::wstring_view process_name);
+
+    /**
+    * @brief counts the number of process instances
+    * @return number of processes if successful, else @ref std::nullopt
+    * @note max enumerated processes: 1024
+    */
+    inline std::optional<size_t> instances(std::wstring_view process_name);
 } // namespace proc
 
 namespace desktop {
@@ -79,4 +99,4 @@ namespace io {
 } // namespace cth::win
 
 
-#include "windows/cth_windows.inl"
+#include "windows/windows.inl"

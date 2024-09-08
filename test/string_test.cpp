@@ -1,4 +1,4 @@
-#include "../cth/cth_string.hpp"
+#include "../cth/string.hpp"
 
 #include <gtest/gtest.h>
 

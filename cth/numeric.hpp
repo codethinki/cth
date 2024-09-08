@@ -3,8 +3,8 @@
 #include <cassert>
 #include <string>
 
-#include "cth_concepts.hpp"
-#include "io/cth_log.hpp"
+#include "concepts.hpp"
+#include "io/log.hpp"
 
 namespace cth {
 //------------------

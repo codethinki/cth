@@ -42,6 +42,7 @@
 #define CTH_RELEASE_NOEXCEPT noexcept(true)
 #define CTH_RELEASE_CONSTEXPR constexpr
 #endif
+#include <cstdint>
 
 
 

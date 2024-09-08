@@ -1,7 +1,8 @@
 #pragma once
 //you have to define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING in the preprocessor or source io for this to work
-#include "cth_concepts.hpp"
+#include "concepts.hpp"
 
+#include <algorithm>
 #include <codecvt>
 #include <format>
 #include <optional>
@@ -26,12 +27,19 @@ namespace dev {
 
 
 namespace cth::str {
+[[nodiscard]] inline std::vector<char const*> to_c_str_vector(std::span<std::string const> const& str_vec) {
+    std::vector<char const*> charVec(str_vec.size());
+    std::ranges::transform(str_vec, charVec.begin(), [](std::string const& str) { return str.c_str(); });
+
+    return charVec;
+}
+
 template<std::ranges::range Rng> requires(!std::ranges::range<std::ranges::range_value_t<Rng>>)
 [[nodiscard]] std::string to_string(Rng const& range) {
     if(std::ranges::empty(range)) return "[ ]";
 
     std::string str = "[";
-    for(auto&& element : range) str += std::format("{0}, ", element);
+    for(auto const& element : range) str += std::format("{0}, ", element);
     str.pop_back();
     str.back() = ']';
     return str;
