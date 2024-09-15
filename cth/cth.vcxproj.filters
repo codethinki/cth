@@ -81,6 +81,9 @@
     <ClInclude Include="pointer\move_ptr.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="format.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -92,6 +95,9 @@
       <Filter>Source Files\inl</Filter>
     </None>
     <None Include="io\inl\read.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="type_traits\type_traits.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

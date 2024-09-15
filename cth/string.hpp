@@ -18,6 +18,7 @@ namespace dev {
     inline static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter{};
 }
 
+
 [[nodiscard]] inline std::string toN(std::wstring_view str) { return dev::converter.to_bytes(str.data()); }
 [[nodiscard]] inline std::wstring toW(std::string_view str) { return dev::converter.from_bytes(str.data()); }
 
@@ -34,21 +35,21 @@ namespace cth::str {
     return charVec;
 }
 
-template<std::ranges::range Rng> requires(!std::ranges::range<std::ranges::range_value_t<Rng>>)
+
+template<std::ranges::range Rng>
 [[nodiscard]] std::string to_string(Rng const& range) {
+    constexpr bool mdRange = type::md_range<Rng, 2>;
+
+
     if(std::ranges::empty(range)) return "[ ]";
 
     std::string str = "[";
-    for(auto const& element : range) str += std::format("{0}, ", element);
-    str.pop_back();
-    str.back() = ']';
-    return str;
-}
+    for(auto const& element : range)
+        if constexpr(mdRange)
+            str.insert_range(str.end(), std::format("{}, ", cth::str::to_string<std::ranges::range_value_t<Rng>>(element)));
+        else 
+            str.insert_range(str.end(), std::format("{}, ", element));
 
-template<std::ranges::range Rng> requires(std::ranges::range<std::ranges::range_value_t<Rng>>)
-[[nodiscard]] std::string to_string(Rng const& range_of_ranges) {
-    std::string str = "[";
-    for(auto const& range : range_of_ranges) str += std::format<std::string_view>("{0}, ", cth::str::to_string(range));
     str.pop_back();
     str.back() = ']';
     return str;

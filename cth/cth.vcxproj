@@ -31,6 +31,7 @@
     <ClInclude Include="algorithm.hpp" />
     <ClInclude Include="concepts.hpp" />
     <ClInclude Include="constants.hpp" />
+    <ClInclude Include="format.hpp" />
     <ClInclude Include="io\console.hpp" />
     <ClInclude Include="exception.hpp" />
     <ClInclude Include="image.hpp" />
@@ -53,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="io\inl\read.inl" />
+    <None Include="type_traits\type_traits.inl" />
     <None Include="windows\windows.inl" />
   </ItemGroup>
   <ItemGroup>

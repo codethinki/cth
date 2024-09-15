@@ -5,6 +5,7 @@
 #include "concepts.hpp"
 #include "cth_io.hpp"
 #include "exception.hpp"
+#include "format.hpp"
 #include "image.hpp"
 #include "network.hpp"
 #include "numeric.hpp"
