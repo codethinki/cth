@@ -1,6 +1,6 @@
 #pragma once
 //you have to define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING in the preprocessor or source io for this to work
-#include "concepts.hpp"
+#include "type_traits.hpp"
 
 #include <algorithm>
 #include <codecvt>
@@ -114,7 +114,7 @@ template<type::arithmetic T>
  * \brief splits a string into a vector of strings
  * \tparam U the delimiter type
  */
-template<type::string_view_convertable T, type::literal U>
+template<type::convertible_to_any<std::string_view, std::wstring_view> T, type::convertible_to_any<std::string_view, std::wstring_view, char, wchar_t> U>
 [[nodiscard]] auto split(T const& str, U const& delimiter) {
     auto const view = type::to_constructible<std::string_view, std::wstring_view>(str);
     using char_t = typename decltype(view)::value_type;

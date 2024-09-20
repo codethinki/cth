@@ -24,9 +24,6 @@
     <ClInclude Include="algorithm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="concepts.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="io\console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -63,7 +60,7 @@
     <ClInclude Include="pointers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cth_io.hpp">
+    <ClInclude Include="io.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="io\read.hpp">

@@ -18,9 +18,6 @@
     <ClCompile Include="algorithm_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="concepts_test.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="numeric_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>

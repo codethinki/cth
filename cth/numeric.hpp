@@ -3,7 +3,6 @@
 #include <cassert>
 #include <string>
 
-#include "concepts.hpp"
 #include "io/log.hpp"
 
 namespace cth {

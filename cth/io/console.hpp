@@ -149,17 +149,17 @@ namespace dev {
 
     template<type::character T = char>
     static constexpr std::basic_string_view<T> ansiCode(Text_Colors color) {
-        if constexpr(type::is_nchar_v<T>) return TEXT_COLOR_CODES_N[color];
+        if constexpr(type::n_character<T>) return TEXT_COLOR_CODES_N[color];
         else return TEXT_COLOR_CODES_W[color];
     }
     template<type::character T = char>
     static constexpr std::basic_string_view<T> ansiCode(BG_Colors color) {
-        if constexpr(std::is_same_v<char, std::remove_cv_t<T>>) return BG_COLOR_CODES_N[color];
+        if constexpr(type::n_character<T>) return BG_COLOR_CODES_N[color];
         else return BG_COLOR_CODES_W[color];
     }
     template<type::character T = char>
     static constexpr std::basic_string_view<T> ansiCode(Text_Styles color) {
-        if constexpr(std::is_same_v<char, std::remove_cv_t<T>>) return TEXT_STYLE_CODES_N[color];
+        if constexpr(type::n_character<T>) return TEXT_STYLE_CODES_N[color];
         else return TEXT_STYLE_CODES_W[color];
     }
 

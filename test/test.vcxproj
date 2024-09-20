@@ -167,7 +167,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="concepts_test.cpp" />
     <ClCompile Include="algorithm_test.cpp" />
     <ClCompile Include="pointers\not_null_test.cpp" />
     <ClCompile Include="pointers\move_ptr_test.cpp" />

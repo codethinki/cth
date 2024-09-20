@@ -1,5 +1,4 @@
 #pragma once
-#include "concepts.hpp"
 #include "type_traits.hpp"
 #include "io/log.hpp"
 
@@ -33,7 +32,7 @@ namespace cth::algorithm {
 */
 template<type::range2d_over_cpt<cpt(std::equality_comparable)> Rng>
 [[nodiscard]] auto uniqueCombine(Rng const& selections) {
-    using T = std::remove_cvref_t<type::range2d_val_t<Rng>>;
+    using T = std::remove_cvref_t<type::range2d_value_t<Rng>>;
 
 
     std::unordered_set<T> uniqueElements{};
@@ -73,8 +72,8 @@ template<type::range2d_over_cpt<cpt(std::equality_comparable)> Rng>
  * \return vector<integral> based on Rng1
  */
 template<type::range2d_over_cpt<cpt(std::integral)> Rng1, type::range_over_cpt<cpt(std::integral)> Rng2>
-auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::range2d_val_t<Rng1>> {
-    using T = type::range2d_val_t<Rng1>;
+auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::range2d_value_t<Rng1>> {
+    using T = type::range2d_value_t<Rng1>;
 
     CTH_ERR(!std::ranges::all_of(a_b_options, [&b_max](std::span<T const> b_options) {
         return std::ranges::all_of(b_options, [&b_max](auto const index){ return 0 <= index && index < std::ranges::size(b_max); });

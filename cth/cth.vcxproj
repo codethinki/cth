@@ -29,13 +29,12 @@
   <ItemGroup>
     <ClInclude Include="cth.hpp" />
     <ClInclude Include="algorithm.hpp" />
-    <ClInclude Include="concepts.hpp" />
     <ClInclude Include="constants.hpp" />
     <ClInclude Include="format.hpp" />
     <ClInclude Include="io\console.hpp" />
     <ClInclude Include="exception.hpp" />
     <ClInclude Include="image.hpp" />
-    <ClInclude Include="cth_io.hpp" />
+    <ClInclude Include="io.hpp" />
     <ClInclude Include="io\read.hpp" />
     <ClInclude Include="pointer\move_ptr.hpp" />
     <ClInclude Include="pointer\not_null.hpp" />

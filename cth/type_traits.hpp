@@ -1,15 +1,15 @@
 #pragma once
-
-
+#include <limits>
+#include <string>
 #include <type_traits>
 
-#include <string>
 #define cpt(concept) []<concept>{}
 
 
 //constant struct
 
 namespace cth::type {
+
 
 template<auto V>
 struct constant {
@@ -30,6 +30,21 @@ using true_type = bool_constant<true>;
 using false_type = bool_constant<false>;
 }
 
+//helpers
+
+namespace cth::type {
+template<class T, auto TCpt>
+concept satisfies = requires {
+    TCpt.template operator()<T>();
+};
+
+template<auto TCpt, class... Ts>
+concept all_satisfy = (satisfies<Ts, TCpt> and ...);
+
+template<auto TCpt, class... Ts>
+concept any_satisfy = (satisfies<Ts, TCpt> or ...);
+
+}
 
 //independent constants
 
@@ -58,16 +73,22 @@ using pure_t = std::remove_cv_t<std::decay_t<T>>;
 //independent concepts
 
 namespace cth::type {
-template<class T, auto TCpt>
-concept satisfies = requires {
-    TCpt.template operator()<T>();
-};
+
 
 template<typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
 
 template<class Rng, class T>
 concept range_over = std::ranges::range<Rng> and std::same_as<std::ranges::range_value_t<Rng>, T>;
+
+template<class T>
+concept character = std::same_as<pure_t<T>, char> or std::same_as<pure_t<T>, wchar_t>;
+
+template<class T>
+concept n_character = std::same_as<pure_t<T>, char>;
+
+template<class T>
+concept w_character = std::same_as<pure_t<T>, wchar_t>;
 
 template<class T>
 concept has_get = requires(T t) {
@@ -84,6 +105,8 @@ concept has_deref = requires(T t) {
     *t;
 };
 
+
+
 }
 
 
@@ -94,11 +117,12 @@ template<class T>
 using pure_t = std::remove_cv_t<std::decay_t<T>>;
 }
 
-
-//any... type traits
+//is_any_of
 
 namespace cth::type {
-template<class T, class... Ts> struct is_any_of;
+
+template<class T, class... Ts>
+concept is_any_of = any_satisfy<cpt(std::same_as<T>), Ts...>;
 
 /**
  * \brief ::type is equal to first of Ts... that's equal to T or Fallback if none are
@@ -107,11 +131,16 @@ template<class T, class... Ts> struct is_any_of;
 template<class Fb, class T, class... Ts> struct fallback_any_of;
 
 /**
+ * @brief shortcut to @ref fallback_any_of::type
+ */
+template<class Fb, class T, class... Ts>
+using fallback_any_of_t = typename fallback_any_of<Fb, T, Ts...>::type;
+
+/**
  * \brief ::type is equal to first of Ts... that's equal to T
  */
 template<class T, class... Ts>
 struct any_of;
-
 
 
 /**
@@ -120,7 +149,39 @@ struct any_of;
 template<class T, class... Ts>
 using any_of_t = typename any_of<T, Ts...>::type;
 
-template<class T, class... Ts> struct is_any_convertible_to;
+
+
+/**
+ * \brief converts to the first type of Ts... that is the same as T
+ * \tparam Ts to any of Ts...
+ * \tparam T from
+ */
+template<typename T, typename... Ts> requires (is_any_of<T, Ts...>)
+auto to_same_of(T&& arg);
+
+/**
+ * \brief converts to the first type of Ts... that is the same as T
+ * \tparam Ts to any of Ts...
+ * \tparam T from
+ */
+template<typename... Ts, typename T>
+auto to_same(T&& arg);
+}
+
+//convert to any
+
+namespace cth::type {
+/**
+ * @brief true if any of Ts... are convertible to T
+ */
+template<typename T, typename... Ts>
+concept any_convertible_to = any_satisfy<cpt(std::convertible_to<T>), Ts...>;
+
+/**
+ * @brief true if T is convertible to any of Ts...
+ */
+template<typename T, typename... Ts>
+concept convertible_to_any = (std::convertible_to<T, Ts> || ...);
 
 /**
  * @brief ::type is equal to first of Ts... that's convertible from T or Fallback if none are
@@ -139,12 +200,6 @@ template<class Fb, class T, class... Ts>
 using fallback_convert_to_any_t = typename fallback_convert_to_any<Fb, T, Ts...>::type;
 
 /**
- * @brief shortcut to @ref fallback_any_of::type
- */
-template<class Fb, class T, class... Ts>
-using fallback_any_of_t = typename fallback_any_of<Fb, T, Ts...>::type;
-
-/**
  * \brief ::type is equal to first of Ts... that's convertible from T
  * \tparam T from
  * \tparam Ts to any of Ts...
@@ -159,6 +214,35 @@ struct convert_to_any;
  */
 template<typename T, typename... Ts>
 using convert_to_any_t = typename convert_to_any<T, Ts...>::type;
+
+/**
+ * \brief converts to the first type of Ts... that is convertible from T
+ * \tparam Ts to any of Ts...
+ * \tparam U from
+ * \note prioritizes to_same_of<T, Ts...> if available
+ */
+template<typename U, typename... Ts, typename T> requires(convertible_to_any<T, Ts...>)
+auto to_convertible_from(T&& arg);
+
+/**
+ * \brief converts to the first type of Ts... that is convertible from T
+ * \tparam Ts to any of Ts...
+ * \tparam T from
+ * \note prioritizes to_same_of<T, Ts...> if available
+ */
+template<typename... Ts, typename T>
+auto to_convertible(T&& arg);
+}
+
+namespace cth::type {
+
+/**
+ * @brief shortcut to @ref is_any_constructible_from_v
+ */
+template<typename T, typename... Ts>
+concept any_constructible_from = any_satisfy<cpt(std::constructible_from<T>), Ts...>;
+
+
 
 /**
  * \brief ::type is equal to first of Ts... that's constructible from T or Fallback if none are 
@@ -178,6 +262,31 @@ struct fallback_construct_any_from;
  */
 template<typename T, typename... Ts>
 struct construct_any_from;
+
+/**
+ * @brief shortcut to @ref construct_any_from_t::type
+ */
+template<typename T, typename... Ts>
+using construct_any_from_t = typename construct_any_from<T, Ts...>::type;
+
+
+
+/**
+ * \brief constructs the first type of Ts... that is constructible from T
+ * \tparam Ts to any of Ts...
+ * \tparam U from
+ * \note prioritizes to_convertible<T, Ts...> if available
+ */
+template<typename U, typename... Ts, typename T> requires(any_constructible_from<T, Ts...>)
+auto to_constructible_from(T&& arg);
+/**
+ * \brief constructs the first type of Ts... that is constructible from T
+ * \tparam Ts to any of Ts...
+ * \tparam T from
+ * \note prioritizes to_convertible<T, Ts...> if available
+ */
+template<typename... Ts, typename T>
+auto to_constructible(T&& arg);
 }
 
 
@@ -185,33 +294,67 @@ struct construct_any_from;
 
 namespace cth::type {
 namespace dev {
+    constexpr size_t MAX_D = std::numeric_limits<size_t>::max();
+
     template<class T, size_t Max = 0> requires(!std::ranges::range<T>)
     consteval size_t dimensions(size_t n) { return n; }
-    template<std::ranges::range Rng, size_t Max = std::numeric_limits<size_t>::max()>
+    template<std::ranges::range Rng, size_t Max = MAX_D>
     consteval size_t dimensions(size_t n);
 }
 
-
-template<class Rng, size_t Max = std::numeric_limits<size_t>::max()>
+/**
+ * @brief counts the dimensions of @ref Rng
+ * @tparam Rng range
+ * @tparam Max optional max search depth
+ */
+template<class Rng, size_t Max = dev::MAX_D>
 consteval size_t dimensions();
 
-template<class Rng, size_t N>
-concept md_range = dimensions<Rng, N>() == N;
-
-template<class Rng, size_t D, class = empty_t>
-struct md_range_value {
-    using type = Rng;
-    static_assert(md_range<Rng, D>, "failed to substitute, D <= dimensions<Rng>() required");
-};
-
-template<class Rng, size_t N>
-struct md_range_value<Rng, N, std::enable_if_t<(std::ranges::range<Rng> && N > 0),
-        empty_t>> : md_range_value<std::ranges::range_value_t<Rng>, N - 1> {};
-
-
-
+/**
+ * @brief checks if @ref Rng is of at least @ref D dimensions
+ * @tparam Rng range
+ * @tparam D dimensions
+ */
 template<class Rng, size_t D>
+concept md_range = dimensions<Rng, D>() == D;
+
+/**
+ * @brief type trait to get the first non range type or the @ref D -th dimension range value type of @ref Rng
+ * @tparam Rng range
+ * @tparam D dimension (optional)
+ */
+template<class Rng, size_t D = dev::MAX_D, class = empty_t>
+struct md_range_value;
+
+
+/**
+ * @brief shortcut to @ref md_range_value::type
+ */
+template<class Rng, size_t D = dev::MAX_D>
 using md_range_value_t = typename md_range_value<Rng, D>::type;
+
+/**
+ * @brief shortcut to @ref md_range_value_t<Rng, 2>
+ */
+template<class Rng>
+using range2d_value_t = md_range_value_t<Rng, 2>;
+
+
+template<class Rng, class T, size_t D = dev::MAX_D>
+concept md_range_over = std::same_as<T, md_range_value_t<Rng, D>>;
+
+template<class Rng, auto TCpt, size_t D = dev::MAX_D>
+concept md_range_over_cpt = satisfies<md_range_value_t<Rng, D>, TCpt>;
+
+
+template<class Rng, auto TCpt>
+concept range_over_cpt = md_range_over_cpt<Rng, TCpt, 1>;
+
+template<class Rng, class T>
+concept range2d_over = md_range_over<Rng, T, 2>;
+template<class Rng, auto TCpt>
+concept range2d_over_cpt = md_range_over_cpt<Rng, TCpt, 2>;
+
 }
 
 
