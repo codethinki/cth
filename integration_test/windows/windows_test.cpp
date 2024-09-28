@@ -1,5 +1,6 @@
-#include "../../cth/windows.hpp"
-#include "../../cth/io/log.hpp"
+#include "cth/io/log.hpp"
+
+#include "cth/windows.hpp"
 
 #include <chrono>
 #include <gtest/gtest.h>

@@ -7,6 +7,7 @@
 #include "../exception.hpp"
 
 
+
 #define CTH_LOG_LEVEL_ALL 0
 #define CTH_LOG_LEVEL_DEBUG 0
 #define CTH_LOG_LEVEL_INFO 1
@@ -23,50 +24,48 @@
 #include <utility>
 
 
+namespace cth::log::dev {
+inline bool colored = true;
+inline io::col_stream logStream{&std::cerr, io::error.state()}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+
+static constexpr io::Text_Colors textColor(cth::except::Severity severity) {
+    switch(severity) {
+        case cth::except::LOG:
+            return io::WHITE_TEXT_COL;
+        case cth::except::Severity::INFO:
+            return io::DARK_CYAN_TEXT_COL;
+        case cth::except::Severity::WARNING:
+            return io::DARK_YELLOW_TEXT_COL;
+        case cth::except::Severity::ERR:
+            return io::DARK_RED_TEXT_COL;
+        case cth::except::Severity::CRITICAL:
+            return io::DARK_RED_TEXT_COL;
+        case except::SEVERITY_SIZE:
+        default:
+            std::unreachable();
+    }
+}
+
+constexpr static std::string_view label(cth::except::Severity severity) {
+    switch(severity) {
+        case cth::except::Severity::LOG:
+            return "[LOG]";
+        case cth::except::Severity::INFO:
+            return "[INFO]";
+        case cth::except::Severity::WARNING:
+            return "[WARNING]";
+        case cth::except::Severity::ERR:
+            return "[ERROR]";
+        case cth::except::Severity::CRITICAL:
+            return "[CRITICAL]";
+        case cth::except::Severity::SEVERITY_SIZE:
+        default:
+            std::unreachable();
+    }
+}
+}
+
 namespace cth::log {
-
-
-namespace dev {
-    inline bool colored = true;
-    inline io::col_stream logStream{&std::cerr, io::error.state()}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
-    static constexpr io::Text_Colors textColor(cth::except::Severity severity) {
-        switch(severity) {
-            case cth::except::LOG:
-                return io::WHITE_TEXT_COL;
-            case cth::except::Severity::INFO:
-                return io::DARK_CYAN_TEXT_COL;
-            case cth::except::Severity::WARNING:
-                return io::DARK_YELLOW_TEXT_COL;
-            case cth::except::Severity::ERR:
-                return io::DARK_RED_TEXT_COL;
-            case cth::except::Severity::CRITICAL:
-                return io::DARK_RED_TEXT_COL;
-            case except::SEVERITY_SIZE:
-            default:
-                std::unreachable();
-        }
-    }
-
-    constexpr static std::string_view label(cth::except::Severity severity) {
-        switch(severity) {
-            case cth::except::Severity::LOG:
-                return "[LOG]";
-            case cth::except::Severity::INFO:
-                return "[INFO]";
-            case cth::except::Severity::WARNING:
-                return "[WARNING]";
-            case cth::except::Severity::ERR:
-                return "[ERROR]";
-            case cth::except::Severity::CRITICAL:
-                return "[CRITICAL]";
-            case cth::except::Severity::SEVERITY_SIZE:
-            default:
-                std::unreachable();
-        }
-    }
-} // namespace dev
-
 /**
  * \brief sets a colored log stream. nullptr -> colored console output
  */
@@ -181,13 +180,19 @@ namespace dev {
      * \param severity log severity
      */
 #define CTH_DEV_DELAYED_LOG_TEMPLATE(severity, expr, message_str, ...) \
-    if(bool const expression = static_cast<bool>(expr); expression) [[unlikely]]\
-     if(auto const details =\
-        (expression ? std::make_unique<cth::log::dev::LogObj<severity>>(cth::except::default_exception{ std::format(message_str, __VA_ARGS__),\
-            severity, std::source_location::current(), std::stacktrace::current()}) : nullptr);\
-            expression) //{...}
-#define CTH_DEV_DISABLED_LOG_TEMPLATE() if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; false) //{...}
+     if(auto const details = [&]() {\
+        auto const expression = static_cast<bool>(expr);\
+        if(!expression) [[likely]] return std::unique_ptr<log::dev::LogObj<severity>>{};\
+        \
+        return std::make_unique<log::dev::LogObj<severity>>(cth::except::default_exception{std::format(message_str, __VA_ARGS__),\
+            severity, std::source_location::current(), std::stacktrace::current()});\
+    }(); static_cast<bool>(expr)) [[unlikely]]
 
+#define CTH_DEV_DISABLED_CRITICAL_TEMPLATE(expr) \
+    [[assume(!static_cast<bool>(expr))]]\
+    if(std::unique_ptr<log::dev::LogObj<cth::except::Severity::CRITICAL>> details = nullptr; static_cast<bool>(expr)) [[unlikely]]
+
+#define CTH_DEV_DISABLED_LOG_TEMPLATE() if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; false) //{...}
 
 } // namespace dev
 
@@ -259,8 +264,8 @@ namespace dev {
 //------------------------------
 //        CTH_LOGS
 //------------------------------
-#define CTH_ASSERT(expression, message, ...) CTH_DEV_DISABLED_LOG_TEMPLATE()
-#define CTH_ABORT(expression, message, ...) CTH_DEV_DISABLED_LOG_TEMPLATE()
+#define CTH_ASSERT(expression, message, ...) CTH_DEV_DISABLED_CRITICAL_TEMPLATE(!static_cast<bool>(expression))
+#define CTH_CRITICAL(expression, message, ...) CTH_DEV_DISABLED_CRITICAL_TEMPLATE(expression)
 
 #define CTH_ERR(expression, message, ...) CTH_DEV_DISABLED_LOG_TEMPLATE()
 #define CTH_WARN(expression, message, ...) CTH_DEV_DISABLED_LOG_TEMPLATE()
@@ -282,7 +287,7 @@ namespace dev {
 #define CTH_ASSERT(expression, message, ...) CTH_DEV_DELAYED_LOG_TEMPLATE(cth::except::Severity::CRITICAL, !(expression), message, __VA_ARGS__)
 
 
-#undef CTH_ABORT
+#undef CTH_CRITICAL
 /**
  * \brief can execute code before abort (use {} for multiple lines)
  * \param expression static_cast<bool>(expression) == true -> abort
@@ -291,7 +296,7 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_ABORT(expression, message, ...) CTH_DEV_DELAYED_LOG_TEMPLATE(cth::except::Severity::CRITICAL, expression, message, __VA_ARGS__)
+#define CTH_CRITICAL(expression, message, ...) CTH_DEV_DELAYED_LOG_TEMPLATE(cth::except::Severity::CRITICAL, expression, message, __VA_ARGS__)
 
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_CRITICAL
 

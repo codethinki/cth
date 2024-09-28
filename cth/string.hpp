@@ -1,5 +1,6 @@
 #pragma once
 //you have to define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING in the preprocessor or source io for this to work
+#include "format.hpp"
 #include "type_traits.hpp"
 
 #include <algorithm>
@@ -35,7 +36,6 @@ namespace cth::str {
     return charVec;
 }
 
-
 template<std::ranges::range Rng>
 [[nodiscard]] std::string to_string(Rng const& range) {
     constexpr bool mdRange = type::md_range<Rng, 2>;
@@ -47,7 +47,7 @@ template<std::ranges::range Rng>
     for(auto const& element : range)
         if constexpr(mdRange)
             str.insert_range(str.end(), std::format("{}, ", cth::str::to_string<std::ranges::range_value_t<Rng>>(element)));
-        else 
+        else
             str.insert_range(str.end(), std::format("{}, ", element));
 
     str.pop_back();
@@ -130,6 +130,8 @@ template<type::convertible_to_any<std::string_view, std::wstring_view> T, type::
 
 
 } // namespace cth::str
+
+CTH_FORMAT_CPT(std::ranges::range, cth::str::to_string)
 
 
 

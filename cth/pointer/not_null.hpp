@@ -43,8 +43,7 @@ private:
     static constexpr bool RELEASE_VAL_NOEXCEPT = NOEXCEPT_ASSIGN && NOEXCEPT_MOVE_CTOR;
 
     static CTH_RELEASE_CONSTEXPR void checkVal(T const& obj) noexcept(NOEXCEPT_CHECK_VAL) {
-        if constexpr(COMPILATION_MODE == MODE_DEBUG) { CTH_ERR(obj == Null, "obj must not be Null") throw details->exception(); } else
-            std::unreachable();
+        CTH_CRITICAL(obj == Null, "obj must not be Null") {}
     }
 
 public:

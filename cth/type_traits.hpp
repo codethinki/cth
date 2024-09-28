@@ -294,7 +294,7 @@ auto to_constructible(T&& arg);
 
 namespace cth::type {
 namespace dev {
-    constexpr size_t MAX_D = std::numeric_limits<size_t>::max();
+    constexpr size_t MAX_D = (std::numeric_limits<size_t>::max)();
 
     template<class T, size_t Max = 0> requires(!std::ranges::range<T>)
     consteval size_t dimensions(size_t n) { return n; }

@@ -37,17 +37,6 @@ TEST(not_null, comparison) {
     EXPECT_FALSE(px >= py);
 }
 
-
-
-TEST(not_null, nullptr_crash) {
-#ifdef CTH_DEBUG_MODE
-    std::unique_ptr<int> constexpr nullPtr{};
-    ASSERT_ANY_THROW(not_null(nullPtr.get()));
-#else
-    ASSERT_EQ(true, true);
-#endif
-}
-
 TEST(not_null, constructor) {
     not_null const ptr(data.get());
     ASSERT_EQ(ptr.get(), data.get());

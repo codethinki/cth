@@ -142,7 +142,6 @@ auto to_constructible(T&& arg) { return type::to_constructible_from<T, Ts...>(st
 
 }
 
-
 namespace cth::type {
 namespace dev {
     template<std::ranges::range Rng, size_t Max>

@@ -18,19 +18,22 @@
     <ClCompile Include="io\cth_console_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\cth_windows_test.cpp">
+    <ClCompile Include="windows\windows_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\cth_windows_unbuffered_test.cpp">
+    <ClCompile Include="windows\windows_unbuffered_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="io\cth_read_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\cth_keyboard_test.cpp">
+    <ClCompile Include="windows\keyboard_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="io\cth_log_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pointers\not_null_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -40,14 +40,17 @@ constexpr static std::string_view to_string(Severity sev) {
     }
     return "UNKNOWN";
 }
+}
 
+CTH_FORMAT_TYPE(cth::except::Severity, cth::except::to_string)
 
+namespace cth::except {
 class default_exception : public std::exception {
 public:
     explicit default_exception(std::string msg, Severity const severity = cth::except::ERR,
         std::source_location loc = std::source_location::current(),
         std::stacktrace trace = std::stacktrace::current()) : _severity(severity), _msg{std::format(" {0}\n", msg)},
-        _sourceLocation{loc}, _trace{std::move(trace)}, _what{string()}{}
+        _sourceLocation{loc}, _trace{std::move(trace)}, _what{string()} {}
 
 
     default_exception& add(std::string msg) noexcept { return addNoCpy(msg); }
