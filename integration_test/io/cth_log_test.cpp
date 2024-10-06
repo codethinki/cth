@@ -22,7 +22,9 @@ TEST(log_macros, debug) {
         CTH_ERR(true, "CTH_ERR with detail \"hello {}\" ", x) {
             details->add("hello {}", x);
             throw except::data_exception{1, details->exception()};
+
         }
+        FAIL() << "CTH_ERR must throw here";
     }
     catch([[maybe_unused]] except::default_exception& e) { ASSERT_TRUE(true); }
 #endif
@@ -42,7 +44,15 @@ TEST(log_macros, stable) {
     CTH_STABLE_WARN(true, "stable warning {}", x) ++x;
     ASSERT_EQ(x, 3);
 
-    CTH_STABLE_ERR(true, "stable error {}", x) ++x;
+
+    try {
+        CTH_STABLE_ERR(true, "stable error {}", x) {
+            ++x;
+            throw details->exception();
+        }
+        FAIL() << "CTH_STABLE_ERR must throw here";
+    }
+    catch([[maybe_unused]] cth::except::default_exception const&) { ASSERT_TRUE(true); }
     ASSERT_EQ(x, 4);
 }
 

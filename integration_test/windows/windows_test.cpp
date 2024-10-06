@@ -27,10 +27,6 @@ namespace cth::win::proc {
     }
 
     TEST(instances, main) {
-        for(auto const& procId : enumerate()) {
-            auto name = cth::win::proc::name(procId, false);
-            if(name.has_value()) std::println("{}", str::conv::narrow(name.value()));
-        }
 
         auto const instances = cth::win::proc::instances(L"explorer.exe");
         EXPECT_TRUE(instances.has_value());
