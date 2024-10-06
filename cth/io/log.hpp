@@ -30,40 +30,29 @@ inline io::col_stream logStream{&std::cerr, io::error.state()}; // NOLINT(cppcor
 
 static constexpr io::Text_Colors textColor(cth::except::Severity severity) {
     switch(severity) {
-        case cth::except::LOG:
-            return io::WHITE_TEXT_COL;
-        case cth::except::Severity::INFO:
-            return io::DARK_CYAN_TEXT_COL;
-        case cth::except::Severity::WARNING:
-            return io::DARK_YELLOW_TEXT_COL;
-        case cth::except::Severity::ERR:
-            return io::DARK_RED_TEXT_COL;
-        case cth::except::Severity::CRITICAL:
-            return io::DARK_RED_TEXT_COL;
+        case cth::except::LOG: return io::WHITE_TEXT_COL;
+        case cth::except::Severity::INFO: return io::DARK_CYAN_TEXT_COL;
+        case cth::except::Severity::WARNING: return io::DARK_YELLOW_TEXT_COL;
+        case cth::except::Severity::ERR: return io::DARK_RED_TEXT_COL;
+        case cth::except::Severity::CRITICAL: return io::DARK_RED_TEXT_COL;
         case except::SEVERITY_SIZE:
-        default:
-            std::unreachable();
+        default: std::unreachable();
     }
 }
 
 constexpr static std::string_view label(cth::except::Severity severity) {
     switch(severity) {
-        case cth::except::Severity::LOG:
-            return "[LOG]";
-        case cth::except::Severity::INFO:
-            return "[INFO]";
-        case cth::except::Severity::WARNING:
-            return "[WARNING]";
-        case cth::except::Severity::ERR:
-            return "[ERROR]";
-        case cth::except::Severity::CRITICAL:
-            return "[CRITICAL]";
+        case cth::except::Severity::LOG: return "[LOG]";
+        case cth::except::Severity::INFO: return "[INFO]";
+        case cth::except::Severity::WARNING: return "[WARNING]";
+        case cth::except::Severity::ERR: return "[ERROR]";
+        case cth::except::Severity::CRITICAL: return "[CRITICAL]";
         case cth::except::Severity::SEVERITY_SIZE:
-        default:
-            std::unreachable();
+        default: std::unreachable();
     }
 }
 }
+
 
 namespace cth::log {
 /**
@@ -124,32 +113,27 @@ namespace dev {
      */
     template<cth::except::Severity S>
     struct LogObj {
-        explicit LogObj(cth::except::default_exception exception) : _exception(std::move(exception)) {}
+        explicit LogObj(cth::except::default_exception exception) : _exception{std::move(exception)} {}
         ~LogObj() {
             if constexpr(static_cast<int>(S) < CTH_LOG_LEVEL) return;
+            if(_moved) return;
 
             std::string out = "\n";
 
             switch(S) {
-                case except::CRITICAL:
-                    out += _exception.string();
+                case except::CRITICAL: out += _exception.string();
                     break;
-                case except::ERR:
-                    out += _exception.string();
+                case except::ERR: out += _exception.string();
                     break;
-                case except::WARNING:
-                    out += std::format("{0} {1} {2} {3}", _exception.what(), _exception.details(), _exception.func_string(), _exception.loc_string());
+                case except::WARNING: out += std::format("{0} {1} {2} {3}", _exception.msg(), _exception.details(), _exception.func_string(),
+                        _exception.loc_string());
                     break;
-                case except::INFO:
-                    out += std::format("{0} {1} {2}", _exception.what(), _exception.details(), _exception.func_string());
+                case except::INFO: out += std::format("{0} {1} {2}", _exception.msg(), _exception.details(), _exception.func_string());
                     break;
-                case except::LOG:
-                    out += std::format("{0} {1}", _exception.what(), _exception.details());
+                case except::LOG: out += std::format("{0} {1}", _exception.msg(), _exception.details());
                     break;
-                case except::SEVERITY_SIZE:
-                    std::unreachable();
-                default:
-                    std::unreachable();
+                case except::SEVERITY_SIZE: std::unreachable();
+                default: std::unreachable();
             }
             cth::log::msg(S, out);
 
@@ -161,15 +145,22 @@ namespace dev {
 
     private:
         cth::except::default_exception _exception;
+        bool _moved = false;
 
     public:
         [[nodiscard]] std::string string() const { return _exception.string(); }
         [[nodiscard]] cth::except::default_exception exception() const { return _exception; }
 
         LogObj(LogObj const& other) = default;
-        LogObj(LogObj&& other) noexcept = default;
+        LogObj(LogObj&& other) noexcept : _exception{std::move(other._exception)} {
+            other._moved = true;
+        }
         LogObj& operator=(LogObj const& other) = default;
-        LogObj& operator=(LogObj&& other) noexcept = default;
+        LogObj& operator=(LogObj&& other) noexcept {
+            other._moved = true;
+            _exception = std::move(other._exception);
+            return *this;
+        }
     };
 
 
@@ -180,16 +171,17 @@ namespace dev {
      * \param severity log severity
      */
 #define CTH_DEV_DELAYED_LOG_TEMPLATE(severity, expr, message_str, ...) \
-     if(auto const details = [&]() {\
-        auto const expression = static_cast<bool>(expr);\
-        if(!expression) [[likely]] return std::unique_ptr<log::dev::LogObj<severity>>{};\
-        \
-        return std::make_unique<log::dev::LogObj<severity>>(cth::except::default_exception{std::format(message_str, __VA_ARGS__),\
-            severity, std::source_location::current(), std::stacktrace::current()});\
-    }(); static_cast<bool>(expr)) [[unlikely]]
+     if(auto const details = (static_cast<bool>(expr)) ?\
+            std::make_unique<log::dev::LogObj<severity>>(\
+                cth::except::default_exception{std::format(message_str, __VA_ARGS__),\
+                severity, std::source_location::current(), std::stacktrace::current()}\
+            ) :\
+            nullptr;\
+        details != nullptr) [[unlikely]]
 
 #define CTH_DEV_DISABLED_CRITICAL_TEMPLATE(expr) \
-    [[assume(!static_cast<bool>(expr))]]\
+    /*TEMP currently not supported by msvc[[assume(!static_cast<bool>(expr))]]; \*/\
+    __assume(!static_cast<bool>(expr));\
     if(std::unique_ptr<log::dev::LogObj<cth::except::Severity::CRITICAL>> details = nullptr; static_cast<bool>(expr)) [[unlikely]]
 
 #define CTH_DEV_DISABLED_LOG_TEMPLATE() if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; false) //{...}

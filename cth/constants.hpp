@@ -22,7 +22,7 @@
 
 #ifndef CTH_DEBUG_MODE
 #ifndef CTH_RELEASE_MODE
-#warning "Neither CTH_DEBUG_MODE nor CTH_RELEASE_MODE is defined. Defaulting to CTH_DEBUG_MODE."
+#error "Neither CTH_DEBUG_MODE nor CTH_RELEASE_MODE is defined."
 #define CTH_DEBUG_MODE
 #endif
 #endif

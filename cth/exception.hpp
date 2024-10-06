@@ -11,6 +11,7 @@
 #include<stacktrace>
 #include <string>
 
+
 namespace cth::except {
 
 
@@ -25,24 +26,20 @@ enum Severity {
 constexpr static std::string_view to_string(Severity sev) {
     switch(sev) {
         // NOLINT(clang-diagnostic-switch-enum)
-        case LOG:
-            return "LOG";
-        case INFO:
-            return "INFO";
-        case WARNING:
-            return "WARNING";
-        case ERR:
-            return "ERROR";
-        case CRITICAL:
-            return "CRITICAL ERROR";
-        default:
-            std::unreachable();
+        case LOG: return "LOG";
+        case INFO: return "INFO";
+        case WARNING: return "WARNING";
+        case ERR: return "ERROR";
+        case CRITICAL: return "CRITICAL ERROR";
+        default: std::unreachable();
     }
     return "UNKNOWN";
 }
 }
 
+
 CTH_FORMAT_TYPE(cth::except::Severity, cth::except::to_string)
+
 
 namespace cth::except {
 class default_exception : public std::exception {

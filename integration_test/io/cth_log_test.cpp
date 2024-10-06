@@ -2,30 +2,29 @@
 
 #include <gtest/gtest.h>
 
-#define FMT_ARGS(message, ...) std::format(message, __VA_ARGS__);
 
 namespace cth::log {
 
 
 TEST(log_macros, debug) {
-#ifdef _DEBUG
-    int x;
+#ifdef CTH_DEBUG_MODE
+    int x = 0;
 
-    CTH_LOG(true, "log") x = 1;
+    CTH_LOG(true, "CTH_LOG {}", x) ++x;
     ASSERT_EQ(x, 1);
 
-    CTH_INFORM(true, "info") x = 2;
+    CTH_INFORM(true, "CTH_INFO {}", x) ++x;
     ASSERT_EQ(x, 2);
 
-    CTH_WARN(true, "warning") x = 3;
+    CTH_WARN(true, "CTH_WARN {}", x) ++x;
     ASSERT_EQ(x, 3);
     try {
-        CTH_ERR(true, "err with description") {
-            details->add("hello");
+        CTH_ERR(true, "CTH_ERR with detail \"hello {}\" ", x) {
+            details->add("hello {}", x);
             throw except::data_exception{1, details->exception()};
         }
     }
-    catch(except::default_exception& e) { std::print("{}", e.what()); }
+    catch([[maybe_unused]] except::default_exception& e) { ASSERT_TRUE(true); }
 #endif
     ASSERT_EQ(1, 1);
 
@@ -34,16 +33,16 @@ TEST(log_macros, stable) {
     int x = 0;
 
 
-    CTH_STABLE_LOG(true, "stable log {}", x) x = 1;
+    CTH_STABLE_LOG(true, "stable log {}", x) ++x;
     ASSERT_EQ(x, 1);
 
-    CTH_STABLE_INFORM(true, "stable info {0}, {1}", x, 2) x = 2;
+    CTH_STABLE_INFORM(true, "stable info {}", x) ++x;
     ASSERT_EQ(x, 2);
 
-    CTH_STABLE_WARN(true, "stable warning") x = 3;
+    CTH_STABLE_WARN(true, "stable warning {}", x) ++x;
     ASSERT_EQ(x, 3);
 
-    CTH_STABLE_ERR(true, "stable error") x = 4;
+    CTH_STABLE_ERR(true, "stable error {}", x) ++x;
     ASSERT_EQ(x, 4);
 }
 
