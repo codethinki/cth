@@ -39,7 +39,7 @@ private:
     static constexpr bool ADAPT_RELEASE = Adapt && cth::type::has_release<T>;
     static constexpr bool ADAPT_GET = Adapt && cth::type::has_get<T>;
 
-    static constexpr bool NOEXCEPT_CHECK_VAL = COMPILATION_MODE != MODE_DEBUG;
+    static constexpr bool NOEXCEPT_CHECK_VAL = COMPILATION_MODE != CompilationMode::DEBUG;
     static constexpr bool RELEASE_VAL_NOEXCEPT = NOEXCEPT_ASSIGN && NOEXCEPT_MOVE_CTOR;
 
     static CTH_RELEASE_CONSTEXPR void checkVal(T const& obj) noexcept(NOEXCEPT_CHECK_VAL) {

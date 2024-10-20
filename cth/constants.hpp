@@ -5,7 +5,9 @@
 #define CTH_DEBUG_MODE
 #endif
 #endif
-#elifdef _RELEASE
+#endif
+
+#ifdef _RELEASE
 #ifndef CTH_DEBUG_MODE
 #ifndef CTH_RELEASE_MODE
 #define CTH_RELEASE_MODE
@@ -23,7 +25,6 @@
 #ifndef CTH_DEBUG_MODE
 #ifndef CTH_RELEASE_MODE
 #error "Neither CTH_DEBUG_MODE nor CTH_RELEASE_MODE is defined."
-#define CTH_DEBUG_MODE
 #endif
 #endif
 
@@ -47,16 +48,16 @@
 
 
 namespace cth {
-enum CompilationMode : uint8_t {
-    MODE_DEBUG,
-    MODE_RELEASE,
+enum class CompilationMode {
+    DEBUG,
+    RELEASE,
 };
 
 constexpr auto COMPILATION_MODE =
 #ifdef CTH_DEBUG_MODE
-    MODE_DEBUG;
+    CompilationMode::DEBUG;
 #else
-    MODE_RELEASE;
+    CompilationMode::RELEASE;
 #endif
 
 }
