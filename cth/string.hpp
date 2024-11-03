@@ -43,16 +43,18 @@ template<std::ranges::range Rng>
 
     if(std::ranges::empty(range)) return "[ ]";
 
-    std::string str = "[";
-    for(auto const& element : range)
-        if constexpr(mdRange)
-            str.insert_range(str.end(), std::format("{}, ", cth::str::to_string<std::ranges::range_value_t<Rng>>(element)));
+    std::string string = "[";
+    std::ranges::for_each(range, [&string](auto const& element) {
+         if constexpr(mdRange)
+            string.insert_range(string.end(), std::format("{}, ", cth::str::to_string<std::ranges::range_value_t<Rng>>(element)));
         else
-            str.insert_range(str.end(), std::format("{}, ", element));
+            string.insert_range(string.end(), std::format("{}, ", element));
+    });
+       
 
-    str.pop_back();
-    str.back() = ']';
-    return str;
+    string.pop_back();
+    string.back() = ']';
+    return string;
 }
 
 template<cth::type::arithmetic T>
