@@ -38,7 +38,7 @@ constexpr static std::string_view to_string(Severity sev) {
 }
 
 
-CTH_FORMAT_TYPE(cth::except::Severity, cth::except::to_string)
+CTH_FORMAT_TYPE(cth::except::Severity, cth::except::to_string);
 
 
 namespace cth::except {

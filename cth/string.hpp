@@ -133,7 +133,7 @@ template<type::convertible_to_any<std::string_view, std::wstring_view> T, type::
 
 } // namespace cth::str
 
-CTH_FORMAT_CPT(std::ranges::range, cth::str::to_string)
+CTH_FORMAT_CPT(std::ranges::range, cth::str::to_string);
 
 
 

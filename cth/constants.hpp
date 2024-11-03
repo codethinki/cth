@@ -5,15 +5,17 @@
 #define CTH_DEBUG_MODE
 #endif
 #endif
-#endif
 
-#ifdef _RELEASE
-#ifndef CTH_DEBUG_MODE
+#elifdef _RELEASE
+#ifndef CTH_RELEASE_MODE
+#define CTH_RELEASE_MODE
+#endif
+#elifdef NDEBUG
 #ifndef CTH_RELEASE_MODE
 #define CTH_RELEASE_MODE
 #endif
 #endif
-#endif
+
 
 #ifdef CTH_DEBUG_MODE
 #ifdef CTH_RELEASE_MODE
