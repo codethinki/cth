@@ -1,7 +1,53 @@
 #pragma once
 
 #include<concepts>
+#include <stdexcept>
 #include <type_traits>
+
+//trait functions
+namespace cth::type {
+template<class T, template<class> class Trait, size_t N>
+consteval auto apply_trait() {
+    constexpr bool valid = applicable<T, Trait>;
+
+    if constexpr(N == 0) return std::type_identity<T>{};
+    else if constexpr(!valid) static_assert(valid, "[Trait] not applicable on [T]");
+    else return apply_trait<Trait<T>, Trait, N - 1>();
+}
+
+namespace dev {
+    template<class T, template<class> class Trait, size_t Max>
+    consteval size_t trait_count(size_t n = 0) {
+        if constexpr(!applicable<T, Trait>) return n;
+        else {
+            if(n >= Max) return n;
+            return trait_count<apply_trait_t<T, Trait>, Trait, Max>(n + 1);
+        }
+    }
+}
+
+
+template<class T, template<class> class Trait, size_t Max>
+consteval size_t trait_count() { return dev::trait_count<T, Trait, Max>(); }
+
+namespace dev {
+    template<class T, auto TCpt, template<class> class Trait, size_t MaxDepth>
+    consteval size_t cpt_count(size_t n = 0) {
+        if(n >= MaxDepth) return n;
+        if constexpr(!satisfies<T, TCpt>) return n;
+        else if constexpr(!applicable<T, Trait>) throw std::logic_error{"[Trait] must be applicable on [T], (TCpt satisfied and MaxDepth not reached)"};
+        else {
+            using U = apply_trait_t<T, Trait>;
+            return cpt_count<U, TCpt, Trait, MaxDepth>(n + 1);
+        }
+    }
+}
+
+template<class T, auto TCpt, template<class> class Trait, size_t MaxDepth>
+consteval size_t cpt_count() { return dev::cpt_count<T, TCpt, Trait, MaxDepth>(); }
+
+
+}
 
 //any_of
 
@@ -67,7 +113,6 @@ struct convert_to_any {
     using type = typename fallback_convert_to_any<empty_t, T, Ts...>::type;
     static_assert(!std::same_as<type, empty_t>, "None of the types are convertible to T");
 };
-
 
 
 
@@ -162,5 +207,5 @@ struct md_range_value {
 
 template<class Rng, size_t D>
 struct md_range_value<Rng, D, std::enable_if_t<(std::ranges::range<Rng> && D > 0),
-        empty_t>> : md_range_value<std::ranges::range_value_t<Rng>, D != dev::MAX_D ? D - 1 : dimensions<Rng>() - 1> {};
+        empty_t>> : md_range_value<std::ranges::range_value_t<Rng>, D != MAX_DEPTH ? D - 1 : dimensions<Rng>() - 1> {};
 }
