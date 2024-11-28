@@ -36,5 +36,8 @@
     <ClCompile Include="pointers\not_null_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="format_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

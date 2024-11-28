@@ -17,13 +17,12 @@
         constexpr auto parse(format_parse_context& ctx) { return std::formatter<int>::parse(ctx); } \
         template<typename FormatContext> \
         auto format(type const& obj, FormatContext& ctx) const { return std::format_to(ctx.out(), #type "{{{0}}}", to_string(obj)); } \
-    };
+    }
 
 /**
  * @brief creates a format overload for the concept
  * @param cpt concept
  * @param to_string to_string(type) function
- * @note append additional requires clauses if necessary
  */
 #define CTH_FORMAT_CPT(cpt, to_string) \
     template<cpt T> requires(!cth::type::convertible_to_any<cth::type::pure_t<T>, std::string, std::string_view>) \
@@ -31,4 +30,5 @@
         constexpr auto parse(format_parse_context& ctx) { return std::formatter<int>::parse(ctx); } \
         template<typename FormatContext> \
         auto format(T const& obj, FormatContext& ctx) const { return std::format_to(ctx.out(), #cpt "{{{0}}}", to_string(obj)); } \
-    };
+    }
+

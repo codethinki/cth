@@ -75,11 +75,10 @@ template<type::range2d_over_cpt<CPT(std::integral)> Rng1, type::range_over_cpt<C
 auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::range2d_value_t<Rng1>> {
     using T = type::range2d_value_t<Rng1>;
 
-    CTH_ERR(!std::ranges::all_of(a_b_options, [&b_max](std::span<T const> b_options) {
+    CTH_CRITICAL(!std::ranges::all_of(a_b_options, [&b_max](std::span<T const> b_options) {
         return std::ranges::all_of(b_options, [&b_max](auto const index){ return 0 <= index && index < std::ranges::size(b_max); });
         }), "0 <= indices < size(b_max) required") {
         details->add("size(b_max): {}", std::ranges::size(b_max));
-        throw details->exception();
     }
 
 
