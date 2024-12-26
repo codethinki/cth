@@ -38,6 +38,7 @@
     <ClInclude Include="io\read.hpp" />
     <ClInclude Include="pointer\move_ptr.hpp" />
     <ClInclude Include="pointer\not_null.hpp" />
+    <ClInclude Include="types.hpp" />
     <ClInclude Include="windows\keyboard.hpp" />
     <ClInclude Include="io\log.hpp" />
     <ClInclude Include="pointers.hpp" />

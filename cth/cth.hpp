@@ -12,6 +12,7 @@
 #include "numeric.hpp"
 #include "pointers.hpp"
 #include "string.hpp"
+#include "types.hpp"
 #include "variant.hpp"
 
 #include "windows.hpp"
