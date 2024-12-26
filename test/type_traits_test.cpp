@@ -6,9 +6,52 @@
 #include <vector>
 
 #include <gtest/gtest.h>
-//ik this test file is incomplete but idc
 
 namespace cth::type {
+
+
+
+TEST(apply_trait, main) {
+    using T = int****;
+
+
+    EXPECT_TRUE((std::same_as<apply_trait_t<T, std::remove_pointer_t>, int***>));
+    EXPECT_TRUE((std::same_as<apply_trait_t<T, std::remove_pointer_t, 4>, int>));
+}
+
+TEST(trait_count, main) {
+    using T = std::vector<std::vector<std::vector<int>>>;
+
+    constexpr size_t dimensions = trait_count<T, std::ranges::range_value_t>();
+    EXPECT_EQ(dimensions, 3);
+
+
+    constexpr size_t dimensions2 = trait_count<T, std::ranges::range_value_t, 2>();
+    EXPECT_EQ(dimensions2, 2);
+
+    constexpr size_t dimensions3 = trait_count<int, std::ranges::range_value_t>();
+    EXPECT_EQ(dimensions3, 0);
+
+    constexpr size_t dimensions4 = trait_count<T, std::ranges::range_value_t, 0>();
+    EXPECT_EQ(dimensions4, 0);
+}
+
+template<class T>
+concept pointer_type = std::is_pointer_v<T>;
+
+TEST(cpt_count, main) {
+    using T = int****;
+
+    constexpr size_t ptrDimensions = cpt_count<T, CPT(pointer_type), std::remove_pointer_t>();
+    EXPECT_EQ(ptrDimensions, 4);
+
+    constexpr size_t ptrDimensions2 = cpt_count<T, CPT(pointer_type), std::remove_pointer_t, 3>();
+    EXPECT_EQ(ptrDimensions2, 3);
+
+    constexpr size_t ptrDimensions3 = cpt_count<T, CPT(pointer_type), std::ranges::range_value_t, 0>();
+    EXPECT_EQ(ptrDimensions3, 0);
+}
+
 
 
 using md_range_t = std::vector<std::array<std::span<std::vector<std::vector<uint32_t>>>, 10>>;
@@ -81,7 +124,7 @@ TEST(md_range, concepts) {
     static_assert(md_range_over<md_range_t, uint32_t, D>);
     static_assert(md_range_over<md_range_t, uint32_t>);
     static_assert(md_range_over<md_range_t, std::vector<uint32_t>, D - 1>);
-    static_assert(md_range_over_cpt<md_range_t, cpt(std::integral), D>);
+    static_assert(md_range_over_cpt<md_range_t, CPT(std::integral), D>);
 }
 
 } // namespace cth::value_type

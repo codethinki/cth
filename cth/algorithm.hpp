@@ -30,7 +30,7 @@ namespace cth::algorithm {
 * \return vector of T, empty if no unique selection is possible
 * \note this is bruteforce
 */
-template<type::range2d_over_cpt<cpt(std::equality_comparable)> Rng>
+template<type::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
 [[nodiscard]] auto uniqueCombine(Rng const& selections) {
     using T = std::remove_cvref_t<type::range2d_value_t<Rng>>;
 
@@ -71,7 +71,7 @@ template<type::range2d_over_cpt<cpt(std::equality_comparable)> Rng>
  * \param b_max  max assignments for b's
  * \return vector<integral> based on Rng1
  */
-template<type::range2d_over_cpt<cpt(std::integral)> Rng1, type::range_over_cpt<cpt(std::integral)> Rng2>
+template<type::range2d_over_cpt<CPT(std::integral)> Rng1, type::range_over_cpt<CPT(std::integral)> Rng2>
 auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::range2d_value_t<Rng1>> {
     using T = type::range2d_value_t<Rng1>;
 

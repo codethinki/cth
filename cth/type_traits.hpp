@@ -3,7 +3,7 @@
 #include <string>
 #include <type_traits>
 
-#define cpt(concept) []<concept>{}
+#define CPT(concept) []<concept>{}
 
 
 //constant struct
@@ -44,6 +44,11 @@ concept all_satisfy = (satisfies<Ts, TCpt> and ...);
 template<auto TCpt, class... Ts>
 concept any_satisfy = (satisfies<Ts, TCpt> or ...);
 
+template<class T, template<class> class Trait>
+concept applicable = requires() {
+    typename Trait<T>;
+};
+
 }
 
 //independent constants
@@ -52,6 +57,7 @@ namespace cth::type {
 
 constexpr auto no_range = [] {};
 constexpr auto empty = [] {};
+constexpr size_t MAX_DEPTH = (std::numeric_limits<size_t>::max)();
 
 
 using no_range_t = decltype(no_range);
@@ -117,12 +123,30 @@ template<class T>
 using pure_t = std::remove_cv_t<std::decay_t<T>>;
 }
 
+//trait functions
+
+namespace cth::type {
+template<class T, template<class> class Trait, size_t N = 1>
+consteval auto apply_trait();
+
+template<class T, template<class> class Trait, size_t N = 1>
+using apply_trait_t = typename decltype(apply_trait<T, Trait, N>())::type;
+
+template<class T, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
+consteval size_t trait_count();
+
+template<class T, auto TCpt, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
+consteval size_t cpt_count();
+
+
+}
+
 //is_any_of
 
 namespace cth::type {
 
 template<class T, class... Ts>
-concept is_any_of = any_satisfy<cpt(std::same_as<T>), Ts...>;
+concept is_any_of = any_satisfy<CPT(std::same_as<T>), Ts...>;
 
 /**
  * \brief ::type is equal to first of Ts... that's equal to T or Fallback if none are
@@ -175,7 +199,7 @@ namespace cth::type {
  * @brief true if any of Ts... are convertible to T
  */
 template<typename T, typename... Ts>
-concept any_convertible_to = any_satisfy<cpt(std::convertible_to<T>), Ts...>;
+concept any_convertible_to = any_satisfy<CPT(std::convertible_to<T>), Ts...>;
 
 /**
  * @brief true if T is convertible to any of Ts...
@@ -240,7 +264,7 @@ namespace cth::type {
  * @brief shortcut to @ref is_any_constructible_from_v
  */
 template<typename T, typename... Ts>
-concept any_constructible_from = any_satisfy<cpt(std::constructible_from<T>), Ts...>;
+concept any_constructible_from = any_satisfy<CPT(std::constructible_from<T>), Ts...>;
 
 
 
@@ -269,8 +293,6 @@ struct construct_any_from;
 template<typename T, typename... Ts>
 using construct_any_from_t = typename construct_any_from<T, Ts...>::type;
 
-
-
 /**
  * \brief constructs the first type of Ts... that is constructible from T
  * \tparam Ts to any of Ts...
@@ -294,11 +316,10 @@ auto to_constructible(T&& arg);
 
 namespace cth::type {
 namespace dev {
-    constexpr size_t MAX_D = (std::numeric_limits<size_t>::max)();
 
     template<class T, size_t Max = 0> requires(!std::ranges::range<T>)
     consteval size_t dimensions(size_t n) { return n; }
-    template<std::ranges::range Rng, size_t Max = MAX_D>
+    template<std::ranges::range Rng, size_t Max = MAX_DEPTH>
     consteval size_t dimensions(size_t n);
 }
 
@@ -307,7 +328,7 @@ namespace dev {
  * @tparam Rng range
  * @tparam Max optional max search depth
  */
-template<class Rng, size_t Max = dev::MAX_D>
+template<class Rng, size_t Max = MAX_DEPTH>
 consteval size_t dimensions();
 
 /**
@@ -323,14 +344,14 @@ concept md_range = dimensions<Rng, D>() == D;
  * @tparam Rng range
  * @tparam D dimension (optional)
  */
-template<class Rng, size_t D = dev::MAX_D, class = empty_t>
+template<class Rng, size_t D = MAX_DEPTH, class = empty_t>
 struct md_range_value;
 
 
 /**
  * @brief shortcut to @ref md_range_value::type
  */
-template<class Rng, size_t D = dev::MAX_D>
+template<class Rng, size_t D = MAX_DEPTH>
 using md_range_value_t = typename md_range_value<Rng, D>::type;
 
 /**
@@ -340,10 +361,10 @@ template<class Rng>
 using range2d_value_t = md_range_value_t<Rng, 2>;
 
 
-template<class Rng, class T, size_t D = dev::MAX_D>
+template<class Rng, class T, size_t D = MAX_DEPTH>
 concept md_range_over = std::same_as<T, md_range_value_t<Rng, D>>;
 
-template<class Rng, auto TCpt, size_t D = dev::MAX_D>
+template<class Rng, auto TCpt, size_t D = MAX_DEPTH>
 concept md_range_over_cpt = satisfies<md_range_value_t<Rng, D>, TCpt>;
 
 
