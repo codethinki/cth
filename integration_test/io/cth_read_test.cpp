@@ -1,19 +1,18 @@
-#include "../../cth/io.hpp"
+#include "test.hpp"
 
-#include <gtest/gtest.h>
+#define FILE_TEST(suite, test_name) IO_EX_TEST(_file, suite, test_name)
+
+#include "../../cth/io/file.hpp"
 
 
-namespace cth {
 
- //namespace cth
-TEST(loadTxt, main) {
-    try {
-        [[maybe_unused]] auto const text = cth::io::readText("hello.txt");
-        [[maybe_unused]] auto text2 = cth::io::readText(L"hello.txt");
-    }
-    catch(...) {
-        std::terminate();
-    }
+namespace cth::io::file {
+
+FILE_TEST(chop, main) {
+    constexpr std::string_view path = "res/io/file/text.txt";
+
+    auto const result = chop(path);
+    auto const result2 = chop(path, ' ');
 }
 }
 

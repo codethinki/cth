@@ -1,12 +1,15 @@
-#include "../cth/variant.hpp"
+#include "../cth/types/variant.hpp"
 
-#include <gtest/gtest.h>
+#include "cth/test.hpp"
+
+#include <variant>
+
+
+#define VAR_TEST(suite, test_name) CTH_EX_TEST(_var, suite, test_name)
 
 namespace cth::var {
 
-
-
-TEST(overload, main) {
+VAR_TEST(overload, main) {
     using variant_t = std::variant<int, float, double>;
     constexpr variant_t x = 42;
     constexpr variant_t y = 42.0;
@@ -23,7 +26,8 @@ TEST(overload, main) {
     EXPECT_EQ(overloadTest(y), "double");
     EXPECT_EQ(overloadTest(z), "float");
 }
-TEST(visitor, main) {
+
+VAR_TEST(visitor, main) {
     using variant_t = std::variant<int, float, double>;
     constexpr variant_t x = 42;
     constexpr variant_t y = 42.0;

@@ -90,6 +90,9 @@
     <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <IncludePath>$(SolutionDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -176,6 +179,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="io\cth_read_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="io\test.hpp" />
+    <ClInclude Include="windows\test.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="res\io\file\text.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

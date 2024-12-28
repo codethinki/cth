@@ -1,12 +1,13 @@
+#include "cth/test.hpp"
+
+#define LOG_TEST(suite, test_name) CTH_EX_TEST(_log, suite, test_name)
+
 #include "../../cth/io/log.hpp"
-
-#include <gtest/gtest.h>
-
 
 namespace cth::log {
 
 
-TEST(log_macros, debug) {
+LOG_TEST(log_macros, debug) {
 #ifdef CTH_DEBUG_MODE
     int x = 0;
 
@@ -31,7 +32,7 @@ TEST(log_macros, debug) {
     ASSERT_EQ(1, 1);
 
 }
-TEST(log_macros, stable) {
+LOG_TEST(log_macros, stable) {
     int x = 0;
 
 

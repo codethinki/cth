@@ -1,13 +1,13 @@
-#include "../../cth/io/console.hpp"
+#include "test.hpp"
 
-#include <gtest/gtest.h>
+#include "../../cth/io/console.hpp"
 
 
 namespace cth::io {
 using std::println;
 using std::print;
 
-TEST(console, text_col) {
+IO_TEST(console, text_col) {
     using namespace cth::io;
     console.println(BLACK_TEXT_COL, "i am black");
     console.println(DARK_RED_TEXT_COL, "i am dark red");
@@ -29,7 +29,7 @@ TEST(console, text_col) {
     console.println(DEFAULT_TEXT_COL, "i am default");
 
 }
-TEST(console, background) {
+IO_TEST(console, background) {
     using namespace cth::io;
 
 
@@ -71,7 +71,7 @@ TEST(console, background) {
     console.println("");
 }
 
-TEST(console, text_style) {
+IO_TEST(console, text_style) {
     using namespace cth::io;
     error.setTextStyle(BOLD_TEXT_STYLE);
     println("i am BOLD_TEXT");
@@ -136,7 +136,7 @@ TEST(console, text_style) {
 
 }
 
-TEST(console, state) {
+IO_TEST(console, state) {
     using namespace cth::io;
     error.pushState();
 

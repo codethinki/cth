@@ -68,6 +68,7 @@ enum Text_Styles {
     TEXT_STYLE_SIZE
 };
 
+
 namespace dev {
 
     static inline constexpr size_t MAX_STACK_SIZE = 16;
@@ -122,45 +123,18 @@ namespace dev {
         "\033[9m", "\033[29m" //strikeout, clear strikeout
     }};
 
-    inline static constexpr std::array<wchar_t const*, 17> TEXT_COLOR_CODES_W = {{
-        L"\033[39m", //default
-        L"\033[30m", L"\033[31m", L"\033[32m", L"\033[33m",
-        L"\033[34m", L"\033[35m", L"\033[36m", L"\033[37m",
-        L"\033[90m", L"\033[91m", L"\033[92m", L"\033[93m",
-        L"\033[94m", L"\033[95m", L"\033[96m", L"\033[97m",
-    }};
-    inline static constexpr std::array<wchar_t const*, 16> BG_COLOR_CODES_W = {{
-        L"\033[40m", L"\033[41m", L"\033[42m", L"\033[43m",
-        L"\033[44m", L"\033[45m", L"\033[46m", L"\033[47m",
-        L"\033[100m", L"\033[101m", L"\033[102m", L"\033[103m",
-        L"\033[104m", L"\033[105m", L"\033[106m", L"\033[107m",
-    }};
-    inline static constexpr std::array<wchar_t const*, 18> TEXT_STYLE_CODES_W = {{
-        L"\033[1m", L"\033[22m", //bold clear bold
-        L"\033[2m", L"\033[22m", //faint, clear bold
-        L"\033[3m", L"\033[23m", //italic, clear italic
-        L"\033[4m", L"\033[24m", //underline, clear underline
-        L"\033[21m", L"\033[24m", //double underline, clear underline
-        L"\033[5m", L"\033[25m", //blink, clear blink
-        L"\033[7m", L"\033[27m", //inverse, clear inverse
-        L"\033[8m", L"\033[28m", //hidden, clear hidden
-        L"\033[9m", L"\033[29m" //strikeout, clear strikeout
-    }};
 
     template<type::character T = char>
-    static constexpr std::basic_string_view<T> ansiCode(Text_Colors color) {
-        if constexpr(type::n_character<T>) return TEXT_COLOR_CODES_N[color];
-        else return TEXT_COLOR_CODES_W[color];
+    static constexpr std::string_view ansiCode(Text_Colors color) {
+        return TEXT_COLOR_CODES_N[color];
     }
     template<type::character T = char>
-    static constexpr std::basic_string_view<T> ansiCode(BG_Colors color) {
-        if constexpr(type::n_character<T>) return BG_COLOR_CODES_N[color];
-        else return BG_COLOR_CODES_W[color];
+    static constexpr std::string_view ansiCode(BG_Colors color) {
+        return BG_COLOR_CODES_N[color];
     }
     template<type::character T = char>
-    static constexpr std::basic_string_view<T> ansiCode(Text_Styles color) {
-        if constexpr(type::n_character<T>) return TEXT_STYLE_CODES_N[color];
-        else return TEXT_STYLE_CODES_W[color];
+    static constexpr std::string_view ansiCode(Text_Styles color) {
+        return TEXT_STYLE_CODES_N[color];
     }
 
     //TODO add supports for these codes
@@ -248,14 +222,10 @@ public:
 
     void print(std::string_view str) const { *_oStream << str; }
     void println(std::string_view str) const { *_oStream << str << '\n'; }
-    void print(std::wstring_view str) const { *_oStream << str::conv::narrow(str.data()); }
-    void println(std::wstring_view str) const { *_oStream << str::conv::narrow(str.data()) << '\n'; }
 
 
     void print(Text_Colors col, std::string_view str) const;
     void println(Text_Colors col, std::string_view str) const;
-    void print(Text_Colors col, std::wstring_view str) const { print(col, str::conv::narrow(str)); }
-    void println(Text_Colors col, std::wstring_view str) const { println(col, str::conv::narrow(str)); }
 
 
     template<typename... Types> requires(sizeof...(Types) > 0u)
@@ -295,7 +265,8 @@ void col_stream::setState(col_stream_state new_state) const {
     if constexpr(Cache) *_current = new_state;
     setTextCol<false>(new_state.textCol());
     setBGCol<false>(new_state.bgCol());
-    for(uint32_t i = 0; i < TEXT_STYLE_SIZE; i++) setTextStyle<false>(static_cast<Text_Styles>(i), new_state.styleActive(static_cast<Text_Styles>(i)));
+    for(uint32_t i = 0; i < TEXT_STYLE_SIZE; i++) setTextStyle<
+        false>(static_cast<Text_Styles>(i), new_state.styleActive(static_cast<Text_Styles>(i)));
 }
 
 inline void col_stream::print(Text_Colors col, std::string_view str) const {
@@ -324,6 +295,7 @@ void col_stream::println(Text_Colors col, std::format_string<Types...> f_str, Ty
 //-------------------------
 
 namespace cth::io {}
+
 
 //-------------------------
 //  GLOBAL CONSOLES

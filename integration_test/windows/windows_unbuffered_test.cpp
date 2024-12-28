@@ -1,80 +1,86 @@
-#include "cth/io/log.hpp"
+#include "test.hpp"
+
 
 #include "cth/windows.hpp"
 
 #include <fstream>
-#include <ios>
 #include <vector>
-#include <gtest/gtest.h>
+
+
+
+namespace cth::win::test {
+
+
+template<class T, class D = float>
+struct BenchmarkResult {
+    std::chrono::duration<D> duration;
+    T result;
+};
+
+template<class D = float>
+auto bench(auto&& function) {
+    auto const start = std::chrono::high_resolution_clock::now();
+    auto result = function();
+    auto const end = std::chrono::high_resolution_clock::now();
+
+    return BenchmarkResult{
+        .duration = std::chrono::duration<D>(end - start),
+        .result = result,
+    };
+}
+
+
+std::vector<char> loadBuffered(std::string_view file_path) {
+    std::ifstream file(file_path.data(), std::ios::binary | std::ios::ate);
+
+    if(!file.is_open()) std::terminate();
+
+    auto const size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<char> buffer(size);
+
+    if(!file.read(buffer.data(), size)) std::terminate();
+
+    return buffer;
+}
+
+void bench(std::string_view path) {
+    auto const [unbufferedTime, result] = test::bench([path]() {
+        std::vector<char> data{};
+        win::io::readUnbuffered(path, data);
+        return data;
+    });
+
+    auto const [bufferedTime, expected] = test::bench([path]() {
+        return test::loadBuffered(path);
+    });
+
+    ASSERT_EQ(result, expected);
+
+
+    std::println("unbuffered io: {}s", unbufferedTime.count());
+    std::println("buffered io: {}s", bufferedTime.count());
+}
+}
 
 
 
 namespace cth::win {
 
-std::vector<char> loadFileIntoVector(std::string_view file_path) {
-    // Open the io in binary mode at the end of the io
-    std::ifstream file(file_path.data(), std::ios::binary | std::ios::ate);
-    if(!file) {
-        // Handle error or throw an exception
-        throw std::runtime_error("Failed to open io");
-    }
+WIN_TEST(readUnbuffered, 1_4_mb) {
+    std::println("testing io on 1.4mb io");
+    constexpr std::string_view path = "res/testImage.jpg";
 
-    // Determine the io size
-    std::streamsize const size = file.tellg();
-    file.seekg(0, std::ios::beg); // Seek back to the start of the io
-
-    // Reserve space in the vector and read the io
-    std::vector<char> buffer(size);
-    if(!file.read(buffer.data(), size)) {
-        // Handle error or throw an exception
-        throw std::runtime_error("Failed to read io: ");
-    }
-
-    return buffer;
-}
-
-
-TEST(readUnbuffered, main) {
-    log::msg("testing io on 1.4mb io");
-    constexpr std::string_view smallFilePath = "res/testImage.jpg";
-
-
-    std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
-
-    std::vector<char> dataUnbuffered{};
-    win::io::readUnbuffered(smallFilePath, dataUnbuffered);
-    std::chrono::time_point<std::chrono::high_resolution_clock> end = std::chrono::high_resolution_clock::now();
-
-    log::msg("unbuffered io: {}s", std::chrono::duration<float>(end - start).count());
-
-    start = std::chrono::high_resolution_clock::now();
-    [[maybe_unused]] std::vector<char> dataBuffered = loadFileIntoVector(smallFilePath);
-    end = std::chrono::high_resolution_clock::now();
-
-    log::msg("buffered io: {}s", std::chrono::duration<float>(end - start).count());
-
-    std::vector<char> dataUnbuffered2{};
-    std::vector<char> dataBuffered2{};
-
-    log::msg("testing io on 76mb io");
-    constexpr std::string_view largeFilePath = "res/Browse.VC.db";
-
-
-    start = std::chrono::high_resolution_clock::now();
-
-    win::io::readUnbuffered(largeFilePath, dataUnbuffered2);
-
-    end = std::chrono::high_resolution_clock::now();
-    log::msg("unbuffered io: {}s", std::chrono::duration<float>(end - start).count());
-
-    start = std::chrono::high_resolution_clock::now();
-    dataBuffered2 = loadFileIntoVector(largeFilePath);
-    end = std::chrono::high_resolution_clock::now();
-
-    log::msg("buffered io: {}s", std::chrono::duration<float>(end - start).count());
-
+    test::bench(path);
 
 }
 
+WIN_TEST(readUnbuffered, 76_1_mb) {
+    std::println("testing io on 76mb io");
+    constexpr std::string_view path = "res/Browse.VC.db";
+    test::bench(path);
+}
 
-} //namespace cth::win
+
+}

@@ -1,7 +1,11 @@
 // ReSharper disable CppClangTidyBugproneUseAfterMove
-#include <gtest/gtest.h>
+#include "cth/test.hpp"
+
 
 #include "cth/pointer/not_null.hpp"
+
+
+
 
 namespace cth {
 int constexpr EXAMPLE_NUMBER = 42;
@@ -12,7 +16,7 @@ struct TestStruct {
 auto const data = std::make_unique<TestStruct>(EXAMPLE_NUMBER); // NOLINT(cert-err58-cpp)
 
 
-TEST(not_null, comparison) {
+CTH_TEST(not_null, comparison) {
     int a = EXAMPLE_NUMBER;
     int b = EXAMPLE_NUMBER;
 
@@ -37,13 +41,13 @@ TEST(not_null, comparison) {
     EXPECT_FALSE(px >= py);
 }
 
-TEST(not_null, constructor) {
+CTH_TEST(not_null, constructor) {
     not_null const ptr(data.get());
     ASSERT_EQ(ptr.get(), data.get());
 }
 
 
-TEST(not_null, swap) {
+CTH_TEST(not_null, swap) {
     TestStruct data1{EXAMPLE_NUMBER};
     TestStruct data2{EXAMPLE_NUMBER};
     not_null ptr1(&data1);
@@ -55,25 +59,25 @@ TEST(not_null, swap) {
     ASSERT_EQ(ptr2.get(), &data1);
 }
 
-TEST(not_null, get) {
+CTH_TEST(not_null, get) {
     not_null const ptr(data.get());
     ASSERT_EQ(ptr.get(), data.get());
 }
 
 
-TEST(not_null, operator_arrow) {
+CTH_TEST(not_null, operator_arrow) {
     not_null const ptr(data.get());
     ASSERT_EQ(ptr->value, EXAMPLE_NUMBER);
 }
 
-TEST(not_null, operator_deref) {
+CTH_TEST(not_null, operator_deref) {
     not_null const ptr(data.get());
     // ReSharper disable once CppRedundantDereferencingAndTakingAddress
     ASSERT_EQ((*ptr).value, EXAMPLE_NUMBER);
 }
 
 
-TEST(unique_not_null, comparison) {
+CTH_TEST(unique_not_null, comparison) {
 
     unique_not_null a{std::make_unique<int>(EXAMPLE_NUMBER)};
     unique_not_null b{std::make_unique<int>(EXAMPLE_NUMBER)};

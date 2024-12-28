@@ -1,145 +1,8 @@
 #pragma once
-#include <limits>
-#include <string>
+#include <concepts>
 #include <type_traits>
 
-#define CPT(concept) []<concept>{}
-
-
-//constant struct
-
-namespace cth::type {
-
-
-template<auto V>
-struct constant {
-    static constexpr auto VALUE = V;
-
-    using value_type = decltype(VALUE);
-    using type = constant;
-
-    [[nodiscard]] constexpr operator value_type() const noexcept { return VALUE; }
-
-    [[nodiscard]] constexpr value_type operator()() const noexcept { return VALUE; }
-};
-
-template<bool V>
-using bool_constant = constant<V>;
-
-using true_type = bool_constant<true>;
-using false_type = bool_constant<false>;
-}
-
-//helpers
-
-namespace cth::type {
-template<class T, auto TCpt>
-concept satisfies = requires {
-    TCpt.template operator()<T>();
-};
-
-template<auto TCpt, class... Ts>
-concept all_satisfy = (satisfies<Ts, TCpt> and ...);
-
-template<auto TCpt, class... Ts>
-concept any_satisfy = (satisfies<Ts, TCpt> or ...);
-
-template<class T, template<class> class Trait>
-concept applicable = requires() {
-    typename Trait<T>;
-};
-
-}
-
-//independent constants
-
-namespace cth::type {
-
-constexpr auto no_range = [] {};
-constexpr auto empty = [] {};
-constexpr size_t MAX_DEPTH = (std::numeric_limits<size_t>::max)();
-
-
-using no_range_t = decltype(no_range);
-using empty_t = decltype(empty);
-
-}
-
-
-//independent usings
-
-namespace cth::type {
-
-template<typename T>
-using pure_t = std::remove_cv_t<std::decay_t<T>>;
-
-}
-
-
-//independent concepts
-
-namespace cth::type {
-
-
-template<typename T>
-concept arithmetic = std::is_arithmetic_v<T>;
-
-template<class Rng, class T>
-concept range_over = std::ranges::range<Rng> and std::same_as<std::ranges::range_value_t<Rng>, T>;
-
-template<class T>
-concept character = std::same_as<pure_t<T>, char> or std::same_as<pure_t<T>, wchar_t>;
-
-template<class T>
-concept n_character = std::same_as<pure_t<T>, char>;
-
-template<class T>
-concept w_character = std::same_as<pure_t<T>, wchar_t>;
-
-template<class T>
-concept has_get = requires(T t) {
-    t.get();
-};
-
-template<class T>
-concept has_release = requires(T t) {
-    t.release();
-};
-
-template<class T>
-concept has_deref = requires(T t) {
-    *t;
-};
-
-
-
-}
-
-
-//typedefs
-
-namespace cth::type {
-template<class T>
-using pure_t = std::remove_cv_t<std::decay_t<T>>;
-}
-
-//trait functions
-
-namespace cth::type {
-template<class T, template<class> class Trait, size_t N = 1>
-consteval auto apply_trait();
-
-template<class T, template<class> class Trait, size_t N = 1>
-using apply_trait_t = typename decltype(apply_trait<T, Trait, N>())::type;
-
-template<class T, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
-consteval size_t trait_count();
-
-template<class T, auto TCpt, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
-consteval size_t cpt_count();
-
-
-}
+#include "concepts.hpp"
 
 //is_any_of
 
@@ -191,6 +54,7 @@ auto to_same_of(T&& arg);
 template<typename... Ts, typename T>
 auto to_same(T&& arg);
 }
+
 
 //convert to any
 
@@ -258,6 +122,7 @@ template<typename... Ts, typename T>
 auto to_convertible(T&& arg);
 }
 
+
 namespace cth::type {
 
 /**
@@ -311,75 +176,4 @@ template<typename... Ts, typename T>
 auto to_constructible(T&& arg);
 }
 
-
-//md_range
-
-namespace cth::type {
-namespace dev {
-
-    template<class T, size_t Max = 0> requires(!std::ranges::range<T>)
-    consteval size_t dimensions(size_t n) { return n; }
-    template<std::ranges::range Rng, size_t Max = MAX_DEPTH>
-    consteval size_t dimensions(size_t n);
-}
-
-/**
- * @brief counts the dimensions of @ref Rng
- * @tparam Rng range
- * @tparam Max optional max search depth
- */
-template<class Rng, size_t Max = MAX_DEPTH>
-consteval size_t dimensions();
-
-/**
- * @brief checks if @ref Rng is of at least @ref D dimensions
- * @tparam Rng range
- * @tparam D dimensions
- */
-template<class Rng, size_t D>
-concept md_range = dimensions<Rng, D>() == D;
-
-/**
- * @brief type trait to get the first non range type or the @ref D -th dimension range value type of @ref Rng
- * @tparam Rng range
- * @tparam D dimension (optional)
- */
-template<class Rng, size_t D = MAX_DEPTH, class = empty_t>
-struct md_range_value;
-
-
-/**
- * @brief shortcut to @ref md_range_value::type
- */
-template<class Rng, size_t D = MAX_DEPTH>
-using md_range_value_t = typename md_range_value<Rng, D>::type;
-
-/**
- * @brief shortcut to @ref md_range_value_t<Rng, 2>
- */
-template<class Rng>
-using range2d_value_t = md_range_value_t<Rng, 2>;
-
-
-template<class Rng, class T, size_t D = MAX_DEPTH>
-concept md_range_over = std::same_as<T, md_range_value_t<Rng, D>>;
-
-template<class Rng, auto TCpt, size_t D = MAX_DEPTH>
-concept md_range_over_cpt = satisfies<md_range_value_t<Rng, D>, TCpt>;
-
-
-template<class Rng, auto TCpt>
-concept range_over_cpt = md_range_over_cpt<Rng, TCpt, 1>;
-
-template<class Rng, class T>
-concept range2d_over = md_range_over<Rng, T, 2>;
-template<class Rng, auto TCpt>
-concept range2d_over_cpt = md_range_over_cpt<Rng, TCpt, 2>;
-
-}
-
-
-#include "type_traits/type_traits.inl"
-
-
-namespace cth::type {}
+#include "inl/variadic.inl"

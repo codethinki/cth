@@ -35,18 +35,25 @@
     <ClInclude Include="exception.hpp" />
     <ClInclude Include="image.hpp" />
     <ClInclude Include="io.hpp" />
-    <ClInclude Include="io\read.hpp" />
+    <ClInclude Include="io\file.hpp" />
     <ClInclude Include="pointer\move_ptr.hpp" />
     <ClInclude Include="pointer\not_null.hpp" />
+    <ClInclude Include="test.hpp" />
     <ClInclude Include="types.hpp" />
+    <ClInclude Include="types\concepts.hpp" />
+    <ClInclude Include="types\md.hpp" />
+    <ClInclude Include="types\ranges.hpp" />
+    <ClInclude Include="types\tuple.hpp" />
+    <ClInclude Include="types\utility.hpp" />
+    <ClInclude Include="types\variadic.hpp" />
     <ClInclude Include="windows\keyboard.hpp" />
     <ClInclude Include="io\log.hpp" />
     <ClInclude Include="pointers.hpp" />
     <ClInclude Include="network.hpp" />
     <ClInclude Include="numeric.hpp" />
     <ClInclude Include="string.hpp" />
-    <ClInclude Include="type_traits.hpp" />
-    <ClInclude Include="variant.hpp" />
+    <ClInclude Include="types\type_traits.hpp" />
+    <ClInclude Include="types\variant.hpp" />
     <ClInclude Include="windows.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -54,7 +61,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="io\inl\read.inl" />
-    <None Include="type_traits\type_traits.inl" />
+    <None Include="types\inl\ranges.inl" />
+    <None Include="types\inl\variadic.inl" />
+    <None Include="types\inl\type_traits.inl" />
     <None Include="windows\windows.inl" />
   </ItemGroup>
   <ItemGroup>
@@ -155,6 +164,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

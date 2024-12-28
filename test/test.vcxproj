@@ -90,6 +90,9 @@
     <IntDir>$(Platform)\$(Configuration)$(ProjectName)\</IntDir>
     <IncludePath>$(SolutionDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -173,13 +176,19 @@
     <ClCompile Include="pointers\move_ptr_test.cpp" />
     <ClCompile Include="numeric_test.cpp" />
     <ClCompile Include="string_test.cpp" />
-    <ClCompile Include="type_traits_test.cpp" />
+    <ClCompile Include="types\concepts_test.cpp" />
+    <ClCompile Include="types\md_test.cpp" />
+    <ClCompile Include="types\ranges_test.cpp" />
+    <ClCompile Include="types\tuple_test.cpp" />
     <ClCompile Include="variant_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cth\cth.vcxproj">
       <Project>{7dda21b4-4072-4f64-8b76-247008cde359}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="types\test.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

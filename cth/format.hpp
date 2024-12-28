@@ -1,6 +1,6 @@
 // ReSharper disable CppClangTidyCertDcl58Cpp
 #pragma once
-#include "type_traits.hpp"
+#include "types/variadic.hpp"
 
 #include <format>
 #include <ranges>

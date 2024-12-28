@@ -27,9 +27,6 @@
     <ClCompile Include="string_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="type_traits_test.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="variant_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
@@ -39,5 +36,22 @@
     <ClCompile Include="format_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="types\md_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="types\ranges_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="types\concepts_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="types\tuple_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="types\test.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
