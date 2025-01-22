@@ -64,7 +64,8 @@
     <None Include="types\inl\ranges.inl" />
     <None Include="types\inl\variadic.inl" />
     <None Include="types\inl\type_traits.inl" />
-    <None Include="windows\windows.inl" />
+    <None Include="windows\inl\keyboard.inl" />
+    <None Include="windows\inl\windows.inl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="utility\regex\remove_const_func_param.txt" />

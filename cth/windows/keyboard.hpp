@@ -11,7 +11,9 @@
 
 namespace cth::win::keybd {
 
-
+    class keyboard_hook {
+        
+    };
 namespace dev {
     template<bool Raw>
     struct EventQueueTemplate;
@@ -263,6 +265,7 @@ void threadProc(std::stop_token const& stop) {
     static HHOOK hookHandle = nullptr;
 
     try {
+
         hookHandle = SetWindowsHookExW(WH_KEYBOARD_LL, hookFunc, nullptr, 0);
         CTH_STABLE_ERR(hookHandle == nullptr, "failed to establish key hook") throw details->exception();
 
