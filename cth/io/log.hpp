@@ -172,7 +172,7 @@ namespace dev {
      */
 #define CTH_DEV_DELAYED_LOG_TEMPLATE(severity, expr, message_str, ...) \
      if(auto const details = static_cast<bool>(expr) ?\
-            std::make_unique<log::dev::LogObj<severity>>(\
+            std::make_unique<cth::log::dev::LogObj<severity>>(\
                 cth::except::default_exception{std::format(message_str, __VA_ARGS__),\
                 severity, std::source_location::current(), std::stacktrace::current()}\
             ) :\
