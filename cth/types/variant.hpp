@@ -19,6 +19,6 @@ struct visitor : Ts {
     using Ts::operator();
 };
 template<class Ts>
-visitor(Ts f)->visitor<Ts>;
+visitor(Ts f) -> visitor<Ts>;
 
 } // namespace cth::var

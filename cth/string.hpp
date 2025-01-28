@@ -1,11 +1,9 @@
 #pragma once
-//you have to define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING in the preprocessor or source io for this to work
 #include "format.hpp"
 #include "types/ranges.hpp"
 #include "types/variadic.hpp"
 
 #include <algorithm>
-#include <codecvt>
 #include <format>
 #include <optional>
 #include <ranges>
@@ -106,9 +104,7 @@ CTH_FORMAT_CPT(std::ranges::range, cth::str::to_string);
 namespace cth::expr::str {
 
 template<type::arithmetic T>
-[[nodiscard]] constexpr std::optional<T> to_num(std::string_view str, int base) {
-    return cth::str::to_num<T>(str, base);
-}
+[[nodiscard]] constexpr std::optional<T> to_num(std::string_view str, int base) { return cth::str::to_num<T>(str, base); }
 
 
 } // namespace cth::expr::str

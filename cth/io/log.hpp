@@ -182,7 +182,7 @@ namespace dev {
 #define CTH_DEV_DISABLED_CRITICAL_TEMPLATE(expr) \
     /*TEMP currently not supported by msvc[[assume(!static_cast<bool>(expr))]]; \*/\
     __assume(!static_cast<bool>(expr));\
-    if(std::unique_ptr<log::dev::LogObj<cth::except::Severity::CRITICAL>> details = nullptr; static_cast<bool>(expr)) [[unlikely]]
+    if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::CRITICAL>> details = nullptr; static_cast<bool>(expr)) [[unlikely]]
 
 #define CTH_DEV_DISABLED_LOG_TEMPLATE() if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::LOG>> details = nullptr; false) //{...}
 
