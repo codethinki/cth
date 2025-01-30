@@ -2,7 +2,7 @@
 
 #define FMT_TEST(suite, test_name) CTH_EX_TEST(format, suite, test_name)
 
-#include "../cth/format.hpp"
+#include "../cth/string/format.hpp"
 
 
 

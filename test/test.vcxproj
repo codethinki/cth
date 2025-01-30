@@ -172,6 +172,7 @@
   <ItemGroup>
     <ClCompile Include="algorithm_test.cpp" />
     <ClCompile Include="format_test.cpp" />
+    <ClCompile Include="functional_test.cpp" />
     <ClCompile Include="pointers\not_null_test.cpp" />
     <ClCompile Include="pointers\move_ptr_test.cpp" />
     <ClCompile Include="numeric_test.cpp" />

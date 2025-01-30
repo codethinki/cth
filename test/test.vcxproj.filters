@@ -48,6 +48,9 @@
     <ClCompile Include="types\tuple_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="functional_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types\test.hpp">

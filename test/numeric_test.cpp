@@ -6,6 +6,7 @@
 
 #define NUM_TEST(suite, test_name) CTH_EX_TEST(_numeric, suite, test_name)
 
+
 namespace cth::num {
 
 NUM_TEST(abs, main) {

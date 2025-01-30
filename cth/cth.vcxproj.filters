@@ -51,7 +51,7 @@
     <ClInclude Include="exception.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="image.hpp">
+    <ClInclude Include="utility\image.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="types\variant.hpp">
@@ -75,7 +75,7 @@
     <ClInclude Include="pointer\move_ptr.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="format.hpp">
+    <ClInclude Include="string\format.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="types.hpp">
@@ -103,6 +103,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="io\file.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="functional.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
