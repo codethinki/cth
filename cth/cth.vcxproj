@@ -30,10 +30,11 @@
     <ClInclude Include="cth.hpp" />
     <ClInclude Include="algorithm.hpp" />
     <ClInclude Include="constants.hpp" />
-    <ClInclude Include="format.hpp" />
+    <ClInclude Include="functional.hpp" />
+    <ClInclude Include="string\format.hpp" />
     <ClInclude Include="io\console.hpp" />
     <ClInclude Include="exception.hpp" />
-    <ClInclude Include="image.hpp" />
+    <ClInclude Include="utility\image.hpp" />
     <ClInclude Include="io.hpp" />
     <ClInclude Include="io\file.hpp" />
     <ClInclude Include="pointer\move_ptr.hpp" />

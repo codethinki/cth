@@ -1,5 +1,5 @@
 #pragma once
-#include "io/log.hpp"
+#include "../io/log.hpp"
 
 #include <cstdint>
 #include <stb_image.h>
