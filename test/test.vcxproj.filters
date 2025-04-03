@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="algorithm_test.cpp">
+    <ClCompile Include="algorithm\algorithm_test.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="numeric_test.cpp">
@@ -49,6 +49,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="functional_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="algorithm\views_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

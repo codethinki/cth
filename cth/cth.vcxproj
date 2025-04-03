@@ -27,6 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="algorithm\views.hpp" />
     <ClInclude Include="cth.hpp" />
     <ClInclude Include="algorithm.hpp" />
     <ClInclude Include="constants.hpp" />
@@ -58,9 +59,6 @@
     <ClInclude Include="windows.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="io\inl\read.inl" />
     <None Include="types\inl\ranges.inl" />
     <None Include="types\inl\variadic.inl" />
@@ -70,6 +68,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="utility\regex\remove_const_func_param.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

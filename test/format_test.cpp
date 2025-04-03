@@ -44,12 +44,12 @@ CTH_FORMAT_CPT(test::test_concept, test::to_string);
 
 namespace cth::fmt {
 FMT_TEST(CTH_FORMAT_TYPE, main) {
-    auto const str = std::format("{}", test::VALUE1);
+    auto const str = std::format("{}", ::test::VALUE1);
 
     ASSERT_EQ("test::Test1{VALUE1}", str);
 }
 FMT_TEST(CTH_FORMAT_CPT, main) {
-    auto const str = std::format("{}", test::VALUE2);
+    auto const str = std::format("{}", ::test::VALUE2);
     ASSERT_EQ("test::test_concept{VALUE2}", str);
 }
 }

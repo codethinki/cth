@@ -81,9 +81,9 @@ namespace proc {
     /**
     * @brief counts the number of process instances
     * @return number of processes if successful, else @ref std::nullopt
-    * @note max enumerated processes: 1024
     */
-    inline std::optional<size_t> instances(std::wstring_view process_name);
+    inline std::optional<size_t> count(std::wstring_view process_name);
+
 } // namespace proc
 
 namespace desktop {

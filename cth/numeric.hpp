@@ -34,7 +34,7 @@ namespace num {
     [[nodiscard]] T dist(T x1, T y1, T x2, T y2);
 
     /**
-     *\param x value
+     * \param x value
      * \param a lowest
      * \param b highest
      */
@@ -205,7 +205,7 @@ namespace expr::num {
     template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
     [[nodiscard]] constexpr T sqam(T base, U power, V mod) { return cth::num::sqam(base, power, mod); }
 
-    
+
     template<type::arithmetic T>
     [[nodiscard]] constexpr T pow(T base, std::unsigned_integral auto power) { return cth::num::pow(base, power); }
 

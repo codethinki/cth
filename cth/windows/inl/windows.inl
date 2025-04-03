@@ -82,13 +82,14 @@ inline bool elevated() {
 }
 
 inline auto enumerate() -> std::vector<DWORD> {
-    std::vector<DWORD> processIds(1024);
+    std::vector<DWORD> processIds(16);
     DWORD bytesReturned = 0;
 
 
     while(true) {
         auto const idsByteSize = static_cast<DWORD>(processIds.size() * sizeof(DWORD));
         if(EnumProcesses(processIds.data(), idsByteSize, &bytesReturned) == 0) return {};
+
         if(idsByteSize != bytesReturned) break;
 
         processIds.resize(processIds.size() * 2);
@@ -130,7 +131,9 @@ inline std::optional<bool> active(std::wstring_view process_name) {
     return false;
 }
 
-inline std::optional<size_t> instances(std::wstring_view process_name) {
+
+
+inline std::optional<size_t> count(std::wstring_view process_name) {
     auto const& processIds = enumerate();
 
     size_t instanceCount = 0;

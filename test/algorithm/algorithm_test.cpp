@@ -1,13 +1,14 @@
 #include "cth/test.hpp"
 
 #include "cth/algorithm.hpp"
+#include "cth/string.hpp"
 
 
 #define ALG_TEST(suite, test_name) CTH_EX_TEST(_algorithm, suite, test_name)
 
 
 
-namespace cth::algorithm {
+namespace cth::alg {
 using std::vector;
 
 ALG_TEST(uniqueCombine, success) {

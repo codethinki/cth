@@ -52,21 +52,23 @@ template<cth::type::arithmetic T>
 }
 
 
-template<std::ranges::range Rng>
-[[nodiscard]] std::string to_string(Rng const& range) {
+
+template<std::ranges::range Rng> requires std::formattable<type::md_range_value_t<std::remove_cvref_t<Rng>>, char>
+[[nodiscard]] std::string to_string(Rng&& rng) {
+    //constexpr bool constIterable = requires { std::ranges::begin(rng); std::ranges::end(rng); };
     constexpr bool mdRange = type::md_range<Rng, 2>;
 
-
-    if(std::ranges::empty(range)) return "[ ]";
+    // auto range = type::copy_if<!constIterable>(rng);
 
     std::string string = "[";
-    std::ranges::for_each(range, [&string](auto const& element) {
-        if constexpr(mdRange)
-            string.insert_range(string.end(), std::format("{}, ", cth::str::to_string<std::ranges::range_value_t<Rng>>(element)));
-        else
-            string.insert_range(string.end(), std::format("{}, ", element));
-    });
 
+    for(auto&& element : std::forward<Rng>(rng)) {
+        using E = decltype(element);
+        if constexpr(mdRange)
+            string.insert_range(string.end(), std::format("{}, ", cth::str::to_string(std::forward<E>(element))));
+        else
+            string.insert_range(string.end(), std::format("{}, ", std::forward<E>(element)));
+    }
 
     string.pop_back();
     string.back() = ']';
@@ -74,13 +76,11 @@ template<std::ranges::range Rng>
 }
 
 
-//namespace dev {
 /**
  * \brief splits a string into a vector of strings
  * \tparam U the delimiter type
  */
-template<type::convertible_to_any<std::string_view, std::wstring_view> T, type::convertible_to_any<std::string_view, std::wstring_view, char, wchar_t>
-    U>
+template<type::convertible_to_any<std::string_view, std::wstring_view> T, type::convertible_to_any<std::string_view, std::wstring_view, char, wchar_t> U>
 [[nodiscard]] auto split(T const& str, U const& delimiter) {
     auto const view = type::to_constructible<std::string_view, std::wstring_view>(str);
     using char_t = typename decltype(view)::value_type;

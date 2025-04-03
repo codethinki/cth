@@ -30,7 +30,7 @@ PROC_TEST(name, main) {
 }
 
 PROC_TEST(instances, main) {
-    auto const instances = proc::instances(L"explorer.exe");
+    auto const instances = proc::count(L"explorer.exe");
     EXPECT_TRUE(instances.has_value());
     EXPECT_TRUE(instances.value() > 0); // NOLINT(bugprone-unchecked-optional-access)
 }

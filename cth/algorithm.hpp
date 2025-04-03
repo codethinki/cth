@@ -8,18 +8,17 @@
 #include <unordered_set>
 
 
-
-namespace cth::algorithm::hash {
+namespace cth::alg::hash {
 // from: https://stackoverflow.com/a/57595105
 template<typename T, typename... Rest>
 void combine(std::size_t& seed, T const& v, Rest const&... rest) {
     seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    (cth::algorithm::hash::combine(seed, rest), ...);
+    (cth::alg::hash::combine(seed, rest), ...);
 }
 
-} // namespace cth::algorithm::hash
+} // namespace cth::alg::hash
 
-namespace cth::algorithm {
+namespace cth::alg {
 
 /**
 * \brief creates a vector of unique elements with exactly one element from each given range. order is preserved
@@ -75,9 +74,7 @@ auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::ran
 
     CTH_CRITICAL(!std::ranges::all_of(a_b_options, [&b_max](std::span<T const> b_options) {
         return std::ranges::all_of(b_options, [&b_max](auto const index){ return 0 <= index && index < std::ranges::size(b_max); });
-        }), "0 <= indices < size(b_max) required") {
-        details->add("size(b_max): {}", std::ranges::size(b_max));
-    }
+        }), "0 <= indices < size(b_max) required") { details->add("size(b_max): {}", std::ranges::size(b_max)); }
 
 
     std::vector<T> bOptionsIndices(std::ranges::size(a_b_options));
@@ -115,4 +112,6 @@ auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::ran
 }
 
 
-} // namespace cth::algorithm
+} // namespace cth::alg
+
+#include "algorithm/views.hpp"

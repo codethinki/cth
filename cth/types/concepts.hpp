@@ -52,7 +52,9 @@ concept has_release = callable<T, &T::release>;
 template<class T>
 concept has_get = callable<T, &T::get>;
 template<class T>
-concept has_deref = callable<T, &T::operator*>;
+concept has_deref = requires(T t) {
+    *t;
+};
 
 
 

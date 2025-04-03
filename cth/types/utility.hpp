@@ -23,13 +23,16 @@ template<class T = size_t>
 size_t consteval zero() { return 0; }
 
 template<class T>
-size_t consteval zero(T) {
-    return zero<T>();
-}
+size_t consteval zero(T) { return zero<T>(); }
 template<auto Val>
-size_t consteval zero() {
-    return type::zero(Val);
+size_t consteval zero() { return type::zero(Val); }
+
+template<bool Copy, class T>
+decltype(auto) copy_if(T&& value) {
+    if constexpr(Copy) return std::remove_cvref_t<T>{value};
+    else return std::forward<T>(value);
 }
+
 }
 
 
