@@ -1,6 +1,5 @@
 #pragma once
 #include "utility.hpp"
-
 #include <concepts>
 
 

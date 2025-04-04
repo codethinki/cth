@@ -37,9 +37,8 @@ VIEWS_TEST(to_ptr_range, const_type) {
 
 VIEWS_TEST(split_into_fn, even) {}
 
-namespace dev {
-
-    static void test_split_info_fn(auto&& values, int split_into, int expected_chunks) {
+namespace {
+    void test_split_info_fn(auto&& values, int split_into, int expected_chunks) {
         auto const expectedChunks = values | std::views::chunk(expected_chunks);
         auto const actualChunks = values | cth::views::split_into(split_into);
         EXPECT_RANGE_EQ(actualChunks, expectedChunks);
@@ -50,8 +49,18 @@ VIEWS_TEST(split_into_fn, split_size) {
     std::vector oddSizeValues{0, 1, 2, 3, 4};
     std::vector evenSizeValues{0, 1, 2, 3, 4, 5};
 
-    dev::test_split_info_fn(evenSizeValues, 2, 3);
-    dev::test_split_info_fn(oddSizeValues, 2, 3);
+    test_split_info_fn(evenSizeValues, 2, 3);
+    test_split_info_fn(oddSizeValues, 2, 3);
+}
+namespace {
+    template<std::ranges::range T, class U>
+    void test_stride_offset_fn(T&& values, U&& expected, int stride, int offset) {
+        EXPECT_RANGE_EQ((std::forward<T>(values) | views::drop_stride(stride, offset)), std::forward<U>(expected));
+    }
+}
+
+VIEWS_TEST(drop_stride_fn, asdf) {
+    test_stride_offset_fn(std::vector{0, 1, 2, 3}, std::vector<std::vector<int>>{{0, 2}, {1, 3}}, 1, 1);
 }
 
 }

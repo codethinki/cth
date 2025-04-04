@@ -28,7 +28,6 @@ namespace dev {
     bool expect_range_eq(LRng&& l, RRng r) {
         using l_rng_t = std::remove_cvref_t<LRng>;
         using r_rng_t = std::remove_cvref_t<RRng>;
-        static_assert(cth::type::dimensions<l_rng_t>() == cth::type::dimensions<r_rng_t>(), "ranges do not have equal dimensions");
 
         if constexpr(std::ranges::sized_range<l_rng_t> && std::ranges::sized_range<r_rng_t>)
             if(!std::ranges::size(l) == std::ranges::size(r)) return false;
@@ -46,6 +45,11 @@ namespace dev {
 
 template<size_t Dim = cth::type::MAX_DEPTH, std::ranges::range LRng, std::ranges::range RRng>
 bool expect_range_eq(LRng&& l, RRng&& r) {
+    static_assert(
+        type::dimensions<std::remove_cvref_t<LRng>>() == type::dimensions<std::remove_cvref_t<RRng>>(),
+        "ranges do not have equal dimensions"
+    );
+
     if(dev::expect_range_eq(l, r)) return true;
 
     std::println("not equal:\n\t left: {}\n\t right: {}", l, r);

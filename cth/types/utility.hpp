@@ -36,11 +36,7 @@ decltype(auto) copy_if(T&& value) {
 }
 
 
-//independent usings
-
 namespace cth::type {
-
-template<typename T>
-using pure_t = std::remove_cv_t<std::decay_t<T>>;
-
+template<class T>
+using pure_t = std::decay_t<T>;
 }

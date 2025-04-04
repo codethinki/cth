@@ -2,7 +2,6 @@
 #include "utility.hpp"
 
 #include <type_traits>
-#include <utility>
 
 
 //constant struct
@@ -13,15 +12,6 @@ template<class T, template<class> class Trait>
 concept applicable = requires() {
     typename Trait<T>;
 };
-}
-
-
-
-//typedefs
-
-namespace cth::type {
-template<class T>
-using pure_t = std::remove_cv_t<std::decay_t<T>>;
 }
 
 
