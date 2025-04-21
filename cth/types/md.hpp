@@ -1,6 +1,9 @@
 #pragma once
 #include "tuple.hpp"
 #include "utility.hpp"
+
+#include "../utility.hpp"
+
 #include <mdspan>
 
 
@@ -13,7 +16,7 @@ namespace cth::type {
  * @return std::extents
  */
 template<size_t D, auto Extent>
-consteval auto mdextent() {
+[[nodiscard]] cval auto mdextent() {
     return std::apply(
         []<class... Args>(Args... args) {
             return std::extents<decltype(Extent), (type::zero<Args>(), Extent)...>{args...};

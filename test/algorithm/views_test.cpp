@@ -15,8 +15,8 @@ VIEWS_TEST(to_ptr_range, pipe) {
     auto const pipePtrs = values | to_ptr_range;
     auto const callPtrs = to_ptr_range(values);
 
-    for(auto const [actual, expected] : std::views::zip(callPtrs, expected))
-        ASSERT_EQ(actual, expected);
+    for(auto const [a, e] : std::views::zip(callPtrs, expected))
+        ASSERT_EQ(a, e);
     for(auto const [actual, left] : std::views::zip(pipePtrs, expected))
         ASSERT_EQ(actual, left);
 }
@@ -46,21 +46,63 @@ namespace {
 }
 
 VIEWS_TEST(split_into_fn, split_size) {
-    std::vector oddSizeValues{0, 1, 2, 3, 4};
     std::vector evenSizeValues{0, 1, 2, 3, 4, 5};
+    std::vector const oddSizeValues{0, 1, 2, 3, 4};
+
 
     test_split_info_fn(evenSizeValues, 2, 3);
     test_split_info_fn(oddSizeValues, 2, 3);
 }
+
 namespace {
     template<std::ranges::range T, class U>
-    void test_stride_offset_fn(T&& values, U&& expected, int stride, int offset) {
-        EXPECT_RANGE_EQ((std::forward<T>(values) | views::drop_stride(stride, offset)), std::forward<U>(expected));
+    void test_drop_stride_fn(T&& values, U&& expected, int offset, int stride) {
+        EXPECT_RANGE_EQ(
+            (std::forward<T>(values) | views::drop_stride(offset, stride)),
+            std::forward<U>(expected)
+        );
+    }
+    template<std::ranges::range T, class U>
+    void test_drop_stride_fn(T&& values, U&& expected, int drop_stride) {
+        EXPECT_RANGE_EQ(
+            std::forward<T>(values) | views::drop_stride(drop_stride),
+            std::forward<U>(expected)
+        );
     }
 }
 
+VIEWS_TEST(drop_stride_fn, asdf1) {
+
+
+    test_drop_stride_fn(std::vector{0, 1, 2, 3}, std::vector{1, 3}, 1, 2);
+    test_drop_stride_fn(std::vector{0, 1, 2, 3}, std::vector{0, 2}, 0, 2);
+}
 VIEWS_TEST(drop_stride_fn, asdf) {
-    test_stride_offset_fn(std::vector{0, 1, 2, 3}, std::vector<std::vector<int>>{{0, 2}, {1, 3}}, 1, 1);
+
+    test_drop_stride_fn(std::vector{0, 1, 2, 3}, std::vector{1, 3}, 2);
+    test_drop_stride_fn(std::vector{0, 1, 2, 3}, std::vector{0, 2}, 2);
 }
 
+}
+
+namespace cth::views {
+struct A {
+    A() = default;
+    A(int asdf) : asdf{asdf} {}
+
+    int foo(int a) const { return asdf + a; }
+    double f(int, double d, float) { return asdf + d; }
+    static size_t x(A const& a) { return a.asdf; }
+
+    int asdf;
+};
+
+std::vector<A> values{{0}, {1}, {2}, {3}, {4}};
+
+
+VIEWS_TEST(transform_call_fn, member_fn_singe) {
+    std::vector<int> expected{1, 2, 3, 4, 5};
+
+    std::vector actual{std::from_range, values | views::transform_call(&A::foo, 1)};
+}
 }

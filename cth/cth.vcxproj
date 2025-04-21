@@ -27,6 +27,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="algorithm\ranges.hpp" />
+    <ClInclude Include="algorithm\utility.hpp" />
     <ClInclude Include="algorithm\views.hpp" />
     <ClInclude Include="cth.hpp" />
     <ClInclude Include="algorithm.hpp" />
@@ -35,6 +37,7 @@
     <ClInclude Include="string\format.hpp" />
     <ClInclude Include="io\console.hpp" />
     <ClInclude Include="exception.hpp" />
+    <ClInclude Include="utility.hpp" />
     <ClInclude Include="utility\image.hpp" />
     <ClInclude Include="io.hpp" />
     <ClInclude Include="io\file.hpp" />

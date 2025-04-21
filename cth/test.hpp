@@ -1,13 +1,13 @@
 #pragma once
+#include "string.hpp"
 #include "types/ranges.hpp"
 #include "types/type_traits.hpp"
-#include "string.hpp"
 
-#include "windows/keyboard.hpp"
 
 #include <gtest/gtest.h>
 
 #include <print>
+#include <functional>
 
 #define S_TEST(spacer, suite, test_name) TEST(spacer##_##suite, test_name)
 
@@ -15,49 +15,30 @@
 #define CTH_TEST(suite, test_name) CTH_EX_TEST(, suite, test_name)
 
 
-
 namespace cth::test {
 
+template<std::ranges::range LRng, std::ranges::range RRng>
+[[nodiscard]] cxpr bool operator==(LRng&& l_rng, RRng&& r_rng) {
+    if constexpr(cth::type::all_satisfy<CPT(std::ranges::sized_range), LRng, RRng>)
+        if(std::ranges::size(l_rng) != std::ranges::size(r_rng)) return false;
 
-namespace dev {
-    template<size_t Dim, class L, class R> requires(Dim == 0 || (!std::ranges::range<L> && !std::ranges::range<R>))
-    bool expect_range_eq(L&& l, R&& r) { return std::equal_to{}(l, r); }
+    for(auto&& [l, r] : std::views::zip(std::forward<LRng>(l_rng), std::forward<RRng>(r_rng)))
+        if(!(l == r)) return false;
 
-
-    template<size_t Dim = cth::type::MAX_DEPTH, std::ranges::range LRng, std::ranges::range RRng> requires(Dim != 0)
-    bool expect_range_eq(LRng&& l, RRng r) {
-        using l_rng_t = std::remove_cvref_t<LRng>;
-        using r_rng_t = std::remove_cvref_t<RRng>;
-
-        if constexpr(std::ranges::sized_range<l_rng_t> && std::ranges::sized_range<r_rng_t>)
-            if(!std::ranges::size(l) == std::ranges::size(r)) return false;
-
-        for(auto&& [lElement, rElement] : std::views::zip(std::forward<LRng>(l), std::forward<RRng>(r))) {
-            auto result = cth::test::dev::expect_range_eq<Dim - 1>(lElement, rElement);
-            if(result) continue;
-
-            std::println("not equal:\n\t left: {}\n\t right: {}", lElement, rElement);
-            return result;
-        }
-        return true;
-    }
+    return true;
 }
 
-template<size_t Dim = cth::type::MAX_DEPTH, std::ranges::range LRng, std::ranges::range RRng>
-bool expect_range_eq(LRng&& l, RRng&& r) {
-    static_assert(
-        type::dimensions<std::remove_cvref_t<LRng>>() == type::dimensions<std::remove_cvref_t<RRng>>(),
-        "ranges do not have equal dimensions"
-    );
 
-    if(dev::expect_range_eq(l, r)) return true;
 
-    std::println("not equal:\n\t left: {}\n\t right: {}", l, r);
+template<class L, class R>
+[[nodiscard]] cxpr bool expect_range_eq(L&& l, R&& r) {
+    if(std::forward<L>(l) == std::forward<R>(r)) return true;
+    std::println("ranges are not equal!");
+
     return false;
 }
-
-
-
 }
+
+
 
 #define EXPECT_RANGE_EQ(l_rng, r_rng) ASSERT_TRUE(cth::test::expect_range_eq(l_rng, r_rng))

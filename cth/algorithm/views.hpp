@@ -1,49 +1,28 @@
 #pragma once
+#include "utility.hpp"
+
+#include "../utility.hpp"
+
 #include "../io/log.hpp"
+#include "../types/variadic.hpp"
 
 #include <ranges>
 
 
-namespace cth::views {
-class piped_fn {};
-template<class T, class Fn> requires std::derived_from<std::remove_cvref_t<Fn>, piped_fn>
-constexpr decltype(auto) operator|(T&& left, Fn&& fn) { return std::forward<Fn>(fn)(std::forward<T>(left)); }
-}
 
 namespace cth::views {
-template<class Fn, class... FnArgs>
-struct pipe_call_closure : piped_fn {
-    static_assert(std::same_as<std::decay_t<FnArgs>, FnArgs>, "the contained types must not be references");
-
-    template<class... CArgs> requires(std::same_as<std::decay_t<CArgs>, FnArgs> && ...)
-    explicit constexpr pipe_call_closure(CArgs&&... args) : _args{std::forward<CArgs>(args)...} {}
-
-    template<class T>
-    constexpr decltype(auto) operator()(T&& arg) {
-        return std::apply([&arg]<class... TplArgs>(TplArgs&&... args) mutable -> decltype(auto) {
-            return Fn{}(std::forward<T>(arg), std::forward<TplArgs>(args)...);
-        }, _args);
-    }
-
-private:
-    std::tuple<FnArgs...> _args;
-};
-
-}
-
-namespace cth::views {
-struct to_ptr_range_fn : piped_fn {
+struct to_ptr_range_fn : ranges::piped_fn {
     template<std::ranges::viewable_range Rng> requires std::is_lvalue_reference_v<std::ranges::range_reference_t<Rng>>
-    constexpr auto operator()(Rng&& rng) const { return std::views::transform(std::forward<Rng>(rng), [](auto& element) { return &element; }); }
+    cxpr auto operator()(Rng&& rng) const { return std::views::transform(std::forward<Rng>(rng), [](auto& element) { return &element; }); }
 };
 
-inline constexpr to_ptr_range_fn to_ptr_range;
+inline cxpr to_ptr_range_fn to_ptr_range;
 
 
 
 struct split_into_fn {
-    template<std::ranges::viewable_range Rng> requires std::ranges::sized_range<Rng>
-    constexpr auto operator()(Rng&& rng, std::ranges::range_difference_t<Rng> const chunks) const {
+    template<std::ranges::sized_range Rng>
+    cxpr auto operator()(Rng&& rng, std::ranges::range_difference_t<Rng> const chunks) const {
         CTH_CRITICAL(chunks <= 0, "requires chunks to be > 0, current: []", chunks) {}
         auto const rngSize = std::ranges::size(rng);
         auto const chunkSize = rngSize / chunks + (rngSize % chunks == 0 ? 0 : 1);
@@ -51,33 +30,62 @@ struct split_into_fn {
     }
 
     template<class Fn, class T> requires std::constructible_from<std::decay_t<T>, T>
-    constexpr auto operator()(this Fn&&, T&& chunks) { return pipe_call_closure<std::remove_cvref_t<Fn>, std::decay_t<T>>{std::forward<T>(chunks)}; }
+    cxpr auto operator()(this Fn&&, T&& chunks) {
+        return ranges::pipe_call_closure<std::remove_cvref_t<Fn>, std::decay_t<T>>{std::forward<T>(chunks)};
+    }
 
 };
 
-inline constexpr split_into_fn split_into;
+inline cxpr split_into_fn split_into;
 
 
 
 struct drop_stride_fn {
-    template<std::ranges::viewable_range Rng> requires std::ranges::sized_range<Rng>
-    constexpr auto operator()(Rng&& rng, std::ranges::range_difference_t<Rng> const stride, std::ranges::range_difference_t<Rng> const drop_size) const {
-        return std::views::stride(std::views::drop(std::forward<Rng>(rng), drop_size), stride);
+    template<std::ranges::range Rng>
+    cxpr auto operator()(Rng&& rng, std::ranges::range_difference_t<Rng> const drop, std::ranges::range_difference_t<Rng> const stride) const {
+        return std::views::stride(std::views::drop(std::forward<Rng>(rng), drop), stride);
     }
-    template<std::ranges::viewable_range Rng> requires std::ranges::sized_range<Rng>
-    constexpr auto operator()(Rng&& rng, std::ranges::range_difference_t<Rng> const stride_drop) const {
-        return operator()(std::forward<Rng>(rng), stride_drop, stride_drop);
+    template<std::ranges::range Rng>
+    cxpr auto operator()(Rng&& rng, std::ranges::range_difference_t<Rng> const drop_stride) const {
+        return operator()(std::forward<Rng>(rng), drop_stride - 1, drop_stride);
     }
 
     template<class Fn, class T> requires std::constructible_from<std::decay_t<T>, T>
-    constexpr auto operator()(this Fn&&, T&& stride_drop) {
-        return pipe_call_closure<std::remove_cvref_t<Fn>, std::decay_t<T>>{std::forward<T>(stride_drop)};
+    cxpr auto operator()(this Fn&&, T&& drop_stride) {
+        return ranges::pipe_call_closure<std::remove_cvref_t<Fn>, std::decay_t<T>>{std::forward<T>(drop_stride)};
     }
-    template<class Fn, class T, class U> requires std::constructible_from<std::decay_t<T>, T> && std::constructible_from<std::decay_t<U>, U>
-    constexpr auto operator()(this Fn&&, T&& stride, U&& drop_size) {
-        return pipe_call_closure<std::remove_cvref_t<Fn>, std::decay_t<T>, std::decay_t<U>>{std::forward<T>(stride), std::forward<U>(drop_size)};
+    template<class Fn, class T, class U> requires (std::constructible_from<std::decay_t<T>, T> && std::constructible_from<std::decay_t<U>, U>)
+    cxpr auto operator()(this Fn&&, T&& drop, U&& stride) {
+        return ranges::pipe_call_closure<std::remove_cvref_t<Fn>, std::decay_t<T>, std::decay_t<U>>{std::forward<T>(drop), std::forward<U>(stride)};
     }
+
 };
 
-inline constexpr drop_stride_fn drop_stride;
+inline cxpr drop_stride_fn drop_stride;
+
+
+
+struct transform_call_fn {
+    template<class Rng>
+    using range_value_t = std::ranges::range_value_t<Rng>;
+
+    template<std::ranges::range Rng, class Call, class... Args> requires(std::is_invocable_v<Call, std::ranges::range_value_t<Rng>, Args...>)
+    cxpr auto operator()(Rng&& rng, Call&& call, Args&&... args) const {
+        return std::views::transform(std::forward<Rng>(rng), [&call, &args...]<class T>(T&& element) {
+            return std::invoke(std::forward<Call>(call), std::forward<T>(element), std::forward<Args>(args)...);
+        });
+    }
+
+    template<class Call, class... Args, class Fn> requires(!std::ranges::range<Call>)
+    cxpr auto operator()(this Fn&&, Call&& call, Args&&... args) {
+        return ranges::pipe_call_closure<std::remove_cvref_t<Fn>, std::decay_t<Call>, std::decay_t<Args>...>{
+            std::forward<Call>(call),
+            std::forward<Args>(args)...
+        };
+    }
+
+
+};
+
+inline cxpr transform_call_fn transform_call;
 }

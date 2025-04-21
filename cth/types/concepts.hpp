@@ -35,21 +35,21 @@ concept character = std::same_as<pure_t<T>, char> or std::same_as<pure_t<T>, wch
 template<class T>
 concept n_character = std::same_as<pure_t<T>, char>;
 
+template<class T, auto TCpt>
+concept negate = not satisfies<T, TCpt>;
+
 template<class T>
 concept w_character = std::same_as<pure_t<T>, wchar_t>;
 
-
-
-
 template<class T, auto Fn, class... Args>
-concept callable = requires(T t) {
+concept callable_with = requires(T t) {
     std::invoke(Fn, t, std::declval<Args>()...);
 };
 
 template<class T>
-concept has_release = callable<T, &T::release>;
+concept has_release = callable_with<T, &T::release>;
 template<class T>
-concept has_get = callable<T, &T::get>;
+concept has_get = callable_with<T, &T::get>;
 template<class T>
 concept has_deref = requires(T t) {
     *t;

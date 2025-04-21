@@ -4,6 +4,8 @@
 
 #include <ranges>
 
+#include "../utility.hpp"
+
 //md_range
 
 namespace cth::type {
@@ -14,7 +16,7 @@ namespace cth::type {
  * @tparam Max optional max search depth
  */
 template<class Rng, size_t Max = MAX_DEPTH>
-consteval size_t dimensions();
+cval size_t dimensions();
 
 /**
  * @brief checks if @ref Rng is of at least @ref D dimensions
@@ -27,7 +29,7 @@ concept md_range = dimensions<Rng, D>() == D;
 
 namespace dev {
     template<class Rng, size_t D>
-    consteval auto md_range_value();
+    cval auto md_range_value();
 }
 
 

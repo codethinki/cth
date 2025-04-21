@@ -23,7 +23,7 @@ enum Severity {
     CRITICAL,
     SEVERITY_SIZE,
 };
-constexpr static std::string_view to_string(Severity sev) {
+[[nodiscard]] cxpr static std::string_view to_string(Severity sev) {
     switch(sev) {
         // NOLINT(clang-diagnostic-switch-enum)
         case LOG: return "LOG";
@@ -44,15 +44,15 @@ CTH_FORMAT_TYPE(cth::except::Severity, cth::except::to_string);
 namespace cth::except {
 class default_exception : public std::exception {
 public:
-    explicit default_exception(std::string msg, Severity const severity = cth::except::ERR,
+     explicit default_exception(std::string msg, Severity const severity = cth::except::ERR,
         std::source_location loc = std::source_location::current(),
         std::stacktrace trace = std::stacktrace::current()) : _severity(severity), _msg{std::format(" {0}\n", msg)},
         _sourceLocation{loc}, _trace{std::move(trace)}, _what{msg} {}
 
 
-    default_exception& add(std::string msg) noexcept { return addNoCpy(msg); }
+    cxpr default_exception& add(std::string msg) noexcept { return addNoCpy(msg); }
     template<typename... Args> requires (sizeof...(Args) > 0u)
-    default_exception& add(std::format_string<Args...> f_str, Args&&... types) noexcept {
+    cxpr default_exception& add(std::format_string<Args...> f_str, Args&&... types) noexcept {
         return this->addNoCpy(std::format(f_str, std::forward<Args>(types)...));
     }
 
@@ -68,7 +68,7 @@ public:
         return std::format("LOCATION: {0}({1}:{2})\n", filename.substr(filename.find_last_of('\\') + 1),
             _sourceLocation.line(), _sourceLocation.column());
     }
-    [[nodiscard]] std::string func_string() const noexcept { return std::format("FUNCTION: {0}\n", _sourceLocation.function_name()); }
+    [[nodiscard]]  std::string func_string() const noexcept { return std::format("FUNCTION: {0}\n", _sourceLocation.function_name()); }
     [[nodiscard]] std::string trace_string() const noexcept {
         std::string str = "STACKTRACE:\n";
 
@@ -80,7 +80,7 @@ public:
     }
 
 private:
-    default_exception& addNoCpy(std::string const& msg) noexcept {
+    cxpr default_exception& addNoCpy(std::string const& msg) noexcept {
         if(_details.empty()) _details = "DETAILS:\n";
         _details += std::format("\t{}\n", msg);
 
@@ -97,14 +97,14 @@ private:
     std::string _what{};
 
 public:
-    [[nodiscard]] Severity severity() const noexcept { return _severity; }
-    [[nodiscard]] std::string details() const noexcept { return _details; }
-    [[nodiscard]] std::string msg() const noexcept { return _msg; }
+    [[nodiscard]] cxpr Severity severity() const noexcept { return _severity; }
+    [[nodiscard]] cxpr std::string details() const noexcept { return _details; }
+    [[nodiscard]] cxpr std::string msg() const noexcept { return _msg; }
 
-    [[nodiscard]] std::stacktrace stacktrace() const noexcept { return _trace; }
-    [[nodiscard]] std::source_location location() const noexcept { return _sourceLocation; }
+    [[nodiscard]] cxpr std::stacktrace stacktrace() const noexcept { return _trace; }
+    [[nodiscard]] cxpr std::source_location location() const noexcept { return _sourceLocation; }
 
-    [[nodiscard]] char const* what() const noexcept override { return _what.c_str(); }
+    [[nodiscard]] cxpr char const* what() const noexcept override { return _what.c_str(); }
 
     default_exception(default_exception const& other) noexcept = default;
     default_exception(default_exception&& other) noexcept = default;

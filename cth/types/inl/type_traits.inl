@@ -4,7 +4,7 @@
 
 namespace cth::type {
 template<class T, template<class> class Trait, size_t N>
-consteval auto apply_trait() {
+[[nodiscard]] cval auto apply_trait() {
     constexpr bool valid = applicable<T, Trait>;
 
     if constexpr(N == 0) return std::type_identity<T>{};
@@ -15,7 +15,7 @@ consteval auto apply_trait() {
 
 namespace dev {
     template<class T, template<class> class Trait, size_t Max>
-    consteval size_t trait_count(size_t n = 0) {
+    cval size_t trait_count(size_t n = 0) {
         if constexpr(!applicable<T, Trait>) return n;
         else {
             if(n >= Max) return n;
@@ -26,7 +26,7 @@ namespace dev {
 
 
 template<class T, template<class> class Trait, size_t Max>
-consteval size_t trait_count() { return dev::trait_count<T, Trait, Max>(); }
+[[nodiscard]] cval size_t trait_count() { return dev::trait_count<T, Trait, Max>(); }
 
 
 namespace dev {
@@ -37,7 +37,7 @@ namespace dev {
     };
 
     template<class T, auto TCpt, template<class> class Trait, size_t MaxDepth>
-    consteval size_t cpt_count(size_t n = 0) {
+    cval size_t cpt_count(size_t n = 0) {
         if(n >= MaxDepth) return n;
         if constexpr(!satisfies<T, TCpt>) return n;
         else if constexpr(!applicable<T, Trait>) throw Trait_must_be_applicable_on_T{};
@@ -50,6 +50,6 @@ namespace dev {
 
 
 template<class T, auto TCpt, template<class> class Trait, size_t MaxDepth>
-consteval size_t cpt_count() { return dev::cpt_count<T, TCpt, Trait, MaxDepth>(); }
+[[nodiscard]] cval size_t cpt_count() { return dev::cpt_count<T, TCpt, Trait, MaxDepth>(); }
 
 }

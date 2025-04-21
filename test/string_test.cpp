@@ -19,6 +19,13 @@ STR_TEST(to_string, 2drange) {
     EXPECT_EQ(str, "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]");
 }
 
+STR_TEST(to_string, view) {
+    std::vector<int> const vec = {1, 2, 3, 4, 5};
+
+    std::string const str = cth::str::to_string(vec);
+    EXPECT_EQ(str, "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]");
+}
+
 
 STR_TEST(to_num, main) {
     EXPECT_EQ(cth::str::to_num<uint32_t>("1234"), 1234u);
@@ -37,7 +44,7 @@ STR_TEST(split, main) {
 
     auto res = str::split("asdf  asdf asdf dht", " ");
 
-    constexpr std::array<std::string_view, 4> validRes = {{"asdf", "asdf", "asdf", "dht"}};
+    cxpr std::array<std::string_view, 4> validRes = {{"asdf", "asdf", "asdf", "dht"}};
 
     for(size_t i = 0; i < res.size(); ++i)
         EXPECT_EQ(res[i], validRes[i]);

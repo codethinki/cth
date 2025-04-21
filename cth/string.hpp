@@ -1,4 +1,6 @@
 #pragma once
+#include "utility.hpp"
+
 #include "string/format.hpp"
 #include "types/ranges.hpp"
 #include "types/variadic.hpp"
@@ -11,9 +13,13 @@
 #include <vector>
 
 
+namespace cth::str {
+template<class T>
+concept char_formattable = cth::type::any_constructible_from<T, std::string_view, std::string> ;
+}
 
 namespace cth::str {
-[[nodiscard]] inline std::vector<char const*> to_c_str_vector(std::span<std::string const> const& str_vec) {
+[[nodiscard]] cxpr std::vector<char const*> to_c_str_vector(std::span<std::string const> const& str_vec) {
     std::vector<char const*> charVec(str_vec.size());
     std::ranges::transform(str_vec, charVec.begin(), [](std::string const& str) { return str.c_str(); });
 
@@ -22,7 +28,7 @@ namespace cth::str {
 
 
 template<cth::type::arithmetic T>
-[[nodiscard]] constexpr std::optional<T> to_num(std::string_view str) {
+[[nodiscard]] cxpr std::optional<T> to_num(std::string_view str) {
     T num = 0;
     size_t i = 0;
     for(; i < str.size(); i++) {
@@ -32,7 +38,7 @@ template<cth::type::arithmetic T>
     }
     if(i == str.size()) return num;
 
-    if constexpr(std::is_floating_point_v<T>) {
+    if cxpr(std::is_floating_point_v<T>) {
         if(str[i++] != '.') goto failed;
 
         T d;
@@ -54,17 +60,16 @@ template<cth::type::arithmetic T>
 
 
 template<std::ranges::range Rng> requires std::formattable<type::md_range_value_t<std::remove_cvref_t<Rng>>, char>
-[[nodiscard]] std::string to_string(Rng&& rng) {
-    //constexpr bool constIterable = requires { std::ranges::begin(rng); std::ranges::end(rng); };
-    constexpr bool mdRange = type::md_range<Rng, 2>;
+[[nodiscard]] cxpr std::string to_string(Rng&& rng) {
+    if(std::ranges::empty(rng)) return {};
 
-    // auto range = type::copy_if<!constIterable>(rng);
+    static cxpr bool MD_RANGE = type::md_range<Rng, 2>;
 
     std::string string = "[";
 
     for(auto&& element : std::forward<Rng>(rng)) {
         using E = decltype(element);
-        if constexpr(mdRange)
+        if constexpr(MD_RANGE)
             string.insert_range(string.end(), std::format("{}, ", cth::str::to_string(std::forward<E>(element))));
         else
             string.insert_range(string.end(), std::format("{}, ", std::forward<E>(element)));
@@ -80,8 +85,11 @@ template<std::ranges::range Rng> requires std::formattable<type::md_range_value_
  * \brief splits a string into a vector of strings
  * \tparam U the delimiter type
  */
-template<type::convertible_to_any<std::string_view, std::wstring_view> T, type::convertible_to_any<std::string_view, std::wstring_view, char, wchar_t> U>
-[[nodiscard]] auto split(T const& str, U const& delimiter) {
+template<
+    type::convertible_to_any<std::string_view, std::wstring_view> T,
+    type::convertible_to_any<std::string_view, std::wstring_view, char, wchar_t> U
+>
+[[nodiscard]] cxpr auto split(T const& str, U const& delimiter) {
     auto const view = type::to_constructible<std::string_view, std::wstring_view>(str);
     using char_t = typename decltype(view)::value_type;
     using ret_t = std::vector<std::basic_string<char_t>>;
@@ -97,14 +105,21 @@ template<type::convertible_to_any<std::string_view, std::wstring_view> T, type::
 
 } // namespace cth::str
 
-CTH_FORMAT_CPT(std::ranges::range, cth::str::to_string);
+
+namespace cth::str {
+template<class T>
+concept non_string_rng = std::ranges::range && !cth::type::any_constructible_from<T, std::string_view, std::string>;
+}
+
+
+CTH_FORMAT_CPT(cth::str::non_string_rng, cth::str::to_string);
 
 
 
 namespace cth::expr::str {
 
 template<type::arithmetic T>
-[[nodiscard]] constexpr std::optional<T> to_num(std::string_view str, int base) { return cth::str::to_num<T>(str, base); }
+[[nodiscard]] cxpr std::optional<T> to_num(std::string_view str, int base) { return cth::str::to_num<T>(str, base); }
 
 
 } // namespace cth::expr::str

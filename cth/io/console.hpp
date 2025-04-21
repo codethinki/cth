@@ -71,7 +71,7 @@ enum Text_Styles {
 
 namespace dev {
 
-    static inline constexpr size_t MAX_STACK_SIZE = 16;
+    static inline cxpr size_t MAX_STACK_SIZE = 16;
 
     enum Cursor_Ids {
         //cursor codes
@@ -98,20 +98,20 @@ namespace dev {
 
 
 
-    inline static constexpr std::array<char const*, TEXT_COL_SIZE> TEXT_COLOR_CODES_N = {{
+    inline static cxpr std::array<char const*, TEXT_COL_SIZE> TEXT_COLOR_CODES_N = {{
         "\033[39m", //default
         "\033[30m", "\033[31m", "\033[32m", "\033[33m",
         "\033[34m", "\033[35m", "\033[36m", "\033[37m",
         "\033[90m", "\033[91m", "\033[92m", "\033[93m",
         "\033[94m", "\033[95m", "\033[96m", "\033[97m",
     }};
-    inline static constexpr std::array<char const*, BG_COL_SIZE> BG_COLOR_CODES_N = {{
+    inline static cxpr std::array<char const*, BG_COL_SIZE> BG_COLOR_CODES_N = {{
         "\033[40m", "\033[41m", "\033[42m", "\033[43m",
         "\033[44m", "\033[45m", "\033[46m", "\033[47m",
         "\033[100m", "\033[101m", "\033[102m", "\033[103m",
         "\033[104m", "\033[105m", "\033[106m", "\033[107m",
     }};
-    inline static constexpr std::array<char const*, TEXT_STYLE_SIZE * 2> TEXT_STYLE_CODES_N = {{
+    inline static cxpr std::array<char const*, TEXT_STYLE_SIZE * 2> TEXT_STYLE_CODES_N = {{
         "\033[1m", "\033[22m", //bold clear bold
         "\033[2m", "\033[22m", //faint, clear bold
         "\033[3m", "\033[23m", //italic, clear italic
@@ -125,20 +125,20 @@ namespace dev {
 
 
     template<type::character T = char>
-    static constexpr std::string_view ansiCode(Text_Colors color) {
+    static cxpr std::string_view ansiCode(Text_Colors color) {
         return TEXT_COLOR_CODES_N[color];
     }
     template<type::character T = char>
-    static constexpr std::string_view ansiCode(BG_Colors color) {
+    static cxpr std::string_view ansiCode(BG_Colors color) {
         return BG_COLOR_CODES_N[color];
     }
     template<type::character T = char>
-    static constexpr std::string_view ansiCode(Text_Styles color) {
+    static cxpr std::string_view ansiCode(Text_Styles color) {
         return TEXT_STYLE_CODES_N[color];
     }
 
     //TODO add supports for these codes
-    //inline static constexpr array<const char*, CURSOR_IDS_SIZE> CURSOR_CODES_N{{
+    //inline static cxpr array<const char*, CURSOR_IDS_SIZE> CURSOR_CODES_N{{
     //    //control sequences, replace the # with a number
     //    "\033[#A", "\033[#F", //up, up reset x
     //    "\033[#B", "\033[#E", //down, down reset x
@@ -146,7 +146,7 @@ namespace dev {
     //    "\033[#G", //set x
     //    "\033[#H" //reset
     //}};
-    //inline static constexpr array<const char*, ERASE_IDS_SIZE> ERASE_CODES_N{{
+    //inline static cxpr array<const char*, ERASE_IDS_SIZE> ERASE_CODES_N{{
     //    "\033[2K", //erase line
     //    "\033[1K", "\033[0K", //erase line left, right
     //    "\033[2J", //erase screen
@@ -161,19 +161,19 @@ namespace dev {
 
 
 struct col_stream_state {
-    constexpr col_stream_state() = default;
+    cxpr col_stream_state() = default;
 
-    [[nodiscard]] constexpr Text_Colors textCol() const { return _textCol; }
-    [[nodiscard]] constexpr BG_Colors bgCol() const { return _bgCol; }
-    [[nodiscard]] constexpr bool styleActive(Text_Styles id) const { return _textStyles[id]; }
+    [[nodiscard]] cxpr Text_Colors textCol() const { return _textCol; }
+    [[nodiscard]] cxpr BG_Colors bgCol() const { return _bgCol; }
+    [[nodiscard]] cxpr bool styleActive(Text_Styles id) const { return _textStyles[id]; }
 
-    constexpr void setTextCol(Text_Colors text_color) { _textCol = text_color; }
-    constexpr void setBGCol(BG_Colors bg_color) { _bgCol = bg_color; }
-    constexpr void resetStyle() { _textStyles.fill(false); }
+    cxpr void setTextCol(Text_Colors text_color) { _textCol = text_color; }
+    cxpr void setBGCol(BG_Colors bg_color) { _bgCol = bg_color; }
+    cxpr void resetStyle() { _textStyles.fill(false); }
 
-    constexpr void setTextStyles(std::array<bool, TEXT_STYLE_SIZE> const& text_styles) { _textStyles = text_styles; }
+    cxpr void setTextStyles(std::array<bool, TEXT_STYLE_SIZE> const& text_styles) { _textStyles = text_styles; }
 
-    constexpr void setStyle(Text_Styles style, bool const activate = true) { _textStyles[style] = activate; }
+    cxpr void setStyle(Text_Styles style, bool const activate = true) { _textStyles[style] = activate; }
 
 private:
     Text_Colors _textCol = DEFAULT_TEXT_COL;

@@ -4,6 +4,11 @@
 
 #include "concepts.hpp"
 
+namespace cth::type {
+template<size_t I, class... Ts>
+using at_t = decltype(std::get<I, Ts...>());
+}
+
 //is_any_of
 
 namespace cth::type {
