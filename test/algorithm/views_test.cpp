@@ -62,13 +62,7 @@ namespace {
             std::forward<U>(expected)
         );
     }
-    template<std::ranges::range T, class U>
-    void test_drop_stride_fn(T&& values, U&& expected, int drop_stride) {
-        EXPECT_RANGE_EQ(
-            std::forward<T>(values) | views::drop_stride(drop_stride),
-            std::forward<U>(expected)
-        );
-    }
+    
 }
 
 VIEWS_TEST(drop_stride_fn, asdf1) {
@@ -76,11 +70,6 @@ VIEWS_TEST(drop_stride_fn, asdf1) {
 
     test_drop_stride_fn(std::vector{0, 1, 2, 3}, std::vector{1, 3}, 1, 2);
     test_drop_stride_fn(std::vector{0, 1, 2, 3}, std::vector{0, 2}, 0, 2);
-}
-VIEWS_TEST(drop_stride_fn, asdf) {
-
-    test_drop_stride_fn(std::vector{0, 1, 2, 3}, std::vector{1, 3}, 2);
-    test_drop_stride_fn(std::vector{0, 1, 2, 3}, std::vector{0, 2}, 2);
 }
 
 }

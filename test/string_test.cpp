@@ -22,8 +22,8 @@ STR_TEST(to_string, 2drange) {
 STR_TEST(to_string, view) {
     std::vector<int> const vec = {1, 2, 3, 4, 5};
 
-    std::string const str = cth::str::to_string(vec);
-    EXPECT_EQ(str, "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]");
+    std::string const str = cth::str::to_string(std::views::all(vec));
+    EXPECT_EQ(str, "[1, 2, 3, 4, 5]");
 }
 
 

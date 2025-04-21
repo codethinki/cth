@@ -45,15 +45,7 @@ struct drop_stride_fn {
     cxpr auto operator()(Rng&& rng, std::ranges::range_difference_t<Rng> const drop, std::ranges::range_difference_t<Rng> const stride) const {
         return std::views::stride(std::views::drop(std::forward<Rng>(rng), drop), stride);
     }
-    template<std::ranges::range Rng>
-    cxpr auto operator()(Rng&& rng, std::ranges::range_difference_t<Rng> const drop_stride) const {
-        return operator()(std::forward<Rng>(rng), drop_stride - 1, drop_stride);
-    }
 
-    template<class Fn, class T> requires std::constructible_from<std::decay_t<T>, T>
-    cxpr auto operator()(this Fn&&, T&& drop_stride) {
-        return ranges::pipe_call_closure<std::remove_cvref_t<Fn>, std::decay_t<T>>{std::forward<T>(drop_stride)};
-    }
     template<class Fn, class T, class U> requires (std::constructible_from<std::decay_t<T>, T> && std::constructible_from<std::decay_t<U>, U>)
     cxpr auto operator()(this Fn&&, T&& drop, U&& stride) {
         return ranges::pipe_call_closure<std::remove_cvref_t<Fn>, std::decay_t<T>, std::decay_t<U>>{std::forward<T>(drop), std::forward<U>(stride)};
