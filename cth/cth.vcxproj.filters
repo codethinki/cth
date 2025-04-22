@@ -87,9 +87,6 @@
     <ClInclude Include="types\utility.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types\concepts.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="types\variadic.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -120,6 +117,18 @@
     <ClInclude Include="algorithm\utility.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="macro.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="types\concepts.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mode.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="io\io_log.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="windows\inl\windows.inl">
@@ -140,12 +149,102 @@
     <None Include="windows\inl\keyboard.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="typ\inl\typ_traits.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="typ\inl\typ_variadic.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="typ\inl\typ_ranges.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="win\inl\cth_win.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="utility\regex\remove_const_func_param.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="alg\cth_alg_utility.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="alg\cth_alg_views.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="typ\cth_typ_utility.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="typ\cth_typ_concepts.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="typ\cth_typ_tuple.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="typ\cth_typ_md.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="typ\cth_typ_traits.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="typ\cth_typ_variadic.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="typ\cth_typ_variant.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="typ\cth_typ_ranges.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="alg\cth_alg_hash.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="alg\cth_alg_ranges.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cth_exception.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cth_constants.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="io\cth_io_console.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cth_string.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cth_functional.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cth_numeric.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cth_ptr.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ptr\cth_ptr_move.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ptr\cth_ptr_not_null.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cth_win.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="io\cth_io_log.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utility\image.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cth_typ.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cth_alg.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cth_io.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

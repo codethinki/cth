@@ -1,6 +1,6 @@
 #include "test.hpp"
 
-#include "cth/types/md.hpp"
+import cth.typ.md;
 
 namespace cth::type {
 TYPE_TEST(mdextent, compile) {

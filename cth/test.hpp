@@ -1,13 +1,13 @@
 #pragma once
-#include "string.hpp"
-#include "types/ranges.hpp"
-#include "types/type_traits.hpp"
-
-
+#include <cth/macro.hpp>
 #include <gtest/gtest.h>
 
-#include <print>
-#include <functional>
+
+import cth.string;
+import cth.alg.ranges;
+import cth.typ.concepts;
+import std;
+
 
 #define S_TEST(spacer, suite, test_name) TEST(spacer##_##suite, test_name)
 

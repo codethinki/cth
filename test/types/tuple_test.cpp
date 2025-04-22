@@ -1,6 +1,6 @@
 #include "test.hpp"
 
-#include "cth/types/tuple.hpp"
+import cth.typ.tuple;
 
 
 namespace cth::type {

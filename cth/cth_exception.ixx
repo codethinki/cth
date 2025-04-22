@@ -1,18 +1,11 @@
-#pragma once
+module;
+#include "macro.hpp"
+#include "string/format.hpp"
+export module cth.exception;
 
-// ReSharper disable CppClangTidyPerformanceUnnecessaryValueParam
-// ReSharper disable CppClangTidyBugproneExceptionEscape
-// ReSharper disable CppPassValueParameterByConstReference
-// ReSharper disable CppClangTidyModernizePassByValue
+import std;
 
-//exception throw causes stack unwind -> dangling reference
-#include <filesystem>
-#include <source_location>
-#include <stacktrace>
-#include <string>
-
-
-namespace cth::except {
+export namespace cth::except {
 
 
 enum Severity {
@@ -23,7 +16,7 @@ enum Severity {
     CRITICAL,
     SEVERITY_SIZE,
 };
-[[nodiscard]] cxpr static std::string_view to_string(Severity sev) {
+[[nodiscard]] cxpr std::string_view to_string(Severity sev) {
     switch(sev) {
         // NOLINT(clang-diagnostic-switch-enum)
         case LOG: return "LOG";
@@ -37,11 +30,10 @@ enum Severity {
 }
 }
 
+export CTH_FORMAT_TYPE(cth::except::Severity, cth::except::to_string);
 
-CTH_FORMAT_TYPE(cth::except::Severity, cth::except::to_string);
+export namespace cth::except {
 
-
-namespace cth::except {
 class default_exception : public std::exception {
 public:
     explicit default_exception(std::string msg, Severity const severity = cth::except::ERR,
@@ -111,6 +103,7 @@ public:
     default_exception& operator=(default_exception const& other) noexcept = default;
     default_exception& operator=(default_exception&& other) noexcept = default;
 };
+
 template<typename T>
 class data_exception : public default_exception {
 public:

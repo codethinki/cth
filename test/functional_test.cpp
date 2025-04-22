@@ -1,5 +1,5 @@
 // ReSharper disable CppMemberFunctionMayBeStatic
-#include "cth/functional.hpp"
+import cth.functional;
 
 #include "cth/test.hpp"
 

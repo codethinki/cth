@@ -1,24 +1,16 @@
-#pragma once
-#include "io/log.hpp"
-#include "types/ranges.hpp"
+module;
 
-#include <algorithm>
-#include <numeric>
-#include <ranges>
-#include <unordered_set>
+#include "../macro.hpp"
+#include "../io/io_log.hpp"
 
+export module cth.alg.ranges;
 
-namespace cth::alg::hash {
-// from: https://stackoverflow.com/a/57595105
-template<typename T, typename... Rest>
-void combine(std::size_t& seed, T const& v, Rest const&... rest) {
-    seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    (cth::alg::hash::combine(seed, rest), ...);
-}
+import cth.typ.ranges;
+import cth.io.log;
 
-} // namespace cth::alg::hash
+import std;
 
-namespace cth::alg {
+export namespace cth::alg {
 
 /**
 * \brief creates a vector of unique elements with exactly one element from each given range. order is preserved
@@ -27,7 +19,7 @@ namespace cth::alg {
 * \return vector of T, empty if no unique selection is possible
 * \note this is bruteforce
 */
-template<type::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
+template<cth::type::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
 [[nodiscard]] auto uniqueCombine(Rng const& selections) {
     using T = std::remove_cvref_t<type::range2d_value_t<Rng>>;
 
@@ -113,5 +105,3 @@ auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::ran
 
 
 } // namespace cth::alg
-
-#include "algorithm/views.hpp"

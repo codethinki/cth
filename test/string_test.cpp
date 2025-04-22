@@ -1,8 +1,9 @@
-#include "../cth/string.hpp"
 
 #include "cth/test.hpp"
 
 #define STR_TEST(suite, test_name) CTH_EX_TEST(_str, suite, test_name)
+
+import cth.string;
 
 namespace cth::str {
 using std::nullopt;

@@ -1,8 +1,8 @@
 // ReSharper disable CppNoDiscardExpression
 // ReSharper disable CppCompileTimeConstantCanBeReplacedWithBooleanConstant
-#include "cth/test.hpp"
+import cth.numeric;
 
-#include "cth/numeric.hpp"
+#include "cth/test.hpp"
 
 #define NUM_TEST(suite, test_name) CTH_EX_TEST(_numeric, suite, test_name)
 

@@ -1,9 +1,6 @@
 #include "test.hpp"
 
-#include "cth/types/ranges.hpp"
-
-#include "cth/types/concepts.hpp"
-
+import cth.typ.ranges;
 
 using Base = int;
 using Prev = std::array<Base, 10>;

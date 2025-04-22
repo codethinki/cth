@@ -1,10 +1,9 @@
-#include "cth/test.hpp"
+#include "test.hpp"
 
-#include "cth/algorithm.hpp"
-#include "cth/string.hpp"
+import cth.alg.ranges;
 
 
-#define ALG_TEST(suite, test_name) CTH_EX_TEST(_algorithm, suite, test_name)
+
 
 
 

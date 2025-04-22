@@ -2,8 +2,10 @@
 // ReSharper disable CppClangTidyCppcoreguidelinesAvoidMagicNumbers
 #include "cth/test.hpp"
 
-#include "cth/algorithm.hpp"
-#include "cth/string.hpp"
+import cth.alg.views;
+import cth.typ.ranges;
+import cth.string;
+
 #define VIEWS_TEST(suite, test_name) CTH_EX_TEST(_views, suite, test_name)
 
 namespace cth::views {

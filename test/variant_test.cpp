@@ -1,9 +1,6 @@
-#include "../cth/types/variant.hpp"
-
 #include "cth/test.hpp"
 
-#include <variant>
-
+import cth.typ.variant;
 
 #define VAR_TEST(suite, test_name) CTH_EX_TEST(_var, suite, test_name)
 

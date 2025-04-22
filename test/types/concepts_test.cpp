@@ -1,7 +1,6 @@
 #include "test.hpp"
 
-#include "cth/types/concepts.hpp"
-
+import cth.typ.concepts;
 
 namespace cth::type {
 TYPE_TEST(satisfies, main) {

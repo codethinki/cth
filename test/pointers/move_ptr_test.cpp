@@ -1,7 +1,7 @@
 // ReSharper disable CppClangTidyBugproneUseAfterMove
 #include "cth/test.hpp"
 
-#include "cth/pointer/move_ptr.hpp"
+import cth.ptr.move;
 
 namespace cth {
 int constexpr EXAMPLE_NUMBER = 42;
