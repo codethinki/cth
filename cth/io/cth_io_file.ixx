@@ -1,12 +1,13 @@
-#pragma once
-#include "log.hpp"
+module;
+#include "io_log.hpp"
+#include <cstdint>
+export module cth.io.file;
+import cth.io.log;
 
-#include <filesystem>
-#include <fstream>
-#include <ios>
+import std;
 
 
-namespace cth::io::file {
+export namespace cth::io::file {
 
 
 
@@ -19,9 +20,7 @@ uintmax_t size(std::filesystem::path const& path) {
 
 template<class D, size_t Buffer = 0xffff>
 std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {
-    CTH_STABLE_ERR(!std::filesystem::exists(path), "file doesn't exist [{}]", path.string()) {
-        throw details->exception();
-    }
+    CTH_STABLE_ERR(!std::filesystem::exists(path), "file doesn't exist [{}]", path.string()) { throw details->exception(); }
 
     std::vector<std::string> result{};
     std::ifstream file{path};
@@ -44,10 +43,7 @@ std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {
 }
 
 template<size_t Buffer = 0xffff>
-std::vector<std::string> chop(std::filesystem::path const& path, char delimiter = '\n') {
-    return chop<char, Buffer>(path, delimiter);
-}
-
+std::vector<std::string> chop(std::filesystem::path const& path, char delimiter = '\n') { return chop<char, Buffer>(path, delimiter); }
 
 
 

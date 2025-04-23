@@ -30,50 +30,17 @@
     <ClInclude Include="io\io_log.hpp" />
     <ClInclude Include="mode.hpp" />
     <ClInclude Include="macro.hpp" />
-    <ClInclude Include="algorithm\ranges.hpp" />
-    <ClInclude Include="algorithm\utility.hpp" />
-    <ClInclude Include="algorithm\views.hpp" />
-    <ClInclude Include="cth.hpp" />
-    <ClInclude Include="algorithm.hpp" />
-    <ClInclude Include="constants.hpp" />
-    <ClInclude Include="functional.hpp" />
     <ClInclude Include="string\format.hpp" />
-    <ClInclude Include="io\console.hpp" />
-    <ClInclude Include="exception.hpp" />
-    <ClInclude Include="types\concepts.hpp" />
-    <ClInclude Include="utility.hpp" />
     <ClInclude Include="utility\image.hpp" />
-    <ClInclude Include="io.hpp" />
-    <ClInclude Include="io\file.hpp" />
-    <ClInclude Include="pointer\move_ptr.hpp" />
-    <ClInclude Include="pointer\not_null.hpp" />
     <ClInclude Include="test.hpp" />
-    <ClInclude Include="types.hpp" />
-    <ClInclude Include="types\md.hpp" />
-    <ClInclude Include="types\ranges.hpp" />
-    <ClInclude Include="types\tuple.hpp" />
-    <ClInclude Include="types\utility.hpp" />
-    <ClInclude Include="types\variadic.hpp" />
-    <ClInclude Include="windows\keyboard.hpp" />
-    <ClInclude Include="io\log.hpp" />
-    <ClInclude Include="pointers.hpp" />
+    <ClInclude Include="other\win\keyboard.hpp" />
     <ClInclude Include="other\network.hpp" />
-    <ClInclude Include="numeric.hpp" />
-    <ClInclude Include="string.hpp" />
-    <ClInclude Include="types\type_traits.hpp" />
-    <ClInclude Include="types\variant.hpp" />
-    <ClInclude Include="windows.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="io\inl\read.inl" />
-    <None Include="types\inl\ranges.inl" />
     <None Include="typ\inl\typ_ranges.inl" />
     <None Include="typ\inl\typ_traits.inl" />
     <None Include="typ\inl\typ_variadic.inl" />
-    <None Include="types\inl\variadic.inl" />
-    <None Include="types\inl\type_traits.inl" />
-    <None Include="windows\inl\keyboard.inl" />
-    <None Include="windows\inl\windows.inl" />
+    <None Include="other\win\inl\keyboard.inl" />
     <None Include="other\win\inl\cth_win.inl" />
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +55,7 @@
     <ClCompile Include="cth_exception.ixx" />
     <ClCompile Include="cth_functional.ixx" />
     <ClCompile Include="io\cth_io_console.ixx" />
+    <ClCompile Include="io\cth_io_file.ixx" />
     <ClCompile Include="io\cth_io_log.ixx" />
     <ClCompile Include="cth_numeric.ixx" />
     <ClCompile Include="cth_ptr.ixx" />

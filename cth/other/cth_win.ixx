@@ -1,5 +1,4 @@
 module;
-#include "../io/io_log.hpp"
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -7,10 +6,11 @@ module;
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include<Windows.h>
+#include <Windows.h>
 
 
 // ReSharper disable CppUnusedIncludeDirective
+#include "../io/io_log.hpp"
 #include <cstdint>
 #include <cstdlib>
 

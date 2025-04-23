@@ -21,106 +21,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="algorithm.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="io\console.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\keyboard.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="io\log.hpp">
+    <ClInclude Include="other\win\keyboard.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="other\network.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="numeric.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="string.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="types\type_traits.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="exception.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="utility\image.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="types\variant.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pointers.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="io.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cth.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="constants.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pointer\not_null.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pointer\move_ptr.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="string\format.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="types\md.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="types\utility.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="types\variadic.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="types\ranges.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="types\tuple.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="test.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="io\file.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="functional.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="algorithm\views.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utility.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="algorithm\ranges.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="algorithm\utility.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="macro.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="types\concepts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mode.hpp">
@@ -131,22 +47,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="windows\inl\windows.inl">
-      <Filter>Source Files\inl</Filter>
-    </None>
-    <None Include="io\inl\read.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="types\inl\type_traits.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="types\inl\variadic.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="types\inl\ranges.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="windows\inl\keyboard.inl">
+    <None Include="other\win\inl\keyboard.inl">
       <Filter>Header Files</Filter>
     </None>
     <None Include="typ\inl\typ_traits.inl">
@@ -251,6 +152,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="other\network.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="io\cth_io_file.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
