@@ -148,7 +148,7 @@
     <ClCompile Include="cth_io.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utility\cth.ixx">
+    <ClCompile Include="cth.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="other\network.ixx">

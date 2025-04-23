@@ -3,7 +3,7 @@ module;
 export module cth.alg.hash;
 import std;
 
-namespace cth::alg::hash {
+export namespace cth::alg::hash {
     // from: https://stackoverflow.com/a/57595105
     template<typename T, typename... Rest>
     void combine(size_t& seed, T const& v, Rest const&... rest) {

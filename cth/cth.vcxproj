@@ -65,7 +65,7 @@
     <ClCompile Include="cth_typ.ixx" />
     <ClCompile Include="cth_alg.ixx" />
     <ClCompile Include="cth_io.ixx" />
-    <ClCompile Include="utility\cth.ixx" />
+    <ClCompile Include="cth.ixx" />
     <ClCompile Include="utility\image.ixx" />
     <ClCompile Include="other\cth_win.ixx" />
     <ClCompile Include="cth_string.ixx" />
