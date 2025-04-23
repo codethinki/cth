@@ -1,5 +1,5 @@
 module;
-#include "io/io_log.hpp"
+#include "../io/io_log.hpp"
 
 #ifndef NOMINMAX
 #define NOMINMAX

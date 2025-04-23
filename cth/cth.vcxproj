@@ -57,7 +57,7 @@
     <ClInclude Include="windows\keyboard.hpp" />
     <ClInclude Include="io\log.hpp" />
     <ClInclude Include="pointers.hpp" />
-    <ClInclude Include="network.hpp" />
+    <ClInclude Include="other\network.hpp" />
     <ClInclude Include="numeric.hpp" />
     <ClInclude Include="string.hpp" />
     <ClInclude Include="types\type_traits.hpp" />
@@ -74,7 +74,7 @@
     <None Include="types\inl\type_traits.inl" />
     <None Include="windows\inl\keyboard.inl" />
     <None Include="windows\inl\windows.inl" />
-    <None Include="win\inl\cth_win.inl" />
+    <None Include="other\win\inl\cth_win.inl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="utility\regex\remove_const_func_param.txt" />
@@ -91,13 +91,15 @@
     <ClCompile Include="io\cth_io_log.ixx" />
     <ClCompile Include="cth_numeric.ixx" />
     <ClCompile Include="cth_ptr.ixx" />
+    <ClCompile Include="other\network.ixx" />
     <ClCompile Include="ptr\cth_ptr_move.ixx" />
     <ClCompile Include="ptr\cth_ptr_not_null.ixx" />
     <ClCompile Include="cth_typ.ixx" />
     <ClCompile Include="cth_alg.ixx" />
     <ClCompile Include="cth_io.ixx" />
+    <ClCompile Include="utility\cth.ixx" />
     <ClCompile Include="utility\image.ixx" />
-    <ClCompile Include="cth_win.ixx" />
+    <ClCompile Include="other\cth_win.ixx" />
     <ClCompile Include="cth_string.ixx" />
     <ClCompile Include="typ\cth_typ_concepts.ixx" />
     <ClCompile Include="typ\cth_typ_md.ixx" />

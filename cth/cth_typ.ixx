@@ -1,4 +1,4 @@
-export module cth_typ;
+export module cth.typ;
 
 export import cth.typ.concepts;
 export import cth.typ.utility;
