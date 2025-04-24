@@ -34,7 +34,6 @@
     <ClInclude Include="utility\image.hpp" />
     <ClInclude Include="test.hpp" />
     <ClInclude Include="other\win\keyboard.hpp" />
-    <ClInclude Include="other\network.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="typ\inl\typ_ranges.inl" />
@@ -61,7 +60,7 @@
     <ClCompile Include="cth_ptr.ixx" />
     <ClCompile Include="other\network.ixx" />
     <ClCompile Include="ptr\cth_ptr_move.ixx" />
-    <ClCompile Include="ptr\cth_ptr_not_null.ixx" />
+    <ClCompile Include="ptr\cth_ptr_not-null.ixx" />
     <ClCompile Include="cth_typ.ixx" />
     <ClCompile Include="cth_alg.ixx" />
     <ClCompile Include="cth_io.ixx" />
@@ -193,7 +192,8 @@
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BuildStlModules>true</BuildStlModules>
-      <EnableModules>true</EnableModules>
+      <EnableModules>
+      </EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -213,7 +213,8 @@
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BuildStlModules>true</BuildStlModules>
-      <EnableModules>true</EnableModules>
+      <EnableModules>
+      </EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -235,7 +236,8 @@
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BuildStlModules>true</BuildStlModules>
-      <EnableModules>true</EnableModules>
+      <EnableModules>
+      </EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -254,9 +256,10 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <BuildStlModules>true</BuildStlModules>
-      <EnableModules>true</EnableModules>
+      <EnableModules>
+      </EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -279,7 +282,8 @@
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BuildStlModules>true</BuildStlModules>
-      <EnableModules>true</EnableModules>
+      <EnableModules>
+      </EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -301,7 +305,8 @@
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BuildStlModules>true</BuildStlModules>
-      <EnableModules>true</EnableModules>
+      <EnableModules>
+      </EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

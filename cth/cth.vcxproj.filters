@@ -24,9 +24,6 @@
     <ClInclude Include="other\win\keyboard.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="other\network.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="utility\image.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -127,7 +124,7 @@
     <ClCompile Include="ptr\cth_ptr_move.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ptr\cth_ptr_not_null.ixx">
+    <ClCompile Include="ptr\cth_ptr_not-null.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="other\cth_win.ixx">
