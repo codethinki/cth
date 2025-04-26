@@ -102,11 +102,11 @@ private:
     T _obj;
 
 public:
-    [[nodiscard]] cxpr auto get() const noexcept {
+    [[nodiscard]] cxpr dclauto get() const noexcept {
         if constexpr(ADAPT_GET) return _obj.get();
         else return get_val();
     }
-    [[nodiscard]] cxpr std::conditional_t<GET_COPY, T, T const&> get_val() const noexcept { return _obj; }
+    [[nodiscard]] cxpr T const& get_val() const noexcept { return _obj; }
     [[nodiscard]] cxpr dclauto operator->() const { return get(); }
     [[nodiscard]] cxpr dclauto operator*() const requires(cth::type::has_deref<T>) { return *get(); }
 };
