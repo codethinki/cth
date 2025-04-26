@@ -1,6 +1,6 @@
 // ReSharper disable CppClangTidyCertDcl58Cpp
 #pragma once
-
+#include "../macro.hpp"
 #include <format>
 
 
