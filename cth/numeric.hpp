@@ -5,6 +5,7 @@
 
 #include "io/log.hpp"
 
+
 namespace cth {
 //------------------
 // DECLARATIONS
@@ -27,8 +28,7 @@ namespace num {
     template<std::floating_point T>
     [[nodiscard]] cxpr T heronSqrt(T x, T precision = static_cast<T>(1e-6));
 
-    template<std::floating_point T>
-    [[nodiscard]] cxpr T map(T x, T in_a, T in_b, T out_a, T out_b);
+    [[nodiscard]] cxpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b);
 
     template<type::arithmetic T>
     [[nodiscard]] T dist(T x1, T y1, T x2, T y2);
@@ -106,7 +106,9 @@ namespace num {
         return val;
     }
 
-    [[nodiscard]] constexpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b) { return out_a + (out_b - out_a) * ((x - in_a) / (in_b - in_a)); }
+    [[nodiscard]] cxpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b) {
+        return out_a + (out_b - out_a) * ((x - in_a) / (in_b - in_a));
+    }
 
     template<type::arithmetic T>
     [[nodiscard]] T dist(T x1, T y1, T x2, T y2) {
@@ -149,6 +151,7 @@ namespace num {
         }
         return result;
     }
+
 
     namespace bits {
         template<std::integral T>
@@ -203,6 +206,7 @@ namespace expr::num {
 
     template<type::arithmetic T>
     [[nodiscard]] cxpr T pow(T base, std::unsigned_integral auto power) { return cth::num::pow(base, power); }
+
 
     namespace bits {
         template<std::unsigned_integral T>
