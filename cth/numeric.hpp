@@ -38,13 +38,12 @@ namespace num {
      * \param a lowest
      * \param b highest
      */
-    template<type::arithmetic T>
-    [[nodiscard]] cxpr bool inRange(T x, T a, T b);
+    [[nodiscard]] cxpr bool in(auto x, auto a, auto b);
     /**
      *\brief inRange for two values
     */
     template<type::arithmetic T, type::arithmetic U>
-    [[nodiscard]] cxpr bool inRange2d(T x, T a_x, T b_x, U y, U a_y, U b_y);
+    [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y);
 
     /**
      * \brief square and multiply algorithm
@@ -107,8 +106,7 @@ namespace num {
         return val;
     }
 
-    template<std::floating_point T>
-    [[nodiscard]] cxpr T map(T x, T in_a, T in_b, T out_a, T out_b) { return out_a + (out_b - out_a) * ((x - in_a) / (in_b - in_a)); }
+    [[nodiscard]] constexpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b) { return out_a + (out_b - out_a) * ((x - in_a) / (in_b - in_a)); }
 
     template<type::arithmetic T>
     [[nodiscard]] T dist(T x1, T y1, T x2, T y2) {
@@ -116,14 +114,13 @@ namespace num {
         return static_cast<T>(std::sqrt(dx * dx + dy * dy));
     }
 
-    template<type::arithmetic T>
-    [[nodiscard]] cxpr bool inRange(T x, T a, T b) {
+    [[nodiscard]] cxpr bool in(auto x, auto a, auto b) {
         assert(a < b && "invalid input: a <= b required");
         return a <= x && x <= b;
     }
 
     template<type::arithmetic T, type::arithmetic U>
-    [[nodiscard]] cxpr bool inRange2d(T x, T a_x, T b_x, U y, U a_y, U b_y) { return num::inRange(x, a_x, b_x) && num::inRange(y, a_y, b_y); }
+    [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y) { return num::in(x, a_x, b_x) && num::in(y, a_y, b_y); }
 
     template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
     [[nodiscard]] cxpr T sqam(T base, U power, V mod) {
@@ -181,8 +178,7 @@ namespace num {
 //---------------------
 namespace expr::num {
 
-    template<type::arithmetic T>
-    [[nodiscard]] cxpr T map(T x, T in_a, T in_b, T out_a, T out_b) { return cth::num::map(x, in_a, in_b, out_a, out_b); }
+    [[nodiscard]] constexpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b) { return cth::num::map(x, in_a, in_b, out_a, out_b); }
 
     template<std::floating_point T>
     [[nodiscard]] cxpr T heronSqrt(T x, T const precision = static_cast<T>(1e-6)) { return cth::num::heronSqrt(x, precision); }
@@ -196,11 +192,10 @@ namespace expr::num {
         return static_cast<T>(cth::num::heronSqrt(dx * dx + dy * dy, precision));
     }
 
-    template<type::arithmetic T>
-    [[nodiscard]] cxpr bool inRange(T x, T a, T b) { return cth::num::inRange(x, a, b); }
+    [[nodiscard]] constexpr bool in(auto x, auto a, auto b) { return cth::num::in(x, a, b); }
 
     template<type::arithmetic T>
-    [[nodiscard]] cxpr bool inRange2d(T x, T a_x, T b_x, T y, T a_y, T b_y) { return cth::num::inRange2d(x, a_x, b_x, y, a_y, b_y); }
+    [[nodiscard]] constexpr bool in(T x, T a_x, T b_x, T y, T a_y, T b_y) { return cth::num::in(x, a_x, b_x, y, a_y, b_y); }
 
     template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
     [[nodiscard]] cxpr T sqam(T base, U power, V mod) { return cth::num::sqam(base, power, mod); }

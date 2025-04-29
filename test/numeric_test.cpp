@@ -44,14 +44,14 @@ NUM_TEST(dist, main) {
     EXPECT_NEAR(dist(0, 0, -3, -4), 5, 0.0001);
 }
 
-NUM_TEST(InRange, main) {
-    EXPECT_TRUE(inRange(-5, -10, 0));
-    EXPECT_FALSE(inRange(15, 0, 10));
+NUM_TEST(in, 1d) {
+    EXPECT_TRUE(in(-5, -10, 0));
+    EXPECT_FALSE(in(15, 0, 10));
 }
 
-NUM_TEST(inRange2d, main) {
-    EXPECT_TRUE(inRange2d(5, 0, 5, -2, -4, 10));
-    EXPECT_FALSE(inRange2d(15, 0, 5, -1, 0, 10));
+NUM_TEST(in, 2d) {
+    EXPECT_TRUE(in(5, 0, 5, -2, -4, 10));
+    EXPECT_FALSE(in(15, 0, 5, -1, 0, 10));
 }
 
 NUM_TEST(sqam, main) {
