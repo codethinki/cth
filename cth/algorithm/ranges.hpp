@@ -1,6 +1,6 @@
 #pragma once
-#include "utility.hpp"
-#include "../utility.hpp"
+#include "macro.hpp"
+#include "../macro.hpp"
 #include "../io/log.hpp"
 
 #include <ranges>

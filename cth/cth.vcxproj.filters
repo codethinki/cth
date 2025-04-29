@@ -84,7 +84,7 @@
     <ClInclude Include="types\md.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types\utility.hpp">
+    <ClInclude Include="types\macro.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="types\concepts.hpp">
@@ -111,13 +111,13 @@
     <ClInclude Include="algorithm\views.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="utility.hpp">
+    <ClInclude Include="macro.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="algorithm\ranges.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="algorithm\utility.hpp">
+    <ClInclude Include="algorithm\macro.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

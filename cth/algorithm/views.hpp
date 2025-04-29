@@ -1,7 +1,7 @@
 #pragma once
-#include "utility.hpp"
+#include "macro.hpp"
 
-#include "../utility.hpp"
+#include "../macro.hpp"
 
 #include "../io/log.hpp"
 #include "../types/variadic.hpp"
