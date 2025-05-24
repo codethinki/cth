@@ -72,11 +72,16 @@ namespace proc {
 
     inline std::optional<std::wstring> name(DWORD process_id, bool full_path = false);
 
+
+    inline std::vector<DWORD> find(std::wstring_view process_name, bool full_path = false);
+
     /**
      * @brief checks if @param process_name is active
      * @return result if successful, else @ref std::nullopt
      */
     inline std::optional<bool> active(std::wstring_view process_name);
+
+    
 
     /**
     * @brief counts the number of process instances

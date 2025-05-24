@@ -82,6 +82,26 @@ namespace num {
         return off < 0 ? b + off : a + off;
     }
 
+    template<std::integral auto Size> requires(Size > 0)
+    cval bool power_2() {
+        return Size == 0 || ((Size & (Size - 1)) == 0);
+    }
+
+
+    template<std::integral auto Multiple> requires(Multiple > 0)
+    cxpr auto align_to(std::integral auto unaligned) {
+        if constexpr((Multiple & (Multiple - 1)) == 0) return (unaligned + (Multiple - 1)) & ~(Multiple - 1);
+
+        auto const padding = Multiple - unaligned % Multiple;
+        return unaligned + padding;
+    }
+
+    template<class T>
+    cxpr auto align_to(std::integral auto unaligned) {
+        return cth::num::align_to<sizeof(T)>(unaligned);
+    }
+
+
     template<std::floating_point T>
     [[nodiscard]] cxpr T exp(T x, T precision) {
         uint32_t n = 1;
