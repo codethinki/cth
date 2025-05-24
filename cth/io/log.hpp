@@ -23,6 +23,9 @@
 #include <string>
 #include <utility>
 
+#include <dlib/assert.h>
+#include <dlib/cuda/cuda_errors.h>
+
 
 namespace cth::log::dev {
 inline bool colored = true;
@@ -84,6 +87,7 @@ inline void msg(cth::except::Severity severity, std::string_view message) {
         dev::logStream.popState();
     } else {
         dev::logStream.print(dev::label(severity));
+        dev::logStream.print(" ");
         dev::logStream.println(message);
     }
 }

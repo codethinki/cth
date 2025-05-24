@@ -120,6 +120,18 @@
     <ClInclude Include="algorithm\macro.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="os\window.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\screenshot.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\win_include.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\win_types.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="windows\inl\windows.inl">
@@ -138,6 +150,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="windows\inl\keyboard.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="windows\inl\screenshot.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

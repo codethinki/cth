@@ -48,7 +48,3 @@ using mdspan_t = std::mdspan<T, std::extents<size_t, Extents...>>;
 }
 
 
-namespace std {
-template<size_t... Extents, class T>
-mdspan(T*) -> ::cth::type::mdspan_t<T, Extents...>;
-}

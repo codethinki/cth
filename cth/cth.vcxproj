@@ -34,6 +34,7 @@
     <ClInclude Include="algorithm.hpp" />
     <ClInclude Include="constants.hpp" />
     <ClInclude Include="functional.hpp" />
+    <ClInclude Include="os\window.hpp" />
     <ClInclude Include="string\format.hpp" />
     <ClInclude Include="io\console.hpp" />
     <ClInclude Include="exception.hpp" />
@@ -60,6 +61,9 @@
     <ClInclude Include="types\type_traits.hpp" />
     <ClInclude Include="types\variant.hpp" />
     <ClInclude Include="windows.hpp" />
+    <ClInclude Include="windows\screenshot.hpp" />
+    <ClInclude Include="windows\win_include.hpp" />
+    <ClInclude Include="windows\win_types.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="io\inl\read.inl" />
@@ -67,6 +71,7 @@
     <None Include="types\inl\variadic.inl" />
     <None Include="types\inl\type_traits.inl" />
     <None Include="windows\inl\keyboard.inl" />
+    <None Include="windows\inl\screenshot.inl" />
     <None Include="windows\inl\windows.inl" />
   </ItemGroup>
   <ItemGroup>

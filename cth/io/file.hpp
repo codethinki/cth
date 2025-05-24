@@ -7,14 +7,17 @@
 
 
 namespace cth::io::file {
+cxpr uintmax_t BYTE = 1;
+cxpr uintmax_t KB = BYTE * 1024;
+cxpr uintmax_t MB = KB * 1024;
+cxpr uintmax_t GB = MB * 1024;
 
 
-
-template<class Unit = char>
+template<uintmax_t Divisor = KB>
 uintmax_t size(std::filesystem::path const& path) {
-    if(!exists(path)) return -1;
+    if(!std::filesystem::exists(path)) return -1;
 
-    return file_size(path) / sizeof(Unit);
+    return file_size(path) / Divisor;
 }
 
 template<class D, size_t Buffer = 0xffff>

@@ -34,14 +34,13 @@ namespace num {
     [[nodiscard]] T dist(T x1, T y1, T x2, T y2);
 
     /**
-     * \param x value
-     * \param a lowest
-     * \param b highest
+     * @brief checks if @ref x is in [ @ref a, @ref b)
      */
     [[nodiscard]] cxpr bool in(auto x, auto a, auto b);
+
     /**
-     *\brief inRange for two values
-    */
+     * @brief in for two values
+     */
     template<type::arithmetic T, type::arithmetic U>
     [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y);
 
@@ -118,6 +117,10 @@ namespace num {
 
     [[nodiscard]] cxpr bool in(auto x, auto a, auto b) {
         assert(a < b && "invalid input: a <= b required");
+        return a <= x && x < b;
+    }
+
+    [[nodiscard]] cxpr bool in_inc(auto x, auto a, auto b) {
         return a <= x && x <= b;
     }
 
@@ -195,7 +198,8 @@ namespace expr::num {
         return static_cast<T>(cth::num::heronSqrt(dx * dx + dy * dy, precision));
     }
 
-    [[nodiscard]] constexpr bool in(auto x, auto a, auto b) { return cth::num::in(x, a, b); }
+    [[nodiscard]] cxpr bool in_inc(auto x, auto a, auto b) { return cth::num::in_inc(x, a, b); }
+    [[nodiscard]] cxpr bool in(auto x, auto a, auto b) { return cth::num::in(x, a, b); }
 
     template<type::arithmetic T>
     [[nodiscard]] constexpr bool in(T x, T a_x, T b_x, T y, T a_y, T b_y) { return cth::num::in(x, a_x, b_x, y, a_y, b_y); }

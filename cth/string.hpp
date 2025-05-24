@@ -108,7 +108,7 @@ template<
 
 namespace cth::str {
 template<class T>
-concept non_string_rng = std::ranges::range && !cth::type::any_constructible_from<T, std::string_view, std::string>;
+concept non_string_rng = std::ranges::range<T> && !cth::type::any_constructible_from<T, std::string_view, std::string>;
 }
 
 
