@@ -1,5 +1,5 @@
 #pragma once
-#include "../utility.hpp"
+#include "../macro.hpp"
 
 #include <limits>
 #include <type_traits>

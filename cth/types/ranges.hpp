@@ -1,10 +1,10 @@
 #pragma once
-#include "utility.hpp"
+#include "macro.hpp"
 #include "concepts.hpp"
 
 #include <ranges>
 
-#include "../utility.hpp"
+#include "../macro.hpp"
 
 //md_range
 
