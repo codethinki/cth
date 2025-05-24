@@ -120,11 +120,22 @@ inline std::optional<std::wstring> name(DWORD process_id, bool full_path) {
     return std::wstring{std::from_range, std::ranges::subrange{begin, end}};
 }
 
+inline std::vector<DWORD> find(std::wstring_view process_name, bool full_path) {
+    auto const& ids = enumerate();
+
+    std::vector<DWORD> matches{};
+    for(auto const id : ids)
+        if(process_name == name(id, full_path))
+            matches.emplace_back(id);
+
+    return matches;
+}
+
 inline std::optional<bool> active(std::wstring_view process_name) {
     auto const& processIds = enumerate();
 
     for(auto const id : processIds)
-        if(auto const str = name(id, false); str.has_value() && str == process_name) 
+        if(auto const str = name(id, false); str.has_value() && str == process_name)
             return true;
 
 
@@ -147,6 +158,7 @@ inline std::optional<size_t> count(std::wstring_view process_name) {
 }
 }
 
+
 namespace cth::win::desktop {
 void getResolution(uint32_t& horizontal, uint32_t& vertical) {
     RECT desktop;
@@ -156,6 +168,7 @@ void getResolution(uint32_t& horizontal, uint32_t& vertical) {
     vertical = desktop.bottom;
 }
 }
+
 
 namespace cth::win::io {
 
