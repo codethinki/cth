@@ -62,4 +62,8 @@ constexpr auto COMPILATION_MODE =
     CompilationMode::RELEASE;
 #endif
 
+cval auto debug_mode(){
+    return COMPILATION_MODE == CompilationMode::DEBUG;
+}
+
 }

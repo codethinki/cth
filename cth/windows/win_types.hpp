@@ -12,4 +12,11 @@ struct hdc_deleter {
     void operator()(HDC ptr) const { DeleteDC(ptr); }
 };
 using hdc_ptr = std::unique_ptr<HDC__, hdc_deleter>;
+
+struct hwnd_deleter {
+    void operator()(HWND handle) const {
+        DestroyWindow(handle);
+    }
+};
+using hwnd_ptr = std::unique_ptr<void, hwnd_deleter>;
 }

@@ -23,9 +23,6 @@
 #include <string>
 #include <utility>
 
-#include <dlib/assert.h>
-#include <dlib/cuda/cuda_errors.h>
-
 
 namespace cth::log::dev {
 inline bool colored = true;

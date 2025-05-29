@@ -52,6 +52,7 @@
     <ClInclude Include="types\tuple.hpp" />
     <ClInclude Include="types\macro.hpp" />
     <ClInclude Include="types\variadic.hpp" />
+    <ClInclude Include="windows\event_hook.hpp" />
     <ClInclude Include="windows\keyboard.hpp" />
     <ClInclude Include="io\log.hpp" />
     <ClInclude Include="pointers.hpp" />
@@ -61,7 +62,7 @@
     <ClInclude Include="types\type_traits.hpp" />
     <ClInclude Include="types\variant.hpp" />
     <ClInclude Include="windows.hpp" />
-    <ClInclude Include="windows\screenshot.hpp" />
+    <ClInclude Include="windows\window.hpp" />
     <ClInclude Include="windows\win_include.hpp" />
     <ClInclude Include="windows\win_types.hpp" />
   </ItemGroup>
@@ -71,7 +72,7 @@
     <None Include="types\inl\variadic.inl" />
     <None Include="types\inl\type_traits.inl" />
     <None Include="windows\inl\keyboard.inl" />
-    <None Include="windows\inl\screenshot.inl" />
+    <None Include="windows\inl\window.inl" />
     <None Include="windows\inl\windows.inl" />
   </ItemGroup>
   <ItemGroup>

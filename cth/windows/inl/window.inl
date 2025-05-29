@@ -1,7 +1,34 @@
 #pragma once
-#include "win_types.hpp"
+#include "../win_types.hpp"
 
 namespace cth::win {
+
+inline glm::ivec2 extent(HWND hwnd) {
+    auto posExtent = pos_extent(hwnd);
+    return {posExtent[2], posExtent[3]};
+}
+
+inline glm::ivec2 pos(HWND hwnd) {
+    auto posExtent = pos_extent(hwnd);
+    return {posExtent.x, posExtent.y};
+}
+
+inline glm::ivec4 pos_extent(HWND hwnd) {
+    RECT rect;
+    auto const result = GetWindowRect(hwnd, &rect);
+    CTH_STABLE_ERR(!result, "failed to get window rect") {
+        details->add("error code: ", GetLastError());
+        throw details->exception();
+    }
+
+    auto x = rect.left;
+    auto y = rect.top;
+    auto width = rect.right - x;
+    auto height = rect.bottom - y;
+
+    return {x, y, width, height};
+}
+
 
 inline std::vector<uint8_t> screenshot(HWND hwnd, glm::ivec2 size, glm::ivec2 offset) {
     std::vector<uint8_t> buffer(static_cast<size_t>(size.x * size.y));
@@ -51,6 +78,27 @@ inline void screenshot_to(std::span<uint8_t> buffer, HWND hwnd, glm::ivec2 size,
     auto const rowBytes = size.x * PIXEL_BYTES;
     for(size_t i = 0; i < size.y; ++i)
         std::memcpy(&buffer[i * rowBytes], static_cast<uint8_t*>(bits) + i * stride, rowBytes);
+}
+}
+
+namespace cth::win {
+
+inline void reg_global_raw_input(HWND hwnd) {
+    using rid_t = RAWINPUTDEVICE;
+
+    std::array const rawInputDevices{
+        rid_t{
+            .usUsagePage = 0x01,
+            .usUsage = 0x06,
+            .dwFlags = RIDEV_INPUTSINK,
+            .hwndTarget = hwnd
+        }
+    };
+
+    auto const result = RegisterRawInputDevices(rawInputDevices.data(), static_cast<UINT>(rawInputDevices.size()), sizeof(rid_t));
+
+    CTH_STABLE_ERR(result == FALSE, "failed to register raw input devices, error: {}", GetLastError())
+         throw details->exception();
 }
 
 }

@@ -123,13 +123,16 @@
     <ClInclude Include="os\window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\screenshot.hpp">
+    <ClInclude Include="windows\window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\win_include.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\win_types.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\event_hook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -152,7 +155,7 @@
     <None Include="windows\inl\keyboard.inl">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="windows\inl\screenshot.inl">
+    <None Include="windows\inl\window.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
