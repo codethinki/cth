@@ -1,8 +1,8 @@
 #include "test.hpp"
 
-#include "cth/types/ranges.hpp"
+#include "cth/types/typ_ranges.hpp"
 
-#include "cth/types/concepts.hpp"
+#include "cth/types/typ_concepts.hpp"
 
 
 using Base = int;

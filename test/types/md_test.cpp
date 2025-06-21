@@ -1,8 +1,15 @@
 #include "test.hpp"
 
-#include "cth/types/md.hpp"
+#include "cth/types/typ_md.hpp"
 
 namespace cth::type {
+TYPE_TEST(md_range, 2d) {
+    using rng_t = std::vector<std::vector<size_t>>;
+    EXPECT_TRUE((md_range<rng_t, 2>));
+    EXPECT_FALSE((md_range<rng_t, 3>));
+}
+
+
 TYPE_TEST(mdextent, compile) {
     constexpr size_t rank = 3;
     constexpr size_t extent = 5;

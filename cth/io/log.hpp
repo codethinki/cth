@@ -140,7 +140,7 @@ namespace dev {
 
             if constexpr(S == cth::except::Severity::CRITICAL) std::terminate();
         }
-        void add(std::string_view message) noexcept { _exception.add(message.data()); }
+        void add(std::string_view message) noexcept { _exception.add(std::string{message}); }
         template<typename... Types> requires (sizeof...(Types) > 0u)
         void add(std::format_string<Types...> f_str, Types&&... types) { _exception.add(f_str, std::forward<Types>(types)...); }
 

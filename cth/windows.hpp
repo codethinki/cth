@@ -1,4 +1,5 @@
 #pragma once
+#include "io/log.hpp"
 
 #include <filesystem>
 
@@ -8,13 +9,19 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include<Windows.h>
-
+#include <Windows.h>
 
 
 namespace cth::win {
 
-
+template<class... Args>
+void stable_assert(bool result, std::format_string<Args...> message, Args&&... args) {
+    CTH_STABLE_ERR(!result, "windows function call failed") {
+        details->add(message, std::forward<Args>(args)...);
+        details->add("err code: {}", GetLastError());
+        throw details->exception();
+    }
+}
 
 namespace cmd {
     /**

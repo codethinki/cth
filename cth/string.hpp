@@ -2,8 +2,8 @@
 #include "macro.hpp"
 
 #include "string/format.hpp"
-#include "types/ranges.hpp"
-#include "types/variadic.hpp"
+#include "types/typ_ranges.hpp"
+#include "types/typ_variadic.hpp"
 
 #include <algorithm>
 #include <format>
@@ -59,26 +59,32 @@ template<cth::type::arithmetic T>
 
 
 
-template<std::ranges::range Rng> requires std::formattable<type::md_range_value_t<std::remove_cvref_t<Rng>>, char>
-[[nodiscard]] cxpr std::string to_string(Rng&& rng) {
-    if(std::ranges::empty(rng)) return {};
-
+template<rng::viewable_rng Rng>
+[[nodiscard]] cxpr std::string to_string(Rng&& range) {
     static cxpr bool MD_RANGE = type::md_range<Rng, 2>;
 
-    std::string string = "[";
+    dclauto rng = rng::to_viewable(range);
+    using rng_t = decltype(rng);
 
-    for(auto&& element : std::forward<Rng>(rng)) {
+    if(std::ranges::empty(rng)) return {};
+
+
+    std::string string = "[";
+    for(auto&& element : std::forward<rng_t>(rng)) {
         using E = decltype(element);
         if constexpr(MD_RANGE)
             string.insert_range(string.end(), std::format("{}, ", cth::str::to_string(std::forward<E>(element))));
-        else
+        else {
+            static_assert(std::formattable<E, char>, "range value type is not formattable");
             string.insert_range(string.end(), std::format("{}, ", std::forward<E>(element)));
+        }
     }
 
     string.pop_back();
     string.back() = ']';
     return string;
 }
+
 
 
 /**
@@ -108,11 +114,11 @@ template<
 
 namespace cth::str {
 template<class T>
-concept non_string_rng = std::ranges::range<T> && !cth::type::any_constructible_from<T, std::string_view, std::string>;
+concept e_rng = std::ranges::range<T> && !cth::type::any_constructible_from<T, std::string_view, std::string>;
 }
 
 
-CTH_FORMAT_CPT(cth::str::non_string_rng, cth::str::to_string);
+CTH_FORMAT_CPT(cth::str::e_rng, cth::str::to_string);
 
 
 

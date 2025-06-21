@@ -51,9 +51,10 @@ public:
 
 
     cxpr default_exception& add(std::string msg) noexcept { return addNoCpy(msg); }
-    template<typename... Args> requires (sizeof...(Args) > 0u)
-    cxpr default_exception& add(std::format_string<Args...> f_str, Args&&... types) noexcept {
-        return this->addNoCpy(std::format(f_str, std::forward<Args>(types)...));
+
+    template<class Self, typename... Args> requires (sizeof...(Args) > 0u)
+    cxpr default_exception& add(this Self&& self, std::format_string<Args...> f_str, Args&&... types) noexcept {
+        return std::forward<Self>(self).addNoCpy(std::format(f_str, std::forward<Args>(types)...));
     }
 
 

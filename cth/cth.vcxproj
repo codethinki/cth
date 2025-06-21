@@ -46,12 +46,12 @@
     <ClInclude Include="pointer\not_null.hpp" />
     <ClInclude Include="test.hpp" />
     <ClInclude Include="types.hpp" />
-    <ClInclude Include="types\concepts.hpp" />
-    <ClInclude Include="types\md.hpp" />
-    <ClInclude Include="types\ranges.hpp" />
-    <ClInclude Include="types\tuple.hpp" />
-    <ClInclude Include="types\macro.hpp" />
-    <ClInclude Include="types\variadic.hpp" />
+    <ClInclude Include="types\typ_concepts.hpp" />
+    <ClInclude Include="types\typ_md.hpp" />
+    <ClInclude Include="types\typ_ranges.hpp" />
+    <ClInclude Include="types\typ_tuple.hpp" />
+    <ClInclude Include="types\typ_utilty.hpp" />
+    <ClInclude Include="types\typ_variadic.hpp" />
     <ClInclude Include="windows\event_hook.hpp" />
     <ClInclude Include="windows\keyboard.hpp" />
     <ClInclude Include="io\log.hpp" />
@@ -59,8 +59,8 @@
     <ClInclude Include="network.hpp" />
     <ClInclude Include="numeric.hpp" />
     <ClInclude Include="string.hpp" />
-    <ClInclude Include="types\type_traits.hpp" />
-    <ClInclude Include="types\variant.hpp" />
+    <ClInclude Include="types\typ_traits.hpp" />
+    <ClInclude Include="types\typ_variant.hpp" />
     <ClInclude Include="windows.hpp" />
     <ClInclude Include="windows\window.hpp" />
     <ClInclude Include="windows\win_include.hpp" />
@@ -68,8 +68,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="io\inl\read.inl" />
-    <None Include="types\inl\ranges.inl" />
-    <None Include="types\inl\variadic.inl" />
+    <None Include="types\inl\typ_ranges.inl" />
+    <None Include="types\inl\typ_variadic.inl" />
     <None Include="types\inl\type_traits.inl" />
     <None Include="windows\inl\keyboard.inl" />
     <None Include="windows\inl\window.inl" />

@@ -1,6 +1,7 @@
 #pragma once
-#include "macro.hpp"
-#include "concepts.hpp"
+#include "typ_concepts.hpp"
+#include "typ_traits.hpp"
+#include "typ_utilty.hpp"
 
 #include <ranges>
 
@@ -68,5 +69,26 @@ concept range_over = std::ranges::range<Rng> and std::same_as<std::ranges::range
 
 }
 
+namespace cth::rng {
 
-#include "inl/ranges.inl"
+/**
+ * @brief accepts viewable or copy viewable ranges
+ */
+template<class Rng>
+concept viewable_rng = std::ranges::viewable_range<Rng>
+    or (
+        std::ranges::viewable_range<type::rcvr_t<Rng>>
+        and requires(Rng rng) { type::rcvr_t<Rng>{rng}; }
+    );
+
+template<viewable_rng Rng>
+auto cxpr to_viewable(Rng&& rng) {
+    if constexpr(std::ranges::viewable_range<Rng>) return std::forward<Rng>(rng);
+    else {
+        static_assert(requires() { type::rcvr_t<Rng>{rng}; }, "range must be view- or copyable");
+        return type::rcvr_t<Rng>{rng};
+    }
+}
+}
+
+#include "inl/typ_ranges.inl"

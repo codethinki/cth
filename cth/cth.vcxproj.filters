@@ -42,7 +42,7 @@
     <ClInclude Include="string.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types\type_traits.hpp">
+    <ClInclude Include="types\typ_traits.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows.hpp">
@@ -54,7 +54,7 @@
     <ClInclude Include="utility\image.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types\variant.hpp">
+    <ClInclude Include="types\typ_variant.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pointers.hpp">
@@ -81,22 +81,22 @@
     <ClInclude Include="types.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types\md.hpp">
+    <ClInclude Include="types\typ_md.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types\macro.hpp">
+    <ClInclude Include="types\typ_utilty.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types\concepts.hpp">
+    <ClInclude Include="types\typ_concepts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types\variadic.hpp">
+    <ClInclude Include="types\typ_variadic.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types\ranges.hpp">
+    <ClInclude Include="types\typ_ranges.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types\tuple.hpp">
+    <ClInclude Include="types\typ_tuple.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="test.hpp">
@@ -146,10 +146,10 @@
     <None Include="types\inl\type_traits.inl">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="types\inl\variadic.inl">
+    <None Include="types\inl\typ_variadic.inl">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="types\inl\ranges.inl">
+    <None Include="types\inl\typ_ranges.inl">
       <Filter>Header Files</Filter>
     </None>
     <None Include="windows\inl\keyboard.inl">

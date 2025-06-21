@@ -25,11 +25,16 @@ template<class T, template<class> class Trait, size_t N = 1>
 using apply_trait_t = typename decltype(apply_trait<T, Trait, N>())::type;
 
 template<class T, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
-[[nodiscard]]cval size_t trait_count();
+[[nodiscard]] cval size_t trait_count();
 
 template<class T, auto TCpt, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
 [[nodiscard]] cval size_t cpt_count();
 
+}
+
+namespace cth::type {
+    template<class T>
+    using rcvr_t = std::remove_cvref_t<T>;
 }
 
 

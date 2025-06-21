@@ -1,7 +1,7 @@
 #pragma once
 #include "string.hpp"
-#include "types/ranges.hpp"
-#include "types/type_traits.hpp"
+#include "types/typ_ranges.hpp"
+#include "types/typ_traits.hpp"
 
 
 #include <gtest/gtest.h>

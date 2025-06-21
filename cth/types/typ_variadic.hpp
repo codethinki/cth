@@ -2,7 +2,7 @@
 #include <concepts>
 #include <type_traits>
 
-#include "concepts.hpp"
+#include "typ_concepts.hpp"
 
 namespace cth::type {
 template<size_t I, class... Ts>
@@ -181,4 +181,4 @@ template<typename... Ts, typename T>
 auto to_constructible(T&& arg);
 }
 
-#include "inl/variadic.inl"
+#include "inl/typ_variadic.inl"

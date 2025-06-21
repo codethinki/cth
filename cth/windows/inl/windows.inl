@@ -7,7 +7,7 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include<Windows.h>
+#include <Windows.h>
 
 #include <Psapi.h>
 
@@ -187,16 +187,12 @@ inline void readUnbuffered(std::string_view path, std::vector<char>& buffer) {
     _OVERLAPPED overlapped{.hEvent = event};
 
     DWORD bytesRead = 0;
-    ReadFile(handle, buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead, &overlapped);
-    BOOL const result = GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE);
+    auto const readFileResult = ReadFile(handle, buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead, &overlapped);
+    stable_assert(readFileResult, "failed to read file: {}", path);
 
-    CTH_STABLE_ERR(!result, "failed to read io ({})", path) {
-        details->add("io size: {}", fileSize);
-        details->add("buffer size: {}", buffer.size());
-        details->add("last error: {}", GetLastError());
-        throw details->exception();
-    }
+    auto const queryResult = GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE);
 
+    stable_assert(queryResult, "failed to query overlapped result, file size: {}, buffer size: {}", fileSize, buffer.size());
 
     buffer.resize(fileSize);
 }

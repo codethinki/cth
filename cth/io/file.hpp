@@ -20,7 +20,10 @@ uintmax_t size(std::filesystem::path const& path) {
     return file_size(path) / Divisor;
 }
 
-template<class D, size_t Buffer = 0xffff>
+cxpr size_t DEFAULT_CHOP_BUFFER_SIZE = 0xfff;
+
+
+template<class D, size_t Buffer = DEFAULT_CHOP_BUFFER_SIZE>
 std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {
     CTH_STABLE_ERR(!std::filesystem::exists(path), "file doesn't exist [{}]", path.string()) {
         throw details->exception();
@@ -46,12 +49,35 @@ std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {
     return result;
 }
 
-template<size_t Buffer = 0xffff>
+
+template<size_t Buffer = DEFAULT_CHOP_BUFFER_SIZE>
 std::vector<std::string> chop(std::filesystem::path const& path, char delimiter = '\n') {
     return chop<char, Buffer>(path, delimiter);
 }
 
+template<class T>
+std::vector<T> read(std::filesystem::path const& path) {
+    CTH_STABLE_ERR(!std::filesystem::exists(path), "file does not exist") {
+        details->add("file: {0}", path.string());
+        throw details->exception();
+    }
 
+
+    std::ifstream file{path, std::ios::binary};
+    CTH_STABLE_ERR(!file.is_open(), "failed to open file") {
+        details->add("file: {0}", path.string());
+        throw details->exception();
+    }
+
+
+    size_t const fileSize = std::filesystem::file_size(path);
+
+    std::vector<T> bytecode(fileSize / sizeof(T));
+    file.read(reinterpret_cast<char*>(bytecode.data()), static_cast<std::streamsize>(fileSize));
+    file.close();
+
+    return bytecode;
+}
 
 
 }

@@ -1,7 +1,5 @@
 #pragma once
-#include "tuple.hpp"
-#include "macro.hpp"
-
+#include "typ_tuple.hpp"
 #include "../macro.hpp"
 
 #include <mdspan>
