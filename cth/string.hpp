@@ -59,7 +59,11 @@ template<cth::type::arithmetic T>
 
 
 
-template<rng::viewable_rng Rng>
+/**
+ * @brief formats ranges to string
+ * @tparam Rng must satisfy rng::static_dim_rng<Rng>
+ */
+template<rng::viewable_rng Rng> requires (rng::static_dim_rng<Rng>)
 [[nodiscard]] cxpr std::string to_string(Rng&& range) {
     static cxpr bool MD_RANGE = type::md_range<Rng, 2>;
 
@@ -114,11 +118,11 @@ template<
 
 namespace cth::str {
 template<class T>
-concept e_rng = std::ranges::range<T> && !cth::type::any_constructible_from<T, std::string_view, std::string>;
+concept printable_rng = rng::viewable_rng<T> and !cth::type::any_constructible_from<T, std::string_view, std::string>;
 }
 
 
-CTH_FORMAT_CPT(cth::str::e_rng, cth::str::to_string);
+CTH_FORMAT_CPT(cth::str::printable_rng, cth::str::to_string);
 
 
 

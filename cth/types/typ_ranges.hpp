@@ -71,6 +71,9 @@ concept range_over = std::ranges::range<Rng> and std::same_as<std::ranges::range
 
 namespace cth::rng {
 
+template<class Rng>
+concept static_dim_rng = std::ranges::range<Rng> and !std::same_as<std::ranges::range_value_t<Rng>, type::rcvr_t<Rng>>;
+
 /**
  * @brief accepts viewable or copy viewable ranges
  */

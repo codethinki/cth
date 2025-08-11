@@ -54,6 +54,9 @@
     <ClCompile Include="algorithm\views_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="asdf_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types\test.hpp">

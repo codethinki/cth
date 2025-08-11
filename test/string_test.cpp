@@ -2,10 +2,23 @@
 
 #include "cth/test.hpp"
 
+#include <filesystem>
+
 #define STR_TEST(suite, test_name) CTH_EX_TEST(_str, suite, test_name)
 
 namespace cth::str {
 using std::nullopt;
+
+STR_TEST(to_string, range_decline_nonstatic_dim) {
+    std::filesystem::path x{"asdf.img"};
+    auto const& a = x;
+
+    EXPECT_FALSE(cth::rng::static_dim_rng<std::filesystem::path>);
+    EXPECT_FALSE(cth::rng::static_dim_rng<std::filesystem::path const&>);
+    EXPECT_FALSE(cth::rng::static_dim_rng<std::filesystem::path&>);
+
+
+}
 
 STR_TEST(to_string, range) {
     std::vector<int> const vec = {1, 2, 3, 4, 5};
