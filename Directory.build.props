@@ -1,6 +1,0 @@
-<Project>
-	<PropertyGroup>
-		<LLVMInstallDir>E:\cs\code\cpp\compiler\clang\clang_llvm_18</LLVMInstallDir>
-		<LLVMToolsVersion>18.1.8</LLVMToolsVersion>
-	</PropertyGroup>
-</Project>

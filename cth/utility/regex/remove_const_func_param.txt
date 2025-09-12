@@ -1,2 +1,0 @@
-find:  const( [\w_\d]+?[,)])
-replace: $1

@@ -1,8 +1,10 @@
 {
-  "builtin-baseline": "cf035d9916a0a23042b41fcae7ee0386d245af08",
+  "builtin-baseline": "7213cf8135c329c37c7e2778e40774489a0583a8",
   "dependencies": [
     "glm",
     "gtest",
     "stb"
-  ]
+  ],
+  "version": "1.0.0",
+  "name": "main"
 }
