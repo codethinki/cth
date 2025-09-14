@@ -1,42 +1,30 @@
 #pragma once
-#include "io/log.hpp"
+#include "cth/io/log.hpp"
 
 #include <filesystem>
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <Windows.h>
 
 
 namespace cth::win {
+using dword_t = unsigned long;
 
-template<class... Args>
-void stable_assert(bool result, std::format_string<Args...> message, Args&&... args) {
-    CTH_STABLE_ERR(!result, "windows function call failed") {
-        details->add(message, std::forward<Args>(args)...);
-        details->add("err code: {}", GetLastError());
-        throw details->exception();
-    }
-}
+
 
 namespace cmd {
     /**
     * \brief executes a cmd command with location in the background
-    * \param command = "cmd.exe /c (...)"
+    * \param command = "cmd.exe /c {command}"
     * \note paths only work with '\' NOT '/'
     */
-    [[nodiscard]] inline int hidden_dir(std::string_view dir, std::string_view command);
+    [[nodiscard]] int hidden_dir(std::string_view dir, std::string_view command);
     /**
     * \brief executes a cmd command with location in the background
     * \param command = "cmd.exe /c (...)"
     * \note paths only work with '\' NOT '/'
     */
     template<typename... Types> requires (sizeof...(Types) > 0u)
-    [[nodiscard]] int hidden_dir(std::string_view dir, std::format_string<Types...> command, Types&&... types) {
+    [[nodiscard]] int hidden_dir(std::string_view dir, std::format_string<Types...> command,
+        Types&&... types) {
         return cth::win::cmd::hidden_dir(dir, std::format(command, std::forward<Types>(types)...));
     }
 
@@ -45,7 +33,10 @@ namespace cmd {
     * \param command = "cmd.exe /c (...)"
     * \note paths only work with '\' NOT '/'
     */
-    [[nodiscard]] inline int hidden(std::string_view command) { return cth::win::cmd::hidden_dir(std::filesystem::current_path().string(), command); }
+    [[nodiscard]] inline int hidden(std::string_view command) {
+        return cth::win::cmd::hidden_dir(std::filesystem::current_path().string(), command);
+    }
+
     /**
     * \brief executes a cmd command in the background
     * \param command already contains "cmd.exe /c"
@@ -65,41 +56,42 @@ namespace clipbd {
 } // namespace clipbd
 
 namespace proc {
+
     /**
      * \brief returns elevation status
      * \return true := admin
      */
-    inline bool elevated();
+    bool elevated();
 
     /**
      * @brief enumerates all processes with id's
      * @return not @ref std::vector::empty() if successful
      */
-    inline std::vector<DWORD> enumerate();
+    std::vector<dword_t> enumerate();
 
-    inline std::optional<std::wstring> name(DWORD process_id, bool full_path = false);
+    std::optional<std::wstring> name(dword_t process_id, bool full_path = false);
 
 
-    inline std::vector<DWORD> find(std::wstring_view process_name, bool full_path = false);
+    std::vector<dword_t> find(std::wstring_view process_name, bool full_path = false);
 
     /**
-     * @brief checks if @param process_name is active
+     * @brief checks if process_name is active
      * @return result if successful, else @ref std::nullopt
      */
-    inline std::optional<bool> active(std::wstring_view process_name);
+    std::optional<bool> active(std::wstring_view process_name);
 
-    
+
 
     /**
     * @brief counts the number of process instances
     * @return number of processes if successful, else @ref std::nullopt
     */
-    inline std::optional<size_t> count(std::wstring_view process_name);
+    std::optional<size_t> count(std::wstring_view process_name);
 
 } // namespace proc
 
 namespace desktop {
-    inline void getResolution(uint32_t& horizontal, uint32_t& vertical);
+    void getResolution(uint32_t& horizontal, uint32_t& vertical);
 }
 
 
@@ -107,7 +99,4 @@ namespace io {
     void readUnbuffered(std::string_view path, std::vector<char>& buffer);
 }
 
-} // namespace cth::win
-
-
-#include "windows/inl/windows.inl"
+}

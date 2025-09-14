@@ -1,27 +1,36 @@
-#pragma once
-#include "../../io/log.hpp"
+#include "cth/win/windows.hpp"
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <Windows.h>
+#include "cth/io/log.hpp"
 
-#include <Psapi.h>
+#include "cth/win/win_include.hpp"
+
 
 #include <array>
 #include <memory>
 
+namespace {
+
+template<class... Args>
+void stable_assert(bool result, std::format_string<Args...> message, Args&&... args) {
+    CTH_STABLE_ERR(!result, "windows function call failed") {
+        details->add(message, std::forward<Args>(args)...);
+        details->add("err code: {}", GetLastError());
+        throw details->exception();
+    }
+}
+}
+
+namespace cth::win {
+static_assert(sizeof(DWORD) == sizeof(dword_t), "weird DWORD size, report");
+}
 
 namespace cth::win::cmd {
-inline int hidden_dir(std::string_view dir, std::string_view command) {
+int hidden_dir(std::string_view dir, std::string_view command) {
     PROCESS_INFORMATION pInfo{};
     STARTUPINFOA sInfo{};
     sInfo.cb = sizeof(sInfo);
 
-    std::string cmd = std::format("cmd /c \"{}\"", command);
+    auto cmd = std::format("cmd /c \"{}\"", command);
 
     bool const res = CreateProcessA(nullptr, cmd.data(),
         nullptr, nullptr, false, NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW,
@@ -50,12 +59,12 @@ inline int hidden_dir(std::string_view dir, std::string_view command) {
 
 
 namespace cth::win::clipbd {
-inline std::string getText() {
+std::string getText() {
     std::string text;
 
     CTH_STABLE_WARN(!OpenClipboard(nullptr), "getClipboardText: no clipboard access") {}
 
-    HANDLE const hData = GetClipboardData(CF_TEXT);
+    auto const hData = GetClipboardData(CF_TEXT);
     char const* pszText = static_cast<char*>(GlobalLock(hData));
 
     if(pszText != nullptr) text = pszText;
@@ -68,7 +77,7 @@ inline std::string getText() {
 
 
 namespace cth::win::proc {
-inline bool elevated() {
+bool elevated() {
     SID_IDENTIFIER_AUTHORITY ntAuthority = SECURITY_NT_AUTHORITY;
     PSID adminGroup = nullptr;
     BOOL isAdmin = AllocateAndInitializeSid(&ntAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID,
@@ -81,7 +90,7 @@ inline bool elevated() {
     return isAdmin;
 }
 
-inline auto enumerate() -> std::vector<DWORD> {
+auto enumerate() -> std::vector<dword_t> {
     std::vector<DWORD> processIds(16);
     DWORD bytesReturned = 0;
 
@@ -99,7 +108,7 @@ inline auto enumerate() -> std::vector<DWORD> {
     return processIds;
 }
 
-inline std::optional<std::wstring> name(DWORD process_id, bool full_path) {
+std::optional<std::wstring> name([[maybe_unused]] dword_t process_id, bool full_path) {
     std::unique_ptr<void, void(*)(HANDLE)> const process{
         OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, process_id),
         [](HANDLE ptr) { CloseHandle(ptr); }
@@ -120,7 +129,7 @@ inline std::optional<std::wstring> name(DWORD process_id, bool full_path) {
     return std::wstring{std::from_range, std::ranges::subrange{begin, end}};
 }
 
-inline std::vector<DWORD> find(std::wstring_view process_name, bool full_path) {
+std::vector<dword_t> find(std::wstring_view process_name, bool full_path) {
     auto const& ids = enumerate();
 
     std::vector<DWORD> matches{};
@@ -131,7 +140,7 @@ inline std::vector<DWORD> find(std::wstring_view process_name, bool full_path) {
     return matches;
 }
 
-inline std::optional<bool> active(std::wstring_view process_name) {
+std::optional<bool> active(std::wstring_view process_name) {
     auto const& processIds = enumerate();
 
     for(auto const id : processIds)
@@ -144,7 +153,7 @@ inline std::optional<bool> active(std::wstring_view process_name) {
 
 
 
-inline std::optional<size_t> count(std::wstring_view process_name) {
+std::optional<size_t> count(std::wstring_view process_name) {
     auto const& processIds = enumerate();
 
     size_t instanceCount = 0;
@@ -172,27 +181,34 @@ void getResolution(uint32_t& horizontal, uint32_t& vertical) {
 
 namespace cth::win::io {
 
-inline void readUnbuffered(std::string_view path, std::vector<char>& buffer) {
-    HANDLE handle = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
-    CTH_STABLE_ERR(handle == INVALID_HANDLE_VALUE, "failed to create handle for io ({})", path) throw details->exception();
+void readUnbuffered(std::string_view path, std::vector<char>& buffer) {
+    cxpr static size_t PAGE_SIZE = 4096;
+
+    auto handle = CreateFileA(path.data(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+        FILE_FLAG_NO_BUFFERING, nullptr);
+
+    CTH_STABLE_ERR(handle == INVALID_HANDLE_VALUE, "failed to create handle for io ({})", path)
+        throw details->exception();
 
 
     DWORD fileSize = GetFileSize(handle, nullptr);
 
 
-    buffer.resize(fileSize + 4096ULL - fileSize % 4096ULL);
+    buffer.resize(fileSize + PAGE_SIZE - fileSize % PAGE_SIZE);
 
-    auto event = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+    auto const event = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
     _OVERLAPPED overlapped{.hEvent = event};
 
     DWORD bytesRead = 0;
-    auto const readFileResult = ReadFile(handle, buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead, &overlapped);
+    auto const readFileResult = ReadFile(handle, buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead,
+        &overlapped);
     stable_assert(readFileResult, "failed to read file: {}", path);
 
     auto const queryResult = GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE);
 
-    stable_assert(queryResult, "failed to query overlapped result, file size: {}, buffer size: {}", fileSize, buffer.size());
+    stable_assert(queryResult, "failed to query overlapped result, file size: {}, buffer size: {}", fileSize,
+        buffer.size());
 
     buffer.resize(fileSize);
 }

@@ -18,13 +18,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #exported
 add_subdirectory(cth)
-add_subdirectory(cth_windows)
+add_subdirectory(cth_win)
+
+create_package()
+
 
 #test
 enable_testing()
-add_subdirectory(cth_test)
-add_subdirectory(cth_integration_test)
-
-#install
-setup_install()
+add_subdirectory(tests)
+add_subdirectory(integration_tests)
 

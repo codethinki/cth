@@ -1,11 +1,14 @@
 
 #[[[
-# installable_include_directories
-# calls target_include_directories, makes PUBLIC and INTERFACE headers installable
-# and the export set is implicitly "${PROJECT_NAME}-targets".
+# package_target_include_directories(<target_name> [PUBLIC|PRIVATE|INTERFACE] <dirs>...)
+# registers the target as package component
+# calls target_include_directories, makes PUBLIC and INTERFACE headers part of the package
+# if present, "${PROJECT_NAME}_" prefix is stripped from the target name for the EXPORT_NAME property
+#
+# The EXPORT_SET is named "${PROJECT_NAME}-targets".
 #]]
-function(installable_include_directories TARGET_NAME)
-    # --- Setup ---
+function(package_target_include_directories TARGET_NAME)
+    # --- setup ---
     set(options "")
     set(oneValueArgs "")
     set(multiValueArgs PUBLIC PRIVATE INTERFACE)
@@ -13,7 +16,18 @@ function(installable_include_directories TARGET_NAME)
     include(GNUInstallDirs)
     set(EXPORT_SET_NAME "${PROJECT_NAME}-targets")
 
-    # --- Part 1: Configure Include Directories ---
+    # --- strip project name prefix for EXPORT_NAME ---
+    set(PREFIX_TO_STRIP "${PROJECT_NAME}_")
+
+    string(FIND "${TARGET_NAME}" "${PREFIX_TO_STRIP}" PREFIX_POS)
+
+    if(PREFIX_POS EQUAL 0)
+        string(LENGTH "${PREFIX_TO_STRIP}" PREFIX_LENGTH)
+        string(SUBSTRING "${TARGET_NAME}" ${PREFIX_LENGTH} -1 CLEAN_EXPORT_NAME)
+        set_property(TARGET ${TARGET_NAME} PROPERTY EXPORT_NAME ${CLEAN_EXPORT_NAME})
+    endif()
+
+    # --- configure include directories ---
     foreach (SCOPE PUBLIC PRIVATE INTERFACE)
         if (DEFINED ARGS_${SCOPE})
             set(PROCESSED_DIRS "")
@@ -27,7 +41,7 @@ function(installable_include_directories TARGET_NAME)
         endif ()
     endforeach ()
 
-    # --- Part 2: Install Target and Public Headers ---
+    # --- install target and public headers ---
     install(TARGETS ${TARGET_NAME} EXPORT ${EXPORT_SET_NAME}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -35,23 +49,50 @@ function(installable_include_directories TARGET_NAME)
     )
 
     set(PUBLIC_HEADER_DIRS ${ARGS_PUBLIC} ${ARGS_INTERFACE})
-    if (PUBLIC_HEADER_DIRS)
+    if(PUBLIC_HEADER_DIRS)
         list(REMOVE_DUPLICATES PUBLIC_HEADER_DIRS)
-        foreach (DIR ${PUBLIC_HEADER_DIRS})
-            install(DIRECTORY ${DIR}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-        endforeach ()
+        foreach(DIR ${PUBLIC_HEADER_DIRS})
+            install(DIRECTORY ${DIR}/ DESTINATION ${DIR})
+        endforeach()
+    endif()
+    # --- Register Target as Installable ---
+    get_property(INSTALLABLE_TARGETS GLOBAL PROPERTY _PROJECT_INSTALLABLE_TARGETS)
+    list(APPEND INSTALLABLE_TARGETS ${TARGET_NAME})
+    set_property(GLOBAL PROPERTY _PROJECT_INSTALLABLE_TARGETS ${INSTALLABLE_TARGETS})
+endfunction()
+
+#[[[
+# add_package_target()
+# builds and installs all registered package targets
+# creates a custom target named "${PROJECT_NAME}_install"
+#]]
+function(add_package_target)
+    get_property(INSTALLABLE_TARGETS GLOBAL PROPERTY _PROJECT_INSTALLABLE_TARGETS)
+    if (NOT INSTALLABLE_TARGETS)
+        message(FATAL_ERROR "No installable targets were registered, use package_target_include_directories
+        or add to INSTALLABLE_TARGETS manually")
     endif ()
+
+    set(INSTALL_TARGET_NAME "${PROJECT_NAME}_package")
+    set(INSTALL_COMMENT "Packaging ${PROJECT_NAME} project...")
+
+    add_custom_target(${INSTALL_TARGET_NAME}
+            COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_INSTALL_PREFIX}"
+            COMMAND ${CMAKE_COMMAND} --install . --prefix "${CMAKE_INSTALL_PREFIX}"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            DEPENDS ${INSTALLABLE_TARGETS}
+            COMMENT "${INSTALL_COMMENT}"
+    )
 endfunction()
 
 
 #[[[
-# setup_install
+# setup_package()
 #
 # Creates cmake package configuration files for the project.
 # EXPORT_SET = "${PROJECT_NAME}-targets" and NAMESPACE = "${PROJECT_NAME}::"
 #]]
-
-function(setup_install)
+function(setup_package)
     include(CMakePackageConfigHelpers)
     include(GNUInstallDirs)
 
@@ -92,3 +133,12 @@ function(setup_install)
             DESTINATION ${INSTALL_CONFIG_DIR}
     )
 endfunction()
+
+#[[[
+# packages the project by setting up the package
+#]]
+function(create_package)
+    setup_package()
+    add_package_target()
+endfunction()
+
