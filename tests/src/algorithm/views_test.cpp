@@ -1,5 +1,7 @@
 // ReSharper disable CppClangTidyReadabilityContainerDataPointer
 // ReSharper disable CppClangTidyCppcoreguidelinesAvoidMagicNumbers
+#include "cth/algorithm/views.hpp"
+
 #include "cth/test.hpp"
 
 #include "cth/algorithm.hpp"

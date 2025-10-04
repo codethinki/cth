@@ -6,6 +6,12 @@
 
 namespace cth::log {
 
+LOG_TEST(critical, main) {
+    auto now = std::chrono::high_resolution_clock::now();
+    auto later = std::chrono::high_resolution_clock::now();
+
+    CTH_CRITICAL(now > later, "this is impossible on a normal machine") {}
+}
 
 LOG_TEST(log_macros, debug) {
 #ifdef CTH_DEBUG_MODE
@@ -14,7 +20,7 @@ LOG_TEST(log_macros, debug) {
     CTH_LOG(true, "CTH_LOG {}", x) ++x;
     ASSERT_EQ(x, 1);
 
-    CTH_INFORM(true, "CTH_INFO {}", x) ++x;
+    CTH_INFO(true, "CTH_INFO {}", x) ++x;
     ASSERT_EQ(x, 2);
 
     CTH_WARN(true, "CTH_WARN {}", x) ++x;
@@ -39,7 +45,7 @@ LOG_TEST(log_macros, stable) {
     CTH_STABLE_LOG(true, "stable log {}", x) ++x;
     ASSERT_EQ(x, 1);
 
-    CTH_STABLE_INFORM(true, "stable info {}", x) ++x;
+    CTH_STABLE_INFO(true, "stable info {}", x) ++x;
     ASSERT_EQ(x, 2);
 
     CTH_STABLE_WARN(true, "stable warning {}", x) ++x;

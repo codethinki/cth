@@ -12,5 +12,11 @@ find_package(GTest CONFIG REQUIRED)
 
 target_link_libraries(integration_tests PRIVATE GTest::gtest_main cth cth::win)
 
+target_compile_options(integration_tests PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
+    $<$<CXX_COMPILER_ID:Clang>:-finput-charset=UTF-8>
+    $<$<CXX_COMPILER_ID:GNU>:-finput-charset=UTF-8>
+)
+
 include(GoogleTest)
 gtest_discover_tests(integration_tests)

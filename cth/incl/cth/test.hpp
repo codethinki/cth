@@ -7,7 +7,6 @@
 #include <gtest/gtest.h>
 
 #include <print>
-#include <functional>
 
 #define S_TEST(spacer, suite, test_name) TEST(spacer##_##suite, test_name)
 

@@ -11,17 +11,17 @@
 namespace cth::alg {
 using std::vector;
 
-ALG_TEST(uniqueCombine, success) {
+ALG_TEST(unique_combine, success) {
     //success
     vector<vector<uint32_t>> const input = {{5, 5, 5}, {5, 5, 4}, {5, 5, 3}};
     auto const solution = vector<uint32_t>{5, 4, 3};
-    EXPECT_EQ(uniqueCombine(input), solution);
+    EXPECT_EQ(unique_combine(input), solution);
 }
-ALG_TEST(uniqueCombine, fail) {
+ALG_TEST(unique_combine, fail) {
     //fail
     vector<vector<uint32_t>> const input2 = {{5, 5, 5}, {5, 5, 5, 5, 5}};
     auto const solution2 = vector<uint32_t>{};
-    EXPECT_EQ(uniqueCombine(input2), solution2);
+    EXPECT_EQ(unique_combine(input2), solution2);
 }
 
 ALG_TEST(assign, main) {

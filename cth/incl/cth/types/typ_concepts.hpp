@@ -46,6 +46,11 @@ concept callable_with = requires(T t) {
     std::invoke(Fn, t, std::declval<Args>()...);
 };
 
+template<class T, class R, class... Args>
+concept call_signature = requires(T t) {
+    { std::invoke(std::declval<R(*)(Args...)>(), t, std::declval<Args>()...) } -> std::same_as<R>;
+};
+
 template<class T>
 concept has_release = callable_with<T, &T::release>;
 template<class T>
@@ -55,6 +60,6 @@ concept has_deref = requires(T t) {
     *t;
 };
 
-
-
+template<class T>
+concept aggregate = std::is_aggregate_v<T>;
 }
