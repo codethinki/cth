@@ -62,4 +62,11 @@ concept has_deref = requires(T t) {
 
 template<class T>
 concept aggregate = std::is_aggregate_v<T>;
+
+template<class T>
+concept decayed = std::same_as<std::decay_t<T>, T>;
+}
+
+namespace cth::type {
+    
 }

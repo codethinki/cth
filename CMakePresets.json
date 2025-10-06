@@ -2,14 +2,11 @@
   "version": 3,
   "configurePresets": [
     {
-      "name": "windows-clang-base",
+      "name": "windows-base",
       "hidden": true,
-      "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/install/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "cl.exe",
-        "CMAKE_CXX_COMPILER": "cl.exe",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
       },
       "condition": {
@@ -19,20 +16,67 @@
       }
     },
     {
-      "name": "win_debug",
-      "inherits": "windows-clang-base",
-      "hidden": false,
+      "name": "debug-base",
+      "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "win_release",
-      "inherits": "windows-clang-base",
-      "hidden": false,
+      "name": "release-base",
+      "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "windows-msvc-base",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe"
+      }
+    },
+    {
+      "name": "windows-clang-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl.exe",
+        "CMAKE_CXX_COMPILER": "clang-cl.exe",
+        "CMAKE_CXX_FLAGS": "/EHsc /GR"
+      }
+    },
+    {
+      "name": "win_msvc_debug",
+      "inherits": [
+        "windows-msvc-base",
+        "debug-base"
+      ]
+    },
+    {
+      "name": "win_msvc_release",
+      "inherits": [
+        "windows-msvc-base",
+        "release-base"
+      ]
+    },
+    {
+      "name": "win_clang_debug",
+      "inherits": [
+        "windows-clang-base",
+        "debug-base"
+      ]
+    },
+    {
+      "name": "win_clang_release",
+      "inherits": [
+        "windows-clang-base",
+        "release-base"
+      ]
     }
   ]
 }

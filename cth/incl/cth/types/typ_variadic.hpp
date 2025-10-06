@@ -1,12 +1,11 @@
 #pragma once
 #include <concepts>
+#include <tuple>
 #include <type_traits>
-
-#include "typ_concepts.hpp"
 
 namespace cth::type {
 template<size_t I, class... Ts>
-using at_t = decltype(std::get<I, Ts...>());
+using at_t = decltype(std::get<I, std::tuple<Ts...>>(std::declval<std::tuple<Ts...>>()));
 }
 
 //is_any_of
@@ -14,32 +13,32 @@ using at_t = decltype(std::get<I, Ts...>());
 namespace cth::type {
 
 template<class T, class... Ts>
-concept is_any_of = any_satisfy<CPT(std::same_as<T>), Ts...>;
+concept any_of = (std::same_as<T, Ts> or ...);
 
 /**
  * \brief ::type is equal to first of Ts... that's equal to T or Fallback if none are
  * \tparam Fb (Fallback) if none of Ts... are equal to T
  */
-template<class Fb, class T, class... Ts> struct fallback_any_of;
+template<class Fb, class T, class... Ts> struct fallback_any_of_trait;
 
 /**
  * @brief shortcut to @ref fallback_any_of::type
  */
 template<class Fb, class T, class... Ts>
-using fallback_any_of_t = typename fallback_any_of<Fb, T, Ts...>::type;
+using fallback_any_of_t = typename fallback_any_of_trait<Fb, T, Ts...>::type;
 
 /**
  * \brief ::type is equal to first of Ts... that's equal to T
  */
 template<class T, class... Ts>
-struct any_of;
+struct any_of_trait;
 
 
 /**
  * @brief shortcut to @ref any_of::type
  */
 template<class T, class... Ts>
-using any_of_t = typename any_of<T, Ts...>::type;
+using any_of_t = typename any_of_trait<T, Ts...>::type;
 
 
 
@@ -48,7 +47,7 @@ using any_of_t = typename any_of<T, Ts...>::type;
  * \tparam Ts to any of Ts...
  * \tparam T from
  */
-template<typename T, typename... Ts> requires (is_any_of<T, Ts...>)
+template<typename T, typename... Ts> requires (any_of<T, Ts...>)
 auto to_same_of(T&& arg);
 
 /**
@@ -68,13 +67,13 @@ namespace cth::type {
  * @brief true if any of Ts... are convertible to T
  */
 template<typename T, typename... Ts>
-concept any_convertible_to = any_satisfy<CPT(std::convertible_to<T>), Ts...>;
+concept any_convertible_to = (std::convertible_to<Ts, T> or ...);
 
 /**
  * @brief true if T is convertible to any of Ts...
  */
 template<typename T, typename... Ts>
-concept convertible_to_any = (std::convertible_to<T, Ts> || ...);
+concept convertible_to_any = (std::convertible_to<T, Ts> or ...);
 
 /**
  * @brief ::type is equal to first of Ts... that's convertible from T or Fallback if none are
@@ -84,13 +83,13 @@ concept convertible_to_any = (std::convertible_to<T, Ts> || ...);
  * @note prioritizes any_of_t<T, Ts...> if available
  */
 template<typename Fb, typename T, typename... Ts>
-struct fallback_convert_to_any;
+struct fallback_convert_to_any_trait;
 
 /**
  * @brief shortcut to @ref fallback_convert_to_any_t::type
  */
 template<class Fb, class T, class... Ts>
-using fallback_convert_to_any_t = typename fallback_convert_to_any<Fb, T, Ts...>::type;
+using fallback_convert_to_any_t = typename fallback_convert_to_any_trait<Fb, T, Ts...>::type;
 
 /**
  * \brief ::type is equal to first of Ts... that's convertible from T
@@ -99,14 +98,14 @@ using fallback_convert_to_any_t = typename fallback_convert_to_any<Fb, T, Ts...>
  * \note prioritizes any_of_t<T, Ts...> if available
  */
 template<typename T, typename... Ts>
-struct convert_to_any;
+struct convert_to_any_trait;
 
 
 /**
  *@brief shortcut to @ref convert_to_any_t::type
  */
 template<typename T, typename... Ts>
-using convert_to_any_t = typename convert_to_any<T, Ts...>::type;
+using convert_to_any_t = typename convert_to_any_trait<T, Ts...>::type;
 
 /**
  * \brief converts to the first type of Ts... that is convertible from T
@@ -134,7 +133,7 @@ namespace cth::type {
  * @brief shortcut to @ref is_any_constructible_from_v
  */
 template<typename T, typename... Ts>
-concept any_constructible_from = any_satisfy<CPT(std::constructible_from<T>), Ts...>;
+concept any_constructible_from = (std::constructible_from<Ts, T> or ...);
 
 
 
@@ -146,7 +145,7 @@ concept any_constructible_from = any_satisfy<CPT(std::constructible_from<T>), Ts
  * \note prioritizes convert_any_from_t<T, Ts...> if available
  */
 template<typename Fallback, typename T, typename... Ts>
-struct fallback_construct_any_from;
+struct fallback_construct_any_from_trait;
 
 /**
  * \brief ::type is equal to first type of Ts... that is constructible from T
@@ -155,13 +154,13 @@ struct fallback_construct_any_from;
  * \note prioritizes convert_any_from_t<T, Ts...> if available
  */
 template<typename T, typename... Ts>
-struct construct_any_from;
+struct construct_any_from_trait;
 
 /**
  * @brief shortcut to @ref construct_any_from_t::type
  */
 template<typename T, typename... Ts>
-using construct_any_from_t = typename construct_any_from<T, Ts...>::type;
+using construct_any_from_t = typename construct_any_from_trait<T, Ts...>::type;
 
 /**
  * \brief constructs the first type of Ts... that is constructible from T

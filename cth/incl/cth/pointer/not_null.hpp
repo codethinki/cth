@@ -192,8 +192,10 @@ template<class T>
 using unique_not_null = cth::not_null<std::unique_ptr<T>, nullptr, true>;
 
 template<class T>
-not_null(std::unique_ptr<T>) -> cth::unique_not_null<T>;
+not_null(std::unique_ptr<T>) -> not_null<std::unique_ptr<T>, nullptr, true>;
+
+
 
 template<class T>
-not_null(cth::unique_not_null<T>) -> cth::unique_not_null<T>;
+not_null(cth::unique_not_null<T>) -> not_null<std::unique_ptr<T>, nullptr, true>;
 }

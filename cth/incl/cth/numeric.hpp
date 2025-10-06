@@ -77,7 +77,7 @@ namespace num {
 
     template<std::integral T>
     [[nodiscard]] cxpr T cycle(T x, T a, T b) {
-        CTH_ERR(b <= a, "invalid input: ({0}) a < b ({1}) required", a, b) throw details->exception();
+        CTH_CRITICAL(b <= a, "invalid input: ({0}) a < b ({1}) required", a, b) {}
         T const off = (x - a) % (b - a);
         return off < 0 ? b + off : a + off;
     }
@@ -117,7 +117,7 @@ namespace num {
     template<std::floating_point T>
     [[nodiscard]] cxpr T heronSqrt(T x, T precision) {
 
-        CTH_ERR(x < 0, "heronSqrt: x ({}) >= 0 required", x) throw details->exception();
+        CTH_CRITICAL(x < 0, "heronSqrt: x ({}) >= 0 required", x) {}
 
         T val = x * static_cast<T>(0.5);
         while(val * val < x - precision || val * val > x + precision) val = (val + x / val) * static_cast<T>(0.5);
@@ -149,7 +149,7 @@ namespace num {
 
     template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
     [[nodiscard]] cxpr T sqam(T base, U power, V mod) {
-        CTH_ERR(mod < 0, "invalid input: mod ({}) > 0 required", mod) throw details->exception();
+        CTH_CRITICAL(mod < 0, "invalid input: mod ({}) > 0 required", mod) {}
 
         auto bitArr = bits::toBitArr(power);
 

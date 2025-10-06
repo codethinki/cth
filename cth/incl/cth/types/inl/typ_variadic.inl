@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "cth/types/typ_concepts.hpp"
 //any_of
 
 namespace cth::type {
@@ -9,26 +9,26 @@ namespace cth::type {
  * \tparam Fallback if none of Ts... are equal to T
  */
 template<typename Fallback, typename T, typename... Ts>
-struct fallback_any_of {
-    using type = std::conditional_t<is_any_of<T, Ts...>, T, Fallback>;
+struct fallback_any_of_trait {
+    using type = std::conditional_t<any_of<T, Ts...>, T, Fallback>;
 };
 /**
  * \brief equal to first of Ts... that's equal to T or Fallback if none are
  * \tparam Fallback if none of Ts... are equal to T
  */
 template<typename Fallback, typename T, typename... Ts>
-using fallback_any_of_t = typename fallback_any_of<Fallback, T, Ts...>::type;
+using fallback_any_of_t = typename fallback_any_of_trait<Fallback, T, Ts...>::type;
 
 /**
  * \brief ::type is equal to first of Ts... that's equal to T
  */
 template<typename T, typename... Ts>
-struct any_of {
-    using type = typename fallback_any_of<empty_t, T, Ts...>::type;
+struct any_of_trait {
+    using type = typename fallback_any_of_trait<empty_t, T, Ts...>::type;
     static_assert(!std::same_as<type, empty_t>, "None of the types are the same as T");
 };
 
-template<typename T, typename... Ts> requires (is_any_of<T, Ts...>)
+template<typename T, typename... Ts> requires (any_of<T, Ts...>)
 auto to_same_of(T&& arg) { return std::forward<T>(arg); }
 
 template<typename... Ts, typename T>
@@ -53,16 +53,16 @@ template<typename Fallback, typename T, typename... Ts>
 using fallback_convert_to_any_of_helper_t = typename fallback_convert_to_any_helper<Fallback, T, Ts...>::type;
 
 template<typename Fb, typename T, typename... Ts>
-struct fallback_convert_to_any {
-    using type = std::conditional_t<is_any_of<T, Ts...>,
+struct fallback_convert_to_any_trait {
+    using type = std::conditional_t<any_of<T, Ts...>,
         fallback_any_of_t<Fb, T, Ts...>,
         fallback_convert_to_any_of_helper_t<Fb, T, Ts...>
     >;
 };
 
 template<typename T, typename... Ts>
-struct convert_to_any {
-    using type = typename fallback_convert_to_any<empty_t, T, Ts...>::type;
+struct convert_to_any_trait {
+    using type = typename fallback_convert_to_any_trait<empty_t, T, Ts...>::type;
     static_assert(!std::same_as<type, empty_t>, "None of the types are convertible to T");
 };
 
@@ -70,7 +70,7 @@ struct convert_to_any {
 
 template<typename U, typename... Ts, typename T> requires(convertible_to_any<T, Ts...>)
 auto to_convertible_from(T&& arg) {
-    if constexpr(is_any_of<T, Ts...>) return type::to_same_of<T, Ts...>(std::forward<T>(arg));
+    if constexpr(any_of<T, Ts...>) return type::to_same_of<T, Ts...>(std::forward<T>(arg));
     else return static_cast<convert_to_any_t<U, Ts...>>(arg);
 }
 
@@ -98,7 +98,7 @@ template<typename Fallback, typename T, typename... Ts>
 using fallback_construct_any_from_helper_t = typename fallback_construct_any_from_helper<Fallback, T, Ts...>::type;
 
 template<typename Fallback, typename T, typename... Ts>
-struct fallback_construct_any_from {
+struct fallback_construct_any_from_trait {
     using type = std::conditional_t<any_convertible_to<T, Ts...>,
         fallback_convert_to_any_t<Fallback, T, Ts...>,
         fallback_construct_any_from_helper_t<Fallback, T, Ts...>
@@ -114,7 +114,7 @@ struct fallback_construct_any_from {
  * \note prioritizes convert_any_from_t<T, Ts...> if available
  */
 template<typename Fallback, typename T, typename... Ts>
-using fallback_construct_any_from_t = typename fallback_construct_any_from<Fallback, T, Ts...>::type;
+using fallback_construct_any_from_t = typename fallback_construct_any_from_trait<Fallback, T, Ts...>::type;
 
 
 /**
@@ -124,7 +124,7 @@ using fallback_construct_any_from_t = typename fallback_construct_any_from<Fallb
  * \note prioritizes convert_any_from_t<T, Ts...> if available
  */
 template<typename T, typename... Ts>
-struct construct_any_from {
+struct construct_any_from_trait {
     using type = fallback_construct_any_from_t<void, T, Ts...>;
     static_assert(!std::is_same_v<type, void>, "None of the types are constructable from T");
 };

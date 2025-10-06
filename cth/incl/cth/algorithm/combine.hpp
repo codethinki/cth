@@ -53,6 +53,7 @@ template<type::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
     return out;
 }
 
+
 /**
  * \brief assigns a's to b's based of every a's options for b's
  * \tparam Rng1 rng<rng<std::integral>>

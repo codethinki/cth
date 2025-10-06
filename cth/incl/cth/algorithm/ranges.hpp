@@ -10,9 +10,12 @@ template<class T, class Fn> requires std::derived_from<std::remove_cvref_t<Fn>, 
 cxpr dclauto operator|(T&& left, Fn&& fn) { return std::forward<Fn>(fn)(std::forward<T>(left)); }
 } // namespace cth::ranges
 
+
+
+
 namespace cth::ranges {
 template<class Fn, class... FnArgs> struct pipe_call_closure : piped_fn {
-    static_assert(std::same_as<std::decay_t<FnArgs>, FnArgs>, "the contained types must not be references");
+    static_assert(cth::type::all_satisfy<CPT(cth::type::decayed), FnArgs...>, "the contained types must not be references");
 
     template<class... CArgs> requires(std::same_as<std::decay_t<CArgs>, FnArgs> && ...)
     explicit cxpr pipe_call_closure(CArgs&&... args) : _args{std::forward<CArgs>(args)...} {}
