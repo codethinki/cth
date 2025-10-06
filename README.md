@@ -1,6 +1,10 @@
 # cth
 simple library with unit tests
 
+## install process
+either select "install" in your ide or compile the custom "install" target for all configurations. 
+reference "cth/install/config_name/" in your cmake targets and find_package should discover everything
+
 ## example features:
 - cth_log: assert extensions & other logging helpers
 - cth_keybd: keyboard input logger with high and low level interfaces
