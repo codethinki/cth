@@ -1,9 +1,9 @@
 #pragma once
-
 #include "cth/io/log.hpp"
 #include "cth/types/typ_ranges.hpp"
 
 #include <algorithm>
+#include <concepts>
 #include <numeric>
 #include <ranges>
 #include <unordered_set>
@@ -52,7 +52,9 @@ template<type::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
 
     return out;
 }
+}
 
+namespace cth::alg {
 
 /**
  * \brief assigns a's to b's based of every a's options for b's
@@ -112,6 +114,5 @@ auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::ran
 
     return std::vector<T>{};
 }
-
 
 } // namespace cth::alg

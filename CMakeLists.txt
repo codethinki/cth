@@ -6,14 +6,13 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(glob_cpp)
 include(add_resources)
 include(install_utility)
-
+include(set_compiler_specifics)
 
 project(cth LANGUAGES CXX VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 
 
 #exported

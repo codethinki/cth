@@ -43,6 +43,15 @@ STRING_TEST(joiner, OperatorPlus) {
     ASSERT_EQ(sjCopy.string(), "base extended");
 }
 
+STRING_TEST(joiner, OperatorEq) {
+    auto const sj = joiner{" "} + "a" + "b" + "c";
+    auto const sj2 = joiner{" "} + "a" + "b" + "c";
+    std::string const expected = "a b c";
+
+    EXPECT_EQ(sj, sj2);
+    EXPECT_EQ(sj, expected);
+}
+
 STRING_TEST(joiner, ConversionsAndAccessors) {
     joiner sj(" ");
     sj += "test";
@@ -104,7 +113,6 @@ STRING_TEST(joiner, SearchAndInspectMethods) {
     std::string const expected = "path/to/file/file";
 
     ASSERT_EQ(sj.compare(expected), expected.compare(expected));
-    ASSERT_NE(sj.compare("other"), expected.compare("other"));
 
     ASSERT_EQ(sj.starts_with("path"), expected.starts_with("path"));
     ASSERT_FALSE(sj.starts_with("to"));

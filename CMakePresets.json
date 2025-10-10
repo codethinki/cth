@@ -2,20 +2,6 @@
   "version": 3,
   "configurePresets": [
     {
-      "name": "windows-base",
-      "hidden": true,
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}",
-      "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
-    },
-    {
       "name": "debug-base",
       "hidden": true,
       "cacheVariables": {
@@ -30,9 +16,24 @@
       }
     },
     {
+      "name": "windows-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+
+    },
+    {
       "name": "windows-msvc-base",
       "hidden": true,
-      "generator": "Visual Studio 17 2022",
       "inherits": "windows-base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
@@ -42,12 +43,10 @@
     {
       "name": "windows-clang-base",
       "hidden": true,
-      "generator": "Ninja",
       "inherits": "windows-base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-cl.exe",
-        "CMAKE_CXX_COMPILER": "clang-cl.exe",
-        "CMAKE_CXX_FLAGS": "/EHsc /GR"
+        "CMAKE_CXX_COMPILER": "clang-cl.exe"
       }
     },
     {

@@ -1,4 +1,3 @@
-
 glob_cpp(CTH_SRC "src")
 glob_cpp(CTH_INCL "incl")
 

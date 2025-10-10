@@ -32,9 +32,10 @@ VIEWS_TEST(to_ptr_range, const_type) {
     using pipe_actual_t = type::md_range_value_t<decltype(std::declval<range_t>() | to_ptr_range)>;
 
     // ReSharper disable once CppIdenticalOperandsInBinaryExpression
-    static_assert(std::same_as<expected_t, call_actual_t> && std::same_as<expected_t, pipe_actual_t>,
-        "to_ptr_range type mismatch, expected int const");
-
+    static_assert(
+        std::same_as<expected_t, call_actual_t> && std::same_as<expected_t, pipe_actual_t>,
+        "to_ptr_range type mismatch, expected int const"
+    );
 }
 
 VIEWS_TEST(split_into_fn, even) {}
@@ -64,12 +65,10 @@ namespace {
             std::forward<U>(expected)
         );
     }
-    
+
 }
 
 VIEWS_TEST(drop_stride_fn, asdf1) {
-
-
     test_drop_stride_fn(std::vector{0, 1, 2, 3}, std::vector{1, 3}, 1, 2);
     test_drop_stride_fn(std::vector{0, 1, 2, 3}, std::vector{0, 2}, 0, 2);
 }

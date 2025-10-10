@@ -1,10 +1,9 @@
 #include "cth/test.hpp"
 
 #include "cth/algorithm.hpp"
-#include "cth/algorithm/combine.hpp"
 #include "cth/string.hpp"
+#include "cth/algorithm/combine.hpp"
 
-#include <array>
 #include <vector>
 
 

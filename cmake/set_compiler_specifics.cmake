@@ -1,0 +1,8 @@
+function(set_compiler_specifics)
+if(MSVC)
+  set(CMAKE_MSVC_EXCEPTIONS ON)
+  add_compile_options(/MP)
+else()
+  add_compile_options(-fexceptions)
+endif()
+endfunction()
