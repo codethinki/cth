@@ -34,8 +34,12 @@ cxpr size_t hash_aggregate(T const& t) {
 
 #define CTH_HASH_OVERLOAD(T, func)\
 template<>\
-struct std::hash<T> requires(type::call_signature<func, size_t, T const&>){\
+struct std::hash<T> {\
     size_t operator()(T const& x) const noexcept {\
+        static_assert(\
+            !cth::type::call_signature<func, size_t, T const&>,\
+            "invalid hash overload function: " #func " for " #T\
+        );\
         return func(x);\
     }\
 };

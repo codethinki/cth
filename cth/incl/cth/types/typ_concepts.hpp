@@ -46,9 +46,9 @@ concept callable_with = requires(T t) {
     std::invoke(Fn, t, std::declval<Args>()...);
 };
 
-template<class T, class R, class... Args>
-concept call_signature = requires(T t) {
-    { std::invoke(std::declval<R(*)(Args...)>(), t, std::declval<Args>()...) } -> std::same_as<R>;
+template<auto F, class R, class... Args>
+concept call_signature = requires {
+    { std::invoke(std::declval<R(*)(Args...)>(), F, std::declval<Args>()...) } -> std::same_as<R>;
 };
 
 template<class T>

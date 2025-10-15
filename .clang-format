@@ -1,6 +1,6 @@
 ---
 Language: Cpp
-BasedOnStyle: LLVM
+BasedOnStyle: Google
 AccessModifierOffset: -4
 AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveAssignments: false
@@ -9,6 +9,7 @@ AlignOperands: false
 AlignTrailingComments: false
 AllowShortBlocksOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
+AlwaysBreakTemplateDeclarations: MultiLine
 BinPackArguments: false
 BinPackParameters: false
 BraceWrapping: 
@@ -22,9 +23,9 @@ BraceWrapping:
   AfterUnion: false
   AfterExternBlock: false
   BeforeCatch: true
-  BeforeElse: false
+  BeforeElse: true
   BeforeLambdaBody: false
-  BeforeWhile: false
+  BeforeWhile: true
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
@@ -33,6 +34,7 @@ BreakConstructorInitializers: AfterColon
 BreakConstructorInitializersBeforeComma: false
 ColumnLimit: 120
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
+IncludeBlocks: Preserve
 IncludeCategories: 
   - Regex: '^".*'
     Priority: 1
@@ -41,18 +43,17 @@ IncludeCategories:
   - Regex: '.*'
     Priority: 3
 IncludeIsMainRegex: '([-_](test|unittest))?$'
-IndentCaseLabels: true
 IndentWidth: 4
 InsertNewlineAtEOF: true
 MacroBlockBegin: ''
 MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: Inner
-PointerAlignment: Left
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
 SpaceBeforeParens: Never
 SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
 SpacesInAngles: false
 SpacesInConditionalStatement: false
 SpacesInCStyleCastParentheses: false
