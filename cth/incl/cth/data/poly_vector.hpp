@@ -13,6 +13,9 @@ namespace cth::dt {
 
 template<type::trivial... Ts>
 class raw_poly_vector {
+    using block_t = std::max_align_t;
+    static constexpr size_t BLOCK_SIZE = sizeof(block_t);
+
 public:
     static constexpr size_t SIZE = sizeof...(Ts);
     static constexpr size_t N = sizeof...(Ts);
@@ -20,54 +23,63 @@ public:
     template<size_t I> requires(I < N)
     using value_type = type::get_t<I, Ts...>;
 
+
     explicit raw_poly_vector(std::span<size_t const> sizes) {
         CTH_CRITICAL(sizes.size() != N, "invalid size range given") {}
 
         constexpr std::array<size_t, N> typeSizes{sizeof(Ts)...};
-        constexpr std::array<size_t, N> typeAligns{alignof(Ts)...};
-        std::array<size_t, N + 1> offsets{};
+        std::array<size_t, N> offsets{};
 
-        size_t currentOffset = 0;
+        size_t ptr = 0;
 
         for(size_t i = 0; i < N; ++i) {
-            auto const alignment = typeAligns[i];
+            offsets[i] = ptr;
 
-            // Calculate padding required to align the current offset
-            auto const padding = (alignment - (currentOffset % alignment)) % alignment;
-            currentOffset += padding;
+            auto const bytes = typeSizes[i] * sizes[i];
+            size_t minBlocks = bytes / BLOCK_SIZE;
 
-            // Store the aligned offset for this type
-            offsets[i] = currentOffset;
+            if(bytes % BLOCK_SIZE != 0)
+                minBlocks += 1;
 
-            // Advance the offset by the size of this array
-            currentOffset += sizes[i] * typeSizes[i];
+            ptr += minBlocks;
         }
 
-        _data.resize(currentOffset);
+        _data.resize(ptr);
 
         for(size_t i = 0; i < N - 1; ++i)
             _begins[i] = &_data[offsets[i + 1]];
     }
 
-    explicit raw_poly_vector(std::array<size_t, N> const& sizes) : raw_poly_vector(std::span{sizes}) {}
+    explicit raw_poly_vector(std::array<size_t, N> const& sizes) : raw_poly_vector{std::span{sizes}} {}
 
-    explicit raw_poly_vector(std::initializer_list<size_t> sizes) : raw_poly_vector(std::span{sizes.begin(), sizes.size()}) {}
+    explicit raw_poly_vector(std::initializer_list<size_t> sizes) : raw_poly_vector{
+        std::span{sizes.begin(), sizes.size()}
+    } {}
 
     template<size_t I, class S> requires(I < N)
     [[nodiscard]] auto data(this S& s) noexcept {
         using ptr_t = type::fwd_const_t<S, value_type<I>>*;
+
+        ptr_t raw;
+
         if constexpr(I == 0)
-            return reinterpret_cast<ptr_t>(s._data.data());
+            raw = reinterpret_cast<ptr_t>(s._data.data());
         else
             // TEMP make constexpr, use std::start_lifetime_as_array
-            return static_cast<ptr_t>(s._begins[I - 1]);
+            raw = static_cast<ptr_t>(s._begins[I - 1]);
+
+        return std::assume_aligned<alignof(max_align_t)>(raw);
     }
 
 private:
-    std::vector<std::byte> _data;
+    std::vector<std::max_align_t> _data;
     std::array<void*, N - 1> _begins{};
 };
+}
 
+
+
+namespace cth::dt {
 
 template<type::trivial... Ts>
 class poly_vector : raw_poly_vector<size_t, Ts...> {
@@ -99,20 +111,15 @@ public:
 
     template<size_t I, class S> requires(I < N)
     [[nodiscard]] auto data(this S& s) noexcept {
-
         // TEMP make constexpr, use std::start_lifetime_as_array
         return s.base_t::template data<I + 1, cbase_t<S>>();
     }
 
     template<size_t I, class S> requires(I < N)
-    [[nodiscard]] auto get(this S& s) noexcept {
-        return std::span{s.template data<I>(), s.template size<I>()};
-    }
+    [[nodiscard]] auto get(this S& s) noexcept { return std::span{s.template data<I>(), s.template size<I>()}; }
 
     template<size_t I> requires(I < N)
-    [[nodiscard]] size_t size(this auto const& s) noexcept {
-        return s.sizes()[I];
-    }
+    [[nodiscard]] size_t size(this auto const& s) noexcept { return s.sizes()[I]; }
 
 private:
     static constexpr auto make_sizes_array(std::span<size_t const> sz) {

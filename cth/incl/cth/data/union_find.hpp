@@ -12,9 +12,7 @@ private:
     [[nodiscard]] auto& size(this auto& s, index_type x) { return s._data.template data<1>()[x]; }
 
     template<class S>
-    [[nodiscard]] auto& parent(this S& s, index_type x) {
-        return s._data.template data<0>()[x];
-    }
+    [[nodiscard]] auto& parent(this S& s, index_type x) { return s._data.template data<0>()[x]; }
 
 public:
     explicit union_find(size_t n) : _data({n, n}), _size{n} {
@@ -27,25 +25,26 @@ public:
 
     [[nodiscard]] index_type find(this union_find& self, index_type x) {
         auto r = x;
-
         do {
-            self.parent(r) = self.parent(self.parent(r));
-            r = self.parent(r);
-        } while(!self.root(r));
+            auto& p = self.parent(r);
+            p = self.parent(p);
+            r = p;
+        }
+        while(!self.root(r));
 
         return r;
     }
 
     void merge(this union_find& self, index_type a, index_type b) {
-        auto const ra = self.find(a);
-        auto const rb = self.find(b);
+        auto child = self.find(a);
+        auto parent = self.find(b);
 
-        if(ra == rb) return;
+        if(child == parent) return;
 
-        auto const& [p, c] = self.size(ra) > self.size(rb) ? std::pair{ra, rb} : std::pair{rb, ra};
+        if(parent < child) std::swap(child, parent);
 
-        self.parent(c) = p;
-        self.size(p) += 1;
+        self.parent(child) = parent;
+        self.size(parent) += self.size(child);
     }
 
 
