@@ -65,6 +65,9 @@ concept aggregate = std::is_aggregate_v<T>;
 
 template<class T>
 concept decayed = std::same_as<std::decay_t<T>, T>;
+
+template<class T>
+concept trivial = std::is_trivial_v<T>;
 }
 
 namespace cth::type {

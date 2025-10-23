@@ -144,6 +144,7 @@ namespace num {
         return a <= x && x <= b;
     }
 
+
     template<type::arithmetic T, type::arithmetic U>
     [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y) { return num::in(x, a_x, b_x) && num::in(y, a_y, b_y); }
 

@@ -1,6 +1,9 @@
 #pragma once
+#include "typ_utilty.hpp"
+
 #include "cth/macro.hpp"
 
+#include <tuple>
 #include <type_traits>
 
 
@@ -29,6 +32,17 @@ template<class T, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
 
 template<class T, auto TCpt, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
 [[nodiscard]] cval size_t cpt_count();
+
+template<class From, class To>
+struct fwd_const {
+    using type = std::conditional_t<std::is_const_v<std::remove_reference_t<From>>, std::add_const_t<To>, To>;
+};
+
+template<class From, class To>
+using fwd_const_t = typename fwd_const<From, To>::type;
+
+template<size_t I, class... Ts>
+using get_t = std::tuple_element_t<I, std::tuple<Ts...>>;
 
 }
 
