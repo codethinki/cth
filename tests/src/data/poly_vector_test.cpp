@@ -85,8 +85,11 @@ DATA_TEST(raw_poly_vector, ConstData) {
     EXPECT_EQ(cp1[0], 'A');
     EXPECT_EQ(cp1[7], 'H');
 }
+}
 
-// poly_vector tests (public API)
+
+namespace cth::dt {
+
 DATA_TEST(poly_vector, StaticAndTypeChecks) {
     using pv = cth::dt::poly_vector<int, char, double, float>;
 
@@ -248,4 +251,31 @@ DATA_TEST(poly_vector, AlignmentAndDataIntegrity) {
     EXPECT_EQ(s2[4], -6);
 }
 
-} // namespace cth::dt
+DATA_TEST(poly_vector, copy) {
+    using base_t = poly_vector<int, double, float>;
+
+    base_t base{{1, 2, 3}};
+
+    base.get<0>()[0] = 42;
+    std::ranges::fill(base.get<1>(), 3.14);
+    std::ranges::fill(base.get<2>(), 2.71f);
+
+    poly_vector copyCtor{base};
+
+    auto check_equal = [](base_t const& actual, base_t const& expected) {
+        ASSERT_TRUE(std::ranges::equal(actual.sizes(), expected.sizes()));
+        ASSERT_TRUE(std::ranges::equal(actual.get<0>(), expected.get<0>()));
+        ASSERT_TRUE(std::ranges::equal(actual.get<1>(), expected.get<1>()));
+        ASSERT_TRUE(std::ranges::equal(actual.get<2>(), expected.get<2>()));
+    };
+
+    check_equal(copyCtor, base);
+
+    base_t copyAssign{{1, 2, 3}};
+    copyAssign = base;
+    check_equal(copyAssign, base);
+
+
+}
+
+}
