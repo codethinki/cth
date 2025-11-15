@@ -1,5 +1,5 @@
 #pragma once
-#include "typ_concepts.hpp"
+#include "cth/types/typ_concepts.hpp"
 
 #include <stdexcept>
 

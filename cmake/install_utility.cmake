@@ -76,13 +76,30 @@ function(add_package_target)
     set(INSTALL_TARGET_NAME "${PROJECT_NAME}_package")
     set(INSTALL_COMMENT "Packaging ${PROJECT_NAME} project...")
 
-    add_custom_target(${INSTALL_TARGET_NAME}
+    set(PACKAGE_DUMMY_SOURCE "${CMAKE_BINARY_DIR}/_package_dummy_source.cpp")
+    if(WIN32)
+        file(WRITE ${PACKAGE_DUMMY_SOURCE} 
+            "#define WIN32_LEAN_AND_MEAN\n"
+            "#include <Windows.h>\n"
+            "int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) { return 0; }\n"
+        )
+        add_executable(${INSTALL_TARGET_NAME} WIN32 ${PACKAGE_DUMMY_SOURCE})
+    else()
+        file(WRITE ${PACKAGE_DUMMY_SOURCE}
+            "#include<print>\n int main() { std::println(\"installed :)\"); return 0; }"
+        )
+        add_executable(${INSTALL_TARGET_NAME} ${PACKAGE_DUMMY_SOURCE})
+    endif()
+
+    add_custom_target(_do_${INSTALL_TARGET_NAME}_install
             COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_INSTALL_PREFIX}"
             COMMAND ${CMAKE_COMMAND} --install . --prefix "${CMAKE_INSTALL_PREFIX}"
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            DEPENDS ${INSTALLABLE_TARGETS}
             COMMENT "${INSTALL_COMMENT}"
+            DEPENDS ${INSTALLABLE_TARGETS}
     )
+
+    add_dependencies(${INSTALL_TARGET_NAME} _do_${INSTALL_TARGET_NAME}_install)
 endfunction()
 
 

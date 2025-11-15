@@ -1,7 +1,7 @@
 function(set_compiler_specifics)
 if(MSVC)
   set(CMAKE_MSVC_EXCEPTIONS ON)
-  add_compile_options(/MP)
+  add_compile_options(/MP /utf-8)
 else()
   add_compile_options(-fexceptions)
 endif()

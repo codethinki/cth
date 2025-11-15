@@ -1,5 +1,6 @@
 #include "cth/memory/miniram.hpp"
 
+
 #include "cth/test.hpp"
 
 #include <array>
@@ -15,18 +16,16 @@
 
 
 namespace cth::mem {
-using miniram_t = miniram<>;
-using mini_alloc_t = mini_alloc<>;
 
 MEM_TEST(miniram, BasicOperations) {
-    miniram_t allocator(1024 * 1024 * 256);
+    miniram allocator(1024 * 1024 * 256);
     auto a = allocator.allocate(1337);
     EXPECT_EQ(a.offset, 0);
     allocator.free(a);
 }
 
 MEM_TEST(miniram, SimpleSequence) {
-    miniram_t allocator(1024 * 1024 * 256);
+    miniram allocator(1024 * 1024 * 256);
     auto a = allocator.allocate(0);
     EXPECT_EQ(a.offset, 0);
 
@@ -50,7 +49,7 @@ MEM_TEST(miniram, SimpleSequence) {
 }
 
 MEM_TEST(miniram, TrivialMerge) {
-    miniram_t allocator(1024 * 1024 * 256);
+    miniram allocator(1024 * 1024 * 256);
     auto a = allocator.allocate(1337);
     EXPECT_EQ(a.offset, 0);
     allocator.free(a);
@@ -64,7 +63,7 @@ MEM_TEST(miniram, TrivialMerge) {
 }
 
 MEM_TEST(miniram, TrivialReuse) {
-    miniram_t allocator(1024 * 1024 * 256);
+    miniram allocator(1024 * 1024 * 256);
     auto a = allocator.allocate(1024);
     EXPECT_EQ(a.offset, 0);
 
@@ -84,7 +83,7 @@ MEM_TEST(miniram, TrivialReuse) {
 }
 
 MEM_TEST(miniram, ComplexReuseAndFragmentation) {
-    miniram_t allocator(1024 * 1024 * 256);
+    miniram allocator(1024 * 1024 * 256);
     auto a = allocator.allocate(1024);
     EXPECT_EQ(a.offset, 0);
 
@@ -115,11 +114,11 @@ MEM_TEST(miniram, ComplexReuseAndFragmentation) {
 }
 
 MEM_TEST(miniram, ZeroFragmentationScenario) {
-    miniram_t ram(1024 * 1024 * 256);
+    miniram ram(1024 * 1024 * 256);
     constexpr uint32_t numAllocs = 256;
     constexpr uint32_t allocSize = 1024 * 1024;
 
-    std::vector<mini_alloc_t> allocations(numAllocs);
+    std::vector<mini_alloc> allocations(numAllocs);
 
     for(uint32_t i = 0; i < numAllocs; i++) {
         allocations[i] = ram.allocate(allocSize);
@@ -145,11 +144,11 @@ MEM_TEST(miniram, ZeroFragmentationScenario) {
     allocations[95] = ram.allocate(allocSize);
     allocations[151] = ram.allocate(allocSize * 4);
 
-    EXPECT_NE(allocations[243].offset, miniram_t::NO_SPACE);
-    EXPECT_NE(allocations[5].offset, miniram_t::NO_SPACE);
-    EXPECT_NE(allocations[123].offset, miniram_t::NO_SPACE);
-    EXPECT_NE(allocations[95].offset, miniram_t::NO_SPACE);
-    EXPECT_NE(allocations[151].offset, miniram_t::NO_SPACE);
+    EXPECT_NE(allocations[243].offset, miniram::NO_SPACE);
+    EXPECT_NE(allocations[5].offset, miniram::NO_SPACE);
+    EXPECT_NE(allocations[123].offset, miniram::NO_SPACE);
+    EXPECT_NE(allocations[95].offset, miniram::NO_SPACE);
+    EXPECT_NE(allocations[151].offset, miniram::NO_SPACE);
 
     for(uint32_t i = 0; i < numAllocs; i++)
         if(i < 152 || i > 154)
@@ -163,8 +162,8 @@ MEM_TEST(miniram, ZeroFragmentationScenario) {
 }
 
 MEM_TEST(miniram, SizeOfReporting) {
-    miniram_t allocator(1024);
-    EXPECT_EQ(allocator.size_of({.offset = miniram_t::NO_SPACE, .id = miniram_t::INVALID_INDEX}), 0);
+    miniram allocator(1024);
+    EXPECT_EQ(allocator.size_of({.offset = miniram::NO_SPACE, .id = miniram::INVALID_INDEX}), 0);
 
     auto a = allocator.allocate(123);
     EXPECT_EQ(allocator.size_of(a), 123);
@@ -179,7 +178,7 @@ MEM_TEST(miniram, SizeOfReporting) {
 }
 
 MEM_TEST(miniram, FreeSpansReport) {
-    miniram_t allocator(1024 * 10);
+    miniram allocator(1024 * 10);
     auto a = allocator.allocate(100);
     auto b = allocator.allocate(200);
     auto c = allocator.allocate(300);
@@ -204,21 +203,21 @@ MEM_TEST(miniram, FreeSpansReport) {
 
 MEM_TEST(miniram, OutOfSpace) {
     // Test failure by exhausting memory
-    miniram_t allocator(1024);
+    miniram allocator(1024);
     auto a = allocator.allocate(1024);
-    EXPECT_NE(a.id, miniram_t::INVALID_INDEX);
+    EXPECT_NE(a.id, miniram::INVALID_INDEX);
 
     auto b = allocator.allocate(1); // Should fail, no space
-    EXPECT_EQ(b.id, miniram_t::INVALID_INDEX);
+    EXPECT_EQ(b.id, miniram::INVALID_INDEX);
     allocator.free(a);
 }
 
 MEM_TEST(miniram, OutOfNodes) {
-    miniram_t ram(1024 * 1024, 5);
-    std::vector<mini_alloc_t> allocations;
+    miniram ram(1024 * 1024, 5);
+    std::vector<mini_alloc> allocations;
     for(int i = 0; i < 5; ++i) {
         allocations.push_back(ram.allocate(10));
-        EXPECT_NE(allocations.back().id, miniram_t::INVALID_INDEX);
+        EXPECT_NE(allocations.back().id, miniram::INVALID_INDEX);
     }
 
     EXPECT_EQ(ram.remaining_allocs(), 0);
@@ -226,15 +225,15 @@ MEM_TEST(miniram, OutOfNodes) {
     auto oldAllocCapacity = ram.alloc_capacity();
 
     auto failure = ram.allocate(10); // Should not fail but extend
-    EXPECT_NE(failure.id, miniram_t::INVALID_INDEX);
+    EXPECT_NE(failure.id, miniram::INVALID_INDEX);
 
     EXPECT_TRUE(oldAllocCapacity < ram.alloc_capacity());
 }
 
 MEM_TEST(miniram, Reset) {
-    miniram_t allocator(1024);
-    allocator.allocate(256);
-    allocator.allocate(512);
+    miniram allocator(1024);
+    [[maybe_unused]] auto _ = allocator.allocate(256);
+    [[maybe_unused]] auto __ = allocator.allocate(512);
 
     EXPECT_EQ(allocator.remaining(), 1024 - 256 - 512);
 
@@ -245,17 +244,17 @@ MEM_TEST(miniram, Reset) {
 
     auto a = allocator.allocate(1024);
     EXPECT_EQ(a.offset, 0);
-    EXPECT_NE(a.id, miniram_t::INVALID_INDEX);
+    EXPECT_NE(a.id, miniram::INVALID_INDEX);
 }
 
 MEM_TEST(miniram, DisjunctCopyUtility) {
-    std::vector<miniram_t::memmove_type> moves;
+    std::vector<miniram::memmove_type> moves;
     // Case 1: A standard "move-left" with no overlap.
     moves.emplace_back(2000, 1000, 500);
     // Case 2: A "move-left" WITH overlap. dst (1400) + size (500) > src (1500).
     moves.emplace_back(1500, 1400, 500);
 
-    auto disjunct = miniram_t::to_disjunct_copies(moves);
+    auto disjunct = miniram::to_disjunct_copies(moves);
 
     // --- Verification ---
     // The first move was already disjunct, so it should be present as-is.
@@ -284,8 +283,8 @@ MEM_TEST(miniram, DisjunctCopyUtility) {
 }
 
 MEM_TEST(miniram, DefragmentationAndMoveCoalescing) {
-    miniram_t ram(10240); // 10 KB ram
-    std::vector<mini_alloc_t> allocations;
+    miniram ram(10240); // 10 KB ram
+    std::vector<mini_alloc> allocations;
 
     // Allocate 10 blocks of 500 bytes each
     for(int i = 0; i < 10; ++i) { allocations.push_back(ram.allocate(500)); }
@@ -312,20 +311,20 @@ MEM_TEST(miniram, DefragmentationAndMoveCoalescing) {
 
     // Try to allocate the max available size
     auto largeAlloc = ram.allocate(ram.max_alloc());
-    EXPECT_NE(largeAlloc.id, miniram_t::INVALID_INDEX);
+    EXPECT_NE(largeAlloc.id, miniram::INVALID_INDEX);
     EXPECT_EQ(largeAlloc.offset, totalLiveSize);
 }
 
 MEM_TEST(miniheap, PostDefragIntegrity) {
-    miniram_t ram(20480); // 20 KB heap
-    std::vector<mini_alloc_t> allocations;
+    miniram ram(20480); // 20 KB heap
+    std::vector<mini_alloc> allocations;
 
     // 1. SETUP: Create a fragmented heap
     // Allocate 20 blocks of 512 bytes each
     for(int i = 0; i < 20; ++i) { allocations.push_back(ram.allocate(512)); }
 
     // Keep track of which allocations will remain live
-    std::map<miniram_t::index_type, mini_alloc_t> live_allocs;
+    std::map<miniram::index_type, mini_alloc> live_allocs;
     for(size_t i = 0; i < allocations.size(); ++i) {
         // Free even-numbered blocks, keep odd-numbered ones
         if(i % 2 == 0) { ram.free(allocations[i]); } else { live_allocs[allocations[i].id] = allocations[i]; }
@@ -343,7 +342,7 @@ MEM_TEST(miniheap, PostDefragIntegrity) {
 
     // A. Trivial allocation from the new large free block
     auto a = ram.allocate(1024);
-    EXPECT_NE(a.id, miniram_t::INVALID_INDEX);
+    EXPECT_NE(a.id, miniram::INVALID_INDEX);
     // It should be placed immediately after the 10 compacted live blocks.
     EXPECT_EQ(a.offset, 10 * 512);
 
@@ -364,7 +363,7 @@ MEM_TEST(miniheap, PostDefragIntegrity) {
     // C. Reuse the just-freed space (Best-Fit)
     // This allocation should reuse the 512-byte hole we just created.
     auto b = ram.allocate(500);
-    EXPECT_NE(b.id, miniram_t::INVALID_INDEX);
+    EXPECT_NE(b.id, miniram::INVALID_INDEX);
     EXPECT_EQ(b.offset, alloc_to_free.offset); // Should be at the same offset as the freed block.
 
     // D. Final check: Free everything and ensure the heap is whole
@@ -380,7 +379,7 @@ MEM_TEST(miniheap, PostDefragIntegrity) {
 }
 
 MEM_TEST(miniram, ResizeGrow) {
-    miniram_t ram(1024);
+    miniram ram(1024);
 
     auto a = ram.allocate(100);
     auto b = ram.allocate(200);
@@ -397,7 +396,7 @@ MEM_TEST(miniram, ResizeGrow) {
 }
 
 MEM_TEST(miniram, ResizeShrink) {
-    miniram_t ram(2048);
+    miniram ram(2048);
 
     auto a = ram.allocate(100);
     auto b = ram.allocate(200);

@@ -16,8 +16,8 @@ consteval auto invalid() { return T{} - 1; }
 
 namespace dev {
     // Internal node structure, made public for development/debugging purposes.
-    template<uint SizeType = uint32_t, uint IndexType = uint32_t>
-    struct Node {
+    template<uint SizeType, uint IndexType>
+    struct basic_mini_node {
         using index_t = IndexType;
         using size_t = SizeType;
         static constexpr index_t UNUSED = invalid<index_t>();
@@ -33,42 +33,42 @@ namespace dev {
     };
 }
 
-template<uint SizeType = uint32_t, uint IndexType = uint32_t>
-struct mini_alloc {
+template<uint SizeType, uint IndexType>
+struct basic_mini_alloc {
     SizeType offset;
     IndexType id;
 };
 
-template<uint T = uint32_t>
-struct mini_regions {
+template<uint T>
+struct basic_mini_region {
     size_t count;
     T size;
 };
 
-template<uint T = uint32_t>
-struct mini_memmove {
+template<uint T>
+struct basic_mini_memmove {
     T srcOffset;
     T dstOffset;
     T size;
 };
 
-template<uint SizeType = uint32_t, uint IndexType = uint32_t>
-struct mini_defrag {
-    std::vector<mini_alloc<SizeType, IndexType>> updatedAllocs;
-    std::vector<mini_memmove<SizeType>> moves;
+template<uint SizeType, uint IndexType>
+struct basic_mini_defrag {
+    std::vector<basic_mini_alloc<SizeType, IndexType>> updatedAllocs;
+    std::vector<basic_mini_memmove<SizeType>> moves;
 };
 
 
-template<uint SizeType = uint32_t, uint IndexType = uint32_t>
-class miniram {
+template<uint SizeType, uint IndexType>
+class basic_miniram {
 public:
     using size_type = SizeType;
     using index_type = IndexType;
-    using alloc_type = mini_alloc<SizeType, IndexType>;
-    using regions_type = mini_regions<SizeType>;
-    using memmove_type = mini_memmove<SizeType>;
-    using defrag_type = mini_defrag<SizeType, IndexType>;
-    using node_type = dev::Node<SizeType, IndexType>;
+    using alloc_type = basic_mini_alloc<SizeType, IndexType>;
+    using regions_type = basic_mini_region<SizeType>;
+    using memmove_type = basic_mini_memmove<SizeType>;
+    using defrag_type = basic_mini_defrag<SizeType, IndexType>;
+    using node_type = dev::basic_mini_node<SizeType, IndexType>;
 
 private:
     // Bin configuration - calculated from BINS_PER_LEAF
@@ -97,8 +97,8 @@ public:
      * @param capacity of ram (in elements)
      * @param initial_alloc_capacity (in allocations), >= 1
      */
-    constexpr explicit miniram(size_type capacity, size_t initial_alloc_capacity = 128 * 1024);
-    constexpr ~miniram() = default;
+    constexpr explicit basic_miniram(size_type capacity, size_t initial_alloc_capacity = 128 * 1024);
+    constexpr ~basic_miniram() = default;
 
     /**
      * clears the ram to no allocations
@@ -242,15 +242,35 @@ public:
         return 1.0f - static_cast<float>(max_alloc()) / static_cast<float>(remaining());
     }
 
-    constexpr miniram(miniram const& other) = default;
-    constexpr miniram(miniram&& other) noexcept = default;
-    constexpr miniram& operator=(miniram const& other) = default;
-    constexpr miniram& operator=(miniram&& other) noexcept = default;
+    constexpr basic_miniram(basic_miniram const& other) = default;
+    constexpr basic_miniram(basic_miniram&& other) noexcept = default;
+    constexpr basic_miniram& operator=(basic_miniram const& other) = default;
+    constexpr basic_miniram& operator=(basic_miniram&& other) noexcept = default;
 };
 
-// Type aliases for convenience
-using miniram32 = miniram<uint32_t, uint32_t>;
-using miniram64 = miniram<uint64_t, uint32_t>;
+using miniram32 = basic_miniram<uint32_t, uint32_t>;
+using miniram64 = basic_miniram<uint64_t, uint32_t>;
+using miniram = basic_miniram<size_t, uint32_t>;
+
+using mini_node32 = dev::basic_mini_node<uint32_t, uint32_t>;
+using mini_node64 = dev::basic_mini_node<uint64_t, uint32_t>;
+using mini_node = dev::basic_mini_node<size_t, uint32_t>;
+
+using mini_alloc32 = basic_mini_alloc<uint32_t, uint32_t>;
+using mini_alloc64 = basic_mini_alloc<uint64_t, uint32_t>;
+using mini_alloc = basic_mini_alloc<size_t, uint32_t>;
+
+using mini_region32 = basic_mini_region<uint32_t>;
+using mini_region64 = basic_mini_region<uint64_t>;
+using mini_region = basic_mini_region<size_t>;
+
+using mini_memmove32 = basic_mini_memmove<uint32_t>;
+using mini_memmove64 = basic_mini_memmove<uint64_t>;
+using mini_memmove = basic_mini_memmove<size_t>;
+
+using mini_defrag32 = basic_mini_defrag<uint32_t, uint32_t>;
+using mini_defrag64 = basic_mini_defrag<uint64_t, uint32_t>;
+using mini_defrag = basic_mini_defrag<size_t, uint32_t>;
 
 }
 

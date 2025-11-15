@@ -8,13 +8,13 @@ namespace cth::mem {
 
 // Float conversion helper functions
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::highest_bit(size_type number) -> size_type {
+constexpr auto basic_miniram<SizeType, IndexType>::highest_bit(size_type number) -> size_type {
     constexpr size_type bits = sizeof(size_type) * 8;
     return bits - 1 - std::countl_zero(number);
 }
 
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::ceil_to_float(size_type size) -> size_type {
+constexpr auto basic_miniram<SizeType, IndexType>::ceil_to_float(size_type size) -> size_type {
     size_type exp = 0;
     size_type mantissa = 0;
 
@@ -34,7 +34,7 @@ constexpr auto miniram<SizeType, IndexType>::ceil_to_float(size_type size) -> si
 }
 
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::floor_to_float(size_type size) -> size_type {
+constexpr auto basic_miniram<SizeType, IndexType>::floor_to_float(size_type size) -> size_type {
     if(size < MANTISSA_VALUE)
         return size;
 
@@ -46,7 +46,7 @@ constexpr auto miniram<SizeType, IndexType>::floor_to_float(size_type size) -> s
 }
 
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::to_uint(size_type float_value) -> size_type {
+constexpr auto basic_miniram<SizeType, IndexType>::to_uint(size_type float_value) -> size_type {
     if(float_value < MANTISSA_VALUE)
         return float_value;
 
@@ -57,13 +57,13 @@ constexpr auto miniram<SizeType, IndexType>::to_uint(size_type float_value) -> s
 
 // Constructor
 template<uint SizeType, uint IndexType>
-constexpr miniram<SizeType, IndexType>::miniram(size_type capacity, size_t initial_alloc_capacity) :
+constexpr basic_miniram<SizeType, IndexType>::basic_miniram(size_type capacity, size_t initial_alloc_capacity) :
     _capacity(capacity),
     _maxAllocs(initial_alloc_capacity) { clear(); }
 
 // Clear
 template<uint SizeType, uint IndexType>
-constexpr void miniram<SizeType, IndexType>::clear() {
+constexpr void basic_miniram<SizeType, IndexType>::clear() {
     defragmentReset();
 
     _freeStackPtr = 0;
@@ -76,7 +76,7 @@ constexpr void miniram<SizeType, IndexType>::clear() {
 
 // Insert Node
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::insertNode(size_type size, size_type data_offset) -> index_type {
+constexpr auto basic_miniram<SizeType, IndexType>::insertNode(size_type size, size_type data_offset) -> index_type {
     auto const nodeIndex = newNode(size);
 
     auto const binIndex = floor_to_float(size);
@@ -107,7 +107,7 @@ constexpr auto miniram<SizeType, IndexType>::insertNode(size_type size, size_typ
 
 // Remove Node
 template<uint SizeType, uint IndexType>
-constexpr void miniram<SizeType, IndexType>::removeNode(index_type node_index) {
+constexpr void basic_miniram<SizeType, IndexType>::removeNode(index_type node_index) {
     auto const& node = _nodes[node_index];
 
     if(node.binListPrev != INVALID_INDEX) {
@@ -139,14 +139,14 @@ constexpr void miniram<SizeType, IndexType>::removeNode(index_type node_index) {
 
 // New Node
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::newNode(size_type size) -> index_type {
+constexpr auto basic_miniram<SizeType, IndexType>::newNode(size_type size) -> index_type {
     _freeStorage += size;
     return popFreeNode();
 }
 
 // Free Node
 template<uint SizeType, uint IndexType>
-constexpr void miniram<SizeType, IndexType>::freeNode(index_type node_index) {
+constexpr void basic_miniram<SizeType, IndexType>::freeNode(index_type node_index) {
     CTH_CRITICAL(node_index >= nodes(), "invalid node index") {}
 
     _freeStorage -= _nodes[node_index].dataSize;
@@ -156,7 +156,7 @@ constexpr void miniram<SizeType, IndexType>::freeNode(index_type node_index) {
 
 // Defragment
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::defragment(size_type new_size) -> defrag_type {
+constexpr auto basic_miniram<SizeType, IndexType>::defragment(size_type new_size) -> defrag_type {
     defrag_type report{};
 
     std::vector<index_type> usedNodes{};
@@ -196,7 +196,7 @@ constexpr auto miniram<SizeType, IndexType>::defragment(size_type new_size) -> d
 
 // Allocate
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::allocate(size_type size) -> alloc_type {
+constexpr auto basic_miniram<SizeType, IndexType>::allocate(size_type size) -> alloc_type {
     if(size > remaining())
         return {.offset = NO_SPACE, .id = INVALID_INDEX};
 
@@ -234,7 +234,7 @@ constexpr auto miniram<SizeType, IndexType>::allocate(size_type size) -> alloc_t
 
 // To Disjunct Copies
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::to_disjunct_copies(
+constexpr auto basic_miniram<SizeType, IndexType>::to_disjunct_copies(
     std::vector<memmove_type> const& moves
 )
     -> std::vector<memmove_type> {
@@ -274,7 +274,7 @@ constexpr auto miniram<SizeType, IndexType>::to_disjunct_copies(
 
 // Reserve Nodes
 template<uint SizeType, uint IndexType>
-constexpr void miniram<SizeType, IndexType>::reserve_nodes(size_t node_capacity) {
+constexpr void basic_miniram<SizeType, IndexType>::reserve_nodes(size_t node_capacity) {
     if(node_capacity <= nodes())
         return;
 
@@ -288,7 +288,7 @@ constexpr void miniram<SizeType, IndexType>::reserve_nodes(size_t node_capacity)
 
 // Slice Top Bin Node
 template<uint SizeType, uint IndexType>
-constexpr void miniram<SizeType, IndexType>::sliceTopBinNode(
+constexpr void basic_miniram<SizeType, IndexType>::sliceTopBinNode(
     size_type slice_size,
     size_t bin_id,
     size_t top_bin_id,
@@ -333,7 +333,7 @@ constexpr void miniram<SizeType, IndexType>::sliceTopBinNode(
 
 // Find Lowest Bit After
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::findLowestBitAfter(top_bin_mask_t bit_mask, size_t start_id) -> size_t {
+constexpr auto basic_miniram<SizeType, IndexType>::findLowestBitAfter(top_bin_mask_t bit_mask, size_t start_id) -> size_t {
     auto const maskBefore = (top_bin_mask_t{1} << start_id) - 1;
     auto const maskAfter = ~maskBefore;
     auto const bitsAfter = bit_mask & maskAfter;
@@ -345,7 +345,7 @@ constexpr auto miniram<SizeType, IndexType>::findLowestBitAfter(top_bin_mask_t b
 
 // Free
 template<uint SizeType, uint IndexType>
-constexpr void miniram<SizeType, IndexType>::free(alloc_type allocation) {
+constexpr void basic_miniram<SizeType, IndexType>::free(alloc_type allocation) {
     if(_nodes.empty())
         return;
 
@@ -402,7 +402,7 @@ constexpr void miniram<SizeType, IndexType>::free(alloc_type allocation) {
 
 // Size Of
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::size_of(alloc_type allocation) const -> size_type {
+constexpr auto basic_miniram<SizeType, IndexType>::size_of(alloc_type allocation) const -> size_type {
     if(allocation.id == INVALID_INDEX || _nodes.empty())
         return 0;
 
@@ -411,7 +411,7 @@ constexpr auto miniram<SizeType, IndexType>::size_of(alloc_type allocation) cons
 
 // Max Alloc
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::max_alloc() const -> size_type {
+constexpr auto basic_miniram<SizeType, IndexType>::max_alloc() const -> size_type {
     if(remaining() == 0) return 0;
 
     size_t const topBinIndex = highest_bit(_usedBinsTop);
@@ -423,7 +423,7 @@ constexpr auto miniram<SizeType, IndexType>::max_alloc() const -> size_type {
 
 // Defragment Reset
 template<uint SizeType, uint IndexType>
-constexpr void miniram<SizeType, IndexType>::defragmentReset() {
+constexpr void basic_miniram<SizeType, IndexType>::defragmentReset() {
     _usedBinsTop = 0;
     _usedBins.fill(0);
     _binIndices.fill(INVALID_INDEX);
@@ -432,7 +432,7 @@ constexpr void miniram<SizeType, IndexType>::defragmentReset() {
 
 // Pop Free Node
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::popFreeNode() -> index_type {
+constexpr auto basic_miniram<SizeType, IndexType>::popFreeNode() -> index_type {
     CTH_CRITICAL(_freeStackPtr >= nodes(), "free stack already empty") {}
 
     return _freeNodes[_freeStackPtr++];
@@ -440,7 +440,7 @@ constexpr auto miniram<SizeType, IndexType>::popFreeNode() -> index_type {
 
 // Push Free Node
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::pushFreeNode() -> index_type& {
+constexpr auto basic_miniram<SizeType, IndexType>::pushFreeNode() -> index_type& {
     CTH_CRITICAL(_freeStackPtr == 0, "free stack already full") {}
 
     return _freeNodes[--_freeStackPtr];
@@ -448,7 +448,7 @@ constexpr auto miniram<SizeType, IndexType>::pushFreeNode() -> index_type& {
 
 // Compact Used Nodes
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::compactUsedNodes(
+constexpr auto basic_miniram<SizeType, IndexType>::compactUsedNodes(
     std::vector<index_type> const& used_nodes,
     defrag_type& report
 ) -> size_type {
@@ -496,7 +496,7 @@ constexpr auto miniram<SizeType, IndexType>::compactUsedNodes(
 
 // Reconstruct Free Space
 template<uint SizeType, uint IndexType>
-constexpr void miniram<SizeType, IndexType>::reconstructFreeSpace(
+constexpr void basic_miniram<SizeType, IndexType>::reconstructFreeSpace(
     size_type compacted_offset,
     index_type last_used_node
 ) {
@@ -540,7 +540,7 @@ constexpr void miniram<SizeType, IndexType>::reconstructFreeSpace(
 
 // Free Regions
 template<uint SizeType, uint IndexType>
-constexpr auto miniram<SizeType, IndexType>::free_regions() const -> std::array<regions_type, NUM_LEAF_BINS> {
+constexpr auto basic_miniram<SizeType, IndexType>::free_regions() const -> std::array<regions_type, NUM_LEAF_BINS> {
     std::array<regions_type, NUM_LEAF_BINS> regions{};
 
     for(size_t i = 0; i < NUM_LEAF_BINS; ++i) {

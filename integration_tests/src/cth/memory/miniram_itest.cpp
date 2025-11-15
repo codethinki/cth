@@ -10,10 +10,8 @@
 
 namespace cth::mem {
 
-using miniram_t = miniram<>;
-using mini_alloc_t = mini_alloc<>;
 
-void gen_hist(miniram_t const& ram) {
+void gen_hist(miniram const& ram) {
     std::println();
     std::println("Total Free Space: {}kb", ram.remaining() / 1024);
     std::println("Largest Free Region: {}kb", ram.max_alloc() / 1024);
@@ -50,7 +48,7 @@ void gen_hist(miniram_t const& ram) {
 
 
 
-MEM_TEST(miniheap, FragmentationStressTest) {
+MEM_TEST(miniram, FragmentationStressTest) {
     // --- Test Parameters ---
     constexpr uint32_t ramSize = 1024 * 1024 * 256; // 256 MB ram
     constexpr uint32_t numOperations = 300000; // Number of random alloc/free operations
@@ -58,8 +56,8 @@ MEM_TEST(miniheap, FragmentationStressTest) {
     constexpr int allocChancePercent = 70; // 70% chance to allocate, 30% chance to free
 
     // --- Setup ---
-    miniram_t ram(ramSize);
-    std::vector<mini_alloc_t> liveAllocations;
+    miniram ram(ramSize);
+    std::vector<mini_alloc > liveAllocations;
     liveAllocations.reserve(numOperations);
 
     // Use a high-quality random number generator
@@ -73,8 +71,8 @@ MEM_TEST(miniheap, FragmentationStressTest) {
         if(opDist(gen) < allocChancePercent) {
             // Try to allocate
             uint32_t size = sizeDist(gen);
-            mini_alloc_t newAlloc = ram.allocate(size);
-            if(newAlloc.id != miniram_t::INVALID_INDEX) { 
+            mini_alloc  newAlloc = ram.allocate(size);
+            if(newAlloc.id != miniram::INVALID_INDEX) { 
                 liveAllocations.push_back(newAlloc); 
             }
         } else {
