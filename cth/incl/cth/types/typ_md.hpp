@@ -19,7 +19,8 @@ template<size_t D, auto Extent>
         []<class... Args>(Args... args) {
             return std::extents<decltype(Extent), (type::zero<Args>(), Extent)...>{args...};
         },
-        type::n_tuple<D>(Extent));
+        type::n_tuple<D>(Extent)
+    );
 }
 
 
@@ -44,5 +45,3 @@ template<class T, size_t... Extents>
 using mdspan_t = std::mdspan<T, std::extents<size_t, Extents...>>;
 
 }
-
-

@@ -15,6 +15,8 @@ template<class T, template<class> class Trait>
 concept applicable = requires() {
     typename Trait<T>;
 };
+
+
 }
 
 
@@ -47,8 +49,8 @@ using get_t = std::tuple_element_t<I, std::tuple<Ts...>>;
 }
 
 namespace cth::type {
-    template<class T>
-    using rcvr_t = std::remove_cvref_t<T>;
+template<class T>
+using rcvr_t = std::remove_cvref_t<T>;
 }
 
 

@@ -1,268 +1,321 @@
 #include "test.hpp"
-
+#include "cth/coro/sync/fence.hpp"
 #include <cth/coro/scheduler.hpp>
-#include <cth/coro/executor.hpp>
 
 #include <atomic>
+#include <latch>
+#include <barrier>
+#include <thread>
 
 namespace cth::co {
 
-// Helper coroutines
-executor_void_task simple_task() {
-    co_return;
-}
-
-executor_void_task counting_task(std::atomic<int>& counter) {
-    counter++;
-    co_return;
-}
-
-executor_task<int> value_task(int value) {
-    co_return value;
-}
-
-// ========== Construction Tests ==========
-
-CORO_TEST(scheduler, construct_default) {
+CORO_TEST(scheduler, default_constructor) {
     scheduler sched;
     EXPECT_EQ(sched.workers(), 1);
     EXPECT_EQ(sched.active_workers(), 0);
     EXPECT_FALSE(sched.active());
 }
 
-CORO_TEST(scheduler, construct_with_workers) {
+CORO_TEST(scheduler, worker_count_constructor) {
     scheduler sched(4);
     EXPECT_EQ(sched.workers(), 4);
-    EXPECT_EQ(sched.active_workers(), 0);
-    EXPECT_FALSE(sched.active());
 }
 
-CORO_TEST(scheduler, construct_with_single_worker) {
+CORO_TEST(scheduler, autostart_constructor) {
+    scheduler sched(autostart, 2);
+    EXPECT_EQ(sched.workers(), 2);
+    EXPECT_TRUE(sched.active());
+}
+
+CORO_TEST(scheduler, active_state) {
     scheduler sched(1);
-    EXPECT_EQ(sched.workers(), 1);
-}
-
-CORO_TEST(scheduler, construct_with_many_workers) {
-    scheduler sched(16);
-    EXPECT_EQ(sched.workers(), 16);
-}
-
-// ========== Method Instantiation Tests ==========
-
-CORO_TEST(scheduler, post_method_compiles) {
-    scheduler sched;
-    // Just verify it compiles - don't start the scheduler
-    // The task won't execute but the method is instantiated
-    sched.post(simple_task());
-    SUCCEED(); // If we get here, post() compiled
-}
-
-CORO_TEST(scheduler, start_method_compiles) {
-    scheduler sched;
-    sched.start();
-    // Immediately stop to keep test fast
-    sched.request_stop();
-    sched.await_stop();
-    SUCCEED();
-}
-
-CORO_TEST(scheduler, request_stop_method_compiles) {
-    scheduler sched;
-    sched.start();
-    sched.request_stop(); // Instantiate method
-    sched.await_stop();
-    SUCCEED();
-}
-
-CORO_TEST(scheduler, await_stop_method_compiles) {
-    scheduler sched;
-    sched.start();
-    sched.request_stop();
-    sched.await_stop(); // Instantiate method
-    SUCCEED();
-}
-
-CORO_TEST(scheduler, transfer_exec_method_compiles) {
-    scheduler sched;
-    auto awaiter = sched.transfer_exec(); // Instantiate method
-    EXPECT_FALSE(awaiter.await_ready()); // Verify awaiter interface
-    SUCCEED();
-}
-
-// ========== Worker Count Tests ==========
-
-CORO_TEST(scheduler, workers_accessor) {
-    {
-        scheduler sched(1);
-        EXPECT_EQ(sched.workers(), 1);
-    }
-    {
-        scheduler sched(2);
-        EXPECT_EQ(sched.workers(), 2);
-    }
-    {
-        scheduler sched(4);
-        EXPECT_EQ(sched.workers(), 4);
-    }
-    {
-        scheduler sched(8);
-        EXPECT_EQ(sched.workers(), 8);
-    }
-}
-
-CORO_TEST(scheduler, active_workers_accessor_before_start) {
-    scheduler sched(4);
-    EXPECT_EQ(sched.active_workers(), 0u);
-}
-
-// ========== State Tests ==========
-
-CORO_TEST(scheduler, active_before_start) {
-    scheduler sched(2);
     EXPECT_FALSE(sched.active());
-}
 
-CORO_TEST(scheduler, active_after_start) {
-    scheduler sched(1);
     sched.start();
     EXPECT_TRUE(sched.active());
+
     sched.request_stop();
     sched.await_stop();
-}
-
-CORO_TEST(scheduler, active_after_stop) {
-    scheduler sched(1);
-    sched.start();
-    sched.request_stop();
     EXPECT_FALSE(sched.active());
-    sched.await_stop();
 }
 
-// ========== Move Semantics Tests ==========
-
-CORO_TEST(scheduler, move_construct) {
-    scheduler sched1(2);
-    EXPECT_EQ(sched1.workers(), 2);
-    
-    scheduler sched2(std::move(sched1));
-    EXPECT_EQ(sched2.workers(), 2);
-}
-
-CORO_TEST(scheduler, move_assign) {
-    scheduler sched1(3);
-    scheduler sched2(1);
-    
-    sched2 = std::move(sched1);
-    EXPECT_EQ(sched2.workers(), 3);
-}
-
-// ========== Awaiter Interface Tests ==========
-
-CORO_TEST(scheduler, ctx_switch_awaiter_interface) {
+CORO_TEST(scheduler, owns_thread) {
     scheduler sched;
-    auto awaiter = sched.transfer_exec();
+    EXPECT_FALSE(sched.owns_thread());
     
-    // Verify awaiter interface
-    EXPECT_FALSE(awaiter.await_ready());
-    // Don't call await_suspend as it would post to io_context
-    // Just verify the method exists and compiles
-    SUCCEED();
+    sched.start();
+    EXPECT_FALSE(sched.owns_thread());
 }
 
-CORO_TEST(scheduler, ctx_switch_awaiter_has_scheduler_ptr) {
-    scheduler sched;
-    auto awaiter = sched.transfer_exec();
-    
-    // Verify the awaiter holds a scheduler pointer
-    EXPECT_NE(awaiter.sched, nullptr);
+CORO_TEST(scheduler, single_task) {
+    scheduler sched(1);
+    fence done;
+
+    sched.start();
+    sched.post([&] { done.signal(); });
+
+    done.wait();
 }
 
-// ========== Destructor Tests ==========
+CORO_TEST(scheduler, sequential_tasks) {
+    scheduler sched(1);
+    std::atomic<int> counter{0};
+    constexpr int taskCount = 5;
+    std::latch allDone(taskCount);
 
-CORO_TEST(scheduler, destructor_without_start) {
-    {
-        scheduler sched(2);
-        // Destructor should handle not-started state
+    sched.start();
+    for(int i = 0; i < taskCount; ++i) {
+        sched.post([&] {
+            counter.fetch_add(1, std::memory_order_relaxed);
+            allDone.count_down();
+        });
     }
-    SUCCEED();
+
+    allDone.wait();
+    EXPECT_EQ(counter.load(), taskCount);
 }
 
-CORO_TEST(scheduler, destructor_after_start_and_stop) {
+CORO_TEST(scheduler, concurrent_execution) {
+    constexpr size_t workers = 2;
+    scheduler sched{workers};
+    
+    std::barrier workerSync{workers};
+    std::latch tasksDone{workers};
+
+    sched.start();
+
+    for(size_t i = 0; i < workers; ++i) {
+        sched.post([&] {
+            workerSync.arrive_and_wait();
+            tasksDone.count_down();
+        });
+    }
+
+    tasksDone.wait();
+}
+
+CORO_TEST(scheduler, post_before_start) {
+    scheduler sched(1);
+    fence done;
+
+    sched.post([&] { done.signal(); });
+    EXPECT_FALSE(done.signaled());
+
+    sched.start();
+    done.wait();
+}
+
+CORO_TEST(scheduler, post_during_execution) {
+    scheduler sched(2);
+    constexpr int batch1 = 3;
+    constexpr int batch2 = 3;
+    
+    std::latch batch1Done(batch1);
+    std::latch batch2Done(batch2);
+    std::atomic<int> counter{0};
+
+    sched.start();
+
+    for(int i = 0; i < batch1; ++i) {
+        sched.post([&] {
+            counter.fetch_add(1, std::memory_order_relaxed);
+            batch1Done.count_down();
+        });
+    }
+
+    batch1Done.wait();
+
+    for(int i = 0; i < batch2; ++i) {
+        sched.post([&] {
+            counter.fetch_add(1, std::memory_order_relaxed);
+            batch2Done.count_down();
+        });
+    }
+
+    batch2Done.wait();
+    EXPECT_EQ(counter.load(), batch1 + batch2);
+}
+
+CORO_TEST(scheduler, owns_thread_in_task) {
+    constexpr int taskCount = 4;
+    scheduler sched{autostart, 2};
+    
+    std::atomic<int> successCount{0};
+    std::latch allDone{taskCount};
+
+    for(int i = 0; i < taskCount; ++i) {
+        sched.post([&] {
+            if(sched.owns_thread()) {
+                successCount.fetch_add(1, std::memory_order_relaxed);
+            }
+            allDone.count_down();
+        });
+    }
+
+    allDone.wait();
+    EXPECT_EQ(successCount.load(), taskCount);
+}
+
+CORO_TEST(scheduler, task_ordering_single_worker) {
+    scheduler sched(1);
+    int val = 0;
+    fence done;
+
+    sched.start();
+
+    sched.post([&] { val = 1; });
+    sched.post([&] { val = 2; });
+    sched.post([&] { 
+        val = 3; 
+        done.signal(); 
+    });
+
+    done.wait();
+    EXPECT_EQ(val, 3);
+}
+
+CORO_TEST(scheduler, restart) {
+    scheduler sched(1);
+    int counter = 0;
+
     {
-        scheduler sched(2);
+        fence done;
         sched.start();
-        sched.request_stop();
+        sched.post([&] { counter++; done.signal(); });
+        done.wait();
         sched.await_stop();
-        // Destructor should handle stopped state
     }
-    SUCCEED();
+    EXPECT_EQ(counter, 1);
+
+    {
+        fence done;
+        sched.start();
+        sched.post([&] { counter++; done.signal(); });
+        done.wait();
+    }
+    EXPECT_EQ(counter, 2);
 }
 
-// ========== Edge Cases ==========
+CORO_TEST(scheduler, destructor_waits) {
+    std::atomic<bool> taskDone{false};
+    std::atomic<bool> dtorDone{false};
+    
+    fence taskStarted;
+    fence allowFinish;
 
-CORO_TEST(scheduler, multiple_posts_without_start) {
-    scheduler sched;
+    std::jthread runner([&] {
+        {
+            scheduler sched{autostart};
+            sched.post([&] {
+                taskStarted.signal();
+                allowFinish.wait();
+                taskDone = true;
+            });
+            taskStarted.wait();
+        } 
+        dtorDone = true;
+    });
+
+    taskStarted.wait();
     
-    // Post multiple tasks before starting
-    sched.post(simple_task());
-    sched.post(simple_task());
-    sched.post(simple_task());
-    
-    // All should compile and queue (but not execute)
-    SUCCEED();
+    EXPECT_FALSE(dtorDone);
+    EXPECT_FALSE(taskDone);
+
+    allowFinish.signal();
 }
 
-CORO_TEST(scheduler, post_different_task_types) {
-    scheduler sched;
-    
+CORO_TEST(scheduler, stop_prevents_new_tasks) {
+    scheduler sched{1};
     std::atomic<int> counter{0};
     
-    // Verify different task types can be posted
-    sched.post(simple_task());
-    sched.post(counting_task(counter));
-    
-    SUCCEED();
+    fence taskRunning;
+    fence allowTaskFinish;
+
+    sched.start();
+
+    sched.post([&] {
+        taskRunning.signal();
+        allowTaskFinish.wait();
+    });
+    taskRunning.wait();
+
+    sched.request_stop();
+
+    for(int i = 0; i < 10; ++i) { 
+        sched.post([&] { ++counter; }); 
+    }
+
+    allowTaskFinish.signal();
+    sched.await_stop();
+
+    EXPECT_EQ(counter.load(), 0);
 }
 
-CORO_TEST(scheduler, start_stop_cycle_without_tasks) {
-    scheduler sched(1);
+CORO_TEST(scheduler, await_stop_waits) {
+    scheduler sched{autostart, 1};
+    
+    fence taskRunning;
+    fence allowTaskFinish;
+    fence awaitStopReturned;
+
+    sched.post([&] {
+        taskRunning.signal();
+        allowTaskFinish.wait();
+    });
+
+    taskRunning.wait();
+
+    std::jthread stopper([&] {
+        sched.await_stop();
+        awaitStopReturned.signal();
+    });
+
+    EXPECT_FALSE(awaitStopReturned.signaled());
+
+    allowTaskFinish.signal();
+
+    awaitStopReturned.wait();
+    EXPECT_FALSE(sched.active());
+}
+
+CORO_TEST(scheduler, active_worker_count) {
+    constexpr int taskCount = 4;
+    scheduler sched(taskCount);
+    std::barrier stepSync(2); 
     
     sched.start();
-    EXPECT_TRUE(sched.active());
+
+    for(int i = 0; i < taskCount; ++i) {
+        sched.post([&] {
+            stepSync.arrive_and_wait();
+            stepSync.arrive_and_wait();
+        });
+        
+        stepSync.arrive_and_wait();
+        
+        EXPECT_TRUE(sched.active());
+        EXPECT_EQ(sched.active_workers(), i + 1);
+        
+        stepSync.arrive_and_wait();
+    }
     
-    sched.request_stop();
     sched.await_stop();
-    EXPECT_FALSE(sched.active());
+    EXPECT_EQ(sched.active_workers(), 0);
 }
 
-// ========== Consistency Tests ==========
+CORO_TEST(scheduler, move_semantics) {
+    scheduler sched1(2);
+    scheduler sched2(std::move(sched1));
+    EXPECT_EQ(sched2.workers(), 2);
 
-CORO_TEST(scheduler, workers_count_unchanged_after_start) {
-    scheduler sched(3);
-    size_t workers_before = sched.workers();
-    
-    sched.start();
-    EXPECT_EQ(sched.workers(), workers_before);
-    
-    sched.request_stop();
-    sched.await_stop();
-    EXPECT_EQ(sched.workers(), workers_before);
+    scheduler sched3(1);
+    sched3 = std::move(sched2);
+    EXPECT_EQ(sched3.workers(), 2);
 }
 
-CORO_TEST(scheduler, active_workers_zero_before_start) {
-    scheduler sched(5);
-    EXPECT_EQ(sched.active_workers(), 0u);
-}
-
-CORO_TEST(scheduler, can_query_state_multiple_times) {
-    scheduler sched(2);
-    
-    EXPECT_FALSE(sched.active());
-    EXPECT_FALSE(sched.active());
-    EXPECT_EQ(sched.workers(), 2);
-    EXPECT_EQ(sched.workers(), 2);
-    EXPECT_EQ(sched.active_workers(), 0u);
-    EXPECT_EQ(sched.active_workers(), 0u);
+CORO_TEST(scheduler, non_copyable) { 
+    EXPECT_FALSE(std::is_copy_constructible_v<scheduler>);
+    EXPECT_FALSE(std::is_copy_assignable_v<scheduler>);
 }
 
 } // namespace cth::co

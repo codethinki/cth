@@ -1,8 +1,5 @@
-#include "cth/coro/scheduler.hpp"
-
-#include "cth/coro/this_coro.hpp"
-#include "cth/coro/executor.hpp"
-
 int main() {
+    int x = 0;
+
     return 0;
 }

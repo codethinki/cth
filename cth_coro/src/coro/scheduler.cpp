@@ -4,6 +4,8 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/post.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 
 namespace bas = boost::asio;
 
@@ -35,22 +37,22 @@ scheduler::scheduler(size_t workers) :
     _impl{std::make_unique<Impl>(workers)},
     _activeWorkers{std::make_unique<std::atomic<size_t>>()},
     _workers{workers} {
-    CTH_CRITICAL(!expr::num::in(workers, 1, std::numeric_limits<int>::max()), "workers out of range") {}
+    CTH_CRITICAL((!expr::num::in(workers, 1, std::numeric_limits<int>::max())), "workers out of range") {}
 }
 scheduler::~scheduler() {
     if(_impl != nullptr)
         await_stop();
 }
+void scheduler::post(std::function<void()> work) { bas::post(impl().ctx, work); }
 
-void scheduler::post(executor_void_task task) {
-    bas::post(impl().ctx, [task = std::move(task)]() mutable { task.resume(); });
-}
 void scheduler::start() {
     impl().start();
     for(auto& worker : _workers)
         worker = std::jthread(
-            [&ctx = impl().ctx, &count = *_activeWorkers] {
+            [&ctx = impl().ctx, impl = _impl.get(), &count = *_activeWorkers] {
                 ++count;
+                _threadScheduler = impl;
+
                 ctx.run();
                 --count;
             }
@@ -60,11 +62,8 @@ void scheduler::request_stop() {
     impl().request_stop();
     for(auto& worker : _workers) worker.request_stop();
 }
-void scheduler::ctx_switch_awaiter::await_suspend(std::coroutine_handle<> h) const {
-    bas::post(sched->impl().ctx, [h]() mutable { h.resume(); });
-}
-bool scheduler::active() const { return impl().active() || _activeWorkers->load() > 0; }
 
+bool scheduler::active() const { return impl().active() || _activeWorkers->load() > 0; }
 
 }
 

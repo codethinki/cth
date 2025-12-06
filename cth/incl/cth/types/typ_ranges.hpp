@@ -65,23 +65,23 @@ template<class Rng, auto TCpt>
 concept range2d_over_cpt = md_range_over_cpt<Rng, TCpt, 2>;
 
 template<class Rng, class T>
-concept range_over = std::ranges::range<Rng> and std::same_as<std::ranges::range_value_t<Rng>, T>;
+concept range_over = std::ranges::range<Rng> && std::same_as<std::ranges::range_value_t<Rng>, T>;
 
 }
 
 namespace cth::rng {
 
 template<class Rng>
-concept static_dim_rng = std::ranges::range<Rng> and !std::same_as<std::ranges::range_value_t<Rng>, type::rcvr_t<Rng>>;
+concept static_dim_rng = std::ranges::range<Rng> && !std::same_as<std::ranges::range_value_t<Rng>, type::rcvr_t<Rng>>;
 
 /**
  * @brief accepts viewable or copy viewable ranges
  */
 template<class Rng>
 concept viewable_rng = std::ranges::viewable_range<Rng>
-    or (
+    || (
         std::ranges::viewable_range<type::rcvr_t<Rng>>
-        and requires(Rng rng) { type::rcvr_t<Rng>{rng}; }
+        && requires(Rng rng) { type::rcvr_t<Rng>{rng}; }
     );
 
 template<viewable_rng Rng>

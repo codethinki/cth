@@ -1,56 +1,49 @@
 #pragma once
-#include "cth/coro/scheduler.hpp"
+#include "scheduler.hpp"
+#include "schedule_awaiter.hpp"
+#include "dev/executor_task_decl.hpp"
+#include "dev/scheduled_task.hpp"
 
-
-namespace cth::co {
-template<class T, class Task>
-constexpr executor_task<T> inject_executor(executor, Task);
-}
+#include "cth/coro/func/steal.hpp"
+#include "cth/types/coro.hpp"
 
 namespace cth::co {
 class executor {
+
 public:
     explicit executor(scheduler& sched) noexcept : _sched(&sched) {}
     ~executor() = default;
 
-    void post(executor_void_task task) const { _sched->post(std::move(task)); }
+    auto schedule() const { return schedule_awaiter{*_sched}; }
 
-    template<class Task>
-    void post(Task task) const {
-        this->post(
-            [](Task task) -> executor_void_task {
-                co_await task;
-                co_return;
-            }(std::move(task))
-        );
+
+    template<executor_awaitable Awaitable>
+    auto steal(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
+        auto awaiter = extract_awaiter(std::forward<Awaitable>(awaitable));
+        awaiter.exec = this;
+        return awaiter;
     }
 
-    template<class T, class Task>
-    executor_task<T> spawn(Task task) {
-        co_await _sched->transfer_exec();
-        co_return co_await inject_executor<T>(*this, std::move(task));
+    template<class Awaitable>
+    auto steal(Awaitable&& awaitable) { return co::steal(*_sched, std::forward<Awaitable>(awaitable)); }
+
+
+
+    template<class Awaitable>
+    auto spawn(Awaitable task) -> scheduled_task<awaited_t<Awaitable>> {
+        co_await schedule();
+        co_return co_await executor::steal(task);
     }
 
-    [[nodiscard]] scheduler::ctx_switch_awaiter transfer_exec() const { return _sched->transfer_exec(); }
+private:
+    scheduler* _sched;
 
+public:
     executor(executor const& other) = default;
     executor(executor&& other) noexcept = default;
     executor& operator=(executor const& other) = default;
     executor& operator=(executor&& other) noexcept = default;
-
-private:
-    scheduler* _sched;
 };
 
 
-}
-
-namespace cth::co {
-template<class T, class Task>
-constexpr executor_task<T> inject_executor([[maybe_unused]] executor exec, Task task) {
-    if constexpr(std::is_void_v<T>) {
-        co_await task;
-        co_return;
-    } else co_return co_await task;
-}
 }

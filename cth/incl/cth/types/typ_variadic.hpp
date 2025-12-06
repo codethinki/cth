@@ -13,7 +13,7 @@ using at_t = decltype(std::get<I, std::tuple<Ts...>>(std::declval<std::tuple<Ts.
 namespace cth::type {
 
 template<class T, class... Ts>
-concept any_of = (std::same_as<T, Ts> or ...);
+concept any_of = (std::same_as<T, Ts> || ...);
 
 /**
  * \brief ::type is equal to first of Ts... that's equal to T or Fallback if none are
@@ -67,13 +67,13 @@ namespace cth::type {
  * @brief true if any of Ts... are convertible to T
  */
 template<typename T, typename... Ts>
-concept any_convertible_to = (std::convertible_to<Ts, T> or ...);
+concept any_convertible_to = (std::convertible_to<Ts, T> || ...);
 
 /**
  * @brief true if T is convertible to any of Ts...
  */
 template<typename T, typename... Ts>
-concept convertible_to_any = (std::convertible_to<T, Ts> or ...);
+concept convertible_to_any = (std::convertible_to<T, Ts> || ...);
 
 /**
  * @brief ::type is equal to first of Ts... that's convertible from T or Fallback if none are
@@ -133,7 +133,7 @@ namespace cth::type {
  * @brief shortcut to @ref is_any_constructible_from_v
  */
 template<typename T, typename... Ts>
-concept any_constructible_from = (std::constructible_from<Ts, T> or ...);
+concept any_constructible_from = (std::constructible_from<Ts, T> || ...);
 
 
 

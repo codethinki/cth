@@ -1,13 +1,17 @@
 #pragma once
-#include "executor_task.hpp"
 #include "utility.hpp"
 
+#include <functional>
 #include <vector>
 #include <thread>
 
 
 namespace cth::co {
 class scheduler {
+    struct Impl;
+
+    static inline thread_local Impl* _threadScheduler = nullptr;
+
 public:
     // ReSharper disable once CppNonExplicitConvertingConstructor
     /**
@@ -29,8 +33,8 @@ public:
      */
     ~scheduler();
 
+    void post(std::function<void()> work);
 
-    void post(executor_void_task task);
 
     void start();
 
@@ -43,20 +47,7 @@ public:
                 worker.join();
     }
 
-    struct ctx_switch_awaiter {
-        scheduler* sched;
-
-        bool await_ready() const noexcept { return false; }
-
-        void await_suspend(std::coroutine_handle<> h) const;
-
-        void await_resume() const noexcept {}
-    };
-
-    ctx_switch_awaiter transfer_exec() { return {this}; }
-
 private:
-    struct Impl;
     // ReSharper disable once CppMemberFunctionMayBeConst
     [[nodiscard]] Impl& impl() { return *_impl; }
     [[nodiscard]] Impl const& impl() const { return *_impl; }
@@ -66,6 +57,8 @@ private:
     std::vector<std::jthread> _workers{};
 
 public:
+    [[nodiscard]] bool owns_thread() const { return _threadScheduler == _impl.get(); }
+
     [[nodiscard]] size_t workers() const { return _workers.size(); }
     [[nodiscard]] size_t active_workers() const { return _activeWorkers->load(); }
     [[nodiscard]] bool active() const;

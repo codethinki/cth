@@ -13,10 +13,10 @@ concept satisfies = requires {
 };
 
 template<auto TCpt, class... Ts>
-concept all_satisfy = (satisfies<Ts, TCpt> and ...);
+concept all_satisfy = (satisfies<Ts, TCpt> && ...);
 
 template<auto TCpt, class... Ts>
-concept any_satisfy = (satisfies<Ts, TCpt> or ...);
+concept any_satisfy = (satisfies<Ts, TCpt> || ...);
 
 }
 
@@ -30,13 +30,13 @@ template<typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
 
 template<class T>
-concept character = std::same_as<pure_t<T>, char> or std::same_as<pure_t<T>, wchar_t>;
+concept character = std::same_as<pure_t<T>, char> || std::same_as<pure_t<T>, wchar_t>;
 
 template<class T>
 concept n_character = std::same_as<pure_t<T>, char>;
 
 template<class T, auto TCpt>
-concept negate = not satisfies<T, TCpt>;
+concept negate = !satisfies<T, TCpt>;
 
 template<class T>
 concept w_character = std::same_as<pure_t<T>, wchar_t>;
@@ -52,7 +52,7 @@ concept callable_with = requires {
 };
 template<auto F, class... Args>
 concept nothrow_callable_with = callable_with<F, Args...>
-    and noexcept(std::invoke(F, std::declval<Args>()...));
+    && noexcept(std::invoke(F, std::declval<Args>()...));
 
 template<auto F, class R, class... Args>
 concept call_signature = requires {
@@ -60,7 +60,7 @@ concept call_signature = requires {
 };
 
 template<auto F, class R, class... Args>
-concept nothrow_call_signature = call_signature<F, R, Args...> and nothrow_callable_with<F, Args...>;
+concept nothrow_call_signature = call_signature<F, R, Args...> && nothrow_callable_with<F, Args...>;
 
 
 template<class T>
@@ -83,3 +83,5 @@ concept trivial = std::is_trivial_v<T>;
 }
 
 namespace cth::type {}
+
+
