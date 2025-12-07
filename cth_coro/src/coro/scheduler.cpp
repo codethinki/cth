@@ -63,7 +63,10 @@ void scheduler::request_stop() {
     for(auto& worker : _workers) worker.request_stop();
 }
 
-bool scheduler::active() const { return impl().active() || _activeWorkers->load() > 0; }
+bool scheduler::active() const {
+    CTH_CRITICAL(!_impl, "use after move") {}
+    return impl().active() || _activeWorkers->load() > 0;
+}
 
 }
 

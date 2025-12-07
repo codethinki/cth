@@ -4,6 +4,8 @@
 #include <concepts>
 #include <utility>
 
+
+
 namespace cth::co {
 template<class T>
 concept awaiter = requires(T t, std::coroutine_handle<> h) {
@@ -11,6 +13,8 @@ concept awaiter = requires(T t, std::coroutine_handle<> h) {
     { t.await_suspend(h) };
     { t.await_resume() };
 };
+
+
 
 template<class T>
 concept has_op_co_await = requires() {
@@ -64,10 +68,32 @@ consteval auto awaited_type() {
 }
 
 namespace cth::co {
-template<class Awaitable>
+template<awaitable Awaitable>
 using awaited_t = typename decltype(dev::awaited_type<Awaitable>())::type;
 
 template<class Awaitable>
 concept void_awaitable = awaitable<Awaitable> && std::same_as<void, type::rcvr_t<awaited_t<Awaitable>>>;
+
+}
+
+
+
+namespace cth::co {
+template<class T>
+concept promise = requires(T t) {
+    &T::get_return_object;
+    { t.initial_suspend() } -> awaiter;
+    { t.final_suspend() } -> awaiter;
+    { t.unhandled_exception() };
+};
+
+template<class T>
+concept void_promise = promise<T> && requires(T t) { t.return_void(); };
+
+template<class T>
+concept cth_promise = promise<T> && requires() { typename T::value_type; };
+
+template<cth_promise Promise>
+using promise_value_type = typename Promise::value_type;
 
 }

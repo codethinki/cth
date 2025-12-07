@@ -1,8 +1,7 @@
 #pragma once
 #include <coroutine>
-namespace cth::co {
-class executor;
-}
+
+#include "cth/coro/utility/fwd.hpp"
 
 namespace cth::co {
 
@@ -11,9 +10,9 @@ namespace this_coro {
     inline constexpr get_executor_t executor{};
 }
 
-class executor_awaiter {
+class current_executor_awaiter {
 public:
-    executor_awaiter(executor& exec) : _exec(&exec) {}
+    current_executor_awaiter(executor& exec) : _exec(&exec) {}
 
     bool await_ready() const noexcept { return true; }
     void await_suspend(std::coroutine_handle<>) const noexcept {}
@@ -24,4 +23,3 @@ private:
 };
 
 }
-

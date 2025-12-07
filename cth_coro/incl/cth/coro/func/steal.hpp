@@ -1,12 +1,13 @@
 #pragma once
-#include "../dev/capture_task.hpp"
+#include "cth/coro/tasks/dev/capture_task.hpp"
 
-#include "cth/coro/schedule_awaiter.hpp"
+#include "cth/coro/awaiters/schedule_awaiter.hpp"
 
+#include "cth/coro/utility/fwd.hpp"
 #include "cth/types/coro.hpp"
 
 namespace cth::co {
-class executor;
+
 
 template<class Awaitable>
 auto steal(

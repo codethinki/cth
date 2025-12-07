@@ -1,14 +1,12 @@
 #pragma once
-#include "base/executor_awaiter_base.hpp"
-#include "base/dev/executor_promise_base_decl.hpp"
+#include "cth/coro/awaiters/executor_awaiter.hpp"
+#include "promises/basic_promise.hpp"
+#include "promises/executor_promise_base.hpp"
 
-#include "dev/basic_promise.hpp"
-#include "dev/unique_handle.hpp"
+
+#include <cth/coro/unique_cohandle.hpp>
 
 #include <coroutine>
-#include <exception>
-#include <type_traits>
-#include <utility>
 
 namespace cth::co {
 template<class T>
@@ -28,30 +26,8 @@ template<class T>
 class [[nodiscard]] executor_task {
 public:
     using promise_type = dev::executor_promise<T>;
+    using awaiter = executor_awaiter<promise_type>;
 
-    struct awaiter : executor_awaiter_base {
-
-        awaiter(std::coroutine_handle<promise_type> h) : handle{h} {}
-
-
-        [[nodiscard]] bool await_ready() const noexcept { return !handle || handle.done(); }
-
-        template<class Promise>
-        auto await_suspend(std::coroutine_handle<Promise> caller) noexcept -> std::coroutine_handle<promise_type> {
-            executor_awaiter_base::inject_executor(caller);
-            handle.promise().continuation = caller;
-            return handle;
-        }
-
-        auto await_resume() {
-            if(handle.promise().exception)
-                std::rethrow_exception(handle.promise().exception);
-            if constexpr(!std::same_as<void, T>)
-                return std::move(*handle.promise().result);
-        }
-
-        std::coroutine_handle<promise_type> handle;
-    };
 
     ~executor_task() = default;
 
@@ -59,7 +35,7 @@ private:
     friend struct promise_type;
     explicit executor_task(std::coroutine_handle<promise_type> h) noexcept : _handle{h} {}
 
-    dev::unique_handle<promise_type> _handle;
+    dev::unique_cohandle<promise_type> _handle;
 
 public:
     auto handle(this auto&& self) { return self._handle.get(); }
@@ -82,5 +58,3 @@ auto dev::executor_promise<T>::get_return_object() noexcept -> executor_task<T> 
 using executor_void_task = executor_task<void>;
 
 }
-
-

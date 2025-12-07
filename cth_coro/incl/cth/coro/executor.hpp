@@ -1,11 +1,10 @@
 #pragma once
-#include "scheduler.hpp"
-#include "schedule_awaiter.hpp"
-#include "dev/executor_task_decl.hpp"
-#include "dev/scheduled_task.hpp"
-
+#include "cth/coro/concepts.hpp"
+#include "cth/coro/awaiters/schedule_awaiter.hpp"
 #include "cth/coro/func/steal.hpp"
-#include "cth/types/coro.hpp"
+#include "cth/coro/tasks/dev/scheduled_task.hpp"
+
+#include <cth/types/coro.hpp>
 
 namespace cth::co {
 class executor {
@@ -19,13 +18,15 @@ public:
 
     template<executor_awaitable Awaitable>
     auto steal(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
-        auto awaiter = extract_awaiter(std::forward<Awaitable>(awaitable));
+        auto awaiter = co::extract_awaiter(std::forward<Awaitable>(awaitable));
         awaiter.exec = this;
         return awaiter;
     }
 
     template<class Awaitable>
-    auto steal(Awaitable&& awaitable) { return co::steal(*_sched, std::forward<Awaitable>(awaitable)); }
+    auto steal(Awaitable&& awaitable) -> capture_task<awaited_t<Awaitable>> {
+        return co::steal(*_sched, std::forward<Awaitable>(awaitable));
+    }
 
 
 
@@ -45,5 +46,10 @@ public:
     executor& operator=(executor&& other) noexcept = default;
 };
 
+
+template<class Awaitable>
+auto steal(executor& exec, Awaitable&& awaitable) -> capture_task<awaited_t<Awaitable>> {
+    return exec.steal(std::forward<Awaitable>(awaitable));
+}
 
 }

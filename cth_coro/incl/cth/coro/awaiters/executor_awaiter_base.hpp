@@ -1,19 +1,11 @@
 #pragma once
-#include <cth/types/coro.hpp>
-
+#include "cth/coro/concepts.hpp"
 #include <coroutine>
-#include <type_traits>
+
+#include "cth/coro/utility/fwd.hpp"
+
 
 namespace cth::co {
-class executor;
-struct executor_promise_base;
-}
-
-namespace cth::co {
-
-template<class Promise>
-concept executor_injectable = std::is_base_of_v<executor_promise_base, Promise>;
-
 /**
  * Base for awaitables which support executor injection
  */
@@ -21,7 +13,7 @@ struct executor_awaiter_base {
     executor_awaiter_base() = default;
 
     /**
-     * Injects the executor into the callers promise
+     * Injects the executor into the current promise
      *
      * @tparam Promise type, must be @ref executor_injectable
      * @param h handle with promise to inject executor into
@@ -42,7 +34,6 @@ struct executor_awaiter_base {
     executor* exec = nullptr;
 };
 
-template<class T>
-concept executor_awaitable = std::is_base_of_v<executor_awaiter_base, type::rcvr_t<awaiter_t<T>>>;
+
 
 }

@@ -1,20 +1,20 @@
 #pragma once
-#include "final_awaiter.hpp"
-#include "result_storage.hpp"
+#include "cth/coro/awaiters/dev/final_awaiter.hpp"
+#include "cth/coro/tasks/promises/dev/result_storage.hpp"
 
 #include <coroutine>
 
-namespace cth::co::dev {
+namespace cth::co {
 template<class T>
 struct basic_promise {
     using value_type = T;
 
-    result_storage<T> result;
+    dev::result_storage<T> result;
     std::exception_ptr exception;
     std::coroutine_handle<> continuation = nullptr;
 
     std::suspend_always initial_suspend() noexcept { return {}; }
-    auto final_suspend() noexcept { return final_awaiter{}; }
+    dev::final_awaiter final_suspend() noexcept { return {}; }
 
     void unhandled_exception() { exception = std::current_exception(); }
 
@@ -26,12 +26,12 @@ template<>
 struct basic_promise<void> {
     using value_type = void;
 
-    result_storage<void> result;
+    dev::result_storage<void> result;
     std::exception_ptr exception;
     std::coroutine_handle<> continuation = nullptr;
 
     std::suspend_always initial_suspend() noexcept { return {}; }
-    auto final_suspend() noexcept { return final_awaiter{}; }
+    dev::final_awaiter final_suspend() noexcept { return {}; }
 
     void unhandled_exception() { exception = std::current_exception(); }
 

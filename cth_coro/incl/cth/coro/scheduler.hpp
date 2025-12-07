@@ -1,9 +1,15 @@
 #pragma once
-#include "utility.hpp"
+
+#include "cth/io/log.hpp"
 
 #include <functional>
 #include <vector>
 #include <thread>
+
+namespace cth::co {
+constexpr auto autostart = [] {};
+using autostart_t = decltype(autostart);
+}
 
 
 namespace cth::co {
@@ -60,7 +66,10 @@ public:
     [[nodiscard]] bool owns_thread() const { return _threadScheduler == _impl.get(); }
 
     [[nodiscard]] size_t workers() const { return _workers.size(); }
-    [[nodiscard]] size_t active_workers() const { return _activeWorkers->load(); }
+    [[nodiscard]] size_t active_workers() const {
+        CTH_CRITICAL(!_activeWorkers, "use after move") {}
+        return _activeWorkers->load(std::memory_order_relaxed);
+    }
     [[nodiscard]] bool active() const;
 
     scheduler(scheduler const& other) = delete;

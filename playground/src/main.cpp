@@ -1,12 +1,12 @@
 #include <cth/hash/hash_general.hpp>
 
+struct B;
+
+struct A{};
+
 #include <print>
 int main() {
-    std::string asdf = "asdf";
-    std::string jklö = "jklö";
-
-    std::println("hash: (l, r): {}", cth::hash::combine(asdf, jklö));
-    std::println("hash: (r, l): {}", cth::hash::combine(jklö, asdf));
+    std::println("{}", std::is_base_of_v<B, A>);
 
 }
 

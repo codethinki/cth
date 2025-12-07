@@ -4,6 +4,8 @@
 #include <type_traits>
 
 
+//IMPLEMENT fix result storage to a more complete type and move to general cth/coro
+
 namespace cth::co::dev {
 template<class T>
 struct result_storage {

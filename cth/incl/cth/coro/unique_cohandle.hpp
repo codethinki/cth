@@ -4,19 +4,22 @@
 
 namespace cth::co::dev {
 
-template<class Promise>
-class unique_handle {
-public:
-    constexpr unique_handle() noexcept : _handle(nullptr) {}
-    explicit unique_handle(std::coroutine_handle<Promise> h) noexcept : _handle(h) {}
+//TODO add documentation
+//TODO clean up / extend the implementation to fit standards
 
-    ~unique_handle() { optDestroy(); }
+template<class Promise>
+class unique_cohandle {
+public:
+    constexpr unique_cohandle() noexcept : _handle(nullptr) {}
+    explicit unique_cohandle(std::coroutine_handle<Promise> h) noexcept : _handle(h) {}
+
+    ~unique_cohandle() { optDestroy(); }
 
     [[nodiscard]] auto extract() noexcept { return std::exchange(_handle, nullptr); }
 
-    void swap(unique_handle& other) noexcept { std::swap(_handle, other._handle); }
+    void swap(unique_cohandle& other) noexcept { std::swap(_handle, other._handle); }
 
-    friend void swap(unique_handle& a, unique_handle& b) noexcept { a.swap(b); }
+    friend void swap(unique_cohandle& a, unique_cohandle& b) noexcept { a.swap(b); }
 
 protected:
     void optDestroy() { if(_handle) _handle.destroy(); }
@@ -36,13 +39,13 @@ public:
 
 
 
-    unique_handle(unique_handle const&) = delete;
-    unique_handle& operator=(unique_handle const&) = delete;
+    unique_cohandle(unique_cohandle const&) = delete;
+    unique_cohandle& operator=(unique_cohandle const&) = delete;
 
-    unique_handle(unique_handle&& other) noexcept
+    unique_cohandle(unique_cohandle&& other) noexcept
         : _handle(std::exchange(other._handle, nullptr)) {}
 
-    unique_handle& operator=(unique_handle&& other) noexcept {
+    unique_cohandle& operator=(unique_cohandle&& other) noexcept {
         other.swap(*this);
         return *this;
     }
