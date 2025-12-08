@@ -5,7 +5,7 @@
 
 namespace cth::co {
 
-struct signaled_t{};
+struct signaled_t {};
 inline constexpr signaled_t signaled{};
 
 

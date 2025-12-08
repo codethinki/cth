@@ -1,5 +1,5 @@
 #include "test.hpp"
-#include "cth/coro/sync/fence.hpp"
+#include "cth/coro/fence.hpp"
 #include <cth/coro/scheduler.hpp>
 #include <cth/coro/executor.hpp>
 #include <cth/coro/tasks/executor_task.hpp>
