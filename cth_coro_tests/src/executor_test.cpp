@@ -309,8 +309,8 @@ CORO_TEST(executor_stress, concurrent_spawns) {
     sched.start();
 
     constexpr int count = 100;
-    std::vector<scheduled_task<void>> handles;
-    handles.reserve(count);
+    std::vector<scheduled_task<void>> tasks;
+    tasks.reserve(count);
 
     std::atomic<int> completed{0};
 
@@ -324,13 +324,13 @@ CORO_TEST(executor_stress, concurrent_spawns) {
         );
         // Kick off immediately
         h.handle().resume();
-        handles.push_back(std::move(h));
+        tasks.push_back(std::move(h));
     }
 
     // Wait for all of them
     fence done;
     auto waiter = [&]() -> executor_task<void> {
-        for(auto& h : handles) { co_await h; }
+        for(auto& h : tasks) { co_await std::move(h); }
         done.signal();
     };
 

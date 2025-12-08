@@ -23,17 +23,20 @@ public:
         return awaiter;
     }
 
-    template<class Awaitable>
-    auto steal(Awaitable&& awaitable) -> capture_task<awaited_t<Awaitable>> {
-        return co::steal(*_sched, std::forward<Awaitable>(awaitable));
+    template<executorless_awaitable Awaitable>
+    auto steal(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
+        return co::steal(*_sched, std::move(awaitable));
     }
 
+    template<class T>
+    auto spawn(scheduled_task<T> task) -> scheduled_task<T> {
+        return executor::steal(std::move(task));
+    }
 
-
-    template<class Awaitable>
+    template<awaitable Awaitable>
     auto spawn(Awaitable task) -> scheduled_task<awaited_t<Awaitable>> {
         co_await schedule();
-        co_return co_await executor::steal(task);
+        co_return co_await executor::steal(std::move(task));
     }
 
 private:
@@ -47,9 +50,9 @@ public:
 };
 
 
-template<class Awaitable>
-auto steal(executor& exec, Awaitable&& awaitable) -> capture_task<awaited_t<Awaitable>> {
-    return exec.steal(std::forward<Awaitable>(awaitable));
+template<foreign_awaitable Awaitable>
+auto steal(executor& exec, Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
+    return exec.steal(std::move(awaitable));
 }
 
 }

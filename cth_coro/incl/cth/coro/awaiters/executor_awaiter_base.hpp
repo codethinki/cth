@@ -18,7 +18,7 @@ struct executor_awaiter_base {
      * @tparam Promise type, must be @ref executor_injectable
      * @param h handle with promise to inject executor into
      */
-    template<class Promise>
+    template<promise Promise>
     void inject_executor(std::coroutine_handle<Promise> h) {
         constexpr bool injectable = executor_injectable<Promise>;
 

@@ -12,14 +12,14 @@ namespace this_coro {
 
 class current_executor_awaiter {
 public:
-    current_executor_awaiter(executor& exec) : _exec(&exec) {}
+    current_executor_awaiter(executor& exec) : _exec(exec) {}
 
     bool await_ready() const noexcept { return true; }
     void await_suspend(std::coroutine_handle<>) const noexcept {}
-    executor& await_resume() const noexcept { return *_exec; }
+    executor& await_resume() const noexcept { return _exec; }
 
 private:
-    executor* _exec;
+    executor& _exec;
 };
 
 }

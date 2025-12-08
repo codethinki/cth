@@ -1,7 +1,7 @@
 #pragma once
 #include "cth/coro/concepts.hpp"
 #include "cth/coro/tasks/dev/capture_task.hpp"
-
+#include "this_coro.hpp"
 
 #include <cth/coro/utility.hpp>
 #include <cth/types/coro.hpp>
@@ -12,12 +12,14 @@ namespace cth::co {
 class executor;
 
 
-template<class Awaitable>
-auto steal(executor& exec, Awaitable&&) -> capture_task<awaited_t<Awaitable>>;
+template<foreign_awaitable Awaitable>
+auto steal(executor& exec, Awaitable) -> capture_task<awaited_t<Awaitable>>;
 
 
 struct executor_promise_base {
     executor* exec = nullptr;
+
+    [[nodiscard]] auto await_transform(this_coro::get_executor_t const&) -> current_executor_awaiter { return {*exec}; }
 
     template<executor_awaitable Awaitable>
     [[nodiscard]] auto await_transform(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
@@ -31,10 +33,12 @@ struct executor_promise_base {
     template<captured_awaitable Awaitable>
     [[nodiscard]] auto await_transform(Awaitable&& captured) { return cth::co::extract_awaiter(captured); }
 
-    template<class Awaitable>
-    auto await_transform(Awaitable&& awaitable) -> capture_task<awaited_t<Awaitable>> {
-        return co::steal(*exec, std::forward<Awaitable>(awaitable));
+    template<foreign_awaitable Awaitable>
+    [[nodiscard]] auto await_transform(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
+        return co::steal(*exec, std::move(awaitable));
     }
+
+
 };
 
 }

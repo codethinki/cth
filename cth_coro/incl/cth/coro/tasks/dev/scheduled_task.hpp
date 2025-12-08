@@ -26,23 +26,7 @@ class [[nodiscard]] scheduled_task {
 public:
     using promise_type = dev::scheduled_promise<T>;
 
-    struct awaiter : dev::capture_awaiter_base {
-        std::coroutine_handle<promise_type> handle;
-
-        [[nodiscard]] bool await_ready() const noexcept { return !handle || handle.done(); }
-
-        auto await_suspend(std::coroutine_handle<> caller) noexcept -> std::coroutine_handle<> {
-            handle.promise().continuation = caller;
-            return handle;
-        }
-
-        auto await_resume() {
-            if(handle.promise().exception)
-                std::rethrow_exception(handle.promise().exception);
-            if constexpr(!std::is_void_v<T>)
-                return std::move(*handle.promise().result);
-        }
-    };
+    using awaiter_type = dev::capture_awaiter<promise_type>;
 
     ~scheduled_task() = default;
 
@@ -54,8 +38,8 @@ private:
 public:
     auto handle(this auto&& self) { return self._handle.get(); }
 
-    auto operator co_await() const & noexcept { return awaiter{handle()}; }
-    auto operator co_await() && noexcept { return awaiter{_handle->extract()}; }
+    awaiter_type operator co_await() const & noexcept { return {handle()}; }
+    awaiter_type operator co_await() && noexcept { return {_handle->extract()}; }
 
     scheduled_task(scheduled_task&&) noexcept = default;
     scheduled_task& operator=(scheduled_task&&) noexcept = default;

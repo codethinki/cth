@@ -10,7 +10,7 @@ namespace cth::co {
 
 
 template<class Awaitable>
-auto steal(
+[[nodiscard]] auto steal(
     scheduler& scheduler,
     Awaitable awaitable
 ) -> capture_task<awaited_t<Awaitable>> {
