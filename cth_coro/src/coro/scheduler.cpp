@@ -1,15 +1,20 @@
 #include "cth/coro/scheduler.hpp"
 
-#include "cth/numeric.hpp"
+#include "utility/native_handle_helpers.hpp"
 
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/post.hpp>
+#include <cth/numeric.hpp>
+
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/post.hpp>
 
 namespace bas = boost::asio;
 
+
+
 namespace cth::co {
+
 struct scheduler::Impl {
     using guard_t = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
 
@@ -27,6 +32,14 @@ struct scheduler::Impl {
         ctx.stop();
     }
 
+    void post(void_func work) { bas::post(ctx, std::move(work)); }
+
+    void await(native_handle handle, void_func func) {
+        auto handler = wrap_unique(handle, ctx);
+        handler->async_wait([h = std::move(handler), this, f = std::move(func)]() mutable { post(std::move(f)); });
+    }
+
+
     bas::io_context ctx;
     std::optional<guard_t> workGuard;
 };
@@ -43,7 +56,9 @@ scheduler::~scheduler() {
     if(_impl != nullptr)
         await_stop();
 }
-void scheduler::post(std::function<void()> work) { bas::post(impl().ctx, work); }
+void scheduler::post(void_func work) { bas::post(impl().ctx, std::move(work)); }
+
+void scheduler::await(native_handle handle, void_func cb) { impl().await(handle, std::move(cb)); }
 
 void scheduler::start() {
     impl().start();

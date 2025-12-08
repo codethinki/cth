@@ -205,7 +205,7 @@ namespace dev {
                       std::stacktrace::current()\
                     }\
                   )\
-                : nullptr;\
+                : std::unique_ptr<cth::log::dev::LogObj<severity, type>>{nullptr};\
         static_cast<bool>(expression)\
     ) [[unlikely]]
 

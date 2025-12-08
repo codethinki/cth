@@ -2,6 +2,8 @@
 
 #include "cth/io/log.hpp"
 
+#include "os/native_handle.hpp"
+
 #include <functional>
 #include <vector>
 #include <thread>
@@ -19,6 +21,9 @@ class scheduler {
     static inline thread_local Impl* _threadScheduler = nullptr;
 
 public:
+    using native_handle = cth::co::os::native_handle_t;
+    using void_func = std::move_only_function<void()>;
+
     // ReSharper disable once CppNonExplicitConvertingConstructor
     /**
      * constructs the scheduler with workers
@@ -39,7 +44,9 @@ public:
      */
     ~scheduler();
 
-    void post(std::function<void()> work);
+    void post(void_func work);
+
+    void await(native_handle, void_func cb);
 
 
     void start();

@@ -73,21 +73,21 @@ TYPE_TEST(awaitable, main) {
 TYPE_TEST(awaited_t, main) {
     static_assert(
         std::same_as<
-            cth::co::awaited_t<with_operator_co_await>,
+            cth::co::awaiter_t<with_operator_co_await>,
             with_operator_co_await::awaiter
         >
     );
 
     static_assert(
         std::same_as<
-            cth::co::awaited_t<with_free_co_await>,
+            cth::co::awaiter_t<with_free_co_await>,
             with_free_co_await::awaiter
         >
     );
 
     static_assert(
         std::same_as<
-            cth::co::awaited_t<with_both_co_await>,
+            cth::co::awaiter_t<with_both_co_await>,
             with_both_co_await::awaiter
         >
     );

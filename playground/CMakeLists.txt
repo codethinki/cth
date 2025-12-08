@@ -6,5 +6,6 @@ target_include_directories(
         playground
         PRIVATE src
 )
+find_package(Boost REQUIRED COMPONENTS asio)
 
-target_link_libraries(playground PRIVATE cth::cth)
+target_link_libraries(playground PRIVATE cth::cth Boost::asio)

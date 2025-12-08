@@ -116,7 +116,6 @@ CORO_TEST(executor_context, this_coro_executor) {
     scheduler sched{1};
     executor exec{sched};
     sched.start();
-    //BUG forgot to implement the tag transform xD needs to be fixed
     auto task = [&]() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
 
     auto* ptr = sync_wait_result<executor*>(exec, task());
