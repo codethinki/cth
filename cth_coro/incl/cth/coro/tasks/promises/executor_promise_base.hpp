@@ -1,7 +1,7 @@
 #pragma once
+#include "this_coro.hpp"
 #include "cth/coro/concepts.hpp"
 #include "cth/coro/tasks/dev/capture_task.hpp"
-#include "this_coro.hpp"
 
 #include <cth/coro/utility.hpp>
 #include <cth/types/coro.hpp>

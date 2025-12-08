@@ -1,5 +1,5 @@
 #pragma once
-#include "cth/coro/awaiters/dev/capture_awaiter_base.hpp"
+#include "cth/coro/awaiters/dev/capture_awaiter.hpp"
 #include "cth/coro/tasks/promises/basic_promise.hpp"
 #include "cth/coro/tasks/promises/executor_promise_base.hpp"
 #include "cth/coro/utility/fwd.hpp"
