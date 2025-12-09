@@ -1,3 +1,5 @@
+//THIS FILE IS 100% ai generated bc idgaf
+
 #include "test.hpp"
 #include "cth/coro/fence.hpp"
 #include <cth/coro/scheduler.hpp>

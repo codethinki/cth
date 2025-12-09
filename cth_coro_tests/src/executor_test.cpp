@@ -14,68 +14,56 @@
 
 namespace cth::co {
 
-// -----------------------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------------------
-
-// Helper to run a void task and block until completion
-// Note: spawn() is lazy, so we must manually resume the returned handle to kick it off.
-template<class T>
-void sync_wait(executor& exec, T&& task) {
+template<class Task>
+void sync_wait(executor& exec, Task task) {
     fence done;
-    auto wrapper = [&]() -> executor_task<void> {
-        co_await std::forward<T>(task);
-        done.signal();
+    auto wrapper = [](fence& f, Task t) -> executor_task<void> {
+        co_await std::move(t);
+        f.signal();
     };
 
-    auto handle = exec.spawn(wrapper());
-    // Kick off the lazy scheduled_task. 
-    // It will run until the first suspend (schedule()), post to scheduler, and return.
+    auto handle = exec.spawn(wrapper(done, std::move(task)));
     handle.handle().resume();
 
     done.wait();
+    //BUG here, wait for coroutine to finish
 }
 
-// Helper to run a task returning T and return the value synchronously
 template<class T, class Task>
-T sync_wait_result(executor& exec, Task&& task) {
+T sync_wait_result(executor& exec, Task task) {
     fence done;
     std::optional<T> result;
-    auto wrapper = [&]() -> executor_task<void> {
-        result = co_await std::forward<Task>(task);
-        done.signal();
+    auto wrapper = [](fence& f, std::optional<T>& res, Task t) -> executor_task<void> {
+        res = co_await std::move(t);
+        f.signal();
     };
 
-    auto handle = exec.spawn(wrapper());
+    auto handle = exec.spawn(wrapper(done, result, std::move(task)));
     handle.handle().resume();
 
     done.wait();
+    //BUG here, wait for coroutine to finish
+
     return std::move(*result);
 }
 
-// -----------------------------------------------------------------------------
-// Suite 1: Basic Lifecycle & Spawn
-// -----------------------------------------------------------------------------
-
-CORO_TEST(executor_spawn, void_task) {
-    scheduler sched{1};
+CORO_TEST(executor, spawn_void_task) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
     std::atomic<bool> ran{false};
-    auto task = [&]() -> executor_task<void> {
-        ran = true;
+    auto task = [](std::atomic<bool>& r) -> executor_task<void> {
+        r = true;
         co_return;
     };
 
-    sync_wait(exec, task());
+    sync_wait(exec, task(ran));
     EXPECT_TRUE(ran);
 }
 
-CORO_TEST(executor_spawn, value_task) {
-    scheduler sched{1};
+CORO_TEST(executor, spawn_value_task) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
     auto task = []() -> executor_task<int> { co_return 42; };
 
@@ -83,10 +71,9 @@ CORO_TEST(executor_spawn, value_task) {
     EXPECT_EQ(result, 42);
 }
 
-CORO_TEST(executor_spawn, move_only_type) {
-    scheduler sched{1};
+CORO_TEST(executor, spawn_move_only_type) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
     auto task = []() -> executor_task<std::unique_ptr<int>> { co_return std::make_unique<int>(123); };
 
@@ -95,50 +82,44 @@ CORO_TEST(executor_spawn, move_only_type) {
     EXPECT_EQ(*result, 123);
 }
 
-CORO_TEST(executor_spawn, execution_context) {
-    scheduler sched{1};
+CORO_TEST(executor, spawn_execution_context) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
     auto main_thread = std::this_thread::get_id();
 
     auto task = []() -> executor_task<std::thread::id> { co_return std::this_thread::get_id(); };
 
     auto worker_thread = sync_wait_result<std::thread::id>(exec, task());
+
     EXPECT_NE(main_thread, worker_thread);
 }
 
-// -----------------------------------------------------------------------------
-// Suite 2: Context Propagation
-// -----------------------------------------------------------------------------
-
-CORO_TEST(executor_context, this_coro_executor) {
-    scheduler sched{1};
+CORO_TEST(executor, context_this_coro_executor) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
-    auto task = [&]() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
+
+    auto task = []() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
 
     auto* ptr = sync_wait_result<executor*>(exec, task());
     EXPECT_EQ(ptr, &exec);
 }
 
-CORO_TEST(executor_context, nested_task_propagation) {
-    scheduler sched{1};
+CORO_TEST(executor, context_nested_task_propagation) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
-    auto child = [&]() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
+    auto child = []() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
 
-    auto root = [&]() -> executor_task<executor*> { co_return co_await child(); };
+    auto root = [](auto c) -> executor_task<executor*> { co_return co_await c(); };
 
-    auto* ptr = sync_wait_result<executor*>(exec, root());
+    auto* ptr = sync_wait_result<executor*>(exec, root(child));
     EXPECT_EQ(ptr, &exec);
 }
 
-CORO_TEST(executor_context, deep_recursion) {
-    scheduler sched{1};
+CORO_TEST(executor, context_deep_recursion) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
     struct Recursive {
         auto operator()(int depth) -> executor_task<executor*> {
@@ -150,10 +131,6 @@ CORO_TEST(executor_context, deep_recursion) {
     auto* ptr = sync_wait_result<executor*>(exec, Recursive{}(10));
     EXPECT_EQ(ptr, &exec);
 }
-
-// -----------------------------------------------------------------------------
-// Suite 3: Stealing & Interop
-// -----------------------------------------------------------------------------
 
 struct foreign_task {
     struct awaiter {
@@ -175,29 +152,27 @@ struct foreign_value_task {
     awaiter operator co_await() { return {val}; }
 };
 
-CORO_TEST(executor_interop, steal_foreign_void) {
-    scheduler sched{1};
+CORO_TEST(executor, interop_steal_foreign_void) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
     auto main_id = std::this_thread::get_id();
 
-    auto task = [&]() -> executor_task<void> {
+    auto task = [](std::thread::id mid) -> executor_task<void> {
         auto id1 = std::this_thread::get_id();
         co_await foreign_task{};
         auto id2 = std::this_thread::get_id();
 
-        if(id1 == main_id) throw std::runtime_error("Started on main thread");
+        if(id1 == mid) throw std::runtime_error("Started on main thread");
         if(id1 != id2) throw std::runtime_error("Did not return to executor thread");
     };
 
-    sync_wait(exec, task());
+    sync_wait(exec, task(main_id));
 }
 
-CORO_TEST(executor_interop, steal_foreign_value) {
-    scheduler sched{1};
+CORO_TEST(executor, interop_steal_foreign_value) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
     auto task = []() -> executor_task<int> { co_return co_await foreign_value_task{99}; };
 
@@ -205,55 +180,49 @@ CORO_TEST(executor_interop, steal_foreign_value) {
     EXPECT_EQ(res, 99);
 }
 
-CORO_TEST(executor_interop, explicit_steal_injection) {
-    scheduler sched{1};
+CORO_TEST(executor, interop_explicit_steal_injection) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
-    auto task = [&]() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
+    auto task = []() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
 
     fence done;
     executor* captured = nullptr;
 
-    auto launcher = [&]() -> executor_task<void> {
-        captured = co_await exec.steal(task());
-        done.signal();
+    auto launcher = [](executor& e, executor*& cap, fence& f, auto t) -> executor_task<void> {
+        cap = co_await e.steal(t());
+        f.signal();
     };
 
-    auto h = exec.spawn(launcher());
+    auto h = exec.spawn(launcher(exec, captured, done, task));
     h.handle().resume();
     done.wait();
+    //BUG here, wait for coroutine to finish
 
     EXPECT_EQ(captured, &exec);
 }
 
-CORO_TEST(executor_interop, cross_executor_migration) {
-    scheduler sched{2};
+CORO_TEST(executor, interop_cross_executor_migration) {
+    scheduler sched{autostart, 2};
     executor exec1{sched};
     executor exec2{sched};
-    sched.start();
 
-    auto sub_task = [&]() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
+    auto sub_task = []() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
 
-    auto root_task = [&]() -> executor_task<executor*> {
-        auto* e1 = &co_await this_coro::executor;
-        if(e1 != &exec1) co_return nullptr;
+    auto root_task = [](executor& e1, executor& e2, auto st) -> executor_task<executor*> {
+        auto* e = &co_await this_coro::executor;
+        if(e != &e1) co_return nullptr;
 
-        co_return co_await exec2.steal(sub_task());
+        co_return co_await e2.steal(st());
     };
 
-    auto* result = sync_wait_result<executor*>(exec1, root_task());
+    auto* result = sync_wait_result<executor*>(exec1, root_task(exec1, exec2, sub_task));
     EXPECT_EQ(result, &exec2);
 }
 
-// -----------------------------------------------------------------------------
-// Suite 4: Error Handling
-// -----------------------------------------------------------------------------
-
-CORO_TEST(executor_errors, exception_in_spawned_task) {
-    scheduler sched{1};
+CORO_TEST(executor, errors_exception_in_spawned_task) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
     auto task = []() -> executor_task<void> {
         throw std::runtime_error("boom");
@@ -262,50 +231,48 @@ CORO_TEST(executor_errors, exception_in_spawned_task) {
 
     fence done;
     bool caught = false;
-    auto wrapper = [&]() -> executor_task<void> {
-        try { co_await task(); } catch(std::runtime_error const&) { caught = true; }
-        done.signal();
+
+    auto wrapper = [](fence& f, bool& c, auto t) -> executor_task<void> {
+        try { co_await t(); } catch(std::runtime_error const&) { c = true; }
+        f.signal();
     };
 
-    auto h = exec.spawn(wrapper());
+    auto h = exec.spawn(wrapper(done, caught, task));
     h.handle().resume();
     done.wait();
+    //BUG here, wait for coroutine to finish
     EXPECT_TRUE(caught);
 }
 
-CORO_TEST(executor_errors, exception_in_nested_task) {
-    scheduler sched{1};
+CORO_TEST(executor, errors_exception_in_nested_task) {
+    scheduler sched{autostart, 1};
     executor exec{sched};
-    sched.start();
 
     auto child = []() -> executor_task<void> {
         throw std::logic_error("nested boom");
         co_return;
     };
 
-    auto root = [&]() -> executor_task<void> { co_await child(); };
+    auto root = [](auto c) -> executor_task<void> { co_await c(); };
 
     fence done;
     bool caught = false;
-    auto wrapper = [&]() -> executor_task<void> {
-        try { co_await root(); } catch(std::logic_error const&) { caught = true; }
-        done.signal();
+
+    auto wrapper = [](fence& f, bool& c, auto r, auto ch) -> executor_task<void> {
+        try { co_await r(ch); } catch(std::logic_error const&) { c = true; }
+        f.signal();
     };
 
-    auto h = exec.spawn(wrapper());
+    auto h = exec.spawn(wrapper(done, caught, root, child));
     h.handle().resume();
     done.wait();
+    //BUG here, wait for coroutine to finish
     EXPECT_TRUE(caught);
 }
 
-// -----------------------------------------------------------------------------
-// Suite 5: Stress & Concurrency
-// -----------------------------------------------------------------------------
-
-CORO_TEST(executor_stress, concurrent_spawns) {
-    scheduler sched{4};
+CORO_TEST(executor, stress_concurrent_spawns) {
+    scheduler sched{autostart, 4};
     executor exec{sched};
-    sched.start();
 
     constexpr int count = 100;
     std::vector<scheduled_task<void>> tasks;
@@ -313,32 +280,31 @@ CORO_TEST(executor_stress, concurrent_spawns) {
 
     std::atomic<int> completed{0};
 
-    // Spawn many tasks
+    auto increment_task = [](std::atomic<int>& ctr) -> executor_task<void> {
+        ctr.fetch_add(1, std::memory_order_relaxed);
+        co_return;
+    };
+
     for(int i = 0; i < count; ++i) {
-        auto h = exec.spawn(
-            [&]() -> executor_task<void> {
-                completed.fetch_add(1, std::memory_order_relaxed);
-                co_return;
-            }()
-        );
-        // Kick off immediately
+        auto h = exec.spawn(increment_task(completed));
         h.handle().resume();
         tasks.push_back(std::move(h));
     }
 
-    // Wait for all of them
     fence done;
-    auto waiter = [&]() -> executor_task<void> {
-        for(auto& h : tasks) { co_await std::move(h); }
-        done.signal();
+
+    auto waiter = [](std::vector<scheduled_task<void>>& t, fence& f) -> executor_task<void> {
+        for(auto& h : t) { co_await std::move(h); }
+        f.signal();
     };
 
-    auto h_waiter = exec.spawn(waiter());
+    auto h_waiter = exec.spawn(waiter(tasks, done));
     h_waiter.handle().resume();
 
     done.wait();
+    //BUG here, wait for coroutine to finish
 
     EXPECT_EQ(completed.load(), count);
 }
 
-} // namespace cth::co
+}

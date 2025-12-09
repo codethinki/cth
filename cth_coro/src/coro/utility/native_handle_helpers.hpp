@@ -9,12 +9,14 @@
 #include <fcntl.h>
 #endif
 
+#include <memory>
+
 namespace bas = boost::asio;
 
 namespace cth::co {
 using native_handle_handler_t =
 #ifdef CTH_FS_WINDOWS
-bas::windows::basic_object_handle;
+bas::windows::object_handle;
 #elifdef CTH_FS_LINUX
 bas::posix::stream_descriptor;
 #endif

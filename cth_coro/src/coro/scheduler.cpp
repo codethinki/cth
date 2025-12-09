@@ -36,7 +36,23 @@ struct scheduler::Impl {
 
     void await(native_handle handle, void_func func) {
         auto handler = wrap_unique(handle, ctx);
-        handler->async_wait([h = std::move(handler), this, f = std::move(func)]() mutable { post(std::move(f)); });
+        handler->async_wait(
+            [h = std::move(handler), this, f = std::move(func)](boost::system::error_code const& e) mutable {
+                CTH_STABLE_THROW(
+                    e.failed(),
+                    "async wait for handle [{}] failed with: {}",
+                    h->native_handle(),
+                    e.message()
+                ) {
+                    if(e.has_location()) {
+                        auto const& loc = e.location();
+                        details->add("location: {} ({}, {})", loc.file_name(), loc.line(), loc.column());
+                    }
+                    details->add("category: {}", e.category().name());
+                }
+                post(std::move(f));
+            }
+        );
     }
 
 
