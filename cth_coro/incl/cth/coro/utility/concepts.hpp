@@ -1,12 +1,11 @@
 #pragma once
+#include "cth/coro/utility/fwd.hpp"
+
 #include <cth/types/coro.hpp>
 
 #include <type_traits>
 
 namespace cth::co {
-struct executor_promise_base;
-struct executor_awaiter_base;
-struct capture_awaiter_base;
 
 
 template<class T>
@@ -23,5 +22,8 @@ concept foreign_awaitable = co::awaitable<T> && !captured_awaitable<T> && !execu
 
 template<class T>
 concept executorless_awaitable = awaitable<T> && !executor_awaitable<T>;
+
+template<class T>
+concept sync_promise_type = std::is_base_of_v<sync_promise_base, T>;
 
 }

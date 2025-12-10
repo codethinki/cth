@@ -1,8 +1,6 @@
 #pragma once
-#include "cth/coro/concepts.hpp"
+#include "cth/coro/utility/concepts.hpp"
 #include <coroutine>
-
-#include "cth/coro/utility/fwd.hpp"
 
 
 namespace cth::co {

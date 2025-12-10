@@ -1,8 +1,8 @@
 #pragma once
-#include "cth/coro/concepts.hpp"
 #include "cth/coro/awaiters/schedule_awaiter.hpp"
 #include "cth/coro/func/steal.hpp"
 #include "cth/coro/tasks/dev/scheduled_task.hpp"
+#include "cth/coro/utility/concepts.hpp"
 
 #include <cth/types/coro.hpp>
 

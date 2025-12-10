@@ -1,5 +1,7 @@
 #include "test.hpp"
 #include "cth/coro/fence.hpp"
+#include "cth/coro/tasks/sync_task.hpp"
+
 #include <cth/coro/scheduler.hpp>
 #include <cth/coro/executor.hpp>
 #include <cth/coro/tasks/executor_task.hpp>
@@ -15,36 +17,21 @@
 namespace cth::co {
 
 template<class Task>
-void sync_wait(executor& exec, Task task) {
-    fence done;
-    auto wrapper = [](fence& f, Task t) -> executor_task<void> {
-        co_await std::move(t);
-        f.signal();
+auto sync_wait(executor& exec, Task task) {
+    using value_type = typename Task::promise_type::value_type;
+
+    auto wrapper = [](executor& exec, Task t) -> sync_task<value_type> {
+        if constexpr(std::is_void_v<value_type>) { co_await exec.spawn(std::move(t)); } else {
+            co_return co_await exec.spawn(std::move(t));
+        }
     };
 
-    auto handle = exec.spawn(wrapper(done, std::move(task)));
-    handle.handle().resume();
+    auto wrapped = wrapper(exec, std::move(task));
+    wrapped.handle().resume();
 
-    done.wait();
-    //BUG here, wait for coroutine to finish
-}
+    wrapped.wait();
 
-template<class T, class Task>
-T sync_wait_result(executor& exec, Task task) {
-    fence done;
-    std::optional<T> result;
-    auto wrapper = [](fence& f, std::optional<T>& res, Task t) -> executor_task<void> {
-        res = co_await std::move(t);
-        f.signal();
-    };
-
-    auto handle = exec.spawn(wrapper(done, result, std::move(task)));
-    handle.handle().resume();
-
-    done.wait();
-    //BUG here, wait for coroutine to finish
-
-    return std::move(*result);
+    if constexpr(!std::is_void_v<value_type>) { return std::move(*wrapped.handle().promise().result); }
 }
 
 CORO_TEST(executor, spawn_void_task) {
@@ -67,7 +54,7 @@ CORO_TEST(executor, spawn_value_task) {
 
     auto task = []() -> executor_task<int> { co_return 42; };
 
-    int result = sync_wait_result<int>(exec, task());
+    int result = sync_wait(exec, task());
     EXPECT_EQ(result, 42);
 }
 
@@ -77,7 +64,7 @@ CORO_TEST(executor, spawn_move_only_type) {
 
     auto task = []() -> executor_task<std::unique_ptr<int>> { co_return std::make_unique<int>(123); };
 
-    auto result = sync_wait_result<std::unique_ptr<int>>(exec, task());
+    auto result = sync_wait(exec, task());
     ASSERT_TRUE(result != nullptr);
     EXPECT_EQ(*result, 123);
 }
@@ -90,7 +77,7 @@ CORO_TEST(executor, spawn_execution_context) {
 
     auto task = []() -> executor_task<std::thread::id> { co_return std::this_thread::get_id(); };
 
-    auto worker_thread = sync_wait_result<std::thread::id>(exec, task());
+    auto worker_thread = sync_wait(exec, task());
 
     EXPECT_NE(main_thread, worker_thread);
 }
@@ -101,7 +88,7 @@ CORO_TEST(executor, context_this_coro_executor) {
 
     auto task = []() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
 
-    auto* ptr = sync_wait_result<executor*>(exec, task());
+    auto* ptr = sync_wait(exec, task());
     EXPECT_EQ(ptr, &exec);
 }
 
@@ -113,7 +100,7 @@ CORO_TEST(executor, context_nested_task_propagation) {
 
     auto root = [](auto c) -> executor_task<executor*> { co_return co_await c(); };
 
-    auto* ptr = sync_wait_result<executor*>(exec, root(child));
+    auto* ptr = sync_wait(exec, root(child));
     EXPECT_EQ(ptr, &exec);
 }
 
@@ -128,7 +115,7 @@ CORO_TEST(executor, context_deep_recursion) {
         }
     };
 
-    auto* ptr = sync_wait_result<executor*>(exec, Recursive{}(10));
+    auto* ptr = sync_wait(exec, Recursive{}(10));
     EXPECT_EQ(ptr, &exec);
 }
 
@@ -176,7 +163,7 @@ CORO_TEST(executor, interop_steal_foreign_value) {
 
     auto task = []() -> executor_task<int> { co_return co_await foreign_value_task{99}; };
 
-    int res = sync_wait_result<int>(exec, task());
+    int res = sync_wait(exec, task());
     EXPECT_EQ(res, 99);
 }
 
@@ -186,18 +173,9 @@ CORO_TEST(executor, interop_explicit_steal_injection) {
 
     auto task = []() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
 
-    fence done;
-    executor* captured = nullptr;
+    auto launcher = [](executor& e, auto t) -> executor_task<executor*> { co_return co_await e.steal(t()); };
 
-    auto launcher = [](executor& e, executor*& cap, fence& f, auto t) -> executor_task<void> {
-        cap = co_await e.steal(t());
-        f.signal();
-    };
-
-    auto h = exec.spawn(launcher(exec, captured, done, task));
-    h.handle().resume();
-    done.wait();
-    //BUG here, wait for coroutine to finish
+    executor* captured = sync_wait(exec, launcher(exec, task));
 
     EXPECT_EQ(captured, &exec);
 }
@@ -216,7 +194,7 @@ CORO_TEST(executor, interop_cross_executor_migration) {
         co_return co_await e2.steal(st());
     };
 
-    auto* result = sync_wait_result<executor*>(exec1, root_task(exec1, exec2, sub_task));
+    auto* result = sync_wait(exec1, root_task(exec1, exec2, sub_task));
     EXPECT_EQ(result, &exec2);
 }
 
@@ -229,18 +207,13 @@ CORO_TEST(executor, errors_exception_in_spawned_task) {
         co_return;
     };
 
-    fence done;
-    bool caught = false;
-
-    auto wrapper = [](fence& f, bool& c, auto t) -> executor_task<void> {
-        try { co_await t(); } catch(std::runtime_error const&) { c = true; }
-        f.signal();
+    auto wrapper = [](auto t) -> executor_task<bool> {
+        bool caught = false;
+        try { co_await t(); } catch(std::runtime_error const&) { caught = true; }
+        co_return caught;
     };
 
-    auto h = exec.spawn(wrapper(done, caught, task));
-    h.handle().resume();
-    done.wait();
-    //BUG here, wait for coroutine to finish
+    bool caught = sync_wait(exec, wrapper(task));
     EXPECT_TRUE(caught);
 }
 
@@ -255,18 +228,13 @@ CORO_TEST(executor, errors_exception_in_nested_task) {
 
     auto root = [](auto c) -> executor_task<void> { co_await c(); };
 
-    fence done;
-    bool caught = false;
-
-    auto wrapper = [](fence& f, bool& c, auto r, auto ch) -> executor_task<void> {
-        try { co_await r(ch); } catch(std::logic_error const&) { c = true; }
-        f.signal();
+    auto wrapper = [](auto r, auto ch) -> executor_task<bool> {
+        bool caught = false;
+        try { co_await r(ch); } catch(std::logic_error const&) { caught = true; }
+        co_return caught;
     };
 
-    auto h = exec.spawn(wrapper(done, caught, root, child));
-    h.handle().resume();
-    done.wait();
-    //BUG here, wait for coroutine to finish
+    bool caught = sync_wait(exec, wrapper(root, child));
     EXPECT_TRUE(caught);
 }
 
@@ -279,30 +247,26 @@ CORO_TEST(executor, stress_concurrent_spawns) {
     tasks.reserve(count);
 
     std::atomic<int> completed{0};
+    std::latch all_done{count};
 
-    auto increment_task = [](std::atomic<int>& ctr) -> executor_task<void> {
+    auto increment_task = [&](std::atomic<int>& ctr) -> executor_task<void> { //ref capture is fine bc no co_await
         ctr.fetch_add(1, std::memory_order_relaxed);
+        all_done.count_down();
         co_return;
     };
 
-    for(int i = 0; i < count; ++i) {
-        auto h = exec.spawn(increment_task(completed));
-        h.handle().resume();
-        tasks.push_back(std::move(h));
-    }
+    auto spawner = [&](std::vector<scheduled_task<void>>& t) -> executor_task<void> { //ref capture fine bc no co_await
+        for(int i = 0; i < count; ++i) {
+            auto h = exec.spawn(increment_task(completed));
+            h.handle().resume();
+            t.push_back(std::move(h));
+        }
 
-    fence done;
-
-    auto waiter = [](std::vector<scheduled_task<void>>& t, fence& f) -> executor_task<void> {
-        for(auto& h : t) { co_await std::move(h); }
-        f.signal();
+        all_done.wait();
+        co_return;
     };
 
-    auto h_waiter = exec.spawn(waiter(tasks, done));
-    h_waiter.handle().resume();
-
-    done.wait();
-    //BUG here, wait for coroutine to finish
+    sync_wait(exec, spawner(tasks));
 
     EXPECT_EQ(completed.load(), count);
 }

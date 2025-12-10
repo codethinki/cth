@@ -2,7 +2,7 @@
 #include <coroutine>
 
 namespace cth::co::dev {
-struct final_awaiter {
+struct basic_final_awaiter {
     bool await_ready() noexcept { return false; }
 
     template<class Promise>

@@ -12,29 +12,29 @@ inline constexpr signaled_t signaled{};
 class fence {
 
 public:
-    fence() : _state{false} {}
-    explicit fence(signaled_t) : _state{true} {}
+    fence() noexcept : _state{false} {}
+    explicit fence(signaled_t) noexcept : _state{true} {}
 
     ~fence() { signal(); }
 
-    void signal() {
+    void signal() noexcept {
         if(!_state.exchange(true, std::memory_order_release))
             _state.notify_all();
     }
-    void force_signal() {
+    void force_signal() noexcept {
         _state.store(true, std::memory_order_release);
         _state.notify_all();
     }
 
-    void reset() { _state.store(false, std::memory_order_release); }
+    void reset() noexcept { _state.store(false, std::memory_order_release); }
 
-    void wait() const { _state.wait(false, std::memory_order_acquire); }
+    void wait() const noexcept { _state.wait(false, std::memory_order_acquire); }
 
 private:
     std::atomic<bool> _state;
 
 public:
-    bool signaled() const { return _state.load(std::memory_order_acquire); }
+    bool signaled() const noexcept { return _state.load(std::memory_order_acquire); }
 
 
     fence(fence const&) = delete;

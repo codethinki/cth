@@ -1,7 +1,7 @@
 #pragma once
-#include "this_coro.hpp"
-#include "cth/coro/concepts.hpp"
+#include "cth/coro/this_coro.hpp"
 #include "cth/coro/tasks/dev/capture_task.hpp"
+#include "cth/coro/utility/concepts.hpp"
 
 #include <cth/coro/utility.hpp>
 #include <cth/types/coro.hpp>
@@ -17,7 +17,9 @@ auto steal(executor& exec, Awaitable) -> capture_task<awaited_t<Awaitable>>;
 
 
 struct executor_promise_base {
-    executor* exec = nullptr;
+    //TODO make it scheduler promise base not executor promise base
+
+    executor* exec = nullptr; //TEMP make this scheduler*
 
     [[nodiscard]] auto await_transform(this_coro::get_executor_t const&) -> current_executor_awaiter { return {*exec}; }
 

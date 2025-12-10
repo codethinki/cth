@@ -13,6 +13,10 @@ template<class T> class scheduled_task;
 
 namespace cth::co {
 struct schedule_awaiter;
+
 struct executor_awaiter_base;
 struct executor_promise_base;
+struct capture_awaiter_base;
+struct sync_promise_base;
+
 }

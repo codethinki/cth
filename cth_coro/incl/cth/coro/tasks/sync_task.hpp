@@ -1,0 +1,72 @@
+#pragma once
+#include "task_base.hpp"
+
+#include "cth/coro/awaiters/executor_awaiter.hpp"
+
+#include "cth/coro/awaiters/dev/basic_awaiter.hpp"
+#include "cth/coro/tasks/promises/sync_promise_base.hpp"
+
+#include "promises/executor_promise_base.hpp"
+
+namespace cth::co::dev {
+template<class T>
+struct sync_promise_template : sync_promise_base, basic_promise<T, std::suspend_always{}, final_sync_awaiter{}> {};
+
+template<sync_promise_type Promise, template<class> class Awaiter>
+class [[nodiscard]] sync_task_template : public task_base<Promise, Awaiter> {
+    using base_t = task_base<Promise, Awaiter>;
+    using base_t::task_base;
+
+    friend base_t::promise_type;
+
+public:
+    void wait() const noexcept { this->handle().promise().wait(); }
+
+};
+}
+
+namespace cth::co {
+template<class T>
+class sync_task;
+
+template<class T>
+class sync_executor_task;
+}
+
+namespace cth::co::dev {
+template<class T>
+struct sync_promise : dev::sync_promise_template<T> {
+    sync_task<T> get_return_object() noexcept;
+};
+
+
+template<class T>
+struct sync_executor_promise : executor_promise_base, sync_promise_template<T> {
+    sync_executor_task<T> get_return_object() noexcept;
+};
+}
+
+namespace cth::co {
+
+template<class T>
+class sync_task : public dev::sync_task_template<dev::sync_promise<T>, dev::basic_awaiter> {};
+using sync_void_task = sync_task<void>;
+
+template<class T>
+class sync_executor_task : public dev::sync_task_template<dev::sync_executor_promise<T>, executor_awaiter> {};
+
+using sync_executor_void_task = sync_executor_task<void>;
+}
+
+
+namespace cth::co::dev {
+template<class T>
+auto sync_promise<T>::get_return_object() noexcept -> sync_task<T> {
+    return {std::coroutine_handle<sync_promise<T>>::from_promise(*this)};
+}
+
+template<class T>
+auto sync_executor_promise<T>::get_return_object() noexcept -> sync_executor_task<T> {
+    return {std::coroutine_handle<sync_executor_promise<T>>::from_promise(*this)};
+}
+}

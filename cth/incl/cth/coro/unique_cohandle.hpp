@@ -1,15 +1,18 @@
 #pragma once
+#include <cth/types/coro.hpp>
 #include <coroutine>
 #include <utility>
 
-namespace cth::co::dev {
+namespace cth::co {
 
 //TODO add documentation
 //TODO clean up / extend the implementation to fit standards
 
-template<class Promise>
+template<promise Promise>
 class unique_cohandle {
 public:
+    using promise_type = Promise;
+
     constexpr unique_cohandle() noexcept : _handle(nullptr) {}
     explicit unique_cohandle(std::coroutine_handle<Promise> h) noexcept : _handle(h) {}
 
@@ -33,6 +36,8 @@ public:
     void resume() { if(!done()) _handle.resume(); }
 
     [[nodiscard]] auto get(this auto&& self) noexcept { return self._handle; }
+
+    [[nodiscard]] Promise& promise() noexcept { return _handle.promise(); }
 
 
     explicit operator bool() const noexcept { return static_cast<bool>(_handle); }

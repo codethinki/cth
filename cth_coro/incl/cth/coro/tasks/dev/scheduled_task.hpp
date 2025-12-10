@@ -1,10 +1,11 @@
 #pragma once
+#include "cth/coro/tasks/task_base.hpp"
+
 #include "cth/coro/awaiters/dev/capture_awaiter.hpp"
 #include "cth/coro/tasks/promises/basic_promise.hpp"
 #include "cth/coro/tasks/promises/executor_promise_base.hpp"
 #include "cth/coro/utility/fwd.hpp"
 
-#include <cth/coro/unique_cohandle.hpp>
 
 namespace cth::co::dev {
 
@@ -21,28 +22,11 @@ struct scheduled_promise : basic_promise<T>, executor_promise_base {
 namespace cth::co {
 
 template<class T>
-class [[nodiscard]] scheduled_task {
+class [[nodiscard]] scheduled_task : public task_base<dev::scheduled_promise<T>, dev::capture_awaiter> {
+    using base_t = task_base<dev::scheduled_promise<T>, dev::capture_awaiter>;
 
-public:
-    using promise_type = dev::scheduled_promise<T>;
-
-    using awaiter_type = dev::capture_awaiter<promise_type>;
-
-    ~scheduled_task() = default;
-
-private:
-    friend struct promise_type;
-    explicit scheduled_task(std::coroutine_handle<promise_type> h) noexcept : _handle{h} {}
-    dev::unique_cohandle<promise_type> _handle;
-
-public:
-    auto handle(this auto&& self) { return self._handle.get(); }
-
-    awaiter_type operator co_await() const & noexcept { return {handle()}; }
-    awaiter_type operator co_await() && noexcept { return {_handle->extract()}; }
-
-    scheduled_task(scheduled_task&&) noexcept = default;
-    scheduled_task& operator=(scheduled_task&&) noexcept = default;
+    using base_t::task_base;
+    friend base_t::promise_type;
 };
 
 template<class T>

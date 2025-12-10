@@ -11,8 +11,8 @@
 namespace cth::co {
 template<class T>
 concept awaiter = requires(T t, std::coroutine_handle<> h) {
+    //just pray it has await suspend :D (cant detect bc Promise in std::coroutine_handle is unknown
     { t.await_ready() } -> std::convertible_to<bool>;
-    { t.await_suspend(h) };
     { t.await_resume() };
 };
 
@@ -20,12 +20,12 @@ concept awaiter = requires(T t, std::coroutine_handle<> h) {
 
 template<class T>
 concept has_op_co_await = requires() {
-    { std::declval<T>().operator co_await() } -> awaiter;
+    { std::declval<T>().operator co_await() };
 };
 
 template<class T>
 concept has_free_co_await = requires() {
-    { operator co_await(std::declval<T>()) } -> awaiter;
+    { operator co_await(std::declval<T>()) };
 };
 
 template<class T>
@@ -39,8 +39,8 @@ concept awaitable = task<T> || awaiter<T>;
 namespace cth::co::dev {
 template<awaitable Awaitable>
 consteval auto awaiter_type() {
-    if constexpr(!task<Awaitable>) { //!task<T> intentional, bc task<T> && awaiter<T> is possible
-        static_assert(awaiter<Awaitable>, "must be an awaiter");
+    if constexpr(!task<Awaitable>) { //!task<T> intentional, bc task<T> && awaiter_type<T> is possible
+        static_assert(awaiter<Awaitable>, "must be an awaiter_type");
         return std::type_identity<Awaitable>{};
     } else if constexpr(has_op_co_await<Awaitable>) {
         using R = decltype(std::declval<Awaitable>().operator co_await());
@@ -49,7 +49,7 @@ consteval auto awaiter_type() {
         using R = decltype(operator co_await(std::declval<Awaitable>()));
         return std::type_identity<R>{};
     } else
-        static_assert(false, "type is not an awaiter nor task");
+        static_assert(false, "type is not an awaiter_type nor task");
 }
 
 }
