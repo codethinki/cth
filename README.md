@@ -8,9 +8,25 @@ simple library with unit tests
 
 
 ## example features:
-- cth_log: assert extensions & other logging helpers
-- cth_keybd: keyboard input logger with high and low level interfaces
-- cth_win: hidden console
+- cth_log:
+  - stable & debug only macros
+  - severities (log, info, warning, error, critical)
+  - automatic printing (included location details based on log lvl)
+  - std::format support integrated
+  - trailing braces block to execute before error / abort fires.
+    ```cpp
+    CTH_STABLE_THROW("asdf {}", someint) {
+      details->add("detail: {}", 0);
+      cleanup();
+    } <- throws here
+    ```
+- cth::coro
+  - async native handle wait on windows & linux (untested xD)
+  - coroutine task system with this_coro::executor (like boost)
+- cth::win (wraps and compacts features of windows.h without leaking it)
+  - hidden console cmd executions (contrary to windows.h system by default)
+  - screen size / monitors / screenshots
+  - more that i am too lazy to write here
 - cth_console: fully color supported console
 
 absoloutly no backwards compartibility guaranteed
