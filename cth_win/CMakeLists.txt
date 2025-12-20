@@ -9,4 +9,4 @@ package_target_include_directories(
         PUBLIC incl
 )
 
-target_link_libraries(cth_win PUBLIC cth)
+target_link_libraries(cth_win PUBLIC cth::cth)

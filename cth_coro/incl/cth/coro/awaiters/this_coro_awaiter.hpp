@@ -1,22 +1,22 @@
 #pragma once
-#include "executor_awaiter_base.hpp"
+#include "this_coro_awaiter_base.hpp"
 
-#include <cth/types/coro.hpp>
 #include <exception>
+#include <cth/types/coro.hpp>
 
 namespace cth::co {
 template<cth_promise Promise>
-struct executor_awaiter : executor_awaiter_base {
+struct this_coro_awaiter : this_coro_awaiter_base {
     using promise_type = Promise;
 
-    executor_awaiter(std::coroutine_handle<promise_type> h) : handle{h} {}
+    this_coro_awaiter(std::coroutine_handle<promise_type> h) : handle{h} {}
 
 
     [[nodiscard]] bool await_ready() const noexcept { return !handle || handle.done(); }
 
     template<class T>
     auto await_suspend(std::coroutine_handle<T> caller) noexcept -> std::coroutine_handle<promise_type> {
-        executor_awaiter_base::inject_executor(handle);
+        this_coro_awaiter_base::inject_payload_into(handle);
         handle.promise().continuation = caller;
         return handle;
     }

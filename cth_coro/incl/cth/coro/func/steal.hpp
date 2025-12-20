@@ -1,4 +1,5 @@
 #pragma once
+#include "cth/coro/utility.hpp"
 #include "cth/coro/tasks/dev/capture_task.hpp"
 
 #include "cth/coro/awaiters/schedule_awaiter.hpp"
@@ -9,7 +10,7 @@
 namespace cth::co {
 
 
-template<class Awaitable>
+template<non_this_coro_awaitable Awaitable>
 [[nodiscard]] auto steal(
     scheduler& scheduler,
     Awaitable awaitable
@@ -26,5 +27,13 @@ template<class Awaitable>
         co_return result;
     }
 }
+
+template<this_coro_awaitable Awaitable>
+auto steal(scheduler& scheduler, Awaitable&& awaitable) -> awaiter_t<Awaitable> {
+    auto awaiter = co::extract_awaiter(std::forward<Awaitable>(awaitable));
+    awaiter.inject(this_coro::payload{scheduler});;
+    return awaiter;
+}
+
 
 }

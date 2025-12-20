@@ -54,7 +54,7 @@ CORO_TEST(executor, spawn_value_task) {
 
     auto task = []() -> executor_task<int> { co_return 42; };
 
-    int result = sync_wait(exec, task());
+    int const result = sync_wait(exec, task());
     EXPECT_EQ(result, 42);
 }
 
@@ -64,7 +64,7 @@ CORO_TEST(executor, spawn_move_only_type) {
 
     auto task = []() -> executor_task<std::unique_ptr<int>> { co_return std::make_unique<int>(123); };
 
-    auto result = sync_wait(exec, task());
+    auto const result = sync_wait(exec, task());
     ASSERT_TRUE(result != nullptr);
     EXPECT_EQ(*result, 123);
 }
@@ -73,50 +73,50 @@ CORO_TEST(executor, spawn_execution_context) {
     scheduler sched{autostart, 1};
     executor exec{sched};
 
-    auto main_thread = std::this_thread::get_id();
+    auto const mainThread = std::this_thread::get_id();
 
     auto task = []() -> executor_task<std::thread::id> { co_return std::this_thread::get_id(); };
 
-    auto worker_thread = sync_wait(exec, task());
+    auto const workerThread = sync_wait(exec, task());
 
-    EXPECT_NE(main_thread, worker_thread);
+    EXPECT_NE(mainThread, workerThread);
 }
 
 CORO_TEST(executor, context_this_coro_executor) {
     scheduler sched{autostart, 1};
-    executor exec{sched};
+    executor expected{sched};
 
-    auto task = []() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
+    auto task = []() -> executor_task<executor> { co_return co_await this_coro::executor; };
 
-    auto* ptr = sync_wait(exec, task());
-    EXPECT_EQ(ptr, &exec);
+    auto const actual = sync_wait(expected, task());
+    EXPECT_EQ(actual, expected);
 }
 
 CORO_TEST(executor, context_nested_task_propagation) {
     scheduler sched{autostart, 1};
-    executor exec{sched};
+    executor expected{sched};
 
-    auto child = []() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
+    auto child = []() -> executor_task<executor> { co_return co_await this_coro::executor; };
 
-    auto root = [](auto c) -> executor_task<executor*> { co_return co_await c(); };
+    auto root = [](auto c) -> executor_task<executor> { co_return co_await c(); };
 
-    auto* ptr = sync_wait(exec, root(child));
-    EXPECT_EQ(ptr, &exec);
+    auto const actual = sync_wait(expected, root(child));
+    EXPECT_EQ(actual, expected);
 }
 
 CORO_TEST(executor, context_deep_recursion) {
     scheduler sched{autostart, 1};
-    executor exec{sched};
+    executor expected{sched};
 
     struct Recursive {
-        auto operator()(int depth) -> executor_task<executor*> {
-            if(depth == 0) { co_return &co_await this_coro::executor; }
+        auto operator()(int depth) -> executor_task<executor> {
+            if(depth == 0) { co_return co_await this_coro::executor; }
             co_return co_await (*this)(depth - 1);
         }
     };
 
-    auto* ptr = sync_wait(exec, Recursive{}(10));
-    EXPECT_EQ(ptr, &exec);
+    auto const actual = sync_wait(expected, Recursive{}(10));
+    EXPECT_EQ(actual, expected);
 }
 
 struct foreign_task {
@@ -143,18 +143,18 @@ CORO_TEST(executor, interop_steal_foreign_void) {
     scheduler sched{autostart, 1};
     executor exec{sched};
 
-    auto main_id = std::this_thread::get_id();
+    auto const mainID = std::this_thread::get_id();
 
     auto task = [](std::thread::id mid) -> executor_task<void> {
-        auto id1 = std::this_thread::get_id();
+        auto const id1 = std::this_thread::get_id();
         co_await foreign_task{};
-        auto id2 = std::this_thread::get_id();
+        auto const id2 = std::this_thread::get_id();
 
         if(id1 == mid) throw std::runtime_error("Started on main thread");
         if(id1 != id2) throw std::runtime_error("Did not return to executor thread");
     };
 
-    sync_wait(exec, task(main_id));
+    sync_wait(exec, task(mainID));
 }
 
 CORO_TEST(executor, interop_steal_foreign_value) {
@@ -163,39 +163,39 @@ CORO_TEST(executor, interop_steal_foreign_value) {
 
     auto task = []() -> executor_task<int> { co_return co_await foreign_value_task{99}; };
 
-    int res = sync_wait(exec, task());
+    int const res = sync_wait(exec, task());
     EXPECT_EQ(res, 99);
 }
 
 CORO_TEST(executor, interop_explicit_steal_injection) {
     scheduler sched{autostart, 1};
-    executor exec{sched};
+    executor expected{sched};
 
-    auto task = []() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
+    auto task = []() -> executor_task<executor> { co_return co_await this_coro::executor; };
 
-    auto launcher = [](executor& e, auto t) -> executor_task<executor*> { co_return co_await e.steal(t()); };
+    auto launcher = [](executor& e, auto t) -> executor_task<executor> { co_return co_await e.steal(t()); };
 
-    executor* captured = sync_wait(exec, launcher(exec, task));
+    executor const actual = sync_wait(expected, launcher(expected, task));
 
-    EXPECT_EQ(captured, &exec);
+    EXPECT_EQ(actual, expected);
 }
 
 CORO_TEST(executor, interop_cross_executor_migration) {
     scheduler sched{autostart, 2};
-    executor exec1{sched};
-    executor exec2{sched};
+    executor intermediate{sched};
+    executor expected{sched};
 
-    auto sub_task = []() -> executor_task<executor*> { co_return &co_await this_coro::executor; };
+    auto sub_task = []() -> executor_task<executor> { co_return co_await this_coro::executor; };
 
-    auto root_task = [](executor& e1, executor& e2, auto st) -> executor_task<executor*> {
-        auto* e = &co_await this_coro::executor;
-        if(e != &e1) co_return nullptr;
+    auto root_task = [](executor& e1, executor& e2, auto st) -> executor_task<std::optional<executor>> {
+        auto e = co_await this_coro::executor;
+        if(e != e1) co_return std::nullopt;
 
         co_return co_await e2.steal(st());
     };
 
-    auto* result = sync_wait(exec1, root_task(exec1, exec2, sub_task));
-    EXPECT_EQ(result, &exec2);
+    auto const actual = sync_wait(intermediate, root_task(intermediate, expected, sub_task));
+    EXPECT_EQ(actual, expected);
 }
 
 CORO_TEST(executor, errors_exception_in_spawned_task) {
@@ -213,7 +213,7 @@ CORO_TEST(executor, errors_exception_in_spawned_task) {
         co_return caught;
     };
 
-    bool caught = sync_wait(exec, wrapper(task));
+    bool const caught = sync_wait(exec, wrapper(task));
     EXPECT_TRUE(caught);
 }
 
@@ -234,7 +234,7 @@ CORO_TEST(executor, errors_exception_in_nested_task) {
         co_return caught;
     };
 
-    bool caught = sync_wait(exec, wrapper(root, child));
+    bool const caught = sync_wait(exec, wrapper(root, child));
     EXPECT_TRUE(caught);
 }
 
@@ -247,11 +247,11 @@ CORO_TEST(executor, stress_concurrent_spawns) {
     tasks.reserve(count);
 
     std::atomic<int> completed{0};
-    std::latch all_done{count};
+    std::latch allDone{count};
 
     auto increment_task = [&](std::atomic<int>& ctr) -> executor_task<void> { //ref capture is fine bc no co_await
         ctr.fetch_add(1, std::memory_order_relaxed);
-        all_done.count_down();
+        allDone.count_down();
         co_return;
     };
 
@@ -262,7 +262,7 @@ CORO_TEST(executor, stress_concurrent_spawns) {
             t.push_back(std::move(h));
         }
 
-        all_done.wait();
+        allDone.wait();
         co_return;
     };
 

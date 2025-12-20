@@ -11,7 +11,7 @@
 #include <fstream>
 
 namespace cth::win::io {
-std::vector<char> load_file_bytes(std::string_view path) {
+std::vector<std::byte> load_file_bytes(std::string_view path) {
     std::ifstream file{to_wstring(path), std::ios::binary};
 
 
@@ -23,23 +23,23 @@ std::vector<char> load_file_bytes(std::string_view path) {
     file.seekg(0, std::ios::beg);
 
     CTH_STABLE_ABORT(size <= 0, "invalid test file size: {}", path) {}
-    std::vector<char> buffer(size);
-    file.read(buffer.data(), size);
+    std::vector<std::byte> buffer(size);
+    file.read(reinterpret_cast<char*>(buffer.data()), size);
 
     return buffer;
 }
 
 
-WIN_IO_TEST(read_unbuffered, main) {
-    std::string const path{"res/cth_win/io/unicode🐸_image.jpg"};
-    std::vector<char> buffer{};
+WIN_IO_TEST(read_unbuffered_with_unicode_path, main) {
+    std::string const path{"res/cth/win/io/unicode🐸_image.jpg"};
+    std::vector<std::byte> buffer{};
     read_unbuffered(path, buffer); //TEMP fix the cmd test 
 
-    ASSERT_EQ(buffer, load_file_bytes(path));
+    EXPECT_EQ(buffer, load_file_bytes(path));
 }
 
 WIN_IO_TEST(read_clipboard, main) {
     auto result = read_clipboard();
-    ASSERT_TRUE(result.has_value());
+    EXPECT_TRUE(result.has_value());
 }
 }

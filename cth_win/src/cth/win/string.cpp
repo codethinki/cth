@@ -1,8 +1,9 @@
 #include "cth/win/string.hpp"
 
-#include "cth/io/log.hpp"
-#include "cth/win/win_include.hpp"
+#include "win_include.hpp"
 #include "cth/win/win_types.hpp"
+
+#include <cth/io/log.hpp>
 
 namespace cth::win {
 
@@ -11,7 +12,7 @@ std::wstring to_wstring(std::string_view view) {
     auto const viewPtr = view.data();
 
     auto const size = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, viewPtr, viewSize, nullptr, 0);
-    CTH_STABLE_WIN_THROW(size < 0, "utf16 conversion failed with size [{}]", size) {}
+    CTH_WIN_STABLE_THROW(size < 0, "utf16 conversion failed with size [{}]", size) {}
 
     std::wstring out{};
     out.resize(size);
@@ -25,7 +26,7 @@ std::wstring to_wstring(std::string_view view) {
         static_cast<int>(out.size())
     );
 
-    CTH_STABLE_WIN_THROW(result == 0, "utf16 conversion failed") {}
+    CTH_WIN_STABLE_THROW(result == 0, "utf16 conversion failed") {}
     return out;
 }
 std::string to_string(std::wstring_view view) {
@@ -44,7 +45,7 @@ std::string to_string(std::wstring_view view) {
     );
 
 
-    CTH_STABLE_WIN_THROW(size < 0, "encoding failed with size [{}]", size) {}
+    CTH_WIN_STABLE_THROW(size < 0, "encoding failed with size [{}]", size) {}
 
 
     std::string out{};
@@ -61,7 +62,7 @@ std::string to_string(std::wstring_view view) {
         nullptr
     );
 
-    CTH_STABLE_WIN_THROW(result == 0, "utf8 conversion failed") {}
+    CTH_WIN_STABLE_THROW(result == 0, "utf8 conversion failed") {}
 
     return out;
 }

@@ -69,12 +69,23 @@ endfunction()
 function(add_package_target)
     get_property(INSTALLABLE_TARGETS GLOBAL PROPERTY _PROJECT_INSTALLABLE_TARGETS)
     if (NOT INSTALLABLE_TARGETS)
-        message(FATAL_ERROR "No installable targets were registered, use package_target_include_directories
-        or add to INSTALLABLE_TARGETS manually")
+        message(FATAL_ERROR "No installable targets were registered, use package_target_include_directories or add to INSTALLABLE_TARGETS manually")
     endif ()
 
     set(INSTALL_TARGET_NAME "${PROJECT_NAME}_package")
     set(INSTALL_COMMENT "Packaging ${PROJECT_NAME} project...")
+
+    # --- FIX START: Filter out INTERFACE libraries from build dependencies ---
+    set(BUILDABLE_TARGETS "")
+    foreach(TGT ${INSTALLABLE_TARGETS})
+        get_target_property(TGT_TYPE ${TGT} TYPE)
+        # We only add to DEPENDS if it creates a real file (Static/Shared Lib or Executable)
+        # INTERFACE_LIBRARY does not create a file, so we skip it here.
+        if(NOT "${TGT_TYPE}" STREQUAL "INTERFACE_LIBRARY")
+            list(APPEND BUILDABLE_TARGETS ${TGT})
+        endif()
+    endforeach()
+    # --- FIX END ---
 
     set(PACKAGE_DUMMY_SOURCE "${CMAKE_BINARY_DIR}/_package_dummy_source.cpp")
     if(WIN32)
@@ -96,7 +107,7 @@ function(add_package_target)
             COMMAND ${CMAKE_COMMAND} --install . --prefix "${CMAKE_INSTALL_PREFIX}"
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             COMMENT "${INSTALL_COMMENT}"
-            DEPENDS ${INSTALLABLE_TARGETS}
+            DEPENDS ${BUILDABLE_TARGETS}  # <--- Use the filtered list here
     )
 
     add_dependencies(${INSTALL_TARGET_NAME} _do_${INSTALL_TARGET_NAME}_install)

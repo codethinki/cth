@@ -9,40 +9,48 @@
 namespace cth::co {
 class executor {
 
+
 public:
     explicit executor(scheduler& sched) noexcept : _sched(&sched) {}
     ~executor() = default;
 
-    auto schedule() const { return schedule_awaiter{*_sched}; }
+    auto schedule() { return schedule_awaiter{scheduler()}; }
 
 
-    template<executor_awaitable Awaitable>
-    auto steal(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
-        auto awaiter = co::extract_awaiter(std::forward<Awaitable>(awaitable));
-        awaiter.exec = this;
-        return awaiter;
-    }
+    template<this_coro_awaitable Awaitable>
+    auto steal(Awaitable&& awaitable) -> awaiter_t<Awaitable> { return co::steal(scheduler(), awaitable); }
 
-    template<executorless_awaitable Awaitable>
+    template<non_this_coro_awaitable Awaitable>
     auto steal(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
-        return co::steal(*_sched, std::move(awaitable));
+        return co::steal(scheduler(), std::move(awaitable));
     }
 
     template<class T>
-    auto spawn(scheduled_task<T> task) -> scheduled_task<T> {
-        return executor::steal(std::move(task));
-    }
+    auto spawn(scheduled_task<T> task) -> scheduled_task<T> { return executor::steal(std::move(task)); }
 
     template<awaitable Awaitable>
     auto spawn(Awaitable task) -> scheduled_task<awaited_t<Awaitable>> {
-        co_await schedule();
-        co_return co_await executor::steal(std::move(task));
+        return executor::spawn(this_coro::payload{scheduler()}, *this, std::move(task));
     }
 
 private:
+    template<awaitable Awaitable>
+    static auto spawn(
+        [[maybe_unused]] this_coro::payload p,
+        executor& s,
+        Awaitable task
+    ) -> scheduled_task<awaited_t<Awaitable>> {
+        co_await s.schedule();
+        co_return co_await s.steal(std::move(task));
+    }
+
     scheduler* _sched;
 
 public:
+    scheduler& scheduler() { return *_sched; }
+
+    bool operator==(executor const&) const = default;
+
     executor(executor const& other) = default;
     executor(executor&& other) noexcept = default;
     executor& operator=(executor const& other) = default;
@@ -50,9 +58,10 @@ public:
 };
 
 
-template<foreign_awaitable Awaitable>
-auto steal(executor& exec, Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
-    return exec.steal(std::move(awaitable));
 }
+
+namespace cth::co::this_coro {
+
+inline co::executor payload::get(executor_tag) const { return co::executor{scheduler()}; }
 
 }

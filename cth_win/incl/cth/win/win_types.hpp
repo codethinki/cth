@@ -1,7 +1,7 @@
 #pragma once
 
-#include "cth/exception.hpp"
-#include "cth/io/log.hpp"
+#include <cth/exception.hpp>
+#include <cth/io/log.hpp>
 
 #include <memory>
 
@@ -19,10 +19,13 @@ public:
 };
 }
 
-#define CTH_STABLE_WIN_ERR(expression, fmt_message, ...) \
+#define CTH_WIN_WARN(expression, fmt_message, ...)\
+    CTH_WARN_T(cth::except::win_exception, expression, fmt_message, __VA_ARGS__)
+
+#define CTH_WIN_STABLE_ERR(expression, fmt_message, ...) \
     CTH_STABLE_ERR_T(cth::except::win_exception, expression, fmt_message, __VA_ARGS__)
 
-#define CTH_STABLE_WIN_THROW(expression, fmt_message, ...) \
+#define CTH_WIN_STABLE_THROW(expression, fmt_message, ...) \
     CTH_STABLE_THROW_T(\
         cth::except::win_exception,\
         expression,\
@@ -31,10 +34,14 @@ public:
     )
 
 namespace cth::win {
+using ssize_t = std::ptrdiff_t;
 using dword_t = unsigned long;
 
+using hwnd_t = void*;
+
 using rect_t = struct {
-    uint32_t x, y, width, height;
+    ssize_t x, y;
+    size_t width, height;
 };
 
 struct global_lock_deleter {
@@ -47,25 +54,49 @@ using global_lock = std::unique_ptr<void, global_lock_deleter>;
 struct bmp_deleter {
     void operator()(void* ptr) const;
 };
-using bmp_ptr = std::unique_ptr<void*, bmp_deleter>;
+using bmp_ptr = std::unique_ptr<void, bmp_deleter>;
 
 struct hdc_deleter {
-    void operator()(void* ptr) const;
+    /**
+     * deletes the hdc
+     */
+    void operator()(void* hdc) const;
 };
-using hdc_ptr = std::unique_ptr<void, hdc_deleter>;
+/**
+ * deletes the HDC on destruction
+ */
+using unique_dc_ptr = std::unique_ptr<void, hdc_deleter>;
+
+struct hdc_releaser {
+    /**
+     * releases the hdc
+     */
+    void operator()(void* hdc) const;
+};
+
+/**
+ * releases the HDC on destruction
+ */
+using borrow_dc_ptr = std::unique_ptr<void, hdc_releaser>;
+
 
 struct hwnd_deleter {
+    void operator()(hwnd_t handle) const;
+};
+
+struct handle_deleter {
+    /**
+     * Closes a generic windows handle
+     * @param handle to close
+     */
     void operator()(void* handle) const;
 };
 
-struct file_deleter {
-    void operator()(void* handle) const;
-};
 
+using file_ptr = std::unique_ptr<void, handle_deleter>;
+using handle_ptr = std::unique_ptr<void, handle_deleter>;
 
-using file_ptr = std::unique_ptr<void, file_deleter>;
-
-using hwnd_ptr = std::unique_ptr<void, hwnd_deleter>;
+using wnd_ptr = std::unique_ptr<void, hwnd_deleter>;
 
 struct window_class_t;
 
@@ -97,7 +128,7 @@ inline void swap(window_class_t& a, window_class_t& b) noexcept {
 
 struct window_t {
     std::optional<window_class_t> classOpt;
-    hwnd_ptr handle;
+    wnd_ptr handle;
 };
 
 

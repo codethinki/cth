@@ -1,12 +1,14 @@
 #include "cth/win/io.hpp"
 
+#include "win_include.hpp"
 #include "cth/macro.hpp"
 #include "cth/win/string.hpp"
-#include "cth/win/win_include.hpp"
+
+#include "cth/win/win_types.hpp"
 
 
 namespace cth::win::io {
-void read_unbuffered(std::string_view path, std::vector<char>& buffer) {
+void read_unbuffered(std::string_view path, std::vector<std::byte>& buffer) {
     cxpr static size_t PAGE_SIZE = 4096;
 
 
@@ -24,7 +26,7 @@ void read_unbuffered(std::string_view path, std::vector<char>& buffer) {
         )
     };
 
-    CTH_STABLE_WIN_THROW(handle.get() == INVALID_HANDLE_VALUE, "failed to create handle for io ({})", path) {}
+    CTH_WIN_STABLE_THROW(handle.get() == INVALID_HANDLE_VALUE, "failed to create handle for io ({})", path) {}
 
     auto const fileSize = GetFileSize(handle.get(), nullptr);
 
@@ -44,12 +46,12 @@ void read_unbuffered(std::string_view path, std::vector<char>& buffer) {
         &overlapped
     );
 
-    CTH_STABLE_WIN_THROW(readFileResult == 0, "failed to read file: {}", path) {}
+    CTH_WIN_STABLE_THROW(readFileResult == 0, "failed to read file: {}", path) {}
 
     auto const queryResult = GetOverlappedResult(handle.get(), &overlapped, &bytesRead, TRUE);
 
 
-    CTH_STABLE_WIN_THROW(
+    CTH_WIN_STABLE_THROW(
         queryResult == 0,
         "failed to query overlapped result, file size: {}, buffer size: {}",
         fileSize,

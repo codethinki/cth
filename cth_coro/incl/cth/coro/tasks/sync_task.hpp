@@ -1,12 +1,12 @@
 #pragma once
 #include "task_base.hpp"
 
-#include "cth/coro/awaiters/executor_awaiter.hpp"
+#include "cth/coro/awaiters/this_coro_awaiter.hpp"
 
 #include "cth/coro/awaiters/dev/basic_awaiter.hpp"
 #include "cth/coro/tasks/promises/sync_promise_base.hpp"
 
-#include "promises/executor_promise_base.hpp"
+#include "promises/this_coro_promise_base.hpp"
 
 namespace cth::co::dev {
 template<class T>
@@ -41,7 +41,7 @@ struct sync_promise : dev::sync_promise_template<T> {
 
 
 template<class T>
-struct sync_executor_promise : executor_promise_base, sync_promise_template<T> {
+struct sync_executor_promise : this_coro_promise_base, sync_promise_template<T> {
     sync_executor_task<T> get_return_object() noexcept;
 };
 }
@@ -53,7 +53,7 @@ class sync_task : public dev::sync_task_template<dev::sync_promise<T>, dev::basi
 using sync_void_task = sync_task<void>;
 
 template<class T>
-class sync_executor_task : public dev::sync_task_template<dev::sync_executor_promise<T>, executor_awaiter> {};
+class sync_executor_task : public dev::sync_task_template<dev::sync_executor_promise<T>, this_coro_awaiter> {};
 
 using sync_executor_void_task = sync_executor_task<void>;
 }

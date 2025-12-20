@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.23)
 
 project(cth LANGUAGES CXX VERSION 1.0.0)
 
@@ -29,6 +29,7 @@ create_package()
 enable_testing()
 add_subdirectory(cth_tests)
 add_subdirectory(cth_coro_tests)
+add_subdirectory(cth_win_tests)
 
 
 add_subdirectory(integration_tests)

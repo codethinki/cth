@@ -3,16 +3,19 @@
 
 #include "cth/coro/awaiters/dev/capture_awaiter.hpp"
 #include "cth/coro/tasks/promises/basic_promise.hpp"
-#include "cth/coro/tasks/promises/executor_promise_base.hpp"
+#include "cth/coro/tasks/promises/this_coro_promise_base.hpp"
 #include "cth/coro/utility/fwd.hpp"
 
 
 namespace cth::co::dev {
 
 template<class T>
-struct scheduled_promise : basic_promise<T>, executor_promise_base {
+struct scheduled_promise : basic_promise<T>, this_coro_promise_base {
+    explicit scheduled_promise(this_coro::payload payload) : this_coro_promise_base{std::move(payload)} {}
+
     template<class... Args>
-    scheduled_promise(executor& e, Args&&...) : executor_promise_base{&e} {}
+    explicit scheduled_promise(this_coro::payload const& payload, Args&&...) : scheduled_promise{payload} {}
+
 
     scheduled_task<T> get_return_object() noexcept;
 };
@@ -27,6 +30,13 @@ class [[nodiscard]] scheduled_task : public task_base<dev::scheduled_promise<T>,
 
     using base_t::task_base;
     friend base_t::promise_type;
+
+public:
+    scheduled_task(scheduled_task const& other) = delete;
+    scheduled_task& operator=(scheduled_task const& other) = delete;
+
+    scheduled_task(scheduled_task&& other) noexcept = default;
+    scheduled_task& operator=(scheduled_task&& other) noexcept = default;
 };
 
 template<class T>

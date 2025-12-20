@@ -1,10 +1,10 @@
 #include "cth/win/cmd.hpp"
 
+#include "win_include.hpp"
 #include "cth/win/string.hpp"
-#include "cth/win/win_include.hpp"
 
 namespace cth::win::cmd {
-int hidden_dir(std::string_view dir, std::string_view command) {
+size_t hidden_dir(std::string_view dir, std::string_view command) {
     PROCESS_INFORMATION pInfo{};
     STARTUPINFOW sInfo{};
     sInfo.cb = sizeof(sInfo);
@@ -13,7 +13,7 @@ int hidden_dir(std::string_view dir, std::string_view command) {
     auto wcmd = win::to_wstring(cmd);
     auto const wdir = win::to_wstring(dir);
 
-    bool const res = CreateProcessW(
+    bool const createResult = CreateProcessW(
         nullptr,
         wcmd.data(),
         nullptr,
@@ -26,23 +26,28 @@ int hidden_dir(std::string_view dir, std::string_view command) {
         &pInfo
     );
 
-
-    CTH_WARN(res != 1, "cmd process creation failed") {
+    CTH_WIN_WARN(createResult != true, "cmd process creation failed") {
         details->add("cmd: {}", cmd);
         details->add("location: {}", dir);
+        details->add("current path: {}", std::filesystem::current_path().string());
         return EXIT_FAILURE;
     }
 
+    handle_ptr const hProcess{std::exchange(pInfo.hProcess, nullptr)};
+    [[maybe_unused]] handle_ptr hThread{std::exchange(pInfo.hThread, nullptr)};
 
-    WaitForSingleObject(pInfo.hProcess, INFINITE);
+
+    auto waitResult = WaitForSingleObject(hProcess.get(), INFINITE);
+
+    CTH_WIN_STABLE_THROW(waitResult != 0, "wait for command failed")
+        details->add("wait result: {}", waitResult);
+
 
     DWORD returnValue = 0;
-    GetExitCodeProcess(pInfo.hProcess, &returnValue);
+    GetExitCodeProcess(hProcess.get(), &returnValue);
 
-    CloseHandle(pInfo.hProcess);
-    CloseHandle(pInfo.hThread);
 
-    return static_cast<int>(returnValue);
+    return returnValue;
 }
 
 }
