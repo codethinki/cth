@@ -38,7 +38,7 @@ rect_t window_rect(hwnd_t hwnd);
 /** 
  * Gets the desktop rect, origin top left
  */
-rect_t desktop_rect() { return window_rect(desktop_handle()); }
+inline rect_t desktop_rect() { return window_rect(desktop_handle()); }
 
 }
 
