@@ -1,13 +1,14 @@
 #pragma once
-#include "cth/types/typ_concepts.hpp"
-#include "cth/types/typ_traits.hpp"
+#include "cth/meta/concepts.hpp"
+#include "cth/meta/traits.hpp"
 
 #include "cth/io/log.hpp"
-#include "cth/pointer/move_ptr.hpp"
+#include "cth/ptr/move_ptr.hpp"
 
 #include <array>
 #include <span>
 #include <vector>
+
 
 namespace cth::dt {
 

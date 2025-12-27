@@ -1,9 +1,8 @@
 #pragma once
-#include "ranges.hpp"
-
 #include "cth/macro.hpp"
+#include "cth/algorithm/ranges.hpp"
 #include "cth/io/log.hpp"
-#include "cth/types/typ_variadic.hpp"
+#include "cth/meta/variadic.hpp"
 
 #include <ranges>
 
@@ -38,6 +37,9 @@ struct split_into_fn {
 
 };
 
+/**
+ * splits a range into <= n chunks
+ */
 inline cxpr split_into_fn split_into;
 
 

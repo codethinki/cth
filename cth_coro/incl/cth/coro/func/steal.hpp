@@ -5,7 +5,7 @@
 #include "cth/coro/awaiters/schedule_awaiter.hpp"
 
 #include "cth/coro/utility/fwd.hpp"
-#include "cth/types/coro.hpp"
+#include "cth/meta/coro.hpp"
 
 namespace cth::co {
 

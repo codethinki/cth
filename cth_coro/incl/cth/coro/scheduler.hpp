@@ -4,9 +4,12 @@
 
 #include "os/native_handle.hpp"
 
+#include "utility/fwd.hpp"
+
 #include <functional>
-#include <vector>
 #include <thread>
+#include <vector>
+
 
 namespace cth::co {
 constexpr auto autostart = [] {};
@@ -47,6 +50,7 @@ public:
     void post(void_func work);
 
     void await(native_handle, void_func cb);
+    void await(std::chrono::steady_clock::time_point time_point, void_func cb);
 
 
     void start();
@@ -92,4 +96,14 @@ public:
     scheduler& operator=(scheduler&& other) noexcept;
 
 };
+
+}
+
+
+namespace cth::co::this_coro {
+struct scheduler_tag : tag_base {
+    static scheduler& operator()(payload const&);
+};
+
+inline constexpr scheduler_tag scheduler{};
 }

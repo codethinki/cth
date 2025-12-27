@@ -5,7 +5,7 @@
 #include "cth/coro/utility/concepts.hpp"
 
 #include <cth/coro/utility.hpp>
-#include <cth/types/coro.hpp>
+#include <cth/meta/coro.hpp>
 
 #include <utility>
 
@@ -15,8 +15,10 @@ class executor;
 
 struct this_coro_promise_base {
 
-    template<cth::co::this_coro::tag T>
-    [[nodiscard]] decltype(auto) await_transform(T) { return _payload->await<T>(); }
+    template<this_coro::tag T>
+    [[nodiscard]] decltype(auto) await_transform(T&& t) {
+        return std::forward<T>(t)(*_payload);
+    }
 
 
     template<this_coro_awaitable Awaitable>

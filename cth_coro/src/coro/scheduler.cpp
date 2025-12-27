@@ -1,16 +1,28 @@
 #include "cth/coro/scheduler.hpp"
 
+#include "cth/coro/utility/exception.hpp"
 #include "utility/native_handle_helpers.hpp"
 
 #include <cth/numeric.hpp>
 
 #include <boost/asio/co_spawn.hpp>
-#include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/post.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 namespace bas = boost::asio;
+namespace chr = std::chrono;
 
+
+#define BOOST_EC_STABLE_THROW(ec, msg, ...) \
+    CTH_STABLE_THROW_T(cth::except::coro_exception, ec.failed(), msg, __VA_ARGS__) {\
+        details->add("message: {}", ec.message());\
+        details->add("category: {}", ec.category().name());\
+        if(ec.has_location()) {\
+            auto const& loc = ec.location();\
+            details->add("location: {} ({}, {})", loc.file_name(), loc.line(), loc.column());\
+        }\
+    } 
 
 
 namespace cth::co {
@@ -34,23 +46,28 @@ struct scheduler::Impl {
 
     void post(void_func work) { bas::post(ctx, std::move(work)); }
 
-    void await(native_handle handle, void_func func) {
+    void await(native_handle handle, void_func cb) {
         auto handler = wrap_unique(handle, ctx);
         handler->async_wait(
-            [h = std::move(handler), this, f = std::move(func)](boost::system::error_code const& e) mutable {
-                CTH_STABLE_THROW(
-                    e.failed(),
-                    "async wait for handle [{}] failed with: {}",
-                    h->native_handle(),
-                    e.message()
-                ) {
-                    if(e.has_location()) {
-                        auto const& loc = e.location();
-                        details->add("location: {} ({}, {})", loc.file_name(), loc.line(), loc.column());
-                    }
-                    details->add("category: {}", e.category().name());
-                }
+            [h = std::move(handler), this, f = std::move(cb)](boost::system::error_code const& ec) mutable {
+                BOOST_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", h->native_handle())
+
                 post(std::move(f));
+            }
+        );
+    }
+    void await(chr::steady_clock::time_point time_point, void_func callback) {
+        auto timer = std::make_unique<bas::steady_timer>(ctx, time_point);
+
+        timer->async_wait(
+            [this, time_point, t = std::move(timer), cb = std::move(callback)](boost::system::error_code const& ec) mutable {
+                BOOST_EC_STABLE_THROW(
+                    ec,
+                    "async wait for time_point [{}] failed",
+                    time_point.time_since_epoch()
+                )
+
+                post(std::move(cb));
             }
         );
     }
@@ -60,6 +77,7 @@ struct scheduler::Impl {
     std::optional<guard_t> workGuard;
 };
 }
+
 
 namespace cth::co {
 scheduler::scheduler(size_t workers) :
@@ -75,6 +93,9 @@ scheduler::~scheduler() {
 void scheduler::post(void_func work) { bas::post(impl().ctx, std::move(work)); }
 
 void scheduler::await(native_handle handle, void_func cb) { impl().await(handle, std::move(cb)); }
+void scheduler::await(std::chrono::steady_clock::time_point time_point, void_func cb) {
+    impl().await(time_point, std::move(cb));
+}
 
 void scheduler::start() {
     impl().start();
@@ -100,6 +121,7 @@ bool scheduler::active() const {
 }
 
 }
+
 
 namespace cth::co {
 scheduler::scheduler(scheduler&& other) noexcept = default;

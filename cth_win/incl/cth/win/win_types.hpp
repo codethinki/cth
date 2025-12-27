@@ -38,10 +38,13 @@ using ssize_t = std::ptrdiff_t;
 using dword_t = unsigned long;
 
 using hwnd_t = void*;
+using hbmp_t = void*;
 
-using rect_t = struct {
+struct rect_t {
     ssize_t x, y;
     size_t width, height;
+
+    bool operator==(rect_t const&) const = default;
 };
 
 struct global_lock_deleter {
@@ -54,7 +57,7 @@ using global_lock = std::unique_ptr<void, global_lock_deleter>;
 struct bmp_deleter {
     void operator()(void* ptr) const;
 };
-using bmp_ptr = std::unique_ptr<void, bmp_deleter>;
+using unique_bmp_ptr = std::unique_ptr<void, bmp_deleter>;
 
 struct hdc_deleter {
     /**

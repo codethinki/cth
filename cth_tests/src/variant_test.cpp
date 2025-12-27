@@ -1,4 +1,4 @@
-#include "cth/types/typ_variant.hpp"
+#include "cth/meta/variant.hpp"
 
 #include "cth/test.hpp"
 

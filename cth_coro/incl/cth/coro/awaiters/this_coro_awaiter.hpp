@@ -2,7 +2,7 @@
 #include "this_coro_awaiter_base.hpp"
 
 #include <exception>
-#include <cth/types/coro.hpp>
+#include <cth/meta/coro.hpp>
 
 namespace cth::co {
 template<cth_promise Promise>

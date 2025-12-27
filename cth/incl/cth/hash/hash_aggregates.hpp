@@ -5,6 +5,7 @@
 
 #include <functional>
 
+
 namespace cth::hash {
 template<type::aggregate T>
 cxpr size_t hash_aggregate(T const& t) {
@@ -14,6 +15,7 @@ cxpr size_t hash_aggregate(T const& t) {
     );
 }
 }
+
 
 #define CTH_HASH_AGGREGATE(type)\
 template<>\

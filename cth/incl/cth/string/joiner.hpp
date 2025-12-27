@@ -1,5 +1,5 @@
 #pragma once
-#include "cth/types/typ_variadic.hpp"
+#include "cth/meta/variadic.hpp"
 
 #include <string>
 #include <string_view>

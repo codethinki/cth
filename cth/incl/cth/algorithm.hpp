@@ -1,6 +1,4 @@
 #pragma once
-
-
-#include "algorithm/combine.hpp"
-#include "algorithm/ranges.hpp"
-#include "algorithm/views.hpp"
+#include "cth/algorithm/combine.hpp"
+#include "cth/algorithm/ranges.hpp"
+#include "cth/algorithm/views.hpp"

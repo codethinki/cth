@@ -1,9 +1,9 @@
 #pragma once
 #include "macro.hpp"
 
-#include "string/format.hpp"
-#include "types/typ_ranges.hpp"
-#include "types/typ_variadic.hpp"
+#include "cth/string/format.hpp"
+#include "cth/meta/ranges.hpp"
+#include "cth/meta/variadic.hpp"
 
 #include <algorithm>
 #include <format>
@@ -118,8 +118,8 @@ template<
 
 namespace cth::str {
 template<class T>
-concept printable_rng = rng::viewable_rng<T> and rng::static_dim_rng<type::rcvr_t<T>>
-    and !cth::type::any_constructible_from<T, std::string_view, std::string>;
+concept printable_rng = rng::viewable_rng<T> && rng::static_dim_rng<type::rcvr_t<T>>
+    && !cth::type::any_constructible_from<T, std::string_view, std::string>;
 }
 
 

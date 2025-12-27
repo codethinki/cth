@@ -5,6 +5,7 @@
 
 #include "cth/win/string.hpp"
 
+
 namespace cth::win {
 
 WIN_SCREEN_TEST(create_window, unicode) {
@@ -25,16 +26,29 @@ WIN_SCREEN_TEST(create_window, ascii) {
     EXPECT_TRUE(classOpt.has_value() && classOpt->id == to_wstring(name));
 }
 
-WIN_SCREEN_TEST(desktop_rect, main) {
-    auto const rect = desktop_rect();
-    EXPECT_TRUE(rect.width > 0 && rect.height > 0);
-}
 
 
 WIN_SCREEN_TEST(monitors, main) { auto const monitors = enum_monitors(); }
 
 
 }
+
+
+namespace cth::win::screen {
+WIN_SCREEN_TEST(desktop_rect, main) {
+    auto const rect = desktop_rect();
+    EXPECT_TRUE(rect.width > 0 && rect.height > 0);
+}
+WIN_SCREEN_TEST(window_rect, main) {
+    auto const desktop = desktop_handle();
+
+    auto const rect = window_rect(desktop);
+    EXPECT_GT(rect.width, 0);
+    EXPECT_GT(rect.height, 0);
+}
+
+}
+
 
 /**
  * Converts a raw BGRA byte buffer into a visual ASCII/Unicode string.

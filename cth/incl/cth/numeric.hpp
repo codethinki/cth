@@ -11,8 +11,13 @@ namespace cth {
 // DECLARATIONS
 //------------------
 namespace num {
-    template<type::arithmetic T>
-    [[nodiscard]] constexpr T abs(T val);
+    template<std::integral T, std::integral U>
+    [[nodiscard]] cxpr auto abs_diff(T t, U u) {
+        using base_t = std::make_unsigned_t<decltype(std::declval<T>() - std::declval<U>())>;
+        if constexpr(std::same_as<size_t, base_t>)
+            return static_cast<base_t>(std::max(t, u) - std::min(t, u));
+        else return static_cast<base_t>(t - u);
+    }
 
     /**
      * \brief cycles a value between a and b
@@ -26,7 +31,7 @@ namespace num {
     [[nodiscard]] cxpr T exp(T x, T precision = static_cast<T>(1e-6));
 
     template<std::floating_point T>
-    [[nodiscard]] cxpr T heronSqrt(T x, T precision = static_cast<T>(1e-6));
+    [[nodiscard]] cxpr T heron_sqrt(T x, T precision = static_cast<T>(1e-6));
 
     [[nodiscard]] cxpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b);
 
@@ -45,35 +50,17 @@ namespace num {
     [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y);
 
     /**
-     * \brief square and multiply algorithm
-     */
-    template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
-    [[nodiscard]] cxpr T sqam(T base, U power, V mod);
-
-    /**
      * @brief calculates the unsigned integral power of an arithmetic base
      * @attention power must be >= 0
      */
     template<type::arithmetic T>
     [[nodiscard]] cxpr T pow(T base, std::integral auto power);
-
-
-    namespace bits {
-        template<std::integral T>
-        cxpr std::array<bool, sizeof(T) * 8> toBitArr(T val);
-
-        template<std::unsigned_integral T>
-        cxpr size_t firstSetBit(T x);
-    } //namespace bits
-
 } // namespace num
 
 //-----------------------
 // IMPLEMENTATIONS
 //-----------------------
 namespace num {
-    template<type::arithmetic T>
-    [[nodiscard]] cxpr T abs(T val) { return val < 0 ? -val : val; }
 
     template<std::integral T>
     [[nodiscard]] cxpr T cycle(T x, T a, T b) {
@@ -106,7 +93,7 @@ namespace num {
     [[nodiscard]] cxpr T exp(T x, T precision) {
         uint32_t n = 1;
         T result = 1, term = x;
-        while(num::abs(term) > precision) {
+        while(std::abs(term) > precision) {
             result += term;
             ++n;
             term *= x / static_cast<T>(n);
@@ -115,7 +102,7 @@ namespace num {
     }
 
     template<std::floating_point T>
-    [[nodiscard]] cxpr T heronSqrt(T x, T precision) {
+    [[nodiscard]] cxpr T heron_sqrt(T x, T precision) {
 
         CTH_CRITICAL(x < 0, "heronSqrt: x ({}) >= 0 required", x) {}
 
@@ -148,21 +135,21 @@ namespace num {
     template<type::arithmetic T, type::arithmetic U>
     [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y) { return num::in(x, a_x, b_x) && num::in(y, a_y, b_y); }
 
-    template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
-    [[nodiscard]] cxpr T sqam(T base, U power, V mod) {
-        CTH_CRITICAL(mod < 0, "invalid input: mod ({}) > 0 required", mod) {}
-
-        auto bitArr = bits::toBitArr(power);
-
-
-        T val = base;
-        for(auto i = bits::firstSetBit(power) + 1; i < bitArr.size(); ++i) {
-            val *= val;
-            if(bitArr[i]) val *= base;
-            val %= mod;
-        }
-        return val;
-    }
+    /*  template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
+      [[nodiscard]] cxpr T sqam(T base, U power, V mod) {
+          CTH_CRITICAL(mod < 0, "invalid input: mod ({}) > 0 required", mod) {}
+  
+          auto bitArr = bits::toBitArr(power);
+  
+  
+          T val = base;
+          for(auto i = bits::firstSetBit(power) + 1; i < bitArr.size(); ++i) {
+              val *= val;
+              if(bitArr[i]) val *= base;
+              val %= mod;
+          }
+          return val;
+      }*/
 
     template<type::arithmetic T>
     [[nodiscard]] cxpr T pow(T base, std::integral auto power) {
@@ -177,28 +164,8 @@ namespace num {
     }
 
 
-    namespace bits {
-        template<std::integral T>
-        cxpr std::array<bool, sizeof(T) * 8> toBitArr(T val) {
-            cxpr static auto BIT_LENGTH = sizeof(T) * 8;
-            std::array<bool, BIT_LENGTH> bits{};
+}
 
-            for(uint32_t i = 0; i < BIT_LENGTH; i++) bits[i] = ((static_cast<T>(1) << (BIT_LENGTH - 1 - i)) & val) > 0;
-
-            return bits;
-        }
-
-        template<std::unsigned_integral T>
-        cxpr size_t firstSetBit(T x) {
-            size_t pos = 0;
-
-
-            while((x & (static_cast<T>(1) << (sizeof(T) * 8 - 1 - pos))) == 0 && pos < sizeof(T) * 8) ++pos;
-
-            return pos;
-        }
-    } // namespace bits
-} // namespace num
 
 //---------------------
 // CONSTEXPR FUNC
@@ -208,7 +175,7 @@ namespace expr::num {
     [[nodiscard]] constexpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b) { return cth::num::map(x, in_a, in_b, out_a, out_b); }
 
     template<std::floating_point T>
-    [[nodiscard]] cxpr T heronSqrt(T x, T const precision = static_cast<T>(1e-6)) { return cth::num::heronSqrt(x, precision); }
+    [[nodiscard]] cxpr T heron_sqrt(T x, T const precision = static_cast<T>(1e-6)) { return cth::num::heron_sqrt(x, precision); }
 
     template<std::integral T>
     [[nodiscard]] cxpr T cycle(T x, T a, T b) { return cth::num::cycle(x, a, b); }
@@ -216,7 +183,7 @@ namespace expr::num {
     template<type::arithmetic T>
     [[nodiscard]] cxpr T dist(T x1, T y1, T x2, T y2, T const precision = static_cast<T>(1e-6)) {
         auto const dx = static_cast<double>(x2 - x1), dy = static_cast<double>(y2 - y1);
-        return static_cast<T>(cth::num::heronSqrt(dx * dx + dy * dy, precision));
+        return static_cast<T>(cth::num::heron_sqrt(dx * dx + dy * dy, precision));
     }
 
     [[nodiscard]] cxpr bool in_inc(auto x, auto a, auto b) { return cth::num::in_inc(x, a, b); }
@@ -225,21 +192,13 @@ namespace expr::num {
     template<type::arithmetic T>
     [[nodiscard]] constexpr bool in(T x, T a_x, T b_x, T y, T a_y, T b_y) { return cth::num::in(x, a_x, b_x, y, a_y, b_y); }
 
-    template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
-    [[nodiscard]] cxpr T sqam(T base, U power, V mod) { return cth::num::sqam(base, power, mod); }
+    //template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
+    //[[nodiscard]] cxpr T sqam(T base, U power, V mod) { return cth::num::sqam(base, power, mod); }
 
 
     template<type::arithmetic T>
     [[nodiscard]] cxpr T pow(T base, std::unsigned_integral auto power) { return cth::num::pow(base, power); }
 
 
-    namespace bits {
-        template<std::unsigned_integral T>
-        [[nodiscard]] cxpr size_t firstSetBit(T x) { return cth::num::bits::firstSetBit(x); }
-
-        template<std::integral T>
-        cxpr std::array<bool, sizeof(T) * 8> toBitArr(T val) { return cth::num::bits::toBitArr(val); }
-    }
-
-} // namespace expr::num
-} // namespace cth
+}
+}

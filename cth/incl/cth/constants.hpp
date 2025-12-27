@@ -59,7 +59,7 @@ constexpr auto COMPILATION_MODE =
 #ifdef CTH_DEBUG_MODE
     CompilationMode::DEBUG;
 #else
-    CompilationMode::RELEASE;
+CompilationMode::RELEASE;
 #endif
 
 consteval bool debug_mode() {

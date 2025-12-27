@@ -4,7 +4,8 @@
 #include "cth/coro/tasks/dev/scheduled_task.hpp"
 #include "cth/coro/utility/concepts.hpp"
 
-#include <cth/types/coro.hpp>
+#include <cth/meta/coro.hpp>
+
 
 namespace cth::co {
 class executor {
@@ -24,6 +25,7 @@ public:
     auto steal(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
         return co::steal(scheduler(), std::move(awaitable));
     }
+
 
     template<class T>
     auto spawn(scheduled_task<T> task) -> scheduled_task<T> { return executor::steal(std::move(task)); }
@@ -60,8 +62,17 @@ public:
 
 }
 
-namespace cth::co::this_coro {
 
-inline co::executor payload::get(executor_tag) const { return co::executor{scheduler()}; }
+namespace cth::co::this_coro {
+struct executor_tag : tag_base {
+    static co::executor operator()(payload const&);
+};
+
+
+inline co::executor executor_tag::operator()(payload const& p) {
+    return co::executor{p.scheduler()};
+}
+
+inline constexpr executor_tag executor{};
 
 }

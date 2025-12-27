@@ -2,7 +2,7 @@
 #include "cth/test.hpp"
 
 
-#include "cth/pointer/not_null.hpp"
+#include "cth/ptr/not_null.hpp"
 
 
 

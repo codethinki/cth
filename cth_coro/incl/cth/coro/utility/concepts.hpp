@@ -1,14 +1,16 @@
 #pragma once
 #include "cth/coro/utility/fwd.hpp"
-#include "cth/types/typ_variadic.hpp"
+#include "cth/meta/variadic.hpp"
 
-#include <cth/types/coro.hpp>
+#include <cth/meta/coro.hpp>
 
 #include <type_traits>
 
+
 namespace cth::co::this_coro {
+
 template<class T>
-concept tag = cth::type::any_of<T, executor_tag, scheduler_tag>;
+concept tag = std::is_base_of_v<tag_base, T>;
 }
 
 
@@ -25,7 +27,11 @@ template<class Promise>
 concept this_coro_supported_promise = std::is_base_of_v<this_coro_promise_base, Promise>;
 
 template<class T>
-concept foreign_awaitable = co::awaitable<T> && !captured_awaitable<T> && !this_coro_awaitable<T> && !co::this_coro::tag<T>;
+concept foreign_awaitable =
+    co::awaitable<T>
+    && !captured_awaitable<T>
+    && !this_coro_awaitable<T>
+    && !co::this_coro::tag<T>;
 
 template<class T>
 concept non_this_coro_awaitable = awaitable<T> && !this_coro_awaitable<T>;
@@ -34,4 +40,3 @@ template<class T>
 concept sync_promise_type = std::is_base_of_v<sync_promise_base, T>;
 
 }
-

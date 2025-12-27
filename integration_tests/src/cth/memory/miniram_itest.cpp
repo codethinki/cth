@@ -1,6 +1,6 @@
 #include "cth/test.hpp"
 
-#include "cth/memory/miniram.hpp"
+#include "cth/data/miniram.hpp"
 
 #include <algorithm>
 #include <map>
@@ -8,7 +8,7 @@
 
 #define MEM_TEST(suite, test_name) CTH_EX_TEST(_mem, suite, test_name)
 
-namespace cth::mem {
+namespace cth::dt {
 
 
 void gen_hist(miniram const& ram) {

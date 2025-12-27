@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 4.1)
 
 project(cth LANGUAGES CXX VERSION 1.0.0)
 
@@ -10,11 +10,11 @@ include(add_resources)
 include(install_utility)
 include(set_compiler_specifics)
 
-set_compiler_specifics()
-
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set_compiler_specifics()
 
 
 #exported

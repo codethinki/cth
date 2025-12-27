@@ -14,6 +14,7 @@
 #include <vector>
 #include <stdexcept>
 
+
 namespace cth::co {
 
 template<class Task>
@@ -31,7 +32,8 @@ auto sync_wait(executor& exec, Task task) {
 
     wrapped.wait();
 
-    if constexpr(!std::is_void_v<value_type>) { return std::move(*wrapped.handle().promise().result); }
+    if constexpr(!type::is_void<value_type>)
+        return std::move(*wrapped.handle().promise().result);
 }
 
 CORO_TEST(executor, spawn_void_task) {
@@ -249,13 +251,15 @@ CORO_TEST(executor, stress_concurrent_spawns) {
     std::atomic<int> completed{0};
     std::latch allDone{count};
 
-    auto increment_task = [&](std::atomic<int>& ctr) -> executor_task<void> { //ref capture is fine bc no co_await
+    auto increment_task = [&](std::atomic<int>& ctr) -> executor_task<void> {
+        //ref capture is fine bc no co_await
         ctr.fetch_add(1, std::memory_order_relaxed);
         allDone.count_down();
         co_return;
     };
 
-    auto spawner = [&](std::vector<scheduled_task<void>>& t) -> executor_task<void> { //ref capture fine bc no co_await
+    auto spawner = [&](std::vector<scheduled_task<void>>& t) -> executor_task<void> {
+        //ref capture fine bc no co_await
         for(int i = 0; i < count; ++i) {
             auto h = exec.spawn(increment_task(completed));
             h.handle().resume();

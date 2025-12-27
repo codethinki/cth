@@ -1,5 +1,5 @@
 #pragma once
-#include <cth/types/coro.hpp>
+#include <cth/meta/coro.hpp>
 #include <coroutine>
 #include <utility>
 

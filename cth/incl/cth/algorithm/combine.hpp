@@ -1,6 +1,6 @@
 #pragma once
 #include "cth/io/log.hpp"
-#include "cth/types/typ_ranges.hpp"
+#include "cth/meta/ranges.hpp"
 
 #include <algorithm>
 #include <concepts>

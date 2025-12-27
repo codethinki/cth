@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "cth/pointer/not_null.hpp"
+#include "cth/ptr/not_null.hpp"
 
 namespace cth {
 #ifdef _DEBUG
