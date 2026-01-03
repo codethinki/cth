@@ -22,7 +22,7 @@ template<non_this_coro_awaitable Awaitable>
         co_await schedule_awaiter{scheduler};
         co_return;
     } else {
-        auto result = co_await awaitable;
+        decltype(auto) result = co_await awaitable;
         co_await schedule_awaiter{scheduler};
         co_return result;
     }

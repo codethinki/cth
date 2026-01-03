@@ -92,6 +92,9 @@ concept is_void = std::is_void_v<T>;
 
 template<class T>
 concept default_constructible = std::is_default_constructible_v<T>;
+
+template<class T, class Where>
+concept emplacable = requires(T t, Where w) { w.emplace(t); };
 }
 
 

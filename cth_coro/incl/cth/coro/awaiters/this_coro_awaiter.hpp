@@ -1,33 +1,31 @@
 #pragma once
-#include "this_coro_awaiter_base.hpp"
+#include "cth/coro/awaiters/this_coro_awaiter_base.hpp"
+#include "cth/coro/awaiters/dev/basic_awaiter.hpp"
 
 #include <exception>
 #include <cth/meta/coro.hpp>
 
 namespace cth::co {
 template<cth_promise Promise>
-struct this_coro_awaiter : this_coro_awaiter_base {
-    using promise_type = Promise;
+struct this_coro_awaiter : this_coro_awaiter_base, private dev::basic_awaiter<Promise> {
+private:
+    using base_t = dev::basic_awaiter<Promise>;
 
-    this_coro_awaiter(std::coroutine_handle<promise_type> h) : handle{h} {}
+public:
+    this_coro_awaiter() = delete;
 
+    using base_t::promise_type;
 
-    [[nodiscard]] bool await_ready() const noexcept { return !handle || handle.done(); }
+    using base_t::basic_awaiter;
+    using base_t::await_ready;
+    using base_t::await_resume;
+
 
     template<class T>
-    auto await_suspend(std::coroutine_handle<T> caller) noexcept -> std::coroutine_handle<promise_type> {
-        this_coro_awaiter_base::inject_payload_into(handle);
-        handle.promise().continuation = caller;
-        return handle;
+    decltype(auto) await_suspend(std::coroutine_handle<T> caller) noexcept {
+        this_coro_awaiter_base::inject_payload_into(base_t::handle);
+        return base_t::await_suspend(caller);
     }
 
-    auto await_resume() {
-        if(handle.promise().exception)
-            std::rethrow_exception(handle.promise().exception);
-        if constexpr(!std::same_as<void, promise_value_type<promise_type>>)
-            return std::move(*handle.promise().result);
-    }
-
-    std::coroutine_handle<promise_type> handle;
 };
 }

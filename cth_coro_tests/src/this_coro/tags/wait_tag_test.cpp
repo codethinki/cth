@@ -10,8 +10,8 @@
 namespace cth::co::this_coro {
 
 TAG_TEST(wait_tag, immediate_wait) {
-    scheduler sched{autostart, 1};
-    executor exec{sched};
+    co::scheduler sched{autostart, 1};
+    co::executor exec{sched};
 
     auto now = std::chrono::steady_clock::now();
     auto task = [](auto timepoint) -> executor_task<void> { co_await wait_tag{timepoint}; };
@@ -20,8 +20,8 @@ TAG_TEST(wait_tag, immediate_wait) {
 }
 
 TAG_TEST(wait_tag, future_wait) {
-    scheduler sched{autostart, 1};
-    executor exec{sched};
+    co::scheduler sched{autostart, 1};
+    co::executor exec{sched};
 
     auto now = std::chrono::steady_clock::now();
     auto future = now + std::chrono::milliseconds{10};
@@ -38,8 +38,8 @@ TAG_TEST(wait_tag, future_wait) {
 }
 
 TAG_TEST(wait_tag, multiple_sequential_waits) {
-    scheduler sched{autostart, 1};
-    executor exec{sched};
+    co::scheduler sched{autostart, 1};
+    co::executor exec{sched};
 
     auto now = std::chrono::steady_clock::now();
     auto task = [](auto timepoint) -> executor_task<int> {

@@ -15,14 +15,12 @@ namespace cth::dt {
  * drop in std::optional replacement with support for references and void
  * @tparam T contained type
  */
-template<class T> 
+template<class T>
 struct optional;
 
 struct optional_base {
 
-    [[nodiscard]] constexpr explicit operator bool(this auto const& self) noexcept {
-        return self.has_value();
-    }
+    [[nodiscard]] constexpr explicit operator bool(this auto const& self) noexcept { return self.has_value(); }
 
 
 
@@ -49,7 +47,6 @@ struct optional_base {
 
             return optional<R>{std::in_place};
         } else {
-
             if constexpr(inVoid)
                 return optional<R>{std::invoke(std::forward<F>(f))};
             else
@@ -91,7 +88,7 @@ struct optional : optional_base {
     constexpr optional() : optional{std::nullopt} {}
     constexpr optional(std::nullopt_t) noexcept : _value{std::nullopt} {}
 
-    template<class U = T> requires std::is_constructible_v<T, U&&> && (!std::is_same_v<std::decay_t<U>, optional>)
+    template<class U = T> requires std::constructible_from<T, U> && (!std::same_as<std::decay_t<U>, optional>)
     constexpr optional(U&& val) : _value{std::forward<U>(val)} {}
 
     template<class... Args>
@@ -100,13 +97,15 @@ struct optional : optional_base {
     constexpr void swap(optional& other) noexcept { _value.swap(other._value); }
     constexpr void reset() noexcept { _value.reset(); }
 
-    template<class... Args> constexpr
-    T& emplace(Args&&... args) { return _value.emplace(std::forward<Args>(args)...); }
+    template<class... Args>
+    constexpr T& emplace(Args&&... args) { return _value.emplace(std::forward<Args>(args)...); }
 
     [[nodiscard]] constexpr bool has_value() const noexcept { return _value.has_value(); }
 
     template<class Self> constexpr auto&& operator*(this Self&& self) { return *std::forward<Self>(self)._value; }
-    template<class Self> constexpr auto&& operator->(this Self&& self) { return std::forward<Self>(self)._value.operator->(); }
+    template<class Self> constexpr auto&& operator->(this Self&& self) {
+        return std::forward<Self>(self)._value.operator->();
+    }
 
     template<class Self> constexpr auto&& value(this Self&& self) {
         if(!self.has_value()) throw std::bad_optional_access{};
@@ -129,11 +128,10 @@ struct optional<T> : optional_base {
 
     constexpr optional() noexcept : optional{std::nullopt} {}
     constexpr optional(std::nullopt_t) noexcept : _value{nullptr} {}
+
     constexpr optional(T val) noexcept : _value{std::addressof(val)} {}
 
-    constexpr void emplace(T val) noexcept {
-        *this = val;
-    }
+    constexpr void emplace(T val) noexcept { this->operator=(val); }
 
     constexpr void swap(optional& other) noexcept { std::swap(_value, other._value); }
 
