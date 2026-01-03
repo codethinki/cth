@@ -1,5 +1,5 @@
 #pragma once
-#include "../this_coro.hpp"
+#include "cth/coro/this_coro/payload.hpp"
 
 #include "cth/coro/utility/concepts.hpp"
 #include <coroutine>

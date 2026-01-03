@@ -12,7 +12,11 @@ public:
         Severity severity,
         std::source_location const& loc,
         std::stacktrace trace
-    );
+    ) : default_exception{
+        std::string{msg},
+        severity,
+        loc,
+        std::move(trace)
+    } {}
 };
 }
-

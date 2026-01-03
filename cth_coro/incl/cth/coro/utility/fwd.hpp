@@ -29,13 +29,14 @@ struct sync_promise_base;
 
 
 namespace cth::co::this_coro {
+struct payload;
+
 struct tag_base {};
 struct executor_tag;
 struct scheduler_tag;
 
 struct wait_tag;
 
-struct payload;
 }
 
 

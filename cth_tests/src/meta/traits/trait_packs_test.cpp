@@ -19,23 +19,23 @@ PACK_TEST(unpack_trait, main) {
 }
 
 PACK_TEST(first_trait_pack, main) {
-    static_assert(std::same_as<first_trait_pack_t<pack1>, pack1_t>);
+    static_assert(std::same_as<first_pack_t<pack1>, pack1_t>);
 
-    static_assert(std::same_as<first_trait_pack_t<pack1, pack2>, pack1_t>);
+    static_assert(std::same_as<first_pack_t<pack1, pack2>, pack1_t>);
     static_assert(
         std::same_as<
-            first_trait_pack_t<illegal_pack, illegal_pack, pack1>,
+            first_pack_t<illegal_pack, illegal_pack, pack1>,
             pack1_t
         >
     );
 }
 
 PACK_TEST(conditional_trait_pack, main) {
-    static_assert(std::same_as<conditional_trait_pack_t<true, pack1, pack2>, pack1_t>);
-    static_assert(std::same_as<conditional_trait_pack_t<false, pack1, pack2>, pack2_t>);
+    static_assert(std::same_as<conditional_pack_t<true, pack1, pack2>, pack1_t>);
+    static_assert(std::same_as<conditional_pack_t<false, pack1, pack2>, pack2_t>);
     static_assert(
         std::same_as<
-            conditional_trait_pack_t<true, pack1, illegal_pack>,
+            conditional_pack_t<true, pack1, illegal_pack>,
             pack1_t
         >
     );

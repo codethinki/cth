@@ -1,13 +1,11 @@
 #pragma once
+#include "cth/coro/utility.hpp"
+
 
 #include <atomic>
 #include <memory>
 
 namespace cth::co {
-
-struct signaled_t {};
-inline constexpr signaled_t signaled{};
-
 
 class fence {
 

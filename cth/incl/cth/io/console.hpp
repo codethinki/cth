@@ -6,7 +6,6 @@
 #include <print>
 
 
-
 namespace cth::io {
 
 class col_stream;

@@ -6,6 +6,9 @@
 
 namespace cth::co {
 
+struct signaled_t {};
+inline constexpr signaled_t signaled{};
+
 template<awaitable T>
 decltype(auto) extract_awaiter(T&& t) {
     if constexpr(!task<T>) return std::forward<T>(t);

@@ -1,6 +1,5 @@
 #pragma once
 #include "cth/coro/utility/fwd.hpp"
-#include "cth/meta/variadic.hpp"
 
 #include <cth/meta/coro.hpp>
 
@@ -9,8 +8,8 @@
 
 namespace cth::co::this_coro {
 
-template<class T>
-concept tag = std::is_base_of_v<tag_base, T>;
+template<class Tag>
+concept tag = std::is_base_of_v<tag_base, cth::type::rcvr_t<Tag>>;
 }
 
 

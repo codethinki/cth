@@ -12,12 +12,13 @@ class win_exception : public default_exception {
 public:
     win_exception(
         std::string_view msg,
-        Severity severity,
-        std::source_location const& loc,
-        std::stacktrace trace
+        Severity severity = Severity::ERR,
+        std::source_location const& loc = {},
+        std::stacktrace trace = {}
     );
 };
 }
+
 
 #define CTH_WIN_WARN(expression, fmt_message, ...)\
     CTH_WARN_T(cth::except::win_exception, expression, fmt_message, __VA_ARGS__)
@@ -32,6 +33,7 @@ public:
         fmt_message,\
         __VA_ARGS__\
     )
+
 
 namespace cth::win {
 using ssize_t = std::ptrdiff_t;
@@ -87,7 +89,7 @@ struct hwnd_deleter {
     void operator()(hwnd_t handle) const;
 };
 
-struct handle_deleter {
+struct handle_closer {
     /**
      * Closes a generic windows handle
      * @param handle to close
@@ -96,8 +98,9 @@ struct handle_deleter {
 };
 
 
-using file_ptr = std::unique_ptr<void, handle_deleter>;
-using handle_ptr = std::unique_ptr<void, handle_deleter>;
+using closing_handle = std::unique_ptr<void, handle_closer>;
+using file_ptr = closing_handle;
+
 
 using wnd_ptr = std::unique_ptr<void, hwnd_deleter>;
 

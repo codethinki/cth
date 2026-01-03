@@ -3,6 +3,7 @@
 
 #include <unordered_set>
 
+
 namespace cth::dt {
 class union_find {
 public:
@@ -58,8 +59,7 @@ public:
             auto& p = self.parent(r);
             p = self.parent(p);
             r = p;
-        }
-        while(!self.root(r));
+        } while(!self.root(r));
 
         return r;
     }
@@ -69,8 +69,7 @@ public:
      */
     [[nodiscard]] constexpr index_type find(this union_find const& self, index_type x) {
         auto r = x;
-        do { r = self.parent(r); }
-        while(!self.root(r));
+        do { r = self.parent(r); } while(!self.root(r));
 
         return r;
     }

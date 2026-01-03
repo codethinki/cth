@@ -1,7 +1,7 @@
 #pragma once
-#include "cth/coro/this_coro.hpp"
 #include "cth/coro/func/steal.hpp"
 #include "cth/coro/tasks/dev/capture_task.hpp"
+#include "cth/coro/this_coro/payload.hpp"
 #include "cth/coro/utility/concepts.hpp"
 
 #include <cth/coro/utility.hpp>
@@ -9,15 +9,21 @@
 
 #include <utility>
 
+
 namespace cth::co {
 class executor;
 
 
 struct this_coro_promise_base {
 
-    template<this_coro::tag T>
-    [[nodiscard]] decltype(auto) await_transform(T&& t) {
-        return std::forward<T>(t)(*_payload);
+    template<this_coro::tag Tag>
+    [[nodiscard]] decltype(auto) await_transform(Tag&& t) {
+        static_assert(
+            requires(Tag t) { { t.operator()(std::declval<this_coro::payload>()) } -> awaitable; },
+            "a this_coro tag must implement a call operator"
+        );
+
+        return std::forward<Tag>(t).operator()(*_payload);
     }
 
 

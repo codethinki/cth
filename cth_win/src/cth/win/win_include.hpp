@@ -12,7 +12,7 @@
 #include "cth/win/win_types.hpp"
 
 namespace cth::win {
-using win_file_ptr = std::unique_ptr<std::remove_pointer_t<HANDLE>, handle_deleter>;
+using win_file_ptr = std::unique_ptr<std::remove_pointer_t<HANDLE>, handle_closer>;
 
 using win_global_lock = std::unique_ptr<std::remove_pointer_t<HANDLE>, global_lock_deleter>;
 

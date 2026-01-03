@@ -64,7 +64,11 @@ CORO_TEST(executor, spawn_move_only_type) {
     scheduler sched{autostart, 1};
     executor exec{sched};
 
-    auto task = []() -> executor_task<std::unique_ptr<int>> { co_return std::make_unique<int>(123); };
+    auto task = []() -> executor_task<std::unique_ptr<int>> {
+        co_await this_coro::wait(std::chrono::microseconds{200});
+
+        co_return std::make_unique<int>(123);
+    };
 
     auto const result = sync_wait(exec, task());
     ASSERT_TRUE(result != nullptr);

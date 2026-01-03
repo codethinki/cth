@@ -50,7 +50,7 @@ public:
     void post(void_func work);
 
     void await(native_handle, void_func cb);
-    void await(std::chrono::steady_clock::time_point time_point, void_func cb);
+    void await(time_point_t time_point, void_func cb);
 
 
     void start();
@@ -97,13 +97,4 @@ public:
 
 };
 
-}
-
-
-namespace cth::co::this_coro {
-struct scheduler_tag : tag_base {
-    static scheduler& operator()(payload const&);
-};
-
-inline constexpr scheduler_tag scheduler{};
 }

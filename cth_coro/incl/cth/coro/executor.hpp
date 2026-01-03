@@ -1,8 +1,10 @@
 #pragma once
+#include "cth/coro/awaiters/data_awaiter.hpp"
 #include "cth/coro/awaiters/schedule_awaiter.hpp"
 #include "cth/coro/func/steal.hpp"
 #include "cth/coro/tasks/dev/scheduled_task.hpp"
 #include "cth/coro/utility/concepts.hpp"
+
 
 #include <cth/meta/coro.hpp>
 
@@ -12,7 +14,7 @@ class executor {
 
 
 public:
-    explicit executor(scheduler& sched) noexcept : _sched(&sched) {}
+    executor(scheduler& sched) noexcept : _sched(&sched) {}
     ~executor() = default;
 
     auto schedule() { return schedule_awaiter{scheduler()}; }
@@ -65,13 +67,11 @@ public:
 
 namespace cth::co::this_coro {
 struct executor_tag : tag_base {
-    static co::executor operator()(payload const&);
+    static auto operator()(payload const& p) {
+        return data_awaiter{executor{p.scheduler()}};
+    }
 };
 
-
-inline co::executor executor_tag::operator()(payload const& p) {
-    return co::executor{p.scheduler()};
-}
 
 inline constexpr executor_tag executor{};
 

@@ -24,17 +24,17 @@ struct trait_pack {
 };
 
 template<class Pack, class... Rest>
-consteval auto first_trait_pack() {
+consteval auto first_pack() {
     if constexpr(Pack::can_unpack)
         return Pack::unpack();
     else if constexpr(!Pack::can_unpack && sizeof...(Rest) > 0)
-        return first_trait_pack<Rest...>();
+        return first_pack<Rest...>();
     else
         static_assert(false, "no unpackable trait found");
 }
 
 template<class... TraitPacks>
-using first_trait_pack_t = identity_t<first_trait_pack<TraitPacks...>()>;
+using first_pack_t = identity_t<first_pack<TraitPacks...>()>;
 
 
 
@@ -59,6 +59,6 @@ consteval auto conditional_trait_pack() {
 }
 
 template<bool Condition, class LeftPack, class RightPack>
-using conditional_trait_pack_t = identity_t<conditional_trait_pack<Condition, LeftPack, RightPack>()>;
+using conditional_pack_t = identity_t<conditional_trait_pack<Condition, LeftPack, RightPack>()>;
 
 }

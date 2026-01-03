@@ -1,17 +1,5 @@
 #pragma once
 
-#include "cth/coro/utility/fwd.hpp"
-
-
-
-namespace cth::co::this_coro {
-struct payload {
-    constexpr payload(co::scheduler& scheduler) : _scheduler{&scheduler} {}
-
-    constexpr co::scheduler& scheduler() const { return *_scheduler; }
-
-private:
-    co::scheduler* _scheduler;
-};
-
-}
+#include "cth/coro/this_coro/payload.hpp"
+#include "cth/coro/this_coro/scheduler_tag.hpp"
+#include "cth/coro/this_coro/wait_tag.hpp"
