@@ -3,7 +3,7 @@
 #include "cth/coro/utility/exception.hpp"
 #include "utility/boost.hpp"
 #include "utility/native_handle_helpers.hpp"
-#include "utility/win_adapted_timer.hpp"
+#include "utility/timer_pool.hpp"
 
 
 #include <cth/numeric.hpp>
@@ -39,13 +39,13 @@ struct scheduler::Impl {
 
     void post(void_func work) { bas::post(ctx, std::move(work)); }
 
-    void await(native_handle handle, void_func cb) {
+    void await(native_handle handle, void_func callback) {
         auto handler = wrap_unique(handle, ctx);
         handler->async_wait(
-            [h = std::move(handler), this, f = std::move(cb)](boost::system::error_code const& ec) mutable {
+            [h = std::move(handler), this, cb = std::move(callback)](boost::system::error_code const& ec) mutable {
                 BOOST_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", h->native_handle())
 
-                post(std::move(f));
+                cb();
             }
         );
     }
