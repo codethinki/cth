@@ -1,21 +1,20 @@
-#include "cth/coro/this_coro.hpp"
+#include "test.hpp"
 
 #include "cth/coro/executor.hpp"
 #include "cth/coro/scheduler.hpp"
 #include "cth/coro/tasks/executor_task.hpp"
-
-#include "test.hpp"
+#include "cth/coro/this_coro.hpp"
 
 namespace cth::co::this_coro {
-co::scheduler sched{autostart};
-co::executor exec{sched};
 
-THIS_CORO_TEST(scheduler_tag, main) {
-    auto const task = []() -> cth::co::executor_task<co::scheduler&> {
-        co_return co_await co::this_coro::scheduler;
-    };
+TAG_TEST(scheduler_tag, returns_correct_scheduler) {
+    scheduler sched{autostart, 1};
+    executor exec{sched};
 
-    auto spawned = exec.spawn(task());
+    auto task = []() -> executor_task<scheduler&> { co_return co_await this_coro::scheduler; };
+
+    auto& actual = sync_wait(exec, task());
+    EXPECT_EQ(&actual, &sched);
 }
 
 }
