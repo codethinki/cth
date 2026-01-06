@@ -54,9 +54,7 @@ DpiAwareness set_thread_dpi_awareness(DpiAwareness awareness);
 struct scoped_dpi_awareness {
     explicit scoped_dpi_awareness(DpiAwareness new_awareness) :
         _awareness{set_thread_dpi_awareness(new_awareness)} {}
-    ~scoped_dpi_awareness() noexcept {
-        set_thread_dpi_awareness(_awareness);
-    }
+    ~scoped_dpi_awareness() noexcept { set_thread_dpi_awareness(_awareness); }
 
 private:
     DpiAwareness _awareness;
@@ -102,14 +100,34 @@ inline double desktop_scale() { return window_scale(desktop_handle()); }
  * @param dst for blit
  * @throws 
  */
-void raw_blit(hbmp_t src, ssize_t src_x, ssize_t src_y, hbmp_t dst, ssize_t dst_x, ssize_t dst_y, size_t width, size_t height);
+void raw_blit(
+    hbmp_t src,
+    ssize_t src_x,
+    ssize_t src_y,
+    hbmp_t dst,
+    ssize_t dst_x,
+    ssize_t dst_y,
+    size_t width,
+    size_t height
+);
 
 /**
  * blits from src to dst with scaling, falls back to raw_blit if sizes are equal
  * @param src to blit from
  * @param dst to blit to
  */
-void blit(hbmp_t src, ssize_t src_x, ssize_t src_y, size_t src_w, size_t src_h, hbmp_t dst, ssize_t dst_x, ssize_t dst_y, size_t dst_w, size_t dst_h);
+void blit(
+    hbmp_t src,
+    ssize_t src_x,
+    ssize_t src_y,
+    size_t src_w,
+    size_t src_h,
+    hbmp_t dst,
+    ssize_t dst_x,
+    ssize_t dst_y,
+    size_t dst_w,
+    size_t dst_h
+);
 
 /**
  * blits a bmp to the screen
@@ -117,7 +135,17 @@ void blit(hbmp_t src, ssize_t src_x, ssize_t src_y, size_t src_w, size_t src_h, 
  * @param dst screen
  * @param dpi_aware true => raw blit
  */
-void blit_to_screen(hbmp_t src, ssize_t src_x, ssize_t src_y, hbmp_t dst, ssize_t dst_x, ssize_t dst_y, size_t width, size_t height, bool dpi_aware);
+void blit_to_screen(
+    hbmp_t src,
+    ssize_t src_x,
+    ssize_t src_y,
+    hbmp_t dst,
+    ssize_t dst_x,
+    ssize_t dst_y,
+    size_t width,
+    size_t height,
+    bool dpi_aware
+);
 
 /**
  * blits from the screen to the buffer
@@ -182,7 +210,17 @@ public:
      * @attention blocks if captured faster than screen refresh rate
      */
     std::span<std::byte> capture() {
-        blit_from_screen(_screenDc.get(), _rect.x, _rect.y, _memoryDc.get(), 0, 0, _rect.width, _rect.height, _dpiAware);
+        blit_from_screen(
+            _screenDc.get(),
+            _rect.x,
+            _rect.y,
+            _memoryDc.get(),
+            0,
+            0,
+            _rect.width,
+            _rect.height,
+            _dpiAware
+        );
         make_rgba_opaque({raw(), bytes()});
         return view();
     }
@@ -219,6 +257,8 @@ private:
     void* _data{};
 
 public:
+    rect_t rect() const { return _rect; }
+
     size_t width() const { return _rect.width; }
     size_t height() const { return _rect.height; }
 

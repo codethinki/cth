@@ -1,6 +1,6 @@
 #pragma once
 
-#include <chrono>
+#include <cth/chrono.hpp>
 
 
 namespace cth::co {
@@ -37,10 +37,4 @@ struct scheduler_tag;
 
 struct wait_tag;
 
-}
-
-
-namespace cth::co {
-using clock_t = std::chrono::steady_clock;
-using time_point_t = clock_t::time_point;
 }

@@ -6,6 +6,11 @@
 
 namespace cth::fn {
 
+/**
+ * converts a member function to a lambda
+ * @tparam Fn function to call
+ * @param obj object instance to call function on
+ */
 template<auto Fn, class T>
 auto to_lambda(T& obj) {
     return [&obj]<class... Args>(Args&&... args) {

@@ -33,7 +33,7 @@ awaited_t<Task> sync_wait(executor& exec, Task task) {
 
     if constexpr(!type::is_void<value_type>)
         return std::forward<value_type>(*wrapped.handle().promise().result);
-    else 
+    else
         return;
 }
 

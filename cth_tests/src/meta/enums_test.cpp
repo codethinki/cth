@@ -9,7 +9,7 @@ enum class A : size_t {
     SECOND = 2,
     OR_RESULT = 3
 };
-CTH_GEN_ENUM_OVERLOADS(A)
+CTH_GEN_ENUM_FLAG_OVERLOADS(A)
 
 TYPE_TEST(MACRO_CTH_ENUM_OVERLOADS, main) {
     constexpr auto x = A::FIRST;

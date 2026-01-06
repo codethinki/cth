@@ -1,3 +1,18 @@
+#[[[
+# package_find_package(<args>...)
+# Wraps find_package to ensure dependencies are found during build
+# AND recorded for the generated package configuration file using find_dependency.
+#]]
+function(package_find_package)
+    # 1. Standard find_package for the current build
+    find_package(${ARGN})
+
+    # 2. Record for installation
+    # We strip semicolons to write a clean argument string to the config file.
+    # find_dependency expects essentially the same arguments as find_package.
+    string(REPLACE ";" " " ARGS_STR "${ARGN}")
+    set_property(GLOBAL APPEND_STRING PROPERTY _PROJECT_PACKAGE_DEPENDENCIES "find_dependency(${ARGS_STR})\n")
+endfunction()
 
 #[[[
 # package_target_include_directories(<target_name> [PUBLIC|PRIVATE|INTERFACE] <dirs>...)
@@ -138,9 +153,15 @@ function(setup_package)
     )
 
     # --- Part 2: Auto-generate and Install Config/Version files ---
+    
+    # Retrieve dependencies recorded by package_find_package
+    get_property(PACKAGE_DEPENDENCIES GLOBAL PROPERTY _PROJECT_PACKAGE_DEPENDENCIES)
+
     set(TEMP_CONFIG_IN_PATH "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake.in")
     file(WRITE ${TEMP_CONFIG_IN_PATH}
             "@PACKAGE_INIT@\n\n"
+            "include(CMakeFindDependencyMacro)\n"   # Required for find_dependency
+            "${PACKAGE_DEPENDENCIES}\n"             # Injected dependencies
             "include(\"\${CMAKE_CURRENT_LIST_DIR}/${TARGETS_FILENAME}\")\n"
     )
 

@@ -8,6 +8,8 @@
 
 #include "promises/this_coro_promise_base.hpp"
 
+#include <utility>
+
 namespace cth::co::dev {
 template<class T>
 struct sync_promise_template : sync_promise_base, basic_promise<T, std::suspend_always{}, final_sync_awaiter{}> {};
@@ -49,7 +51,23 @@ struct sync_executor_promise : this_coro_promise_base, sync_promise_template<T> 
 namespace cth::co {
 
 template<class T>
-class sync_task : public dev::sync_task_template<dev::sync_promise<T>, dev::basic_awaiter> {};
+class sync_task : public dev::sync_task_template<dev::sync_promise<T>, dev::basic_awaiter> {
+public:
+    decltype(auto) resume() { return this->handle().resume(); }
+
+    [[nodiscard]] T await() {
+        this->wait();
+
+        auto& exceptionPtr = this->handle().promise().exception;
+        if(exceptionPtr)
+            std::rethrow_exception(exceptionPtr);
+
+        if constexpr(type::is_void<T>)
+            return;
+        else
+            return std::forward<T>(*(this->handle().promise().result));
+    }
+};
 using sync_void_task = sync_task<void>;
 
 template<class T>

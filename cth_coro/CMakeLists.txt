@@ -9,7 +9,7 @@ package_target_include_directories(
         PUBLIC incl
 )
 
-find_package(Boost REQUIRED COMPONENTS asio)
+package_find_package(Boost REQUIRED COMPONENTS asio)
 
 target_link_libraries(cth_coro PUBLIC cth::cth)
 

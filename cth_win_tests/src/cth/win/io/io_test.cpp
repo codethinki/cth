@@ -1,11 +1,10 @@
 #include "test.hpp"
 
-#define WIN_IO_TEST(suite, test_name) WIN_EX_TEST(_io, suite, test_name)
 
 #include "cth/win/io.hpp"
-
-#include "cth/io/log.hpp"
 #include "cth/win/string.hpp"
+
+#include <cth/io/log.hpp>
 
 #include <filesystem>
 #include <fstream>

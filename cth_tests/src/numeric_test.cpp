@@ -56,4 +56,12 @@ NUM_TEST(in_inc, 1d) {
     EXPECT_FALSE(in_inc(15, 0, 10));
 }
 
+NUM_TEST(abs_diff, main) {
+    uint8_t a = 1;
+    uint8_t b = 2;
+
+    EXPECT_EQ(abs_diff(a, b), 1);
+    EXPECT_EQ(abs_diff(b, a), 1);
+}
+
 }

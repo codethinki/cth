@@ -13,10 +13,27 @@ namespace cth {
 namespace num {
     template<std::integral T, std::integral U>
     [[nodiscard]] cxpr auto abs_diff(T t, U u) {
-        using base_t = std::make_unsigned_t<decltype(std::declval<T>() - std::declval<U>())>;
+        using base_t = std::conditional_t<
+            std::unsigned_integral<T> && std::unsigned_integral<U>,
+            std::conditional_t<
+                (sizeof(T) > sizeof(U)),
+                T,
+                U
+            >,
+            std::make_unsigned_t<decltype(std::declval<T>() - std::declval<U>())>
+        >;
+
+        using diff_t = decltype(t - u);
+        using cast_t = std::conditional_t<
+            std::unsigned_integral<diff_t>,
+            long long,
+            diff_t
+        >;
+
+
         if constexpr(std::same_as<size_t, base_t>)
             return static_cast<base_t>(std::max(t, u) - std::min(t, u));
-        else return static_cast<base_t>(t - u);
+        else return static_cast<base_t>(std::abs(static_cast<cast_t>(t) - static_cast<cast_t>(u)));
     }
 
     /**
@@ -70,9 +87,7 @@ namespace num {
     }
 
     template<std::integral auto Size> requires(Size > 0)
-    cval bool power_2() {
-        return Size == 0 || ((Size & (Size - 1)) == 0);
-    }
+    cval bool power_2() { return Size == 0 || ((Size & (Size - 1)) == 0); }
 
 
     template<std::integral auto Multiple> requires(Multiple > 0)
@@ -84,9 +99,7 @@ namespace num {
     }
 
     template<class T>
-    cxpr auto align_to(std::integral auto unaligned) {
-        return cth::num::align_to<sizeof(T)>(unaligned);
-    }
+    cxpr auto align_to(std::integral auto unaligned) { return cth::num::align_to<sizeof(T)>(unaligned); }
 
 
     template<std::floating_point T>
@@ -103,7 +116,6 @@ namespace num {
 
     template<std::floating_point T>
     [[nodiscard]] cxpr T heron_sqrt(T x, T precision) {
-
         CTH_CRITICAL(x < 0, "heronSqrt: x ({}) >= 0 required", x) {}
 
         T val = x * static_cast<T>(0.5);
@@ -127,13 +139,13 @@ namespace num {
         return a <= x && x < b;
     }
 
-    [[nodiscard]] cxpr bool in_inc(auto x, auto a, auto b) {
-        return a <= x && x <= b;
-    }
+    [[nodiscard]] cxpr bool in_inc(auto x, auto a, auto b) { return a <= x && x <= b; }
 
 
     template<type::arithmetic T, type::arithmetic U>
-    [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y) { return num::in(x, a_x, b_x) && num::in(y, a_y, b_y); }
+    [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y) {
+        return num::in(x, a_x, b_x) && num::in(y, a_y, b_y);
+    }
 
     /*  template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
       [[nodiscard]] cxpr T sqam(T base, U power, V mod) {
@@ -172,10 +184,14 @@ namespace num {
 //---------------------
 namespace expr::num {
 
-    [[nodiscard]] constexpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b) { return cth::num::map(x, in_a, in_b, out_a, out_b); }
+    [[nodiscard]] constexpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b) {
+        return cth::num::map(x, in_a, in_b, out_a, out_b);
+    }
 
     template<std::floating_point T>
-    [[nodiscard]] cxpr T heron_sqrt(T x, T const precision = static_cast<T>(1e-6)) { return cth::num::heron_sqrt(x, precision); }
+    [[nodiscard]] cxpr T heron_sqrt(T x, T const precision = static_cast<T>(1e-6)) {
+        return cth::num::heron_sqrt(x, precision);
+    }
 
     template<std::integral T>
     [[nodiscard]] cxpr T cycle(T x, T a, T b) { return cth::num::cycle(x, a, b); }
@@ -190,7 +206,9 @@ namespace expr::num {
     [[nodiscard]] cxpr bool in(auto x, auto a, auto b) { return cth::num::in(x, a, b); }
 
     template<type::arithmetic T>
-    [[nodiscard]] constexpr bool in(T x, T a_x, T b_x, T y, T a_y, T b_y) { return cth::num::in(x, a_x, b_x, y, a_y, b_y); }
+    [[nodiscard]] constexpr bool in(T x, T a_x, T b_x, T y, T a_y, T b_y) {
+        return cth::num::in(x, a_x, b_x, y, a_y, b_y);
+    }
 
     //template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
     //[[nodiscard]] cxpr T sqam(T base, U power, V mod) { return cth::num::sqam(base, power, mod); }

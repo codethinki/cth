@@ -1,12 +1,13 @@
 #pragma once
-#include "cth/constants.hpp"
-
-#include "cth/types.hpp"
-
 #include "cth/algorithm.hpp"
+#include "cth/chrono.hpp"
+#include "cth/constants.hpp"
 #include "cth/exception.hpp"
+#include "cth/functional.hpp"
+#include "cth/hash.hpp"
 #include "cth/io.hpp"
+#include "cth/meta.hpp"
 #include "cth/numeric.hpp"
-#include "cth/pointers.hpp"
+#include "cth/ptr.hpp"
 #include "cth/string.hpp"
 #include "cth/utility/image.hpp"
