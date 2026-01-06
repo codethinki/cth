@@ -66,7 +66,7 @@ public:
 
 
 namespace cth::co::this_coro {
-struct executor_tag : tag_base {
+struct [[nodiscard]] executor_tag : tag_base {
     static auto operator()(payload const& p) {
         return data_awaiter{executor{p.scheduler()}};
     }

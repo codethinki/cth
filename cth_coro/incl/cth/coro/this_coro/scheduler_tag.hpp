@@ -5,7 +5,7 @@
 
 
 namespace cth::co::this_coro {
-struct scheduler_tag : tag_base {
+struct [[nodiscard]] scheduler_tag : tag_base {
     static auto operator()(payload const& payload) {
         return data_awaiter<co::scheduler&>{payload.scheduler()};
     }
