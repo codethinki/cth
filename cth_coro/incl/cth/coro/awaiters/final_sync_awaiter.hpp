@@ -3,7 +3,7 @@
 
 namespace cth::co {
 struct final_sync_awaiter {
-    bool await_ready() noexcept { return false; }
+    constexpr bool await_ready() noexcept { return false; }
 
     template<sync_promise_type Promise>
     auto await_suspend(std::coroutine_handle<Promise> h) noexcept -> std::coroutine_handle<> {
@@ -15,7 +15,7 @@ struct final_sync_awaiter {
         return std::noop_coroutine();
     }
 
-    void await_resume() noexcept {}
+    constexpr void await_resume() noexcept {}
 };
 
 }

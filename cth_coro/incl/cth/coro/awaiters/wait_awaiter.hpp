@@ -20,7 +20,7 @@ struct wait_awaiter {
         scheduler.await(timePoint, [h]() { h.resume(); });
     }
 
-    void await_resume() const noexcept {}
+    constexpr void await_resume() const noexcept {}
 };
 
 }

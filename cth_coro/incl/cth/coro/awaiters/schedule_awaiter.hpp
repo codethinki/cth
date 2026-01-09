@@ -12,6 +12,6 @@ struct schedule_awaiter {
 
     void await_suspend(std::coroutine_handle<> h) const { scheduler.post([h]() { h.resume(); }); }
 
-    void await_resume() const noexcept {}
+    constexpr void await_resume() const noexcept {}
 };
 }

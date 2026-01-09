@@ -6,13 +6,16 @@ namespace cth::co {
 template<class T>
 class data_awaiter {
 public:
-    explicit data_awaiter(T type) : _type{type} {}
+    constexpr explicit data_awaiter(T type) : _type{type} {}
 
-    bool await_ready() const noexcept { return true; }
-    void await_suspend(std::coroutine_handle<>) const noexcept {}
-    T await_resume() const noexcept { return _type; }
+    [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
+
+    constexpr void await_suspend(std::coroutine_handle<>) const noexcept {}
+
+    [[nodiscard]] constexpr T await_resume() const noexcept { return _type; }
 
 private:
     T _type;
 };
+
 }

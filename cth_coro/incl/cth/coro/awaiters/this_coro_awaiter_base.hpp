@@ -11,7 +11,7 @@ namespace cth::co {
  * Base for awaitables which support executor injection
  */
 struct this_coro_awaiter_base {
-    this_coro_awaiter_base() = default;
+    constexpr this_coro_awaiter_base() = default;
 
     /**
      * Injects the executor into the current promise
@@ -36,7 +36,7 @@ struct this_coro_awaiter_base {
      * injects the this_coro payload into this awaiter unless it already has one
      * @param payload to inject
      */
-    void inject(this_coro::payload payload) { if(!_payload) _payload.emplace(payload); }
+    constexpr void inject(this_coro::payload payload) { if(!_payload) _payload.emplace(payload); }
 
 private:
     std::optional<this_coro::payload> _payload{};

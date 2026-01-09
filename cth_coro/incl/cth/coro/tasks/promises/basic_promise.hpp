@@ -10,7 +10,7 @@ struct basic_promise : raw_promise<T> {
     using initial_suspend_type = decltype(InitS);
     using final_suspend_type = decltype(FinalS);
 
-    auto initial_suspend() noexcept { return InitS; }
-    auto final_suspend() noexcept { return FinalS; }
+    constexpr auto initial_suspend() noexcept { return InitS; }
+    constexpr auto final_suspend() noexcept { return FinalS; }
 };
 }

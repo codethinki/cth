@@ -11,18 +11,18 @@ template<cth_promise Promise>
 struct basic_awaiter {
     using promise_type = Promise;
 
-    basic_awaiter(std::coroutine_handle<promise_type> h) : handle{h} {}
+    constexpr basic_awaiter(std::coroutine_handle<promise_type> h) : handle{h} {}
 
     std::coroutine_handle<promise_type> handle;
 
-    [[nodiscard]] bool await_ready() const noexcept { return !handle || handle.done(); }
+    [[nodiscard]] constexpr bool await_ready() const noexcept { return !handle || handle.done(); }
 
-    auto await_suspend(std::coroutine_handle<> caller) noexcept -> std::coroutine_handle<promise_type> {
+    [[nodiscard]] auto await_suspend(std::coroutine_handle<> caller) noexcept -> std::coroutine_handle<promise_type> {
         handle.promise().continuation = caller;
         return handle;
     }
 
-    promise_value_type<Promise> await_resume() {
+    [[nodiscard]] auto await_resume() -> promise_value_type<Promise> {
         using return_value = promise_value_type<Promise>;
 
         if(handle.promise().exception)
