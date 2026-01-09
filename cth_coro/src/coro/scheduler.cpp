@@ -1,6 +1,5 @@
 #include "cth/coro/scheduler.hpp"
 
-#include "cth/coro/utility/exception.hpp"
 #include "utility/boost.hpp"
 #include "utility/native_handle_helpers.hpp"
 #include "utility/timer_pool.hpp"

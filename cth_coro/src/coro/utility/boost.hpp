@@ -1,6 +1,8 @@
 #pragma once
 #include <boost/asio/error.hpp>
 
+#include "cth/coro/exception.hpp"
+
 namespace bas = boost::asio;
 
 #define BOOST_EC_STABLE_THROW(ec, msg, ...) \
