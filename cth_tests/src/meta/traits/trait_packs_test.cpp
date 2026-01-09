@@ -5,7 +5,7 @@
 #define PACK_TEST(suite, name) TYPE_TEST(suite, name)
 
 
-namespace cth::type {
+namespace cth::mta {
 using illegal_pack = trait_pack<std::ranges::range_value_t, int>;
 using pack1 = trait_pack<std::remove_cv_t, double* const>;
 using pack1_t = double*;

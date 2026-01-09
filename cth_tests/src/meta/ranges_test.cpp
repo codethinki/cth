@@ -11,7 +11,7 @@ using T = std::array<std::vector<Prev>, 20>;
 constexpr size_t rank = 3;
 
 
-namespace cth::type {
+namespace cth::mta {
 
 TYPE_TEST(dimensions, exact) {
     constexpr auto result = dimensions<T, rank>();
@@ -35,7 +35,7 @@ TYPE_TEST(dimensions, limited) {
 }
 
 
-namespace cth::type {
+namespace cth::mta {
 TYPE_TEST(md_range, true) {
     ASSERT_TRUE((md_range<T, rank>));
 
@@ -47,7 +47,7 @@ TYPE_TEST(md_range, false) {
 }
 
 
-namespace cth::type {
+namespace cth::mta {
 TYPE_TEST(md_range_value_t, exact) {
     ASSERT_TRUE((std::same_as<md_range_value_t<T, rank>, Base>));
 }
@@ -60,7 +60,7 @@ TYPE_TEST(md_range_value_t, larger) {
 }
 
 
-namespace cth::type {
+namespace cth::mta {
 TYPE_TEST(md_range_over, exact) {
     ASSERT_TRUE((md_range_over<T, Base, rank>));
 }
@@ -71,7 +71,7 @@ TYPE_TEST(md_range_over, larger) {
     ASSERT_TRUE((md_range_over<T, Base>));
 }
 }
-namespace cth::type {
+namespace cth::mta {
 TYPE_TEST(md_range_over_cpt, exact) {
     ASSERT_TRUE((md_range_over_cpt<T, CPT(std::same_as<Base>), rank>));
 }

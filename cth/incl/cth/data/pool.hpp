@@ -24,7 +24,7 @@ class pool {
     using storage_type = std::deque<T>;
 
 public:
-    static constexpr bool HAS_RESET = requires(Manipulator m, T& t) { { m.reset(t) } -> type::is_void; };
+    static constexpr bool HAS_RESET = requires(Manipulator m, T& t) { { m.reset(t) } -> mta::is_void; };
     using value_type = T;
 
     explicit pool(Manipulator manipulator = {}) : _manipulator{std::move(manipulator)} {}

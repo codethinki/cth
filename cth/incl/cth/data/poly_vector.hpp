@@ -12,7 +12,7 @@
 
 namespace cth::dt {
 
-template<type::trivial... Ts> requires(sizeof...(Ts) >= 1)
+template<mta::trivial... Ts> requires(sizeof...(Ts) >= 1)
 class raw_poly_vector {
 public:
     static constexpr size_t MIN_ALIGN = alignof(std::max_align_t);
@@ -20,7 +20,7 @@ public:
     static constexpr size_t N = sizeof...(Ts);
 
     template<size_t I> requires(I < N)
-    using value_type = type::get_t<I, Ts...>;
+    using value_type = mta::get_t<I, Ts...>;
 
 private:
     static constexpr std::array<size_t, N> TYPE_ALIGNS{std::max(MIN_ALIGN, alignof(Ts))...};
@@ -39,7 +39,7 @@ public:
     [[nodiscard]] constexpr auto data(this S& s) noexcept {
         static_assert(I < N, "I is out of bounds");
 
-        using ptr_t = type::fwd_const_t<S, value_type<I>>*;
+        using ptr_t = mta::fwd_const_t<S, value_type<I>>*;
 
         // TEMP use std::start_lifetime_as_array
         return std::assume_aligned<TYPE_ALIGNS[I]>(reinterpret_cast<ptr_t>(s._begins[I]));
@@ -106,7 +106,7 @@ public:
 
 namespace cth::dt {
 
-template<type::trivial... Ts>
+template<mta::trivial... Ts>
 class poly_vector {
 public:
     static constexpr size_t SIZE = sizeof...(Ts);
@@ -116,7 +116,7 @@ private:
     using base_t = raw_poly_vector<size_t, Ts...>;
 
     template<class S>
-    using cbase_t = type::fwd_const_t<S, base_t>;
+    using cbase_t = mta::fwd_const_t<S, base_t>;
 
     template<size_t I, class S> requires(I <= N)
     [[nodiscard]] auto* raw_data(this S& s) noexcept { return s._base.template data<I>(); }
@@ -129,7 +129,7 @@ private:
 
 public:
     template<size_t I> requires(I < N)
-    using value_type = type::get_t<I, Ts...>;
+    using value_type = mta::get_t<I, Ts...>;
 
     explicit constexpr poly_vector(std::span<size_t const> sz) : _base{make_sizes_array(sz)} {
         CTH_CRITICAL(sz.size() != N, "invalid size range given") {}

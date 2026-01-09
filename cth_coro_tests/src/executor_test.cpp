@@ -32,7 +32,7 @@ auto sync_wait(executor& exec, Task task) {
 
     wrapped.wait();
 
-    if constexpr(!type::is_void<value_type>)
+    if constexpr(!mta::is_void<value_type>)
         return std::move(*wrapped.handle().promise().result);
 }
 

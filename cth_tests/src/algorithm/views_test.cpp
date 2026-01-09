@@ -28,8 +28,8 @@ VIEWS_TEST(to_ptr_range, const_type) {
     using expected_t = base_t*;
     using range_t = std::span<base_t>; // NOLINT(portability-std-allocator-const)
 
-    using call_actual_t = type::md_range_value_t<decltype(to_ptr_range(std::declval<range_t>()))>;
-    using pipe_actual_t = type::md_range_value_t<decltype(std::declval<range_t>() | to_ptr_range)>;
+    using call_actual_t = mta::md_range_value_t<decltype(to_ptr_range(std::declval<range_t>()))>;
+    using pipe_actual_t = mta::md_range_value_t<decltype(std::declval<range_t>() | to_ptr_range)>;
 
     // ReSharper disable once CppIdenticalOperandsInBinaryExpression
     static_assert(

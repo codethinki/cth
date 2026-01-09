@@ -3,7 +3,7 @@
 
 
 
-namespace cth::type {
+namespace cth::mta {
 namespace dev {
     template<std::ranges::range Rng, size_t Max>
     cval size_t dimensions(size_t n) {
@@ -20,7 +20,7 @@ template<class Rng, size_t Max>
 namespace dev {
     template<class Rng, size_t D>
     cval auto md_range_value() {
-        static constexpr auto RANK = type::dimensions<Rng, D>();
+        static constexpr auto RANK = mta::dimensions<Rng, D>();
 
         using T = iterate_trait_t<Rng, std::ranges::range_value_t, RANK>;
 

@@ -3,7 +3,7 @@
 #include "cth/meta/tuple.hpp"
 
 
-namespace cth::type {
+namespace cth::mta {
     TYPE_TEST(n_tuple, main) {
         [[maybe_unused]] constexpr auto ex1 = n_tuple<5, int>(1);
         [[maybe_unused]] constexpr auto ex2 = n_tuple<5, int>();

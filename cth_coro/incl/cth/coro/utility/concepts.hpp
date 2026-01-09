@@ -9,7 +9,7 @@
 namespace cth::co::this_coro {
 
 template<class Tag>
-concept tag = std::is_base_of_v<tag_base, cth::type::rcvr_t<Tag>>;
+concept tag = std::is_base_of_v<tag_base, cth::mta::rcvr_t<Tag>>;
 }
 
 

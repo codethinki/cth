@@ -15,7 +15,7 @@ cxpr dclauto operator|(T&& left, Fn&& fn) { return std::forward<Fn>(fn)(std::for
 
 namespace cth::ranges {
 template<class Fn, class... FnArgs> struct pipe_call_closure : piped_fn {
-    static_assert(cth::type::all_satisfy<CPT(cth::type::decayed), FnArgs...>, "the contained types must not be references");
+    static_assert(cth::mta::all_satisfy<CPT(cth::mta::decayed), FnArgs...>, "the contained types must not be references");
 
     template<class... CArgs> requires(std::same_as<std::decay_t<CArgs>, FnArgs> && ...)
     explicit cxpr pipe_call_closure(CArgs&&... args) : _args{std::forward<CArgs>(args)...} {}

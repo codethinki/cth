@@ -2,7 +2,7 @@
 #include <utility>
 
 
-namespace cth::type {
+namespace cth::mta {
 
 template<class T>
 using print_t = std::type_identity_t<T>;

@@ -18,7 +18,7 @@ awaited_t<Task> sync_wait(executor& exec, Task task) {
     using value_type = typename Task::promise_type::value_type;
 
     auto wrapper = [](executor& exec, Task t) -> sync_task<value_type> {
-        if constexpr(type::is_void<value_type>)
+        if constexpr(mta::is_void<value_type>)
             co_await exec.spawn(std::move(t));
         else
             co_return co_await exec.spawn(std::move(t));
@@ -31,7 +31,7 @@ awaited_t<Task> sync_wait(executor& exec, Task task) {
 
     wrapped.wait();
 
-    if constexpr(!type::is_void<value_type>)
+    if constexpr(!mta::is_void<value_type>)
         return std::forward<value_type>(*wrapped.handle().promise().result);
     else
         return;

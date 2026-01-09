@@ -74,7 +74,7 @@ template<awaitable Awaitable>
 using awaited_t = typename decltype(dev::awaited_type<Awaitable>())::type;
 
 template<class Awaitable>
-concept void_awaitable = awaitable<Awaitable> && std::same_as<void, type::rcvr_t<awaited_t<Awaitable>>>;
+concept void_awaitable = awaitable<Awaitable> && std::same_as<void, mta::rcvr_t<awaited_t<Awaitable>>>;
 
 }
 

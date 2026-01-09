@@ -9,7 +9,7 @@
 
 //md_range
 
-namespace cth::type {
+namespace cth::mta {
 
 /**
  * @brief counts the dimensions of @ref Rng
@@ -72,7 +72,7 @@ concept range_over = std::ranges::range<Rng> && std::same_as<std::ranges::range_
 namespace cth::rng {
 
 template<class Rng>
-concept static_dim_rng = std::ranges::range<Rng> && !std::same_as<std::ranges::range_value_t<Rng>, type::rcvr_t<Rng>>;
+concept static_dim_rng = std::ranges::range<Rng> && !std::same_as<std::ranges::range_value_t<Rng>, mta::rcvr_t<Rng>>;
 
 /**
  * @brief accepts viewable or copy viewable ranges
@@ -80,16 +80,16 @@ concept static_dim_rng = std::ranges::range<Rng> && !std::same_as<std::ranges::r
 template<class Rng>
 concept viewable_rng = std::ranges::viewable_range<Rng>
     || (
-        std::ranges::viewable_range<type::rcvr_t<Rng>>
-        && requires(Rng rng) { type::rcvr_t<Rng>{rng}; }
+        std::ranges::viewable_range<mta::rcvr_t<Rng>>
+        && requires(Rng rng) { mta::rcvr_t<Rng>{rng}; }
     );
 
 template<viewable_rng Rng>
 auto cxpr to_viewable(Rng&& rng) {
     if constexpr(std::ranges::viewable_range<Rng>) return std::forward<Rng>(rng);
     else {
-        static_assert(requires() { type::rcvr_t<Rng>{rng}; }, "range must be view- or copyable");
-        return type::rcvr_t<Rng>{rng};
+        static_assert(requires() { mta::rcvr_t<Rng>{rng}; }, "range must be view- or copyable");
+        return mta::rcvr_t<Rng>{rng};
     }
 }
 }

@@ -3,7 +3,7 @@
 #include "cth/meta/concepts.hpp"
 //any_of
 
-namespace cth::type {
+namespace cth::mta {
 /**
  * \brief ::type is equal to first of Ts... that's equal to T or Fallback if none are
  * \tparam Fallback if none of Ts... are equal to T
@@ -32,13 +32,13 @@ template<typename T, typename... Ts> requires (any_of<T, Ts...>)
 auto to_same_of(T&& arg) { return std::forward<T>(arg); }
 
 template<typename... Ts, typename T>
-auto to_same(T&& arg) { return type::to_same_of<T, Ts...>(std::forward<T>(arg)); }
+auto to_same(T&& arg) { return mta::to_same_of<T, Ts...>(std::forward<T>(arg)); }
 }
 
 
 //convert_to_any
 
-namespace cth::type {
+namespace cth::mta {
 template<typename Fallback, typename T, typename... Ts>
 struct fallback_convert_to_any_helper;
 template<typename Fallback, typename T, typename First, typename... Rest>
@@ -70,17 +70,17 @@ struct convert_to_any_trait {
 
 template<typename U, typename... Ts, typename T> requires(convertible_to_any<T, Ts...>)
 auto to_convertible_from(T&& arg) {
-    if constexpr(any_of<T, Ts...>) return type::to_same_of<T, Ts...>(std::forward<T>(arg));
+    if constexpr(any_of<T, Ts...>) return mta::to_same_of<T, Ts...>(std::forward<T>(arg));
     else return static_cast<convert_to_any_t<U, Ts...>>(arg);
 }
 
 template<typename... Ts, typename T>
-auto to_convertible(T&& arg) { return type::to_convertible_from<T, Ts...>(std::forward<T>(arg)); }
+auto to_convertible(T&& arg) { return mta::to_convertible_from<T, Ts...>(std::forward<T>(arg)); }
 }
 
 //construct_any_from
 
-namespace cth::type {
+namespace cth::mta {
 template<typename Fallback, typename T, typename... Ts>
 struct fallback_construct_any_from_helper;
 template<typename Fallback, typename T, typename First, typename... Rest>
@@ -131,10 +131,10 @@ struct construct_any_from_trait {
 
 template<typename U, typename... Ts, typename T> requires(any_constructible_from<T, Ts...>)
 auto to_constructible_from(T&& arg) {
-    if constexpr(convertible_to_any<U, Ts...>) return cth::type::to_convertible_from<U, Ts...>(std::forward<T>(arg));
+    if constexpr(convertible_to_any<U, Ts...>) return cth::mta::to_convertible_from<U, Ts...>(std::forward<T>(arg));
     else return construct_any_from_t<U, Ts...>{arg};
 }
 template<typename... Ts, typename T>
-auto to_constructible(T&& arg) { return type::to_constructible_from<T, Ts...>(std::forward<T>(arg)); }
+auto to_constructible(T&& arg) { return mta::to_constructible_from<T, Ts...>(std::forward<T>(arg)); }
 
 }

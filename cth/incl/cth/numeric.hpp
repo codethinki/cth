@@ -52,7 +52,7 @@ namespace num {
 
     [[nodiscard]] cxpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b);
 
-    template<type::arithmetic T>
+    template<mta::arithmetic T>
     [[nodiscard]] T dist(T x1, T y1, T x2, T y2);
 
     /**
@@ -63,14 +63,14 @@ namespace num {
     /**
      * @brief in for two values
      */
-    template<type::arithmetic T, type::arithmetic U>
+    template<mta::arithmetic T, mta::arithmetic U>
     [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y);
 
     /**
      * @brief calculates the unsigned integral power of an arithmetic base
      * @attention power must be >= 0
      */
-    template<type::arithmetic T>
+    template<mta::arithmetic T>
     [[nodiscard]] cxpr T pow(T base, std::integral auto power);
 } // namespace num
 
@@ -128,7 +128,7 @@ namespace num {
         return out_a + (out_b - out_a) * ((x - in_a) / (in_b - in_a));
     }
 
-    template<type::arithmetic T>
+    template<mta::arithmetic T>
     [[nodiscard]] T dist(T x1, T y1, T x2, T y2) {
         T const dx = x2 - x1, dy = y2 - y1;
         return static_cast<T>(std::sqrt(dx * dx + dy * dy));
@@ -142,7 +142,7 @@ namespace num {
     [[nodiscard]] cxpr bool in_inc(auto x, auto a, auto b) { return a <= x && x <= b; }
 
 
-    template<type::arithmetic T, type::arithmetic U>
+    template<mta::arithmetic T, mta::arithmetic U>
     [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y) {
         return num::in(x, a_x, b_x) && num::in(y, a_y, b_y);
     }
@@ -163,7 +163,7 @@ namespace num {
           return val;
       }*/
 
-    template<type::arithmetic T>
+    template<mta::arithmetic T>
     [[nodiscard]] cxpr T pow(T base, std::integral auto power) {
         CTH_CRITICAL(power < 0, "power must be > 0") {}
         T result{1};
@@ -196,7 +196,7 @@ namespace expr::num {
     template<std::integral T>
     [[nodiscard]] cxpr T cycle(T x, T a, T b) { return cth::num::cycle(x, a, b); }
 
-    template<type::arithmetic T>
+    template<mta::arithmetic T>
     [[nodiscard]] cxpr T dist(T x1, T y1, T x2, T y2, T const precision = static_cast<T>(1e-6)) {
         auto const dx = static_cast<double>(x2 - x1), dy = static_cast<double>(y2 - y1);
         return static_cast<T>(cth::num::heron_sqrt(dx * dx + dy * dy, precision));
@@ -205,7 +205,7 @@ namespace expr::num {
     [[nodiscard]] cxpr bool in_inc(auto x, auto a, auto b) { return cth::num::in_inc(x, a, b); }
     [[nodiscard]] cxpr bool in(auto x, auto a, auto b) { return cth::num::in(x, a, b); }
 
-    template<type::arithmetic T>
+    template<mta::arithmetic T>
     [[nodiscard]] constexpr bool in(T x, T a_x, T b_x, T y, T a_y, T b_y) {
         return cth::num::in(x, a_x, b_x, y, a_y, b_y);
     }
@@ -214,7 +214,7 @@ namespace expr::num {
     //[[nodiscard]] cxpr T sqam(T base, U power, V mod) { return cth::num::sqam(base, power, mod); }
 
 
-    template<type::arithmetic T>
+    template<mta::arithmetic T>
     [[nodiscard]] cxpr T pow(T base, std::unsigned_integral auto power) { return cth::num::pow(base, power); }
 
 

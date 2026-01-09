@@ -5,7 +5,7 @@
 #include <mdspan>
 
 
-namespace cth::type {
+namespace cth::mta {
 
 /**
  * @brief creates a std::extents with D dimensions and equal extents
@@ -17,9 +17,9 @@ template<size_t D, auto Extent>
 [[nodiscard]] cval auto mdextent() {
     return std::apply(
         []<class... Args>(Args... args) {
-            return std::extents<decltype(Extent), (type::zero<Args>(), Extent)...>{args...};
+            return std::extents<decltype(Extent), (mta::zero<Args>(), Extent)...>{args...};
         },
-        type::n_tuple<D>(Extent)
+        mta::n_tuple<D>(Extent)
     );
 }
 

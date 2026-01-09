@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 
-namespace cth::type {
+namespace cth::mta {
 template<class T, template<class> class Trait, size_t N>
 [[nodiscard]] cval auto iterate_trait() {
     constexpr bool valid = applicable<T, Trait>;

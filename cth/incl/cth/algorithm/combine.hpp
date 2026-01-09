@@ -18,9 +18,9 @@ namespace cth::alg {
  * \return vector of T, empty if no unique selection is possible
  * \note this is bruteforce
  */
-template<type::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
+template<mta::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
 [[nodiscard]] auto unique_combine(Rng const& selections) {
-    using T = std::remove_cvref_t<type::range2d_value_t<Rng>>;
+    using T = std::remove_cvref_t<mta::range2d_value_t<Rng>>;
 
 
     std::unordered_set<T> uniqueElements{};
@@ -64,9 +64,9 @@ namespace cth::alg {
  * \param b_max  max assignments for b's
  * \return vector<integral> based on Rng1
  */
-template<type::range2d_over_cpt<CPT(std::integral)> Rng1, type::range_over_cpt<CPT(std::integral)> Rng2>
-auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<type::range2d_value_t<Rng1>> {
-    using T = type::range2d_value_t<Rng1>;
+template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT(std::integral)> Rng2>
+auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<mta::range2d_value_t<Rng1>> {
+    using T = mta::range2d_value_t<Rng1>;
 
     CTH_CRITICAL(
         !std::ranges::all_of(

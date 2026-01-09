@@ -62,7 +62,7 @@ public:
         if(exceptionPtr)
             std::rethrow_exception(exceptionPtr);
 
-        if constexpr(type::is_void<T>)
+        if constexpr(mta::is_void<T>)
             return;
         else
             return std::forward<T>(*(this->handle().promise().result));

@@ -123,15 +123,15 @@ namespace dev {
     }};
 
 
-    template<type::character T = char>
+    template<mta::character T = char>
     static cxpr std::string_view ansiCode(Text_Colors color) {
         return TEXT_COLOR_CODES_N[color];
     }
-    template<type::character T = char>
+    template<mta::character T = char>
     static cxpr std::string_view ansiCode(BG_Colors color) {
         return BG_COLOR_CODES_N[color];
     }
-    template<type::character T = char>
+    template<mta::character T = char>
     static cxpr std::string_view ansiCode(Text_Styles color) {
         return TEXT_STYLE_CODES_N[color];
     }

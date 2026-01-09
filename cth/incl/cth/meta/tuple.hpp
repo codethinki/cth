@@ -7,11 +7,11 @@
 
 //tuple functions
 
-namespace cth::type {
+namespace cth::mta {
 
 namespace dev {
     template<class T, size_t... I>
-    cval auto n_tuple_gen(T fill, std::index_sequence<I...>) { return std::tuple{(type::zero(I), fill)...}; }
+    cval auto n_tuple_gen(T fill, std::index_sequence<I...>) { return std::tuple{(mta::zero(I), fill)...}; }
 }
 
 template<size_t N, class T>

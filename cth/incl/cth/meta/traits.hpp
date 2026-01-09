@@ -9,7 +9,7 @@
 
 //constant struct
 
-namespace cth::type {
+namespace cth::mta {
 
 template<class T, template<class> class Trait>
 concept applicable = requires() {
@@ -22,7 +22,7 @@ concept applicable = requires() {
 
 //trait functions
 
-namespace cth::type {
+namespace cth::mta {
 template<class T, template<class> class Trait, size_t N = 1>
 [[nodiscard]] cval auto iterate_trait();
 
@@ -57,7 +57,7 @@ using get_t = std::tuple_element_t<I, std::tuple<Ts...>>;
 }
 
 
-namespace cth::type {
+namespace cth::mta {
 template<class T>
 using rcvr_t = std::remove_cvref_t<T>;
 }
@@ -68,7 +68,7 @@ using rcvr_t = std::remove_cvref_t<T>;
 
 #include "traits/trait_packs.hpp"
 
-namespace cth::type {
+namespace cth::mta {
 
 namespace dev {
     template<class T>
@@ -88,4 +88,4 @@ using remove_rvalue_reference_t = dev::remove_rvalue_reference<T>::value_type;
 template<class T>
 using remove_rvalue_ref_t = remove_rvalue_reference_t<T>;
 
-}
+} 

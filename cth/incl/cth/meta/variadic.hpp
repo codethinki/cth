@@ -4,7 +4,7 @@
 #include <type_traits>
 
 
-namespace cth::type {
+namespace cth::mta {
 template<size_t I, class... Ts>
 using at_t = decltype(std::get<I, std::tuple<Ts...>>(std::declval<std::tuple<Ts...>>()));
 }
@@ -12,7 +12,7 @@ using at_t = decltype(std::get<I, std::tuple<Ts...>>(std::declval<std::tuple<Ts.
 
 //is_any_of
 
-namespace cth::type {
+namespace cth::mta {
 
 template<class T, class... Ts>
 concept any_of = (std::same_as<T, Ts> || ...);
@@ -64,7 +64,7 @@ auto to_same(T&& arg);
 
 //convert to any
 
-namespace cth::type {
+namespace cth::mta {
 /**
  * @brief true if any of Ts... are convertible to T
  */
@@ -129,7 +129,7 @@ auto to_convertible(T&& arg);
 }
 
 
-namespace cth::type {
+namespace cth::mta {
 
 /**
  * @brief shortcut to @ref is_any_constructible_from_v

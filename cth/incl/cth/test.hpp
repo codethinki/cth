@@ -18,7 +18,7 @@ namespace cth::test {
 
 template<std::ranges::range LRng, std::ranges::range RRng>
 [[nodiscard]] cxpr bool operator==(LRng&& l_rng, RRng&& r_rng) {
-    if constexpr(cth::type::all_satisfy<CPT(std::ranges::sized_range), LRng, RRng>)
+    if constexpr(cth::mta::all_satisfy<CPT(std::ranges::sized_range), LRng, RRng>)
         if(std::ranges::size(l_rng) != std::ranges::size(r_rng)) return false;
 
     for(auto&& [l, r] : std::views::zip(std::forward<LRng>(l_rng), std::forward<RRng>(r_rng)))

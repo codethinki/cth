@@ -4,7 +4,7 @@
 #include <utility>
 
 
-namespace cth::type {
+namespace cth::mta {
 
 
 template<template<class...> class Trait, class... Args>

@@ -7,7 +7,7 @@
 
 
 namespace cth::hash {
-template<type::aggregate T>
+template<mta::aggregate T>
 cxpr size_t hash_aggregate(T const& t) {
     return std::apply(
         []<class... Args>(Args&&... args) { return hash::combine(std::forward<Args>(args)...); },

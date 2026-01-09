@@ -27,19 +27,19 @@ struct optional_base {
     template<class Self, class F>
     constexpr auto transform(this Self&& self, F&& f) {
         using internal_t = decltype(*std::forward<Self>(self));
-        constexpr bool inVoid = type::is_void<type::rcvr_t<internal_t>>;
+        constexpr bool inVoid = mta::is_void<mta::rcvr_t<internal_t>>;
 
-        using raw_result_t = type::conditional_pack_t<
+        using raw_result_t = mta::conditional_pack_t<
             inVoid,
-            type::trait_pack<std::invoke_result_t, F>,
-            type::trait_pack<std::invoke_result_t, F, internal_t>
+            mta::trait_pack<std::invoke_result_t, F>,
+            mta::trait_pack<std::invoke_result_t, F, internal_t>
         >;
 
-        using R = type::rcvr_t<raw_result_t>;
+        using R = mta::rcvr_t<raw_result_t>;
 
         if(!self.has_value()) return optional<R>{std::nullopt};
 
-        if constexpr(type::is_void<R>) {
+        if constexpr(mta::is_void<R>) {
             if constexpr(inVoid)
                 std::invoke(std::forward<F>(f));
             else
@@ -57,7 +57,7 @@ struct optional_base {
     template<class Self, class F>
     constexpr auto and_then(this Self&& self, F&& f) {
         using internal_t = decltype(*std::forward<Self>(self));
-        constexpr bool inVoid = type::is_void<type::rcvr_t<internal_t>>;
+        constexpr bool inVoid = mta::is_void<mta::rcvr_t<internal_t>>;
 
         if(self.has_value()) {
             if constexpr(inVoid)
@@ -66,11 +66,11 @@ struct optional_base {
                 return std::invoke(std::forward<F>(f), *std::forward<Self>(self));
         }
 
-        using result_t = type::rcvr_t<
-            type::conditional_pack_t<
+        using result_t = mta::rcvr_t<
+            mta::conditional_pack_t<
                 inVoid,
-                type::trait_pack<std::invoke_result_t, F>,
-                type::trait_pack<std::invoke_result_t, F, internal_t>
+                mta::trait_pack<std::invoke_result_t, F>,
+                mta::trait_pack<std::invoke_result_t, F, internal_t>
             >
         >;
         return result_t{std::nullopt};
@@ -121,7 +121,7 @@ private:
     std::optional<T> _value;
 };
 
-template<type::reference T>
+template<mta::reference T>
 struct optional<T> : optional_base {
     using base_type = std::remove_reference_t<T>;
 

@@ -3,7 +3,7 @@
 #include "cth/meta/concepts.hpp"
 
 
-namespace cth::type {
+namespace cth::mta {
 TYPE_TEST(satisfies, main) {
     ASSERT_TRUE((satisfies<int, CPT(arithmetic)>));
     ASSERT_TRUE((satisfies<float, CPT(arithmetic)>));

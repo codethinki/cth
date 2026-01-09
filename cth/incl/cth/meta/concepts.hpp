@@ -6,7 +6,7 @@
 #define CPT(concept) []<concept>{}
 
 
-namespace cth::type {
+namespace cth::mta {
 template<class T, auto TCpt>
 concept satisfies = requires {
     TCpt.template operator()<T>();
@@ -23,7 +23,7 @@ concept any_satisfy = (satisfies<Ts, TCpt> || ...);
 
 //independent concepts
 
-namespace cth::type {
+namespace cth::mta {
 
 
 template<typename T>
@@ -98,4 +98,4 @@ concept emplacable = requires(T t, Where w) { w.emplace(t); };
 }
 
 
-namespace cth::type {}
+namespace cth::mta {}

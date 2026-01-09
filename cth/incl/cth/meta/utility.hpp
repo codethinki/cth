@@ -6,9 +6,9 @@
 
 //independent constants
 
-namespace cth::type {
+namespace cth::mta {
 
-constexpr auto no_range = [] {};
+constexpr auto no_range = [] {}; 
 constexpr auto empty = [] {};
 constexpr size_t MAX_DEPTH = (std::numeric_limits<size_t>::max)();
 
@@ -22,7 +22,7 @@ using identity_t = typename decltype(TypeIdentity)::type;
 }
 
 
-namespace cth::type {
+namespace cth::mta {
 
 template<class T = size_t>
 size_t cval zero() { return 0; }
@@ -30,7 +30,7 @@ size_t cval zero() { return 0; }
 template<class T>
 size_t cval zero(T) { return zero<T>(); }
 template<auto Val>
-size_t cval zero() { return type::zero(Val); }
+size_t cval zero() { return mta::zero(Val); }
 
 template<bool Copy, class T>
 dclauto copy_if(T&& value) {
@@ -41,7 +41,7 @@ dclauto copy_if(T&& value) {
 }
 
 
-namespace cth::type {
+namespace cth::mta {
 template<class T>
 using pure_t = std::decay_t<T>;
 }

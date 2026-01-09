@@ -36,8 +36,8 @@ private:
     static cxpr bool NOEXCEPT_ASSIGN = std::is_nothrow_copy_assignable_v<T>;
 
     static cxpr bool GET_COPY = std::is_trivially_copyable_v<T> && sizeof(T) <= 16;
-    static cxpr bool ADAPT_RELEASE = Adapt && cth::type::has_release<T>;
-    static cxpr bool ADAPT_GET = Adapt && cth::type::has_get<T>;
+    static cxpr bool ADAPT_RELEASE = Adapt && cth::mta::has_release<T>;
+    static cxpr bool ADAPT_GET = Adapt && cth::mta::has_get<T>;
 
     static cxpr bool NOEXCEPT_CHECK_VAL = COMPILATION_MODE != CompilationMode::DEBUG;
     static cxpr bool RELEASE_VAL_NOEXCEPT = NOEXCEPT_ASSIGN && NOEXCEPT_MOVE_CTOR;
@@ -105,7 +105,7 @@ public:
     }
     [[nodiscard]] cxpr std::conditional_t<GET_COPY, T, T const&> get_val() const noexcept { return _obj; }
     [[nodiscard]] cxpr dclauto operator->() const { return get(); }
-    [[nodiscard]] cxpr dclauto operator*() const requires(cth::type::has_deref<T>) { return *get(); }
+    [[nodiscard]] cxpr dclauto operator*() const requires(cth::mta::has_deref<T>) { return *get(); }
 };
 
 

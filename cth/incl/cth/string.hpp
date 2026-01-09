@@ -15,7 +15,7 @@
 
 namespace cth::str {
 template<class T>
-concept char_formattable = cth::type::any_constructible_from<T, std::string_view, std::string> ;
+concept char_formattable = cth::mta::any_constructible_from<T, std::string_view, std::string> ;
 }
 
 namespace cth::str {
@@ -27,7 +27,7 @@ namespace cth::str {
 }
 
 
-template<cth::type::arithmetic T>
+template<cth::mta::arithmetic T>
 [[nodiscard]] cxpr std::optional<T> to_num(std::string_view str) {
     T num = 0;
     size_t i = 0;
@@ -63,9 +63,9 @@ template<cth::type::arithmetic T>
  * @brief formats ranges to string
  * @tparam Rng must satisfy rng::static_dim_rng<Rng>
  */
-template<rng::viewable_rng Rng> requires (rng::static_dim_rng<type::rcvr_t<Rng>>)
+template<rng::viewable_rng Rng> requires (rng::static_dim_rng<mta::rcvr_t<Rng>>)
 [[nodiscard]] cxpr std::string to_string(Rng&& range) {
-    static cxpr bool MD_RANGE = type::md_range<Rng, 2>;
+    static cxpr bool MD_RANGE = mta::md_range<Rng, 2>;
 
     dclauto rng = rng::to_viewable(range);
     using rng_t = decltype(rng);
@@ -96,15 +96,15 @@ template<rng::viewable_rng Rng> requires (rng::static_dim_rng<type::rcvr_t<Rng>>
  * \tparam U the delimiter type
  */
 template<
-    type::convertible_to_any<std::string_view, std::wstring_view> T,
-    type::convertible_to_any<std::string_view, std::wstring_view, char, wchar_t> U
+    mta::convertible_to_any<std::string_view, std::wstring_view> T,
+    mta::convertible_to_any<std::string_view, std::wstring_view, char, wchar_t> U
 >
 [[nodiscard]] cxpr auto split(T const& str, U const& delimiter) {
-    auto const view = type::to_constructible<std::string_view, std::wstring_view>(str);
+    auto const view = mta::to_constructible<std::string_view, std::wstring_view>(str);
     using char_t = typename decltype(view)::value_type;
     using ret_t = std::vector<std::basic_string<char_t>>;
 
-    auto const d = type::to_constructible_from<std::decay_t<U>, char_t, std::basic_string_view<char_t>>(delimiter);
+    auto const d = mta::to_constructible_from<std::decay_t<U>, char_t, std::basic_string_view<char_t>>(delimiter);
 
     return view | std::views::split(d)
         | std::views::filter([](auto string_part) { return !string_part.empty(); })
@@ -118,8 +118,8 @@ template<
 
 namespace cth::str {
 template<class T>
-concept printable_rng = rng::viewable_rng<T> && rng::static_dim_rng<type::rcvr_t<T>>
-    && !cth::type::any_constructible_from<T, std::string_view, std::string>;
+concept printable_rng = rng::viewable_rng<T> && rng::static_dim_rng<mta::rcvr_t<T>>
+    && !cth::mta::any_constructible_from<T, std::string_view, std::string>;
 }
 
 
@@ -129,7 +129,7 @@ CTH_FORMAT_CPT(cth::str::printable_rng, cth::str::to_string);
 
 namespace cth::expr::str {
 
-template<type::arithmetic T>
+template<mta::arithmetic T>
 [[nodiscard]] cxpr std::optional<T> to_num(std::string_view str, int base) { return cth::str::to_num<T>(str, base); }
 
 
