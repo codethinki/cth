@@ -46,7 +46,7 @@ CTH_FORMAT_TYPE(cth::except::Severity, cth::except::to_string);
 
 namespace cth::except {
 class default_exception : public std::exception {
-    template<class S> cxpr S& addNoCpy(this S& s, std::string const& msg) noexcept {
+    template<class S> cxpr S& addNoCpy(this S& s, std::string_view msg) noexcept {
         if(s._details.empty())
             s._details = "DETAILS:\n";
         s._details += std::format("\t{}\n", msg);
@@ -70,7 +70,7 @@ public:
 
 
     template<class S>
-    cxpr dclauto add(this S&& self, std::string msg) noexcept { return self.addNoCpy(msg); }
+    cxpr dclauto add(this S&& self, std::string_view msg) noexcept { return self.addNoCpy(msg); }
 
     template<class S, typename... Args> requires (sizeof...(Args) > 0u)
     cxpr dclauto add(this S& self, std::format_string<Args...> f_str, Args&&... types) noexcept {
