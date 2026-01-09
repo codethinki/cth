@@ -1,17 +1,41 @@
 #[[[
-# package_find_package(<args>...)
+# package_target_find_package(<target_name> <find_package_args>...)
 # Wraps find_package to ensure dependencies are found during build
 # AND recorded for the generated package configuration file using find_dependency.
 #]]
-function(package_find_package)
+function(package_target_find_package TARGET_NAME)
     # 1. Standard find_package for the current build
     find_package(${ARGN})
 
     # 2. Record for installation
-    # We strip semicolons to write a clean argument string to the config file.
-    # find_dependency expects essentially the same arguments as find_package.
-    string(REPLACE ";" " " ARGS_STR "${ARGN}")
-    set_property(GLOBAL APPEND_STRING PROPERTY _PROJECT_PACKAGE_DEPENDENCIES "find_dependency(${ARGS_STR})\n")
+    list(GET ARGN 0 PKG_NAME)
+    
+    # Create a safe argument list for checking existence (remove REQUIRED)
+    # This ensures find_package(... QUIET) doesn't fatal-error if the package is missing,
+    # allowing us to print our custom message.
+    set(ARGS_CHECK_LIST ${ARGN})
+    list(REMOVE_ITEM ARGS_CHECK_LIST "REQUIRED")
+    
+    # Modern list(JOIN) instead of string(REPLACE)
+    list(JOIN ARGS_CHECK_LIST " " ARGS_CHECK_STR)
+
+    # The full arguments for the actual dependency enforcement (includes REQUIRED)
+    list(JOIN ARGN " " ARGS_STR)
+    
+    # We create a check block that runs find_package QUIETly first (without REQUIRED).
+    # block(SCOPE_FOR VARIABLES) ensures CMAKE_MESSAGE_LOG_LEVEL changes don't leak out.
+    set(CHECK_BLOCK "
+block(SCOPE_FOR VARIABLES)
+    set(CMAKE_MESSAGE_LOG_LEVEL ERROR)
+    find_package(${ARGS_CHECK_STR} QUIET)
+    if(NOT ${PKG_NAME}_FOUND)
+        set(MSG \"${CMAKE_FIND_PACKAGE_NAME} component '${TARGET_NAME}' dependency missing: find_package(${ARGS_STR}) failed\")
+        message(FATAL_ERROR \"\${MSG}\")
+    endif()
+endblock()
+find_dependency(${ARGS_STR})
+")
+    set_property(GLOBAL APPEND_STRING PROPERTY _PROJECT_PACKAGE_DEPENDENCIES "${CHECK_BLOCK}\n")
 endfunction()
 
 #[[[
@@ -190,4 +214,3 @@ function(create_package)
     setup_package()
     add_package_target()
 endfunction()
-
