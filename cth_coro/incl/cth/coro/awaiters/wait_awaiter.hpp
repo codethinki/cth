@@ -9,8 +9,9 @@
 
 namespace cth::co {
 struct wait_awaiter {
+
     std::chrono::steady_clock::time_point timePoint;
-    co::scheduler& scheduler;
+    co::scheduler const& scheduler;
 
     constexpr [[nodiscard]] bool await_ready() const noexcept {
         return std::chrono::steady_clock::now() >= timePoint;

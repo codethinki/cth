@@ -12,7 +12,7 @@ namespace cth::co {
 
 template<non_this_coro_awaitable Awaitable>
 [[nodiscard]] auto steal(
-    scheduler& scheduler,
+    scheduler const& scheduler,
     Awaitable awaitable
 ) -> capture_task<awaited_t<Awaitable>> {
     using result_t = awaited_t<Awaitable>;
@@ -29,7 +29,7 @@ template<non_this_coro_awaitable Awaitable>
 }
 
 template<this_coro_awaitable Awaitable>
-constexpr auto steal(scheduler& scheduler, Awaitable&& awaitable) -> awaiter_t<Awaitable> {
+constexpr auto steal(scheduler const& scheduler, Awaitable&& awaitable) -> awaiter_t<Awaitable> {
     auto awaiter = co::extract_awaiter(std::forward<Awaitable>(awaitable));
     awaiter.inject(this_coro::payload{scheduler});;
     return awaiter;

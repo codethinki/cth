@@ -14,10 +14,10 @@ class executor {
 
 
 public:
-    executor(scheduler& sched) noexcept : _sched(&sched) {}
+    executor(scheduler const& sched) noexcept : _sched(&sched) {}
     ~executor() = default;
 
-    auto schedule() { return schedule_awaiter{scheduler()}; }
+    [[nodiscard]] constexpr auto schedule() const { return schedule_awaiter{scheduler()}; }
 
 
     template<this_coro_awaitable Awaitable>
@@ -48,10 +48,10 @@ private:
         co_return co_await s.steal(std::move(task));
     }
 
-    scheduler* _sched;
+    scheduler const* _sched;
 
 public:
-    scheduler& scheduler() { return *_sched; }
+    co::scheduler const& scheduler() const { return *_sched; }
 
     bool operator==(executor const&) const = default;
 
@@ -67,9 +67,7 @@ public:
 
 namespace cth::co::this_coro {
 struct [[nodiscard]] executor_tag : tag_base {
-    static auto operator()(payload const& p) {
-        return data_awaiter{executor{p.scheduler()}};
-    }
+    static auto operator()(payload const& p) { return data_awaiter{executor{p.scheduler()}}; }
 };
 
 

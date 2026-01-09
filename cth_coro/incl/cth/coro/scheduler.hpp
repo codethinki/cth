@@ -47,10 +47,10 @@ public:
      */
     ~scheduler();
 
-    void post(void_func work);
+    void post(void_func work) const;
 
-    void await(native_handle, void_func cb);
-    void await(time_point_t time_point, void_func cb);
+    void await(native_handle, void_func cb) const;
+    void await(time_point_t time_point, void_func cb) const;
 
 
     void start();
@@ -65,9 +65,9 @@ public:
     }
 
 private:
-    // ReSharper disable once CppMemberFunctionMayBeConst
-    [[nodiscard]] Impl& impl() { return *_impl; }
-    [[nodiscard]] Impl const& impl() const { return *_impl; }
+    Impl& impl() const {
+        return *_impl.get();
+    }
 
     std::unique_ptr<Impl> _impl;
     std::unique_ptr<std::atomic<size_t>> _activeWorkers{};

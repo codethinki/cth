@@ -6,7 +6,9 @@
 
 namespace cth::co {
 struct schedule_awaiter {
-    scheduler& scheduler;
+    constexpr schedule_awaiter(scheduler const& scheduler) : scheduler{scheduler} {}
+
+    scheduler const& scheduler;
 
     [[nodiscard]] bool await_ready() const noexcept { return scheduler.owns_thread(); }
 
