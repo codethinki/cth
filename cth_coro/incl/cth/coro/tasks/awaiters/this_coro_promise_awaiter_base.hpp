@@ -10,8 +10,8 @@ namespace cth::co {
 /**
  * Base for awaitables which support executor injection
  */
-struct this_coro_awaiter_base {
-    constexpr this_coro_awaiter_base() = default;
+struct this_coro_promise_awaiter_base {
+    constexpr this_coro_promise_awaiter_base() = default;
 
     /**
      * Injects the executor into the current promise

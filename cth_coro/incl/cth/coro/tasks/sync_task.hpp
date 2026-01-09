@@ -1,9 +1,9 @@
 #pragma once
 #include "task_base.hpp"
 
-#include "cth/coro/awaiters/this_coro_awaiter.hpp"
+#include "cth/coro/tasks/awaiters/this_coro_promise_awaiter.hpp"
 
-#include "cth/coro/awaiters/dev/basic_awaiter.hpp"
+#include "cth/coro/tasks/awaiters/dev/basic_promise_awaiter.hpp"
 #include "cth/coro/tasks/promises/sync_promise_base.hpp"
 
 #include "promises/this_coro_promise_base.hpp"
@@ -51,7 +51,7 @@ struct sync_executor_promise : this_coro_promise_base, sync_promise_template<T> 
 namespace cth::co {
 
 template<class T>
-class sync_task : public dev::sync_task_template<dev::sync_promise<T>, dev::basic_awaiter> {
+class sync_task : public dev::sync_task_template<dev::sync_promise<T>, dev::basic_promise_awaiter> {
 public:
     decltype(auto) resume() { return this->handle().resume(); }
 
@@ -71,7 +71,7 @@ public:
 using sync_void_task = sync_task<void>;
 
 template<class T>
-class sync_executor_task : public dev::sync_task_template<dev::sync_executor_promise<T>, this_coro_awaiter> {};
+class sync_executor_task : public dev::sync_task_template<dev::sync_executor_promise<T>, this_coro_promise_awaiter> {};
 
 using sync_executor_void_task = sync_executor_task<void>;
 }

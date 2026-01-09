@@ -16,7 +16,6 @@ constexpr auto autostart = [] {};
 using autostart_t = decltype(autostart);
 }
 
-
 namespace cth::co {
 class scheduler {
     struct Impl;
@@ -65,9 +64,7 @@ public:
     }
 
 private:
-    Impl& impl() const {
-        return *_impl.get();
-    }
+    Impl& impl() const { return *_impl.get(); }
 
     std::unique_ptr<Impl> _impl;
     std::unique_ptr<std::atomic<size_t>> _activeWorkers{};
@@ -94,7 +91,6 @@ public:
      * @pre must not be @ref active()
      */
     scheduler& operator=(scheduler&& other) noexcept;
-
 };
 
 }

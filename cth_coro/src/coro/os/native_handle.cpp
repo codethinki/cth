@@ -1,0 +1,28 @@
+#include "cth/coro/os/native_handle.hpp"
+
+
+#ifdef CTH_FS_WINDOWS
+#include <cth/win/win_types.hpp>
+#include <cth/win/coro/wait.hpp>
+#elifdef CTH_FS_POSIX
+#include <poll.h>
+#endif
+
+
+namespace cth::co::os {
+
+
+
+bool check_ready(os::native_handle_t handle) {
+#ifdef CTH_FS_WINDOWS
+    try {
+        return cth::win::co::wait(handle, 0) == win::co::WaitResult::WAITED;
+    } catch(cth::except::win_exception const& e) {
+        throw except::coro_exception{e.msg(), e.severity(), e.location(), e.stacktrace()};
+    }
+#elifdef
+    pollfd pfd{fd, POLLIN, 0};
+    return poll(&pfd, 1, 0) > 0;
+#endif
+}
+}

@@ -1,7 +1,7 @@
 #pragma once
 #include "cth/coro/tasks/task_base.hpp"
 
-#include "cth/coro/awaiters/dev/capture_awaiter.hpp"
+#include "cth/coro/tasks/awaiters/dev/capture_promise_awaiter.hpp"
 #include "cth/coro/tasks/promises/basic_promise.hpp"
 #include "cth/coro/tasks/promises/this_coro_promise_base.hpp"
 #include "cth/coro/utility/fwd.hpp"
@@ -25,8 +25,8 @@ struct scheduled_promise : basic_promise<T>, this_coro_promise_base {
 namespace cth::co {
 
 template<class T>
-class [[nodiscard]] scheduled_task : public task_base<dev::scheduled_promise<T>, dev::capture_awaiter> {
-    using base_t = task_base<dev::scheduled_promise<T>, dev::capture_awaiter>;
+class [[nodiscard]] scheduled_task : public task_base<dev::scheduled_promise<T>, dev::capture_promise_awaiter> {
+    using base_t = task_base<dev::scheduled_promise<T>, dev::capture_promise_awaiter>;
 
     using base_t::task_base;
     friend base_t::promise_type;

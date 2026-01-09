@@ -8,10 +8,10 @@
 namespace cth::co::dev {
 
 template<cth_promise Promise>
-struct basic_awaiter {
+struct basic_promise_awaiter {
     using promise_type = Promise;
 
-    constexpr basic_awaiter(std::coroutine_handle<promise_type> h) : handle{h} {}
+    constexpr basic_promise_awaiter(std::coroutine_handle<promise_type> h) : handle{h} {}
 
     std::coroutine_handle<promise_type> handle;
 

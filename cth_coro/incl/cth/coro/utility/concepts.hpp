@@ -17,7 +17,7 @@ namespace cth::co {
 
 
 template<class T>
-concept this_coro_awaitable = std::is_base_of_v<this_coro_awaiter_base, std::remove_cvref_t<awaiter_t<T>>>;
+concept this_coro_awaitable = std::is_base_of_v<this_coro_promise_awaiter_base, std::remove_cvref_t<awaiter_t<T>>>;
 
 template<class T>
 concept captured_awaitable = co::awaitable<T> && std::is_base_of_v<capture_awaiter_base, co::awaiter_t<T>>;

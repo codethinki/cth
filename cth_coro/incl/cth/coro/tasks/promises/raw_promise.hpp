@@ -1,5 +1,4 @@
 #pragma once
-#include "cth/coro/awaiters/dev/basic_final_awaiter.hpp"
 #include <cth/data/optional.hpp>
 
 #include <coroutine>

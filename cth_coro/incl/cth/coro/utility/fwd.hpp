@@ -20,7 +20,7 @@ namespace cth::co {
 struct schedule_awaiter;
 struct wait_awaiter;
 
-struct this_coro_awaiter_base;
+struct this_coro_promise_awaiter_base;
 struct this_coro_promise_base;
 struct capture_awaiter_base;
 struct sync_promise_base;
@@ -37,4 +37,8 @@ struct scheduler_tag;
 
 struct wait_tag;
 
+}
+
+namespace cth::except {
+class coro_exception;
 }

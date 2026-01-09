@@ -1,5 +1,5 @@
 #pragma once
-#include "cth/coro/awaiters/this_coro_awaiter.hpp"
+#include "cth/coro/tasks/awaiters/this_coro_promise_awaiter.hpp"
 #include "promises/basic_promise.hpp"
 #include "promises/this_coro_promise_base.hpp"
 
@@ -22,8 +22,8 @@ struct executor_promise : basic_promise<T>, this_coro_promise_base {
 
 namespace cth::co {
 template<class T>
-class [[nodiscard]] executor_task : public task_base<dev::executor_promise<T>, this_coro_awaiter> {
-    using base_t = task_base<dev::executor_promise<T>, this_coro_awaiter>;
+class [[nodiscard]] executor_task : public task_base<dev::executor_promise<T>, this_coro_promise_awaiter> {
+    using base_t = task_base<dev::executor_promise<T>, this_coro_promise_awaiter>;
     using base_t::task_base;
 
     friend base_t::promise_type;

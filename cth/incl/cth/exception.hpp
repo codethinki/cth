@@ -135,11 +135,11 @@ private:
 
 public:
     [[nodiscard]] cxpr Severity severity() const noexcept { return _severity; }
-    [[nodiscard]] cxpr std::string details() const noexcept { return _details; }
-    [[nodiscard]] cxpr std::string msg() const noexcept { return _msg; }
+    [[nodiscard]] cxpr std::string_view details() const noexcept { return _details; }
+    [[nodiscard]] cxpr std::string_view msg() const noexcept { return _msg; }
 
-    [[nodiscard]] cxpr std::stacktrace stacktrace() const noexcept { return _trace; }
-    [[nodiscard]] cxpr std::source_location location() const noexcept { return _sourceLocation; }
+    [[nodiscard]] cxpr std::stacktrace const& stacktrace() const noexcept { return _trace; }
+    [[nodiscard]] cxpr std::source_location const& location() const noexcept { return _sourceLocation; }
 
     [[nodiscard]] cxpr char const* what() const noexcept override { return _what.c_str(); }
 
@@ -161,7 +161,7 @@ public:
         _dataObj{std::move(data)} {}
     data_exception(T data, default_exception exception) : default_exception{std::move(exception)},
         _dataObj{std::move(data)} {}
-    [[nodiscard]] T data() const noexcept { return _dataObj; }
+    [[nodiscard]] T const& data() const noexcept { return _dataObj; }
 
 private:
     T _dataObj;
