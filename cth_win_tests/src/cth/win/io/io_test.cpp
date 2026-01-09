@@ -32,7 +32,7 @@ std::vector<std::byte> load_file_bytes(std::string_view path) {
 WIN_IO_TEST(read_unbuffered_with_unicode_path, main) {
     std::string const path{"res/cth/win/io/unicode🐸_image.jpg"};
     std::vector<std::byte> buffer{};
-    read_unbuffered(path, buffer); //TEMP fix the cmd test 
+    read_unbuffered(path, buffer);
 
     EXPECT_EQ(buffer, load_file_bytes(path));
 }
