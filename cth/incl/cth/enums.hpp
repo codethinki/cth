@@ -18,7 +18,9 @@ constexpr EnumType operator~(EnumType const& val) { return static_cast<EnumType>
 \
 constexpr EnumType& operator|=(EnumType& l, EnumType const& r) { return l = l | r; }\
 \
-constexpr EnumType& operator&=(EnumType& l, EnumType const& r) {  return l = l & r;}
+constexpr EnumType& operator&=(EnumType& l, EnumType const& r){  return l = l & r ;}\
+\
+constexpr bool contains(EnumType const& l, EnumType const& r) { return static_cast<bool>(l & r); }
 
 #define CTH_GEN_ENUM_ARITH_OVERLOADS(EnumType)\
 CTH_GEN_ENUM_DEREF_OVERLOAD(EnumType)\

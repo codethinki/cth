@@ -28,7 +28,7 @@ template<class T>
 class [[nodiscard]] scheduled_task : public task_base<dev::scheduled_promise<T>, dev::capture_promise_awaiter> {
     using base_t = task_base<dev::scheduled_promise<T>, dev::capture_promise_awaiter>;
 
-    using base_t::task_base;
+    using base_t::base_t;
     friend base_t::promise_type;
 
 public:

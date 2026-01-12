@@ -1,6 +1,6 @@
-#include "cth/meta/enums.hpp"
+#include "cth/enums.hpp"
 
-#include "test.hpp"
+#include "cth/test.hpp"
 
 namespace cth::types {
 enum class A : size_t {
@@ -11,7 +11,7 @@ enum class A : size_t {
 };
 CTH_GEN_ENUM_FLAG_OVERLOADS(A)
 
-TYPE_TEST(MACRO_CTH_ENUM_OVERLOADS, main) {
+TEST(MACRO_CTH_ENUM_OVERLOADS, main) {
     constexpr auto x = A::FIRST;
     constexpr auto y = A::SECOND;
 
@@ -26,6 +26,10 @@ TYPE_TEST(MACRO_CTH_ENUM_OVERLOADS, main) {
     auto andEq = x;
     andEq &= y;
     EXPECT_EQ(andEq, A::AND_RESULT);
+
+
+    EXPECT_TRUE(contains(orEq, x));
+    EXPECT_TRUE(contains(orEq, y));
 
 
     EXPECT_TRUE((std::same_as<decltype(*x), std::underlying_type_t<A>>));

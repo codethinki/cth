@@ -24,7 +24,7 @@ namespace cth::co {
 template<class T>
 class [[nodiscard]] executor_task : public task_base<dev::executor_promise<T>, this_coro_promise_awaiter> {
     using base_t = task_base<dev::executor_promise<T>, this_coro_promise_awaiter>;
-    using base_t::task_base;
+    using base_t::base_t;
 
     friend base_t::promise_type;
 };

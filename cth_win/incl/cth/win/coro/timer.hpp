@@ -61,7 +61,7 @@ private:
     closing_handle _handle;
 
 public:
-    auto native_handle() const noexcept { return _handle.get(); }
+    closing_handle::pointer native_handle() const noexcept { return _handle.get(); }
 };
 
 constexpr size_t hash(timer const& t) {

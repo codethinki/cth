@@ -94,7 +94,7 @@ public:
     }
 
     [[nodiscard]] std::string loc_string() const noexcept {
-        std::string const filename = std::string(_sourceLocation.file_name());
+        auto const filename = std::string(_sourceLocation.file_name());
         return std::format(
             "LOCATION: {0}({1}:{2})\n",
             filename.substr(filename.find_last_of('\\') + 1),

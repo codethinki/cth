@@ -14,9 +14,10 @@ private:
 public:
     this_coro_promise_awaiter() = delete;
 
-    using base_t::promise_type;
+    using promise_type = base_t::promise_type;
 
-    using base_t::basic_promise_awaiter;
+
+    using base_t::base_t;
     using base_t::await_ready;
     using base_t::await_resume;
 

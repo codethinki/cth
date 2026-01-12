@@ -2,7 +2,7 @@
 #include "cth/chrono.hpp"
 
 #include "cth/macro.hpp"
-#include "cth/meta/enums.hpp"
+#include "cth/enums.hpp"
 #include "cth/os/osdef.hpp"
 #include "cth/string/format.hpp"
 

@@ -1,5 +1,4 @@
 #include "test.hpp"
-#include "cth/coro/fence.hpp"
 #include "cth/coro/tasks/sync_task.hpp"
 
 #include <cth/coro/scheduler.hpp>
@@ -22,9 +21,10 @@ auto sync_wait(executor& exec, Task task) {
     using value_type = typename Task::promise_type::value_type;
 
     auto wrapper = [](executor& exec, Task t) -> sync_task<value_type> {
-        if constexpr(std::is_void_v<value_type>) { co_await exec.spawn(std::move(t)); } else {
+        if constexpr(mta::is_void<value_type>)
+            co_await exec.spawn(std::move(t));
+        else
             co_return co_await exec.spawn(std::move(t));
-        }
     };
 
     auto wrapped = wrapper(exec, std::move(task));

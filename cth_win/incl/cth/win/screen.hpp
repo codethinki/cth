@@ -235,7 +235,6 @@ public:
         flush();
     }
 
-    auto view(this auto&& s) { return std::span{s.raw(), s.bytes()}; }
 
     void relocate(ssize_t x, ssize_t y);
 
@@ -272,6 +271,8 @@ public:
     void* data() { return _data; }
     void const* data() const { return _data; }
 
+    template<class S>
+    [[nodiscard]] auto view(this S&& s) -> std::span<mta::fwd_const_t<S, std::byte>> { return std::span{s.raw(), s.bytes()}; }
 
 
 };
