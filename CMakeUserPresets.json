@@ -9,19 +9,34 @@
         "CMAKE_CXX_COMPILER": "E:\\cs\\code\\cpp\\compiler\\clang\\llvm_main\\llvm-project\\build\\release\\bin\\clang-cl.exe"
       }
     },
-
+    {
+      "name": "vcpkg-location",
+      "hidden": true,
+      "environment": {
+        "VCPKG_ROOT": "C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\VC\\vcpkg\\"
+      },
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
+      }
+    },
     {
       "name": "win_msvc_debug",
-      "inherits": "base_win_msvc_debug"
+      "inherits": [
+        "vcpkg-location",
+        "base_win_msvc_debug"
+      ]
     },
     {
       "name": "win_msvc_release",
-      "inherits": "base_win_msvc_release"
+      "inherits": [
+        "vcpkg-location",
+        "base_win_msvc_release"
+      ]
     },
-
     {
       "name": "win_clang_debug",
       "inherits": [
+        "vcpkg-location",
         "user-llvm-path",
         "base_win_clang_debug"
       ]
@@ -29,6 +44,7 @@
     {
       "name": "win_clang_release",
       "inherits": [
+        "vcpkg-location",
         "user-llvm-path",
         "base_win_clang_release"
       ]

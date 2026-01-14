@@ -8,3 +8,13 @@ function(glob_cpp OUT_VAR SUB_PATH)
 
     set(${OUT_VAR} ${${OUT_VAR}} ${FOUND_FILES} PARENT_SCOPE)
 endfunction()
+
+
+function(glob_cxx OUT_VAR SUB_PATH)
+    file(GLOB_RECURSE FOUND_FILES
+        CONFIGURE_DEPENDS
+        "${SUB_PATH}/*.cxx"
+    )
+
+    set(${OUT_VAR} ${${OUT_VAR}} ${FOUND_FILES} PARENT_SCOPE)
+endfunction()

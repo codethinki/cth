@@ -1,20 +1,27 @@
-cmake_minimum_required(VERSION 4.1)
+cmake_minimum_required(VERSION 4.1.1)
 
+
+# In 2026, you likely need this specific UUID for Clang-cl module support
 project(cth LANGUAGES CXX VERSION 1.0.0)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 
 include(glob_cpp)
 include(add_resources)
 include(install_utility)
 include(set_compiler_specifics)
 
-set(CMAKE_CXX_STANDARD 26)
-set(CMAKE_C_STANDARD 26)
+if(MSVC)
+	set(CTH_CXX_STANDARD 23)
+else()
+	set(CTH_CXX_STANDARD 26)
+endif()
+
+set(CMAKE_CXX_STANDARD ${CTH_CXX_STANDARD})
+set(CMAKE_C_STANDARD ${CTH_CXX_STANDARD})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-message("compiler: ${CMAKE_CXX_COMPILER}")
+
 
 set_compiler_specifics()
 
