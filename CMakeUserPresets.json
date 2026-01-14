@@ -5,8 +5,8 @@
       "name": "user-llvm-path",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "E:\\cs\\code\\cpp\\compiler\\clang\\llvm_main\\llvm-project\\build\\bin\\clang-cl.exe",
-        "CMAKE_CXX_COMPILER": "E:\\cs\\code\\cpp\\compiler\\clang\\llvm_main\\llvm-project\\build\\bin\\clang-cl.exe"
+        "CMAKE_C_COMPILER": "E:\\cs\\code\\cpp\\compiler\\clang\\llvm_main\\llvm-project\\build\\release\\bin\\clang-cl.exe",
+        "CMAKE_CXX_COMPILER": "E:\\cs\\code\\cpp\\compiler\\clang\\llvm_main\\llvm-project\\build\\release\\bin\\clang-cl.exe"
       }
     },
 
