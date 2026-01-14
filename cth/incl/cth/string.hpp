@@ -101,7 +101,7 @@ template<
 >
 [[nodiscard]] cxpr auto split(T const& str, U const& delimiter) {
     auto const view = mta::to_constructible<std::string_view, std::wstring_view>(str);
-    using char_t = typename decltype(view)::value_type;
+    using char_t = decltype(view)::value_type;
     using ret_t = std::vector<std::basic_string<char_t>>;
 
     auto const d = mta::to_constructible_from<std::decay_t<U>, char_t, std::basic_string_view<char_t>>(delimiter);

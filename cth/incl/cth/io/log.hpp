@@ -93,13 +93,13 @@ void msg(std::string_view message) noexcept {
 
     cth::log::msg(S, message);
 }
-template<typename... Args> requires (sizeof...(Args) > 0u)
+template<class... Args> requires (sizeof...(Args) > 0u)
 void msg(cth::except::Severity severity, std::format_string<Args...> f_str, Args&&... args) noexcept {
     if(severity < CTH_LOG_LEVEL) return;
     log::msg(severity, std::format(f_str, std::forward<Args>(args)...));
 }
 
-template<cth::except::Severity S = cth::except::LOG, typename... Args> requires(sizeof...(Args) > 0u)
+template<cth::except::Severity S = cth::except::LOG, class... Args> requires(sizeof...(Args) > 0u)
 void msg(std::format_string<Args...> f_str, Args&&... args) noexcept {
     if constexpr(S < CTH_LOG_LEVEL) return;
     log::msg<S>(std::format(f_str, std::forward<Args>(args)...));
@@ -123,7 +123,7 @@ namespace dev {
             if constexpr(S == cth::except::Severity::CRITICAL) std::terminate();
         }
         void add(std::string_view message) noexcept { _exception.add(std::string{message}); }
-        template<typename... Types> requires (sizeof...(Types) > 0u)
+        template<class... Types> requires (sizeof...(Types) > 0u)
         void add(std::format_string<Types...> f_str, Types&&... types) {
             _exception.add(f_str, std::forward<Types>(types)...);
         }

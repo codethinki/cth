@@ -27,7 +27,7 @@ template<class Fb, class T, class... Ts> struct fallback_any_of_trait;
  * @brief shortcut to @ref fallback_any_of::type
  */
 template<class Fb, class T, class... Ts>
-using fallback_any_of_t = typename fallback_any_of_trait<Fb, T, Ts...>::type;
+using fallback_any_of_t = fallback_any_of_trait<Fb, T, Ts...>::type;
 
 /**
  * \brief ::type is equal to first of Ts... that's equal to T
@@ -40,7 +40,7 @@ struct any_of_trait;
  * @brief shortcut to @ref any_of::type
  */
 template<class T, class... Ts>
-using any_of_t = typename any_of_trait<T, Ts...>::type;
+using any_of_t = any_of_trait<T, Ts...>::type;
 
 
 
@@ -91,7 +91,7 @@ struct fallback_convert_to_any_trait;
  * @brief shortcut to @ref fallback_convert_to_any_t::type
  */
 template<class Fb, class T, class... Ts>
-using fallback_convert_to_any_t = typename fallback_convert_to_any_trait<Fb, T, Ts...>::type;
+using fallback_convert_to_any_t = fallback_convert_to_any_trait<Fb, T, Ts...>::type;
 
 /**
  * \brief ::type is equal to first of Ts... that's convertible from T
@@ -107,7 +107,7 @@ struct convert_to_any_trait;
  *@brief shortcut to @ref convert_to_any_t::type
  */
 template<typename T, typename... Ts>
-using convert_to_any_t = typename convert_to_any_trait<T, Ts...>::type;
+using convert_to_any_t = convert_to_any_trait<T, Ts...>::type;
 
 /**
  * \brief converts to the first type of Ts... that is convertible from T
@@ -162,7 +162,7 @@ struct construct_any_from_trait;
  * @brief shortcut to @ref construct_any_from_t::type
  */
 template<typename T, typename... Ts>
-using construct_any_from_t = typename construct_any_from_trait<T, Ts...>::type;
+using construct_any_from_t = construct_any_from_trait<T, Ts...>::type;
 
 /**
  * \brief constructs the first type of Ts... that is constructible from T

@@ -46,7 +46,7 @@ DATA_TEST(raw_poly_vector, DataAndAlignmentAndIntegrity) {
     auto const addr2 = reinterpret_cast<uintptr_t>(p2);
     EXPECT_EQ(addr2 % alignof(third_t), 0);
 
-    std::fill(p0, p0 + n0, 'Z');
+    std::fill_n(p0, n0, 'Z');
     p1[0] = {101};
     p1[1] = {202};
     p1[2] = {303};

@@ -18,7 +18,7 @@ namespace cth::co {
 
 template<class Task>
 auto sync_wait(executor& exec, Task task) {
-    using value_type = typename Task::promise_type::value_type;
+    using value_type = Task::promise_type::value_type;
 
     auto wrapper = [](executor& exec, Task t) -> sync_task<value_type> {
         if constexpr(mta::is_void<value_type>)

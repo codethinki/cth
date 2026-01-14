@@ -27,7 +27,7 @@ void TriggerNextInput() {
 
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION && wParam == WM_KEYDOWN) {
-        KBDLLHOOKSTRUCT* pKeyBoard = (KBDLLHOOKSTRUCT*)lParam;
+        auto const pKeyBoard = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         
         if (pKeyBoard->vkCode == TEST_KEY) {
             auto end_time = std::chrono::high_resolution_clock::now();

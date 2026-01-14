@@ -50,28 +50,32 @@
       }
     },
     {
-      "name": "win_msvc_debug",
+      "name": "base_win_msvc_debug",
+      "hidden": true,
       "inherits": [
         "windows-msvc-base",
         "debug-base"
       ]
     },
     {
-      "name": "win_msvc_release",
+      "hidden": true,
+      "name": "base_win_msvc_release",
       "inherits": [
         "windows-msvc-base",
         "release-base"
       ]
     },
     {
-      "name": "win_clang_debug",
+      "name": "base_win_clang_debug",
+      "hidden": true,
       "inherits": [
         "windows-clang-base",
         "debug-base"
       ]
     },
     {
-      "name": "win_clang_release",
+      "hidden": true,
+      "name": "base_win_clang_release",
       "inherits": [
         "windows-clang-base",
         "release-base"

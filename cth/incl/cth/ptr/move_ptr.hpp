@@ -129,7 +129,7 @@ constexpr std::ostream& operator<<(std::ostream& os, move_ptr<T> const& ptr) {
 template<typename T>
 struct std::hash<cth::move_ptr<T>> /* NOLINT(cert-dcl58-cpp) this is a valid overload for std::hash */ {
     constexpr std::size_t operator()(cth::move_ptr<T> const& ptr) const noexcept {
-        using ptr_t = typename cth::move_ptr<T>::pointer;
+        using ptr_t = cth::move_ptr<T>::pointer;
         return std::hash<ptr_t>{}(ptr.get());
     }
 };

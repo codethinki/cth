@@ -40,7 +40,7 @@ namespace dev {
  * @tparam D dimension (optional)
  */
 template<class Rng, size_t D = MAX_DEPTH>
-using md_range_value_t = typename decltype(dev::md_range_value<Rng, D>())::type;
+using md_range_value_t = decltype(dev::md_range_value<Rng, D>())::type;
 
 /**
  * @brief shortcut to @ref md_range_value_t<Rng, 2>

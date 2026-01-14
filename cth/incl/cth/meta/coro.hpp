@@ -56,7 +56,7 @@ consteval auto awaiter_type() {
 
 namespace cth::co {
 template<class Awaitable>
-using awaiter_t = typename decltype(dev::awaiter_type<Awaitable>())::type;
+using awaiter_t = decltype(dev::awaiter_type<Awaitable>())::type;
 }
 
 namespace cth::co::dev {
@@ -71,7 +71,7 @@ consteval auto awaited_type() {
 
 namespace cth::co {
 template<awaitable Awaitable>
-using awaited_t = typename decltype(dev::awaited_type<Awaitable>())::type;
+using awaited_t = decltype(dev::awaited_type<Awaitable>())::type;
 
 template<class Awaitable>
 concept void_awaitable = awaitable<Awaitable> && std::same_as<void, mta::rcvr_t<awaited_t<Awaitable>>>;
@@ -96,6 +96,6 @@ template<class T>
 concept cth_promise = promise<T> && requires() { typename T::value_type; };
 
 template<cth_promise Promise>
-using promise_value_type = typename Promise::value_type;
+using promise_value_type = Promise::value_type;
 
 }

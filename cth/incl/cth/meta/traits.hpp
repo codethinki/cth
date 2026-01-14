@@ -27,7 +27,7 @@ template<class T, template<class> class Trait, size_t N = 1>
 [[nodiscard]] cval auto iterate_trait();
 
 template<class T, template<class> class Trait, size_t N = 1>
-using iterate_trait_t = typename decltype(iterate_trait<T, Trait, N>())::type;
+using iterate_trait_t = decltype(iterate_trait<T, Trait, N>())::type;
 
 template<class T, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
 [[nodiscard]] cval size_t trait_count();
@@ -48,7 +48,7 @@ struct fwd_const {
  * should not be used, use std::forward_like instead
  */
 template<class From, class To>
-using fwd_const_t = typename fwd_const<From, To>::type;
+using fwd_const_t = fwd_const<From, To>::type;
 
 template<size_t I, class... Ts>
 using get_t = std::tuple_element_t<I, std::tuple<Ts...>>;

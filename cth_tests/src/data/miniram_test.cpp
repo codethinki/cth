@@ -271,7 +271,7 @@ DATA_TEST(miniheap, post_defrag_integrity) {
 
     uint32_t expectedFreeSpace = ram.capacity() - (9 * 512) - 1024;
     EXPECT_EQ(ram.remaining(), expectedFreeSpace);
-    uint32_t minExpected = static_cast<uint32_t>(expectedFreeSpace * 0.9);
+    auto minExpected = static_cast<uint32_t>(expectedFreeSpace * 0.9);
     EXPECT_GE(ram.max_alloc(), minExpected);
     EXPECT_LE(ram.max_alloc(), expectedFreeSpace);
 

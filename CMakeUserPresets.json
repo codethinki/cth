@@ -1,0 +1,37 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "user-llvm-path",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "E:\\cs\\code\\cpp\\compiler\\clang\\llvm_main\\llvm-project\\build\\bin\\clang-cl.exe",
+        "CMAKE_CXX_COMPILER": "E:\\cs\\code\\cpp\\compiler\\clang\\llvm_main\\llvm-project\\build\\bin\\clang-cl.exe"
+      }
+    },
+
+    {
+      "name": "win_msvc_debug",
+      "inherits": "base_win_msvc_debug"
+    },
+    {
+      "name": "win_msvc_release",
+      "inherits": "base_win_msvc_release"
+    },
+
+    {
+      "name": "win_clang_debug",
+      "inherits": [
+        "user-llvm-path",
+        "base_win_clang_debug"
+      ]
+    },
+    {
+      "name": "win_clang_release",
+      "inherits": [
+        "user-llvm-path",
+        "base_win_clang_release"
+      ]
+    }
+  ]
+}

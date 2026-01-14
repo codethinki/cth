@@ -18,7 +18,7 @@ using empty_t = decltype(empty);
 
 
 template<auto TypeIdentity>
-using identity_t = typename decltype(TypeIdentity)::type;
+using identity_t = decltype(TypeIdentity)::type;
 }
 
 

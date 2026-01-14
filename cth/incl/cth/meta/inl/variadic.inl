@@ -8,7 +8,7 @@ namespace cth::mta {
  * \brief ::type is equal to first of Ts... that's equal to T or Fallback if none are
  * \tparam Fallback if none of Ts... are equal to T
  */
-template<typename Fallback, typename T, typename... Ts>
+template<class Fallback, class T, class... Ts>
 struct fallback_any_of_trait {
     using type = std::conditional_t<any_of<T, Ts...>, T, Fallback>;
 };
@@ -16,15 +16,15 @@ struct fallback_any_of_trait {
  * \brief equal to first of Ts... that's equal to T or Fallback if none are
  * \tparam Fallback if none of Ts... are equal to T
  */
-template<typename Fallback, typename T, typename... Ts>
-using fallback_any_of_t = typename fallback_any_of_trait<Fallback, T, Ts...>::type;
+template<class Fallback, class T, class... Ts>
+using fallback_any_of_t = fallback_any_of_trait<Fallback, T, Ts...>::type;
 
 /**
  * \brief ::type is equal to first of Ts... that's equal to T
  */
 template<typename T, typename... Ts>
 struct any_of_trait {
-    using type = typename fallback_any_of_trait<empty_t, T, Ts...>::type;
+    using type = fallback_any_of_trait<empty_t, T, Ts...>::type;
     static_assert(!std::same_as<type, empty_t>, "None of the types are the same as T");
 };
 
@@ -50,7 +50,7 @@ struct fallback_convert_to_any_helper<Fallback, T> {
     using type = Fallback;
 };
 template<typename Fallback, typename T, typename... Ts>
-using fallback_convert_to_any_of_helper_t = typename fallback_convert_to_any_helper<Fallback, T, Ts...>::type;
+using fallback_convert_to_any_of_helper_t = fallback_convert_to_any_helper<Fallback, T, Ts...>::type;
 
 template<typename Fb, typename T, typename... Ts>
 struct fallback_convert_to_any_trait {
@@ -62,7 +62,7 @@ struct fallback_convert_to_any_trait {
 
 template<typename T, typename... Ts>
 struct convert_to_any_trait {
-    using type = typename fallback_convert_to_any_trait<empty_t, T, Ts...>::type;
+    using type = fallback_convert_to_any_trait<empty_t, T, Ts...>::type;
     static_assert(!std::same_as<type, empty_t>, "None of the types are convertible to T");
 };
 
@@ -95,7 +95,7 @@ struct fallback_construct_any_from_helper<Fallback, T> {
     using type = Fallback;
 };
 template<typename Fallback, typename T, typename... Ts>
-using fallback_construct_any_from_helper_t = typename fallback_construct_any_from_helper<Fallback, T, Ts...>::type;
+using fallback_construct_any_from_helper_t = fallback_construct_any_from_helper<Fallback, T, Ts...>::type;
 
 template<typename Fallback, typename T, typename... Ts>
 struct fallback_construct_any_from_trait {
@@ -114,7 +114,7 @@ struct fallback_construct_any_from_trait {
  * \note prioritizes convert_any_from_t<T, Ts...> if available
  */
 template<typename Fallback, typename T, typename... Ts>
-using fallback_construct_any_from_t = typename fallback_construct_any_from_trait<Fallback, T, Ts...>::type;
+using fallback_construct_any_from_t = fallback_construct_any_from_trait<Fallback, T, Ts...>::type;
 
 
 /**

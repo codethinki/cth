@@ -10,9 +10,11 @@ include(add_resources)
 include(install_utility)
 include(set_compiler_specifics)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_C_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_C_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+message("compiler: ${CMAKE_CXX_COMPILER}")
 
 set_compiler_specifics()
 

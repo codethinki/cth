@@ -227,9 +227,9 @@ public:
     void println(Text_Colors col, std::string_view str) const;
 
 
-    template<typename... Types> requires(sizeof...(Types) > 0u)
+    template<class... Types> requires(sizeof...(Types) > 0u)
     void print(Text_Colors col, std::format_string<Types...> f_str, Types&&... types);
-    template<typename... Types> requires(sizeof...(Types) > 0u)
+    template<class... Types> requires(sizeof...(Types) > 0u)
     void println(Text_Colors col, std::format_string<Types...> f_str, Types&&... types);
 
 private:
@@ -278,11 +278,11 @@ inline void col_stream::println(Text_Colors col, std::string_view str) const {
 }
 
 
-template<typename... Types> requires (sizeof...(Types) > 0u)
+template<class... Types> requires (sizeof...(Types) > 0u)
 void col_stream::print(Text_Colors col, std::format_string<Types...> f_str, Types&&... types) {
     col_stream::print(col, std::format(f_str, std::forward<Types>(types)...));
 }
-template<typename... Types> requires (sizeof...(Types) > 0u)
+template<class... Types> requires (sizeof...(Types) > 0u)
 void col_stream::println(Text_Colors col, std::format_string<Types...> f_str, Types&&... types) {
     col_stream::println(col, std::format(f_str, std::forward<Types>(types)...));
 }
