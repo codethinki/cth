@@ -1,5 +1,6 @@
 #include "cth/coro/os/native_handle.hpp"
 
+#include <cth/os/osdef.hpp>
 
 #ifdef CTH_FS_WINDOWS
 #include <cth/win/win_types.hpp>

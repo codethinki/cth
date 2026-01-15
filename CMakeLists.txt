@@ -6,24 +6,17 @@ project(cth LANGUAGES CXX VERSION 1.0.0)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-include(glob_cpp)
-include(add_resources)
-include(install_utility)
-include(set_compiler_specifics)
-
-if(MSVC)
-	set(CTH_CXX_STANDARD 23)
-else()
-	set(CTH_CXX_STANDARD 26)
-endif()
-
-set(CMAKE_CXX_STANDARD ${CTH_CXX_STANDARD})
-set(CMAKE_C_STANDARD ${CTH_CXX_STANDARD})
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-
+include(setup_utilities)
+include(target_utilities)
+include(install_utilities)
 
 set_compiler_specifics()
+set_cxx_standard()
+
+
+
+
+
 
 
 #exported
