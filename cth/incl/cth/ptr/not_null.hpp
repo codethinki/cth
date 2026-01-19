@@ -104,8 +104,8 @@ public:
         else return get_val();
     }
     [[nodiscard]] cxpr std::conditional_t<GET_COPY, T, T const&> get_val() const noexcept { return _obj; }
-    [[nodiscard]] cxpr dclauto operator->() const { return get(); }
-    [[nodiscard]] cxpr dclauto operator*() const requires(cth::mta::has_deref<T>) { return *get(); }
+    [[nodiscard]] cxpr declauto operator->() const { return get(); }
+    [[nodiscard]] cxpr declauto operator*() const requires(cth::mta::has_deref<T>) { return *get(); }
 };
 
 

@@ -1,21 +1,13 @@
 cmake_minimum_required(VERSION 4.1.1)
-
-
-# In 2026, you likely need this specific UUID for Clang-cl module support
 project(cth LANGUAGES CXX VERSION 1.0.0)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-include(setup_utilities)
-include(target_utilities)
-include(install_utilities)
+include(cth_setup_utilities)
+include(cth_target_utilities)
+include(cth_install_utilities)
 
-set_compiler_specifics()
-set_cxx_standard()
-
-
-
-
+cth_set_compiler_specifics()
+cth_set_newest_c_cpp_standard()
 
 
 
@@ -23,8 +15,9 @@ set_cxx_standard()
 add_subdirectory(cth)
 add_subdirectory(cth_win)
 add_subdirectory(cth_coro)
+add_subdirectory(cth_cthm)
 
-create_package()
+cth_create_package()
 
 
 #test

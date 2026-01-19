@@ -1,10 +1,10 @@
-glob_cpp(CTH_WIN_SRC "src")
-glob_cpp(CTH_WIN_INCL "incl")
+cth_glob_cpp(CTH_WIN_SRC "src")
+cth_glob_cpp(CTH_WIN_INCL "incl")
 
 add_library(cth_win STATIC ${CTH_WIN_SRC} ${CTH_WIN_INCL})
 add_library(cth::win ALIAS cth_win)
 
-package_target_include_directories(
+cth_pkg_target_include_directories(
         cth_win
         PUBLIC incl
 )

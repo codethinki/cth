@@ -21,7 +21,7 @@ DATA_TEST(union_find, gt1_chain) {
     // proven by the chain_length inspector
     EXPECT_GE(2u, uf.chain_length(0)); // chain length should be > 1
 
-    uf.find(0);
+    [[maybe_unused]] auto _ = uf.find(0);
     EXPECT_GE(1u, uf.chain_length(0));
 }
 

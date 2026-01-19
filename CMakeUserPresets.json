@@ -5,18 +5,15 @@
       "name": "user-llvm-path",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_C_COMPILER": ADD_PATH_HERE,
-        "CMAKE_CXX_COMPILER": ADD_PATH_HERE
+        "CMAKE_C_COMPILER": "E:\\cs\\code\\cpp\\compiler\\clang\\llvm_main\\llvm-project\\build\\release\\bin\\clang++.exe",
+        "CMAKE_CXX_COMPILER": "E:\\cs\\code\\cpp\\compiler\\clang\\llvm_main\\llvm-project\\build\\release\\bin\\clang++.exe"
       }
     },
     {
       "name": "vcpkg-location",
       "hidden": true,
       "environment": {
-        "VCPKG_ROOT": ADD_PATH_HERE
-      },
-      "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
+        "VCPKG_ROOT": "C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\VC\\vcpkg\\"
       }
     },
     {

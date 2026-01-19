@@ -67,7 +67,7 @@ template<rng::viewable_rng Rng> requires (rng::static_dim_rng<mta::rcvr_t<Rng>>)
 [[nodiscard]] cxpr std::string to_string(Rng&& range) {
     static cxpr bool MD_RANGE = mta::md_range<Rng, 2>;
 
-    dclauto rng = rng::to_viewable(range);
+    declauto rng = rng::to_viewable(range);
     using rng_t = decltype(rng);
 
     if(std::ranges::empty(rng)) return {};

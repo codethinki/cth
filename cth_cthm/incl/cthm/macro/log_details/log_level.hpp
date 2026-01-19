@@ -1,0 +1,13 @@
+#pragma once
+
+#define CTH_LOG_LEVEL_ALL 0
+#define CTH_LOG_LEVEL_DEBUG 0
+#define CTH_LOG_LEVEL_INFO 1
+#define CTH_LOG_LEVEL_WARN 2
+#define CTH_LOG_LEVEL_ERR 3
+#define CTH_LOG_LEVEL_CRITICAL 4
+#define CTH_LOG_LEVEL_NONE 5
+
+#ifndef CTH_LOG_LEVEL
+#define CTH_LOG_LEVEL CTH_LOG_LEVEL_ALL
+#endif

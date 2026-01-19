@@ -26,7 +26,7 @@ enum Severity {
     CRITICAL,
     SEVERITY_SIZE,
 };
-[[nodiscard]] cxpr static std::string_view to_string(Severity sev) {
+[[nodiscard]] cxpr std::string_view to_string(Severity sev) {
     switch(sev) {
         // NOLINT(clang-diagnostic-switch-enum)
         case LOG: return "LOG";
@@ -70,10 +70,10 @@ public:
 
 
     template<class S>
-    cxpr dclauto add(this S&& self, std::string_view msg) noexcept { return self.addNoCpy(msg); }
+    cxpr declauto add(this S&& self, std::string_view msg) noexcept { return self.addNoCpy(msg); }
 
     template<class S, typename... Args> requires (sizeof...(Args) > 0u)
-    cxpr dclauto add(this S& self, std::format_string<Args...> f_str, Args&&... types) noexcept {
+    cxpr declauto add(this S& self, std::format_string<Args...> f_str, Args&&... types) noexcept {
         return self.addNoCpy(std::format(f_str, std::forward<Args>(types)...));
     }
 

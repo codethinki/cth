@@ -27,7 +27,7 @@ namespace cth::log::dev {
 inline bool colored = true;
 inline io::col_stream logStream{&std::cerr, io::error.state()}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-static cxpr io::Text_Colors text_color(cth::except::Severity severity) {
+ cxpr io::Text_Colors text_color(cth::except::Severity severity) {
     switch(severity) {
         case cth::except::LOG: return io::WHITE_TEXT_COL;
         case cth::except::Severity::INFO: return io::DARK_CYAN_TEXT_COL;
@@ -39,7 +39,7 @@ static cxpr io::Text_Colors text_color(cth::except::Severity severity) {
     }
 }
 
-[[nodiscard]] cxpr static std::string_view label(cth::except::Severity severity) {
+[[nodiscard]] cxpr  std::string_view label(cth::except::Severity severity) {
     switch(severity) {
         case cth::except::Severity::LOG: return "[LOG]";
         case cth::except::Severity::INFO: return "[INFO]";

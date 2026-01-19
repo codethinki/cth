@@ -27,7 +27,7 @@ constexpr auto basic_miniram<SizeType, IndexType>::ceil_to_float(size_type size)
 
         // Round up!
         if((size & lowBitsMask) != 0)
-            mantissa++;
+            ++mantissa;
     }
 
     return (exp << MANTISSA_BITS) + mantissa;

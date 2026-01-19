@@ -1,4 +1,4 @@
-glob_cpp(PLAYGROUND_SRC "src")
+cth_glob_cpp(PLAYGROUND_SRC "src")
 
 add_executable(playground ${PLAYGROUND_SRC})
 

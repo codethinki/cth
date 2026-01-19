@@ -1,7 +1,7 @@
-glob_cpp(CTH_WIN_TESTS_SRC "src")
+cth_glob_cpp(CTH_WIN_TESTS_SRC "src")
 
 add_executable(cth_win_tests ${CTH_WIN_TESTS_SRC})
-add_resources(cth_win_tests "res")
+cth_add_resources(cth_win_tests "res")
 
 
 target_include_directories(

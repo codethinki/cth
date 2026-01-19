@@ -33,7 +33,7 @@ template<auto Val>
 size_t cval zero() { return mta::zero(Val); }
 
 template<bool Copy, class T>
-dclauto copy_if(T&& value) {
+declauto copy_if(T&& value) {
     if constexpr(Copy) return std::remove_cvref_t<T>{value};
     else return std::forward<T>(value);
 }

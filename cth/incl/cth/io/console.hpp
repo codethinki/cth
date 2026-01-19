@@ -1,5 +1,5 @@
 #pragma once
-#include "../string.hpp"
+#include "cth/string.hpp"
 
 #include <array>
 #include <iostream>
@@ -66,91 +66,117 @@ enum Text_Styles {
     STRIKEOUT_TEXT_STYLE,
     TEXT_STYLE_SIZE
 };
+}
+
+namespace cth::io::dev {
+
+inline cxpr size_t MAX_STACK_SIZE = 16;
+
+enum Cursor_Ids {
+    //cursor codes
+    ID_CURSOR_UP,
+    ID_CURSOR_UP_RESET_X,
+    ID_CURSOR_DOWN,
+    ID_CURSOR_DOWN_RESET_X,
+    ID_CURSOR_LEFT,
+    ID_CURSOR_RIGHT,
+    ID_CURSOR_SET_X,
+    ID_CURSOR_RESET,
+
+    CURSOR_IDS_SIZE
+};
+enum Erase_Ids {
+    ID_ERASE_LINE,
+    ID_ERASE_CURSOR_LEFT,
+    ID_ERASE_CURSOR_RIGHT,
+    ID_ERASE_SCREEN,
+    ID_ERASE_SCREEN_UP,
+    ID_ERASE_SCREEN_DOWN,
+    ERASE_IDS_SIZE
+};
 
 
-namespace dev {
 
-    static inline cxpr size_t MAX_STACK_SIZE = 16;
-
-    enum Cursor_Ids {
-        //cursor codes
-        ID_CURSOR_UP,
-        ID_CURSOR_UP_RESET_X,
-        ID_CURSOR_DOWN,
-        ID_CURSOR_DOWN_RESET_X,
-        ID_CURSOR_LEFT,
-        ID_CURSOR_RIGHT,
-        ID_CURSOR_SET_X,
-        ID_CURSOR_RESET,
-
-        CURSOR_IDS_SIZE
-    };
-    enum Erase_Ids {
-        ID_ERASE_LINE,
-        ID_ERASE_CURSOR_LEFT,
-        ID_ERASE_CURSOR_RIGHT,
-        ID_ERASE_SCREEN,
-        ID_ERASE_SCREEN_UP,
-        ID_ERASE_SCREEN_DOWN,
-        ERASE_IDS_SIZE
-    };
-
-
-
-    inline static cxpr std::array<char const*, TEXT_COL_SIZE> TEXT_COLOR_CODES_N = {{
-        "\033[39m", //default
-        "\033[30m", "\033[31m", "\033[32m", "\033[33m",
-        "\033[34m", "\033[35m", "\033[36m", "\033[37m",
-        "\033[90m", "\033[91m", "\033[92m", "\033[93m",
-        "\033[94m", "\033[95m", "\033[96m", "\033[97m",
-    }};
-    inline static cxpr std::array<char const*, BG_COL_SIZE> BG_COLOR_CODES_N = {{
-        "\033[40m", "\033[41m", "\033[42m", "\033[43m",
-        "\033[44m", "\033[45m", "\033[46m", "\033[47m",
-        "\033[100m", "\033[101m", "\033[102m", "\033[103m",
-        "\033[104m", "\033[105m", "\033[106m", "\033[107m",
-    }};
-    inline static cxpr std::array<char const*, TEXT_STYLE_SIZE * 2> TEXT_STYLE_CODES_N = {{
-        "\033[1m", "\033[22m", //bold clear bold
-        "\033[2m", "\033[22m", //faint, clear bold
-        "\033[3m", "\033[23m", //italic, clear italic
-        "\033[4m", "\033[24m", //underline, clear underline
-        "\033[21m", "\033[24m", //double underline, clear underline
-        "\033[5m", "\033[25m", //blink, clear blink
-        "\033[7m", "\033[27m", //inverse, clear inverse
-        "\033[8m", "\033[28m", //hidden, clear hidden
-        "\033[9m", "\033[29m" //strikeout, clear strikeout
-    }};
-
-
-    template<mta::character T = char>
-    static cxpr std::string_view ansiCode(Text_Colors color) {
-        return TEXT_COLOR_CODES_N[color];
+inline cxpr std::array<char const*, TEXT_COL_SIZE> TEXT_COLOR_CODES_N = {
+    {
+        "\033[39m",
+        //default
+        "\033[30m",
+        "\033[31m",
+        "\033[32m",
+        "\033[33m",
+        "\033[34m",
+        "\033[35m",
+        "\033[36m",
+        "\033[37m",
+        "\033[90m",
+        "\033[91m",
+        "\033[92m",
+        "\033[93m",
+        "\033[94m",
+        "\033[95m",
+        "\033[96m",
+        "\033[97m",
     }
-    template<mta::character T = char>
-    static cxpr std::string_view ansiCode(BG_Colors color) {
-        return BG_COLOR_CODES_N[color];
+};
+inline cxpr std::array<char const*, BG_COL_SIZE> BG_COLOR_CODES_N = {
+    {
+        "\033[40m",
+        "\033[41m",
+        "\033[42m",
+        "\033[43m",
+        "\033[44m",
+        "\033[45m",
+        "\033[46m",
+        "\033[47m",
+        "\033[100m",
+        "\033[101m",
+        "\033[102m",
+        "\033[103m",
+        "\033[104m",
+        "\033[105m",
+        "\033[106m",
+        "\033[107m",
     }
-    template<mta::character T = char>
-    static cxpr std::string_view ansiCode(Text_Styles color) {
-        return TEXT_STYLE_CODES_N[color];
+};
+inline cxpr std::array<char const*, TEXT_STYLE_SIZE * 2> TEXT_STYLE_CODES_N = {
+    {
+        "\033[1m",
+        "\033[22m",
+        //bold clear bold
+        "\033[2m",
+        "\033[22m",
+        //faint, clear bold
+        "\033[3m",
+        "\033[23m",
+        //italic, clear italic
+        "\033[4m",
+        "\033[24m",
+        //underline, clear underline
+        "\033[21m",
+        "\033[24m",
+        //double underline, clear underline
+        "\033[5m",
+        "\033[25m",
+        //blink, clear blink
+        "\033[7m",
+        "\033[27m",
+        //inverse, clear inverse
+        "\033[8m",
+        "\033[28m",
+        //hidden, clear hidden
+        "\033[9m",
+        "\033[29m" //strikeout, clear strikeout
     }
+};
 
-    //TODO add supports for these codes
-    //inline static cxpr array<const char*, CURSOR_IDS_SIZE> CURSOR_CODES_N{{
-    //    //control sequences, replace the # with a number
-    //    "\033[#A", "\033[#F", //up, up reset x
-    //    "\033[#B", "\033[#E", //down, down reset x
-    //    "\033[#C", "\033[#D", //left, right
-    //    "\033[#G", //set x
-    //    "\033[#H" //reset
-    //}};
-    //inline static cxpr array<const char*, ERASE_IDS_SIZE> ERASE_CODES_N{{
-    //    "\033[2K", //erase line
-    //    "\033[1K", "\033[0K", //erase line left, right
-    //    "\033[2J", //erase screen
-    //    "\033[1J", "\033[0J" //erase screen up, down
-    //}};
+
+template<cth::mta::character T = char>
+cxpr std::string_view ansiCode(Text_Colors color) { return TEXT_COLOR_CODES_N[color]; }
+template<cth::mta::character T = char>
+cxpr std::string_view ansiCode(BG_Colors color) { return BG_COLOR_CODES_N[color]; }
+template<cth::mta::character T = char>
+cxpr std::string_view ansiCode(Text_Styles color) { return TEXT_STYLE_CODES_N[color]; }
 
 } // namespace dev
 
@@ -158,6 +184,7 @@ namespace dev {
 //    DECLARATIONS
 //-------------------------
 
+namespace cth::io {
 
 struct col_stream_state {
     cxpr col_stream_state() = default;
@@ -189,7 +216,9 @@ public:
      * \param out ostream to wrap
      * \param current_state for sharing state between streams\n same output streams must be shared!
      */
-    explicit col_stream(std::ostream* out, std::shared_ptr<col_stream_state> const& current_state = nullptr) : _oStream(out) {
+    explicit col_stream(std::ostream* out, std::shared_ptr<col_stream_state> const& current_state = nullptr) : _oStream(
+        out
+    ) {
         if(current_state != nullptr) _current = current_state;
         else _current = std::make_shared<col_stream_state>();
     }
@@ -243,7 +272,6 @@ private:
 
 namespace cth::io {
 
-//TEMP left off here, the styles are bugged fix them
 template<bool Cache>
 void col_stream::setTextCol(Text_Colors text_col) const {
     if constexpr(Cache) _current->setTextCol(text_col);
@@ -264,8 +292,9 @@ void col_stream::setState(col_stream_state new_state) const {
     if constexpr(Cache) *_current = new_state;
     setTextCol<false>(new_state.textCol());
     setBGCol<false>(new_state.bgCol());
-    for(uint32_t i = 0; i < TEXT_STYLE_SIZE; i++) setTextStyle<
-        false>(static_cast<Text_Styles>(i), new_state.styleActive(static_cast<Text_Styles>(i)));
+    for(uint32_t i = 0; i < TEXT_STYLE_SIZE; i++)
+        setTextStyle<
+            false>(static_cast<Text_Styles>(i), new_state.styleActive(static_cast<Text_Styles>(i)));
 }
 
 inline void col_stream::print(Text_Colors col, std::string_view str) const {
@@ -289,20 +318,10 @@ void col_stream::println(Text_Colors col, std::format_string<Types...> f_str, Ty
 
 } // namespace cth::io
 
-//-------------------------
-// INSTANTIATIONS
-//-------------------------
-
-namespace cth::io {}
-
-
-//-------------------------
-//  GLOBAL CONSOLES
-//-------------------------
-
 namespace cth::io {
 
 inline col_stream console{&std::cout};
 inline col_stream error{&std::cerr, console.state()};
 
 }
+

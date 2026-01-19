@@ -5,7 +5,7 @@
 #include <string_view>
 #include <utility>
 
-namespace cth::str {
+namespace cth::dt {
 class joiner {
 #define CTH_DEV_JOINER_FORWARD_STRING_METHOD(str, method_name)\
     template<class... Args>\

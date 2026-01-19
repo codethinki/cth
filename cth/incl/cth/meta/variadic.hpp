@@ -17,24 +17,20 @@ namespace cth::mta {
 template<class T, class... Ts>
 concept any_of = (std::same_as<T, Ts> || ...);
 
-/**
- * \brief ::type is equal to first of Ts... that's equal to T or Fallback if none are
- * \tparam Fb (Fallback) if none of Ts... are equal to T
- */
-template<class Fb, class T, class... Ts> struct fallback_any_of_trait;
 
-/**
- * @brief shortcut to @ref fallback_any_of::type
- */
-template<class Fb, class T, class... Ts>
-using fallback_any_of_t = fallback_any_of_trait<Fb, T, Ts...>::type;
+template<class Opt, class T, class... Ts>
+struct opt_any_of_trait {
+    using type = std::conditional_t<any_of<T, Ts...>, T, Opt>;
+};
 
-/**
- * \brief ::type is equal to first of Ts... that's equal to T
- */
+template<class Opt, class T, class... Ts>
+using opt_any_of_t = opt_any_of_trait<Opt, T, Ts...>::type;
+
 template<class T, class... Ts>
-struct any_of_trait;
-
+struct any_of_trait {
+    using type = opt_any_of_trait<void, T, Ts...>;
+    static_assert(!any_of<T, Ts...>, "none of the types match");
+};
 
 /**
  * @brief shortcut to @ref any_of::type
@@ -76,6 +72,9 @@ concept any_convertible_to = (std::convertible_to<Ts, T> || ...);
  */
 template<typename T, typename... Ts>
 concept convertible_to_any = (std::convertible_to<T, Ts> || ...);
+
+template<class Opt, class T, class... Ts>
+struct opt_convert_to_any_trait;
 
 /**
  * @brief ::type is equal to first of Ts... that's convertible from T or Fallback if none are

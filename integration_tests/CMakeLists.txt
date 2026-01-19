@@ -1,7 +1,8 @@
-glob_cpp(INTEGRATION_TESTS_SRC "src")
+cth_glob_cpp(INTEGRATION_TESTS_SRC "src")
 
 add_executable(integration_tests ${INTEGRATION_TESTS_SRC})
-add_resources(integration_tests "res")
+
+cth_add_resources(integration_tests "res")
 
 target_include_directories(
         integration_tests

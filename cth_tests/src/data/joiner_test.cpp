@@ -1,4 +1,4 @@
-#include "cth/string/joiner.hpp"
+#include "cth/data/joiner.hpp"
 
 #include "test.hpp"
 
@@ -8,9 +8,9 @@
 #include <vector>
 #include <ranges>
 
-namespace cth::str {
+namespace cth::dt {
 
-STRING_TEST(joiner, ConstructorsAndDelimiter) {
+DATA_TEST(joiner, ConstructorsAndDelimiter) {
     joiner const sjDefault;
     ASSERT_EQ(sjDefault.delim(), " ");
 
@@ -22,7 +22,7 @@ STRING_TEST(joiner, ConstructorsAndDelimiter) {
     ASSERT_GE(sjReserve.capacity(), 128);
 }
 
-STRING_TEST(joiner, OperatorPlusEquals) {
+DATA_TEST(joiner, OperatorPlusEquals) {
     joiner sj(", ");
     sj += "one";
     ASSERT_EQ(sj.string(), "one");
@@ -32,7 +32,7 @@ STRING_TEST(joiner, OperatorPlusEquals) {
     ASSERT_EQ(sj.string(), "one, two, 3");
 }
 
-STRING_TEST(joiner, OperatorPlus) {
+DATA_TEST(joiner, OperatorPlus) {
     std::string const res1 = joiner(" | ") + "A" + "B" + "C";
     ASSERT_EQ(res1, "A | B | C");
 
@@ -43,7 +43,7 @@ STRING_TEST(joiner, OperatorPlus) {
     ASSERT_EQ(sjCopy.string(), "base extended");
 }
 
-STRING_TEST(joiner, OperatorEq) {
+DATA_TEST(joiner, OperatorEq) {
     auto const sj = joiner{" "} + "a" + "b" + "c";
     auto const sj2 = joiner{" "} + "a" + "b" + "c";
     std::string const expected = "a b c";
@@ -52,7 +52,7 @@ STRING_TEST(joiner, OperatorEq) {
     EXPECT_EQ(sj, expected);
 }
 
-STRING_TEST(joiner, ConversionsAndAccessors) {
+DATA_TEST(joiner, ConversionsAndAccessors) {
     joiner sj(" ");
     sj += "test";
     sj += "string";
@@ -70,7 +70,7 @@ STRING_TEST(joiner, ConversionsAndAccessors) {
     ASSERT_EQ(sv, expected);
 }
 
-STRING_TEST(joiner, Iterators) {
+DATA_TEST(joiner, Iterators) {
     joiner const sj = joiner(" ") + "a" + "b" + "c";
     std::string const expected = "a b c";
 
@@ -83,7 +83,7 @@ STRING_TEST(joiner, Iterators) {
     ASSERT_EQ(fromRevIter, expectedRev);
 }
 
-STRING_TEST(joiner, ElementAccess) {
+DATA_TEST(joiner, ElementAccess) {
     joiner const sj = joiner("") + "abc";
     std::string const expected = "abc";
 
@@ -93,7 +93,7 @@ STRING_TEST(joiner, ElementAccess) {
     ASSERT_EQ(sj.at(2), expected.at(2));
 }
 
-STRING_TEST(joiner, CapacityAndModifiers) {
+DATA_TEST(joiner, CapacityAndModifiers) {
     joiner sj(" ", 100);
     ASSERT_TRUE(sj.empty());
     ASSERT_GE(sj.capacity(), 100);
@@ -108,7 +108,7 @@ STRING_TEST(joiner, CapacityAndModifiers) {
     ASSERT_EQ(sj.size(), 0);
 }
 
-STRING_TEST(joiner, SearchAndInspectMethods) {
+DATA_TEST(joiner, SearchAndInspectMethods) {
     joiner const sj = joiner("/") + "path" + "to" + "file" + "file";
     std::string const expected = "path/to/file/file";
 

@@ -1,4 +1,4 @@
-glob_cpp(CTH_CORO_TESTS_SRC "src")
+cth_glob_cpp(CTH_CORO_TESTS_SRC "src")
 
 add_executable(cth_coro_tests ${CTH_CORO_TESTS_SRC})
 
