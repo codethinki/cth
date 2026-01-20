@@ -2,6 +2,8 @@ cth_glob_cpp(CTH_TESTS_SRC "src")
 
 add_executable(cth_tests ${CTH_TESTS_SRC})
 
+cth_target_enable_build_cache(cth_tests)
+
 target_include_directories(
         cth_tests
         PRIVATE src

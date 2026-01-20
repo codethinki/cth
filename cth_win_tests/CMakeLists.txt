@@ -3,6 +3,7 @@ cth_glob_cpp(CTH_WIN_TESTS_SRC "src")
 add_executable(cth_win_tests ${CTH_WIN_TESTS_SRC})
 cth_add_resources(cth_win_tests "res")
 
+cth_target_enable_build_cache(cth_win_tests)
 
 target_include_directories(
         cth_win_tests
