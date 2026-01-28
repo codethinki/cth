@@ -5,12 +5,7 @@
       "name": "ci-base",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER_LAUNCHER": "buildcache",
-        "CMAKE_C_COMPILER_LAUNCHER": "buildcache",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
-      },
-      "environment": {
-        "VCPKG_ROOT": "$env{VCPKG_ROOT}"
       }
     },
     {
