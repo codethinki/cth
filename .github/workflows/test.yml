@@ -35,16 +35,25 @@ jobs:
       - name: Setup Linux Env
         uses: ./.github/actions/setup-linux
 
-      - name: Create vcpkg-archives
-        run: mkdir -p vcpkg-archives
+      # - name: Create vcpkg-archives
+      #   run: mkdir -p vcpkg-archives
 
-      - name: Cache vcpkg artifacts
+      # - name: Cache vcpkg artifacts
+      #   uses: actions/cache@v4
+      #   with:
+      #       path: vcpkg-archives
+      #       key: vcpkg-archives-linux-${{ hashFiles('vcpkg.json') }}
+      #       restore-keys: |
+      #           vcpkg-archives-linux-
+
+      - name: Cache vcpkg installed
         uses: actions/cache@v4
         with:
-            path: vcpkg-archives
-            key: vcpkg-archives-linux-${{ hashFiles('vcpkg.json') }}
+            path: |
+              out/build/ci-linux-*/vcpkg_installed
+            key: vcpkg-installed-linux-${{ hashFiles('vcpkg.json') }}
             restore-keys: |
-                vcpkg-archives-linux-
+                vcpkg-installed-linux-
 
       - name: Configure
         uses: ./.github/actions/run-linux
@@ -67,7 +76,7 @@ jobs:
     name: Windows Test (${{ matrix.compiler }})
     runs-on: windows-latest
     env:
-      VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg-archives,readwrite"
+      # VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg-archives,readwrite"
     strategy:
       fail-fast: false
       matrix:
@@ -83,17 +92,28 @@ jobs:
         with:
           compiler: ${{ matrix.compiler }}
 
-      - name: Create vcpkg-archives
-        shell: pwsh
-        run: New-Item -ItemType Directory -Force -Path vcpkg-archives
+      # - name: Create vcpkg-archives
+      #   shell: pwsh
+      #   run: New-Item -ItemType Directory -Force -Path vcpkg-archives
 
-      - name: Cache vcpkg artifacts
+      # - name: Cache vcpkg artifacts
+      #   uses: actions/cache@v4
+      #   with:
+      #       path: vcpkg-archives
+      #       key: vcpkg-archives-windows-${{ hashFiles('vcpkg.json') }}
+      #       restore-keys: |
+      #           vcpkg-archives-windows-
+
+      - name: Cache vcpkg installed
         uses: actions/cache@v4
         with:
-            path: vcpkg-archives
-            key: vcpkg-archives-windows-${{ hashFiles('vcpkg.json') }}
+            path: |
+              out/build/ci-windows-*/vcpkg_installed
+              ~\AppData\Local\vcpkg\archives
+              ~\AppData\Local\vcpkg\installed
+            key: vcpkg-installed-windows-${{ hashFiles('vcpkg.json') }}
             restore-keys: |
-                vcpkg-archives-windows-
+                vcpkg-installed-windows-
 
       - name: Configure
         shell: pwsh
