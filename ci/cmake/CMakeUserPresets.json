@@ -1,0 +1,33 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "ci-base",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "buildcache",
+        "CMAKE_C_COMPILER_LAUNCHER": "buildcache",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+      },
+      "environment": {
+        "VCPKG_ROOT": "$env{VCPKG_ROOT}"
+      }
+    },
+    {
+      "name": "ci-linux-clang",
+      "inherits": ["base_clang_release", "ci-base"],
+      "cacheVariables": {
+         "CMAKE_CXX_COMPILER": "clang++",
+         "CMAKE_C_COMPILER": "clang"
+      }
+    },
+    {
+      "name": "ci-windows-msvc",
+      "inherits": ["base_msvc_release", "ci-base"]
+    },
+    {
+      "name": "ci-windows-clang",
+      "inherits": ["base_clang_release", "ci-base"]
+    }
+  ]
+}

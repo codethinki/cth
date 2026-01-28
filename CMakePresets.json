@@ -29,15 +29,10 @@
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
+      "installDir": "${sourceDir}/out/install/${presetName}"
     },
     {
-      "name": "windows-msvc-base",
+      "name": "msvc-base",
       "hidden": true,
       "inherits": "windows-base",
       "cacheVariables": {
@@ -46,7 +41,7 @@
       }
     },
     {
-      "name": "windows-clang-base",
+      "name": "clang-base",
       "hidden": true,
       "inherits": "windows-base",
       "cacheVariables": {
@@ -55,34 +50,34 @@
       }
     },
     {
-      "name": "base_win_msvc_debug",
+      "name": "base_msvc_debug",
       "hidden": true,
       "inherits": [
-        "windows-msvc-base",
+        "msvc-base",
         "debug-base"
       ]
     },
     {
       "hidden": true,
-      "name": "base_win_msvc_release",
+      "name": "base_msvc_release",
       "inherits": [
-        "windows-msvc-base",
+        "msvc-base",
         "release-base"
       ]
     },
     {
-      "name": "base_win_clang_debug",
+      "name": "base_clang_debug",
       "hidden": true,
       "inherits": [
-        "windows-clang-base",
+        "clang-base",
         "debug-base"
       ]
     },
     {
       "hidden": true,
-      "name": "base_win_clang_release",
+      "name": "base_clang_release",
       "inherits": [
-        "windows-clang-base",
+        "clang-base",
         "release-base"
       ]
     }

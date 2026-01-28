@@ -20,14 +20,14 @@
       "name": "win_msvc_debug",
       "inherits": [
         "vcpkg-location",
-        "base_win_msvc_debug"
+        "base_msvc_debug"
       ]
     },
     {
       "name": "win_msvc_release",
       "inherits": [
         "vcpkg-location",
-        "base_win_msvc_release"
+        "base_msvc_release"
       ]
     },
     {
@@ -35,7 +35,7 @@
       "inherits": [
         "vcpkg-location",
         "user-llvm-path",
-        "base_win_clang_debug"
+        "base_clang_debug"
       ]
     },
     {
@@ -43,7 +43,7 @@
       "inherits": [
         "vcpkg-location",
         "user-llvm-path",
-        "base_win_clang_release"
+        "base_clang_release"
       ]
     }
   ]

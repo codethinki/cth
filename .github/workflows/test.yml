@@ -1,0 +1,70 @@
+name: Test CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+env:
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
+jobs:
+  linux-test:
+    name: Linux Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Linux Env
+        uses: ./.github/actions/setup-linux
+
+      - name: Configure
+        uses: ./.github/actions/run-linux
+        with:
+          run: |
+            cp ci/cmake/CMakeUserPresets.json .
+            cmake --preset ci-linux-clang
+
+      - name: Build
+        uses: ./.github/actions/run-linux
+        with:
+          run: cmake --build --preset ci-linux-clang --target cth cth_coro cth_cthm cth_tests cth_coro_tests
+
+      - name: Test
+        uses: ./.github/actions/run-linux
+        with:
+          run: ctest --preset ci-linux-clang --output-on-failure --tests-regex "cth_tests|cth_coro_tests"
+
+  windows-test:
+    name: Windows Test (${{ matrix.compiler }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [msvc, clang]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Windows Env
+        uses: ./.github/actions/setup-windows
+        with:
+          compiler: ${{ matrix.compiler }}
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          Copy-Item ci/cmake/CMakeUserPresets.json .
+          cmake --preset ci-windows-${{ matrix.compiler }}
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake --build --preset ci-windows-${{ matrix.compiler }} --target cth cth_coro cth_cthm cth_tests integration_tests cth_coro_tests cth_win cth_win_tests
+
+      - name: Test
+        shell: pwsh
+        run: |
+          ctest --preset ci-windows-${{ matrix.compiler }} --output-on-failure --tests-regex "cth_tests|integration_tests|cth_coro_tests|cth_win_tests"

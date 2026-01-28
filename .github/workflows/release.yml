@@ -1,0 +1,70 @@
+name: Release CI
+
+on:
+  workflow_dispatch:
+
+env:
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
+jobs:
+  linux-release:
+    name: Linux Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Linux Env
+        uses: ./.github/actions/setup-linux
+
+      # Force build package. Technically configuring is needed.
+      # If we trust cache, we might not need full rebuild, but clean release is safer.
+      - name: Configure
+        uses: ./.github/actions/run-linux
+        with:
+          run: |
+            cp ci/cmake/CMakeUserPresets.json .
+            cmake --preset ci-linux-clang
+
+      - name: Build Package
+        uses: ./.github/actions/run-linux
+        with:
+          run: cmake --build --preset ci-linux-clang --target cth_package
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cth-linux-install
+          path: out/install/ci-linux-clang
+
+  windows-release:
+    name: Windows Release (${{ matrix.compiler }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [msvc, clang]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Windows Env
+        uses: ./.github/actions/setup-windows
+        with:
+          compiler: ${{ matrix.compiler }}
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          Copy-Item ci/cmake/CMakeUserPresets.json .
+          cmake --preset ci-windows-${{ matrix.compiler }}
+
+      - name: Build Package
+        shell: pwsh
+        run: |
+          cmake --build --preset ci-windows-${{ matrix.compiler }} --target cth_package
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cth-windows-${{ matrix.compiler }}-install
+          path: out/install/ci-windows-${{ matrix.compiler }}
