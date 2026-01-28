@@ -11,8 +11,16 @@ permissions:
   packages: write
 
 jobs:
+  linux-prepare:
+    name: Prepare Linux Container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-linux-container
+
   linux-release:
     name: Linux Release
+    needs: linux-prepare
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

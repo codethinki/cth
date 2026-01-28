@@ -15,8 +15,16 @@ permissions:
   packages: write
 
 jobs:
+  linux-prepare:
+    name: Prepare Linux Container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-linux-container
+
   linux-test:
     name: Linux Test (${{ matrix.compiler }}-release)
+    needs: linux-prepare
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
