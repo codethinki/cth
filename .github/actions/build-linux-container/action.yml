@@ -22,6 +22,5 @@ runs:
         load: false
         tags: |
           ghcr.io/codethinki/cth:linux-latest
-          cth-linux:latest
         cache-from: type=registry,ref=ghcr.io/codethinki/cth:linux-latest
         cache-to: type=registry,ref=ghcr.io/codethinki/cth:linux-latest,mode=max
