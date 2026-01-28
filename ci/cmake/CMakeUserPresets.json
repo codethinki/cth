@@ -5,6 +5,8 @@
       "name": "ci-base",
       "hidden": true,
       "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
       "cacheVariables": {
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
       }
@@ -32,6 +34,42 @@
     {
       "name": "ci-windows-clang",
       "inherits": ["base_clang_release", "ci-base"]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ci-linux-clang-release",
+      "configurePreset": "ci-linux-clang-release"
+    },
+    {
+      "name": "ci-linux-gcc-release",
+      "configurePreset": "ci-linux-gcc-release"
+    },
+    {
+      "name": "ci-windows-msvc",
+      "configurePreset": "ci-windows-msvc"
+    },
+    {
+      "name": "ci-windows-clang",
+      "configurePreset": "ci-windows-clang"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "ci-linux-clang-release",
+      "configurePreset": "ci-linux-clang-release"
+    },
+    {
+      "name": "ci-linux-gcc-release",
+      "configurePreset": "ci-linux-gcc-release"
+    },
+    {
+      "name": "ci-windows-msvc",
+      "configurePreset": "ci-windows-msvc"
+    },
+    {
+      "name": "ci-windows-clang",
+      "configurePreset": "ci-windows-clang"
     }
   ]
 }
