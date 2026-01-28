@@ -1,6 +1,7 @@
 cth_glob_cpp(INTEGRATION_TESTS_SRC "src")
 
 add_executable(integration_tests ${INTEGRATION_TESTS_SRC})
+cth_target_enable_build_cache(integration_tests)
 
 cth_add_resources(integration_tests "res")
 

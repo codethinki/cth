@@ -20,3 +20,4 @@ target_link_libraries(cth_coro PRIVATE Boost::asio)
 if(WIN32)
     target_link_libraries(cth_coro PRIVATE cth::win)
 endif()
+    
