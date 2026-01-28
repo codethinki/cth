@@ -1,4 +1,4 @@
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/OWNER/REPO/actions/workflows/ci.yml) [![Release](https://github.com/OWNER/REPO/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/OWNER/REPO/actions/workflows/release.yml)
+[![Test CI](https://github.com/codethinki/cth/actions/workflows/test.yml/badge.svg)](https://github.com/codethinki/cth/actions/workflows/test.yml) [![Release CI](https://github.com/codethinki/cth/actions/workflows/release.yml/badge.svg)](https://github.com/codethinki/cth/actions/workflows/release.yml)
 
 # cth
 simple library with unit tests

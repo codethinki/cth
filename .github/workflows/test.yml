@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       
       - name: Setup Linux Env
         uses: ./.github/actions/setup-linux
@@ -45,6 +47,8 @@ jobs:
       matrix:
         compiler: [msvc, clang]
 
+        with:
+          submodules: recursive
     steps:
       - uses: actions/checkout@v4
 

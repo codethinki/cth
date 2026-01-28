@@ -11,7 +11,7 @@ runs:
     - name: Run Docker Command
       uses: addnab/docker-run-action@v3
       with:
-        image: cth-linux:latest
+        image: ghcr.io/codethinki/cth:linux-latest
         options: >-
             -v ${{ github.workspace }}:/work 
             -w /work 
