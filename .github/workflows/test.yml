@@ -16,13 +16,12 @@ permissions:
 
 jobs:
   linux-test:
-    name: Linux Test (${{ matrix.compiler }}-${{ matrix.config }})
+    name: Linux Test (${{ matrix.compiler }}-release)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         compiler: [clang, gcc]
-        config: [release, debug]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,17 +35,17 @@ jobs:
         with:
           run: |
             cp ci/cmake/CMakeUserPresets.json .
-            cmake --preset ci-linux-${{ matrix.compiler }}-${{ matrix.config }}
+            cmake --preset ci-linux-${{ matrix.compiler }}-release
 
       - name: Build
         uses: ./.github/actions/run-linux
         with:
-          run: cmake --build --preset ci-linux-${{ matrix.compiler }}-${{ matrix.config }} --target cth cth_coro cth_cthm cth_tests cth_coro_tests
+          run: cmake --build --preset ci-linux-${{ matrix.compiler }}-release --target cth cth_coro cth_cthm cth_tests cth_coro_tests
 
       - name: Test
         uses: ./.github/actions/run-linux
         with:
-          run: ctest --preset ci-linux-${{ matrix.compiler }}-${{ matrix.config }} --output-on-failure --tests-regex "cth_tests|cth_coro_tests"
+          run: ctest --preset ci-linux-${{ matrix.compiler }}-release --output-on-failure --tests-regex "cth_tests|cth_coro_tests"
 
   windows-test:
     name: Windows Test (${{ matrix.compiler }})

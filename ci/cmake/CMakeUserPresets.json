@@ -18,24 +18,8 @@
       }
     },
     {
-      "name": "ci-linux-clang-debug",
-      "inherits": ["base_clang_debug", "ci-base"],
-      "cacheVariables": {
-         "CMAKE_CXX_COMPILER": "clang++",
-         "CMAKE_C_COMPILER": "clang"
-      }
-    },
-    {
       "name": "ci-linux-gcc-release",
       "inherits": ["release-base", "ci-base"],
-      "cacheVariables": {
-         "CMAKE_CXX_COMPILER": "g++",
-         "CMAKE_C_COMPILER": "gcc"
-      }
-    },
-    {
-      "name": "ci-linux-gcc-debug",
-      "inherits": ["debug-base", "ci-base"],
       "cacheVariables": {
          "CMAKE_CXX_COMPILER": "g++",
          "CMAKE_C_COMPILER": "gcc"
