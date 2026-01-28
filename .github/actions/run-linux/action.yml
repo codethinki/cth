@@ -18,5 +18,5 @@ runs:
             -e BUILDCACHE_DIR=/work/.buildcache
             -e ACTIONS_CACHE_URL=${{ env.ACTIONS_CACHE_URL }}
             -e ACTIONS_RUNTIME_TOKEN=${{ env.ACTIONS_RUNTIME_TOKEN }}
-            -e VCPKG_BINARY_SOURCES="clear;gha,readwrite"
+            -e VCPKG_BINARY_SOURCES="clear;files,/work/vcpkg-archives,readwrite"
         run: ${{ inputs.run }}
