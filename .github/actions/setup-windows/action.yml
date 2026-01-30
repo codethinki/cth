@@ -14,18 +14,10 @@ runs:
       with:
         python-version: '3.x'
 
-    - name: Cache Pip  # Restore only, assuming prepare action populated it
-      uses: actions/cache/restore@v4
-      with:
-        path: ~\AppData\Local\pip\Cache
-        key: pip-windows-${{ hashFiles('.github/requirements.txt') }}
-        restore-keys: |
-            pip-windows-
-
     - name: Configure VCPKG_DOWNLOADS
       shell: pwsh
       run: |
-        New-Item -ItemType Directory -Force -Path "$HOME\AppData\Local\vcpkg\downloads"
+        New-Item -ItemType Directory -Force -Path "$HOME\AppData\Local\vcpkg\downloads" | Out-Null
 
     - name: Install CMake & Ninja (Pip)
       shell: pwsh
