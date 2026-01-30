@@ -10,20 +10,6 @@ runs:
   steps:
     - uses: ilammy/msvc-dev-cmd@v1
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
-
-    - name: Configure VCPKG_DOWNLOADS
-      shell: pwsh
-      run: |
-        New-Item -ItemType Directory -Force -Path "$HOME\AppData\Local\vcpkg\downloads" | Out-Null
-
-    - name: Install CMake & Ninja (Pip)
-      shell: pwsh
-      run: |
-        pip install --upgrade -r .github/requirements.txt
-
     - name: Restore BuildCache directory
       uses: actions/cache@v4
       with:

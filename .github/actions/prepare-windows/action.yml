@@ -7,14 +7,8 @@ runs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.x'
-
-    - name: Cache Pip
-      uses: actions/cache@v4
-      with:
-        path: ~\AppData\Local\pip\Cache
-        key: pip-windows-${{ hashFiles('.github/requirements.txt') }}
-        restore-keys: |
-            pip-windows-
+        cache: 'pip'
+        cache-dependency-path: '.github/requirements.txt'
 
     - name: Install Runtime Tools
       shell: pwsh
