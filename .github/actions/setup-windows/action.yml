@@ -1,5 +1,5 @@
 name: 'Setup Windows Environment'
-description: 'Sets up Vcpkg, BuildCache, and restores caches for Windows'
+description: 'Restores Vcpkg, BuildCache etc.'
 inputs:
   compiler:
     description: 'Compiler suffix for cache key (msvc or clang)'
@@ -14,8 +14,8 @@ runs:
       with:
         python-version: '3.x'
 
-    - name: Cache Pip
-      uses: actions/cache@v4
+    - name: Cache Pip  # Restore only, assuming prepare action populated it
+      uses: actions/cache/restore@v4
       with:
         path: ~\AppData\Local\pip\Cache
         key: pip-windows-${{ hashFiles('.github/requirements.txt') }}
@@ -25,18 +25,12 @@ runs:
     - name: Configure VCPKG_DOWNLOADS
       shell: pwsh
       run: |
-        echo "VCPKG_DOWNLOADS=$HOME\AppData\Local\vcpkg\downloads" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         New-Item -ItemType Directory -Force -Path "$HOME\AppData\Local\vcpkg\downloads"
 
     - name: Install CMake & Ninja (Pip)
       shell: pwsh
       run: |
         pip install --upgrade -r .github/requirements.txt
-
-    - name: Check CMake Version
-      shell: pwsh
-      run: cmake --version
-
 
     - name: Restore BuildCache directory
       uses: actions/cache@v4
@@ -51,41 +45,21 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: c:\vcpkg-custom
-        key: vcpkg-custom-repo-windows-restore-search
+        key: vcpkg-custom-repo-windows-restore-search # Restore latest available
         restore-keys: |
             vcpkg-custom-repo-windows-
 
-    - name: Setup Vcpkg (Clone/Update)
+    - name: Setup Vcpkg Environment
       shell: pwsh
       run: |
         $vcpkgPath = "c:\vcpkg-custom"
         if (!(Test-Path "$vcpkgPath\.git")) {
-            Write-Host "Cloning vcpkg..."
-            git clone https://github.com/microsoft/vcpkg.git $vcpkgPath
-        } else {
-            Write-Host "Fetching vcpkg updates..."
-            Push-Location $vcpkgPath
-            git fetch origin master
-            git pull origin master
-            Pop-Location
+           Write-Error "Vcpkg not found! Did prepare-windows run?"
+           exit 1
         }
-        
-        Push-Location $vcpkgPath
-        $sha = git rev-parse HEAD
-        Pop-Location
-        "VCPKG_SHA=$sha" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-        & "$vcpkgPath\bootstrap-vcpkg.bat" -disableMetrics
         
         echo "VCPKG_ROOT=$vcpkgPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo "$vcpkgPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-    - name: Save Custom Vcpkg (New State)
-      if: steps.restore-vcpkg.outputs.cache-matched-key != format('vcpkg-custom-repo-windows-{0}', env.VCPKG_SHA)
-      uses: actions/cache/save@v4
-      with:
-        path: c:\vcpkg-custom
-        key: vcpkg-custom-repo-windows-${{ env.VCPKG_SHA }}
 
     - name: Install BuildCache
       shell: pwsh
@@ -99,6 +73,10 @@ runs:
     - name: Enable GitHub Actions Cache for Vcpkg
       uses: actions/github-script@v7
       with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
         script: |
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');

@@ -81,10 +81,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Windows Env (Warmup Cache)
-        uses: ./.github/actions/setup-windows
-        with:
-          compiler: msvc
+      - name: Prepare Windows Env (Warmup Cache)
+        uses: ./.github/actions/prepare-windows
 
   windows-test:
     name: Windows Test (${{ matrix.compiler }})
