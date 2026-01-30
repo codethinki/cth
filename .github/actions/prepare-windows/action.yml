@@ -58,3 +58,24 @@ runs:
       with:
         path: c:\vcpkg-custom
         key: vcpkg-custom-repo-windows-${{ env.VCPKG_SHA }}
+
+    - name: Restore BuildCache Tool
+      id: restore-buildcache-tool
+      uses: actions/cache/restore@v4
+      with:
+        path: c:\buildcache
+        key: buildcache-tool-windows-v0.31.7
+
+    - name: Download BuildCache Tool
+      if: steps.restore-buildcache-tool.outputs.cache-hit != 'true'
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri "https://gitlab.com/bits-n-bites/buildcache/-/releases/v0.31.7/downloads/buildcache-windows.zip" -OutFile "buildcache.zip"
+        Expand-Archive buildcache.zip -DestinationPath c:\buildcache
+
+    - name: Save BuildCache Tool
+      if: steps.restore-buildcache-tool.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: c:\buildcache
+        key: buildcache-tool-windows-v0.31.7
