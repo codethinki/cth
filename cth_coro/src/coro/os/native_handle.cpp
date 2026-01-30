@@ -26,7 +26,7 @@ bool check_ready(os::native_handle_t handle) {
     } catch(cth::except::win_exception const& e) {
         throw except::coro_exception{e.msg(), e.severity(), e.location(), e.stacktrace()};
     }
-#elifdef
+#elifdef CTH_FS_POSIX
     pollfd pfd{fd, POLLIN, 0};
     return poll(&pfd, 1, 0) > 0;
 #endif
