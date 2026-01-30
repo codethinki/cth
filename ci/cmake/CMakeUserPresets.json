@@ -14,9 +14,18 @@
     {
       "name": "ci-linux-clang-release",
       "inherits": ["base_clang_release", "ci-base"],
+      "environment": {
+        "CC": "clang",
+        "CXX": "clang++"
+      },
       "cacheVariables": {
          "CMAKE_CXX_COMPILER": "clang++",
-         "CMAKE_C_COMPILER": "clang"
+         "CMAKE_C_COMPILER": "clang",
+         "CMAKE_CXX_FLAGS": "-stdlib=libc++",
+         "CMAKE_EXE_LINKER_FLAGS": "-stdlib=libc++ -lc++abi",
+         "CMAKE_SHARED_LINKER_FLAGS": "-stdlib=libc++ -lc++abi",
+         "VCPKG_TARGET_TRIPLET": "x64-linux-llvm",
+         "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/ci/vcpkg-triplets"
       }
     },
     {
