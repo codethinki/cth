@@ -33,7 +33,11 @@
     },
     {
       "name": "ci-windows-clang",
-      "inherits": ["base_clang_release", "ci-base"]
+      "inherits": ["base_clang_release", "ci-base"],
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER": "clang"
+      }
     }
   ],
   "buildPresets": [
