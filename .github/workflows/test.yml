@@ -50,10 +50,10 @@ jobs:
         uses: actions/cache@v4
         with:
             path: |
-              out/build/ci-linux-*/vcpkg_installed
-            key: vcpkg-installed-linux-${{ hashFiles('vcpkg.json') }}
+              out/build/ci-linux-${{ matrix.compiler }}-release/vcpkg_installed
+            key: vcpkg-installed-linux-${{ matrix.compiler }}-${{ hashFiles('vcpkg.json') }}
             restore-keys: |
-                vcpkg-installed-linux-
+                vcpkg-installed-linux-${{ matrix.compiler }}-
 
       - name: Configure
         uses: ./.github/actions/run-linux
@@ -71,6 +71,11 @@ jobs:
         uses: ./.github/actions/run-linux
         with:
           run: ctest --preset ci-linux-${{ matrix.compiler }}-release --output-on-failure --tests-regex "cth_tests|cth_coro_tests"
+
+      - name: Fix permissions
+        if: always()
+        run: sudo chown -R $(id -u):$(id -g) out/build
+
 
   windows-test:
     name: Windows Test (${{ matrix.compiler }})
