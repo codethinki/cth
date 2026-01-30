@@ -4,17 +4,6 @@ description: 'Clones and Caches Vcpkg and Pip dependencies'
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
-        cache: 'pip'
-        cache-dependency-path: '.github/requirements.txt'
-
-    - name: Install Runtime Tools
-      shell: pwsh
-      run: |
-        pip install --upgrade -r .github/requirements.txt
-
     - name: Restore Custom Vcpkg
       id: restore-vcpkg
       uses: actions/cache/restore@v4
