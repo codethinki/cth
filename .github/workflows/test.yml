@@ -65,7 +65,7 @@ jobs:
       - name: Build
         uses: ./.github/actions/run-linux
         with:
-          run: cmake --build --preset ci-linux-${{ matrix.compiler }}-release --target cth cth_coro cth_cthm cth_tests cth_coro_tests
+          run: cmake --build --preset ci-linux-${{ matrix.compiler }}-release --target cth_coro cth_cthm cth_tests cth_coro_tests
 
       - name: Test
         uses: ./.github/actions/run-linux
@@ -122,7 +122,7 @@ jobs:
       - name: Build
         shell: pwsh
         run: |
-          cmake --build --preset ci-windows-${{ matrix.compiler }} --target cth cth_coro cth_cthm cth_tests integration_tests cth_coro_tests cth_win cth_win_tests
+          cmake --build --preset ci-windows-${{ matrix.compiler }} --target cth_coro cth_cthm cth_tests integration_tests cth_coro_tests cth_win cth_win_tests
 
       - name: Test
         shell: pwsh
