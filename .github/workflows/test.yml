@@ -98,6 +98,17 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+          cache-dependency-path: '.github/requirements.txt'
+
+      - name: Install CMake & Ninja
+        shell: pwsh
+        run: |
+          pip install --upgrade -r .github/requirements.txt
+
       - name: Setup Windows Env
         uses: ./.github/actions/setup-windows
         with:
