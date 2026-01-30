@@ -2,6 +2,11 @@
 
 #include <cth/os/osdef.hpp>
 
+#if !defined(CTH_FS_POSIX) && !defined(CTH_FS_WINDOWS)
+#error "fuck"
+#endif
+
+
 #ifdef CTH_FS_WINDOWS
 #include <cth/win/win_types.hpp>
 #include <cth/win/coro/wait.hpp>
