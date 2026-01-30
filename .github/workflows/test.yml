@@ -76,9 +76,19 @@ jobs:
         if: always()
         run: sudo chown -R $(id -u):$(id -g) out/build
 
+  windows-prepare:
+    name: Prepare Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Windows Env (Warmup Cache)
+        uses: ./.github/actions/setup-windows
+        with:
+          compiler: msvc
 
   windows-test:
     name: Windows Test (${{ matrix.compiler }})
+    needs: windows-prepare
     runs-on: windows-latest
     strategy:
       fail-fast: false
