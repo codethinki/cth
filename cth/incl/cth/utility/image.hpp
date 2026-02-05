@@ -17,14 +17,21 @@ struct stb_image {
 
         CTH_ERR(width == 0 || height == 0, "failed to load file") throw details->exception();
 
-        CTH_WARN(desired_channels != channels, "desired_channels ({0}) != ({1}) loaded_channels", desired_channels, channels) {}
+        CTH_WARN(
+            desired_channels != channels,
+            "desired_channels ({0}) != ({1}) loaded_channels",
+            desired_channels,
+            channels
+        ) {}
 
         _width = width;
         _height = height;
         _channels = channels;
         _data = std::span{ptr, static_cast<size_t>(width * height * channels)};
     }
-    stb_image(int width, int height, int channels, uint8_t* ptr) : _width(width), _height(height), _channels(channels),
+    stb_image(int width, int height, int channels, uint8_t* ptr) : _width(width),
+        _height(height),
+        _channels(channels),
         _data{ptr, static_cast<size_t>(width * height * channels)} {}
     ~stb_image() { stbi_image_free(_data.data()); }
 
@@ -39,8 +46,8 @@ public:
     [[nodiscard]] size_t channels() const { return _channels; }
     [[nodiscard]] size_t pixels() const { return _width * _height; }
 
-    [[nodiscard]] auto& operator [](size_t index) {return _data[index];}
-    [[nodiscard]] auto operator [](size_t index) const {return _data[index];}
+    [[nodiscard]] auto& operator [](size_t index) { return _data[index]; }
+    [[nodiscard]] auto operator [](size_t index) const { return _data[index]; }
 
 
     [[nodiscard]] uint8_t const* data() const { return _data.data(); }
