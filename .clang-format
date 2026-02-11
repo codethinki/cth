@@ -6,7 +6,7 @@ AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: false
-AlignTrailingComments: false
+AlignEscapedNewlines: Left
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: Empty
@@ -39,7 +39,7 @@ BraceWrapping:
 BreakBeforeBraces: Custom
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
-BreakInheritanceList: AfterColon
+BreakInheritanceList: BeforeComma
 ColumnLimit: 110
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: false

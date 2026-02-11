@@ -7,9 +7,9 @@
 
 namespace cth::co {
 template<cth_promise Promise>
-struct this_coro_promise_awaiter :
-    this_coro_promise_awaiter_base,
-    private dev::basic_promise_awaiter<Promise> {
+struct this_coro_promise_awaiter
+    : this_coro_promise_awaiter_base
+    , private dev::basic_promise_awaiter<Promise> {
 private:
     using base_t = dev::basic_promise_awaiter<Promise>;
 

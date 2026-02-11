@@ -14,7 +14,9 @@ class executor_task;
 
 namespace cth::co::dev {
 template<class T>
-struct executor_promise : basic_promise<T>, this_coro_promise_base {
+struct executor_promise
+    : basic_promise<T>
+    , this_coro_promise_base {
     executor_task<T> get_return_object() noexcept;
 };
 }

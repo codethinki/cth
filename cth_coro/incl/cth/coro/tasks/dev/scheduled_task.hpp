@@ -10,7 +10,9 @@
 namespace cth::co::dev {
 
 template<class T>
-struct scheduled_promise : basic_promise<T>, this_coro_promise_base {
+struct scheduled_promise
+    : basic_promise<T>
+    , this_coro_promise_base {
     explicit scheduled_promise(this_coro::payload payload) : this_coro_promise_base{std::move(payload)} {}
 
     template<class... Args>
@@ -25,8 +27,8 @@ struct scheduled_promise : basic_promise<T>, this_coro_promise_base {
 namespace cth::co {
 
 template<class T>
-class [[nodiscard]] scheduled_task :
-    public task_base<dev::scheduled_promise<T>, dev::capture_promise_awaiter> {
+class [[nodiscard]] scheduled_task
+    : public task_base<dev::scheduled_promise<T>, dev::capture_promise_awaiter> {
     using base_t = task_base<dev::scheduled_promise<T>, dev::capture_promise_awaiter>;
 
     using base_t::base_t;
