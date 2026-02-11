@@ -9,6 +9,8 @@
   - No namespace indentation.
   - Attached braces for `else` and `while` statements.
   - Use compact short blocks and loops.
+  - Set `ColumnLimit` to 110 characters in `.clang-format` instead of 120.
+  - For function declarations, "chop" arguments (one per line) if they wrap, with the closing parenthesis on a new line (`AlignAfterOpenBracket: BlockIndent`). Avoid parameter alignment.
 
 ## Project-Specific Rules
 - Ensure that all code adheres to the specified formatting rules and conventions.
