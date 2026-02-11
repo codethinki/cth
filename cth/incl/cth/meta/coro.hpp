@@ -90,10 +90,7 @@ template<class T>
 concept void_promise = promise<T> && requires(T t) { t.return_void(); };
 
 template<class T>
-concept cth_promise = promise<T>&& requires()
-{
-    typename T::value_type;
-};
+concept cth_promise = promise<T> && requires() { typename T::value_type; };
 
 template<cth_promise Promise>
 using promise_value_type = Promise::value_type;

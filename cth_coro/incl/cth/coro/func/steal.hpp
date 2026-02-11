@@ -11,8 +11,8 @@ namespace cth::co {
 
 
 template<non_this_coro_awaitable Awaitable>
-[[nodiscard]] auto
-steal(scheduler const& scheduler, Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
+[[nodiscard]] auto steal(scheduler const& scheduler, Awaitable awaitable)
+    -> capture_task<awaited_t<Awaitable>> {
     using result_t = awaited_t<Awaitable>;
 
     if constexpr(std::same_as<void, result_t>) {

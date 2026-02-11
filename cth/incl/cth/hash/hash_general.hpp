@@ -37,8 +37,8 @@ cxpr size_t rng(Rng&& rng) {
 #define CTH_DEV_HASH_OVERLOAD(T, func, prefix)                                                               \
     template<>                                                                                               \
     struct std::hash<T> {                                                                                    \
-        prefix size_t operator()(T const& x) const                                                           \
-            noexcept(cth::mta::nothrow_callable_with<func, T const&>) {                                      \
+        prefix size_t                                                                                        \
+        operator()(T const& x) const noexcept(cth::mta::nothrow_callable_with<func, T const&>) {             \
             static_assert(                                                                                   \
                 cth::mta::call_signature<func, size_t, T const&>,                                            \
                 "invalid hash overload function: " #func " for " #T                                          \

@@ -81,8 +81,8 @@ constexpr void basic_miniram<SizeType, IndexType>::clear() {
 
 // Insert Node
 template<uint SizeType, uint IndexType>
-constexpr auto
-basic_miniram<SizeType, IndexType>::insertNode(size_type size, size_type data_offset) -> index_type {
+constexpr auto basic_miniram<SizeType, IndexType>::insertNode(size_type size, size_type data_offset)
+    -> index_type {
     auto const nodeIndex = newNode(size);
 
     auto const binIndex = floor_to_float(size);
@@ -235,8 +235,8 @@ constexpr auto basic_miniram<SizeType, IndexType>::allocate(size_type size) -> a
 
 // To Disjunct Copies
 template<uint SizeType, uint IndexType>
-constexpr auto basic_miniram<SizeType, IndexType>::to_disjunct_copies(std::vector<memmove_type> const& moves
-) -> std::vector<memmove_type> {
+constexpr auto basic_miniram<SizeType, IndexType>::to_disjunct_copies(std::vector<memmove_type> const& moves)
+    -> std::vector<memmove_type> {
     std::vector<memmove_type> disjunctMoves{};
     disjunctMoves.reserve(moves.size() * 2);
 
@@ -545,8 +545,8 @@ constexpr void basic_miniram<SizeType, IndexType>::reconstructFreeSpace(
 
 // Free Regions
 template<uint SizeType, uint IndexType>
-constexpr auto
-basic_miniram<SizeType, IndexType>::free_regions() const -> std::array<regions_type, NUM_LEAF_BINS> {
+constexpr auto basic_miniram<SizeType, IndexType>::free_regions() const
+    -> std::array<regions_type, NUM_LEAF_BINS> {
     std::array<regions_type, NUM_LEAF_BINS> regions{};
 
     for(size_t i = 0; i < NUM_LEAF_BINS; ++i) {

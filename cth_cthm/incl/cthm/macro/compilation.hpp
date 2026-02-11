@@ -40,7 +40,8 @@
 #else
 #define CTH_DEBUG_IMPL = default;
 #define CTH_DEBUG_INLINE_IMPL(code)                                                                          \
-    {}
+    {                                                                                                        \
+    }
 
 #define CTH_RELEASE_NOEXCEPT noexcept(true)
 #define CTH_RELEASE_CONSTEXPR constexpr

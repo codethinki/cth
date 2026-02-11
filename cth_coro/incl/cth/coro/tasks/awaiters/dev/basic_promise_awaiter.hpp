@@ -17,8 +17,8 @@ struct basic_promise_awaiter {
 
     [[nodiscard]] constexpr bool await_ready() const noexcept { return !handle || handle.done(); }
 
-    [[nodiscard]] auto
-    await_suspend(std::coroutine_handle<> caller) noexcept -> std::coroutine_handle<promise_type> {
+    [[nodiscard]] auto await_suspend(std::coroutine_handle<> caller) noexcept
+        -> std::coroutine_handle<promise_type> {
         handle.promise().continuation = caller;
         return handle;
     }
