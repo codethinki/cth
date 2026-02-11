@@ -39,7 +39,7 @@ cth_glob_cpp(
   "cth_win"
   "cth_win_tests"
   "integration_tests")
-cth_add_clang_format_target(clang-format ${FORMAT_FILES})
+cth_add_opt_clang_format_target(clang-format ${FORMAT_FILES})
 
 # playground
 add_subdirectory(playground)
