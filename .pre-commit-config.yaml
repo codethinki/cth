@@ -12,13 +12,3 @@ repos:
         types_or: [c++, c] 
         # Ensure it uses your .clang-format file
         args: ["-style=file"]
-
-  # CMake formatting
-  - repo: https://github.com/cheshirekow/cmake-format-precommit
-    rev: v0.6.13
-    hooks:
-      - id: cmake-format
-        args: [--in-place]
-        types: [cmake]
-      - id: cmake-lint
-        types: [cmake]
