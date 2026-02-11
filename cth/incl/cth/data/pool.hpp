@@ -24,7 +24,9 @@ class pool {
     using storage_type = std::deque<T>;
 
 public:
-    static constexpr bool HAS_RESET = requires(Manipulator m, T& t) { { m.reset(t) } -> mta::is_void; };
+    static constexpr bool HAS_RESET = requires(Manipulator m, T& t) {
+        { m.reset(t) } -> mta::is_void;
+    };
     using value_type = T;
 
     explicit pool(Manipulator manipulator = {}) : _manipulator{std::move(manipulator)} {}
@@ -35,7 +37,8 @@ public:
      * @post capacity increases by one
      * @param args to construct @ref T with
      */
-    template<class... CArgs> requires std::constructible_from<T, CArgs...>
+    template<class... CArgs>
+    requires std::constructible_from<T, CArgs...>
     void emplace(CArgs&&... args) {
         _storage.emplace_back(std::forward<CArgs>(args)...);
         _inactive.emplace_back(&_storage.back());
@@ -43,9 +46,10 @@ public:
 
     /**
      * forwards range to storage
-     * @post pools capacity increases by size of @ref Rng 
+     * @post pools capacity increases by size of @ref Rng
      */
-    template<class Rng> requires requires(Rng r, storage_type s) { s.append_range(std::forward<Rng>(r)); }
+    template<class Rng>
+    requires requires(Rng r, storage_type s) { s.append_range(std::forward<Rng>(r)); }
     void append_range(Rng&& rng) {
         size_t oldSize = _storage.size();
 
@@ -81,12 +85,12 @@ public:
         auto const ptr = std::addressof(t);
 
 
+        CTH_CRITICAL(std::ranges::contains(_inactive, ptr), "a resource must not be released twice") {}
         CTH_CRITICAL(
-            std::ranges::contains(_inactive, ptr),
-            "a resource must not be released twice"
-        ) {}
-        CTH_CRITICAL(
-            !std::ranges::contains(_storage | std::views::transform([](auto& e){ return std::addressof(e); }), ptr),
+            !std::ranges::contains(
+                _storage | std::views::transform([](auto& e) { return std::addressof(e); }),
+                ptr
+            ),
             "unknown resource released"
         ) {}
 
@@ -104,19 +108,15 @@ public:
         resetActive();
 
         _inactive.clear();
-        _inactive.append_range(
-            _storage | std::views::transform(
-                [](auto& element) { return std::addressof(element); }
-            )
-        );
+        _inactive.append_range(_storage | std::views::transform([](auto& element) {
+                                   return std::addressof(element);
+                               }));
     }
 
 private:
     void resetActive() {
         if constexpr(HAS_RESET) {
-            std::unordered_set inactiveSet{
-                std::from_range, _inactive
-            };
+            std::unordered_set inactiveSet{std::from_range, _inactive};
 
             for(auto& stored : _storage)
                 if(!inactiveSet.contains(&stored))
@@ -133,23 +133,16 @@ public:
     /**
      * total number of instances in pool
      */
-    [[nodiscard]] size_t capacity() const noexcept {
-        return _storage.size();
-    }
+    [[nodiscard]] size_t capacity() const noexcept { return _storage.size(); }
 
     /**
      * remaining instances to acquire without releasing
      */
-    [[nodiscard]] size_t remaining() const noexcept {
-        return _inactive.size();
-    }
+    [[nodiscard]] size_t remaining() const noexcept { return _inactive.size(); }
 
     /**
      * true if no more acquire calls are possible
      */
-    [[nodiscard]] bool exhausted() const noexcept {
-        return _inactive.empty();
-    }
-
+    [[nodiscard]] bool exhausted() const noexcept { return _inactive.empty(); }
 };
 }

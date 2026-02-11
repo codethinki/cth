@@ -31,7 +31,6 @@
 #endif
 
 
-
 #ifdef CTH_DEBUG_MODE
 #define CTH_DEBUG_IMPL
 #define CTH_DEBUG_INLINE_IMPL(code) {code}
@@ -40,13 +39,13 @@
 #define CTH_RELEASE_CONSTEXPR
 #else
 #define CTH_DEBUG_IMPL = default;
-#define CTH_DEBUG_INLINE_IMPL(code) {}
+#define CTH_DEBUG_INLINE_IMPL(code)                                                                          \
+    {}
 
 #define CTH_RELEASE_NOEXCEPT noexcept(true)
 #define CTH_RELEASE_CONSTEXPR constexpr
 #endif
 #include <cstdint>
-
 
 
 namespace cth {
@@ -59,11 +58,9 @@ constexpr auto COMPILATION_MODE =
 #ifdef CTH_DEBUG_MODE
     CompilationMode::DEBUG;
 #else
-CompilationMode::RELEASE;
+    CompilationMode::RELEASE;
 #endif
 
-consteval bool debug_mode() {
-    return COMPILATION_MODE == CompilationMode::DEBUG;
-}
+consteval bool debug_mode() { return COMPILATION_MODE == CompilationMode::DEBUG; }
 
 }

@@ -3,12 +3,7 @@
 #include "cth/test.hpp"
 
 namespace cth::types {
-enum class A : size_t {
-    AND_RESULT = 0,
-    FIRST = 1,
-    SECOND = 2,
-    OR_RESULT = 3
-};
+enum class A : size_t { AND_RESULT = 0, FIRST = 1, SECOND = 2, OR_RESULT = 3 };
 CTH_GEN_ENUM_FLAG_OVERLOADS(A)
 
 TEST(MACRO_CTH_ENUM_OVERLOADS, main) {
@@ -32,7 +27,7 @@ TEST(MACRO_CTH_ENUM_OVERLOADS, main) {
     EXPECT_TRUE(contains(orEq, y));
 
 
-    EXPECT_TRUE((std::same_as<decltype(*x), std::underlying_type_t<A>>));
+    EXPECT_TRUE((std::same_as<decltype(*x), std::underlying_type_t<A>>) );
     EXPECT_EQ(*x, static_cast<std::underlying_type_t<A>>(x));
 }
 }

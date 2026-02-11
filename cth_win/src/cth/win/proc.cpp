@@ -1,8 +1,8 @@
 #include "cth/win/proc.hpp"
 
-#include "win_include.hpp"
 #include "cth/win/string.hpp"
 #include "cth/win/win_types.hpp"
+#include "win_include.hpp"
 #include <cth/io/log.hpp>
 
 
@@ -121,7 +121,6 @@ std::optional<size_t> count(std::wstring_view process_name) {
     return instanceCount;
 }
 } // namespace cth::win::proc
-
 
 
 namespace cth::win::io {} // namespace cth::win::io

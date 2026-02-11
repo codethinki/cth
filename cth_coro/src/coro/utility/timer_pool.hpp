@@ -11,7 +11,6 @@
 #include "native_handle_helpers.hpp"
 
 
-
 #include <cth/data/pool.hpp>
 #include <cth/win/coro/timer.hpp>
 
@@ -25,11 +24,8 @@ namespace dev {
     class adapted_timer {
 
     public:
-        adapted_timer(bas::io_context& ctx) : _timer{},
-            _handler{
-                ctx,
-                duplicate_awaitable_native_handle(_timer.native_handle())
-            } {}
+        adapted_timer(bas::io_context& ctx) :
+            _timer{}, _handler{ctx, duplicate_awaitable_native_handle(_timer.native_handle())} {}
 
         [[nodiscard]] native_handle_handler_t& set(time_point_t time_point) {
             _timer.set(time_point);
@@ -42,7 +38,6 @@ namespace dev {
     };
 
 }
-
 
 
 class timer_pool {
@@ -106,19 +101,13 @@ public:
     void set(cth::co::time_point_t time_point, void_func callback) const {
         auto timer = std::make_unique<bas::steady_timer>(_ctx, time_point);
 
-        timer->async_wait(
-            [this, time_point, t = std::move(timer), cb = std::move(callback)](
-            boost::system::error_code const& ec
-        ) mutable {
-                BOOST_EC_STABLE_THROW(
-                    ec,
-                    "async wait for time_point [{}] failed",
-                    time_point.time_since_epoch()
-                )
+        timer->async_wait([this, time_point, t = std::move(timer), cb = std::move(callback)](
+                              boost::system::error_code const& ec
+                          ) mutable {
+            BOOST_EC_STABLE_THROW(ec, "async wait for time_point [{}] failed", time_point.time_since_epoch())
 
-                cb();
-            }
-        );
+            cb();
+        });
     }
 
 private:

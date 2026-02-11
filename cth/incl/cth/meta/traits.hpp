@@ -7,20 +7,18 @@
 #include <type_traits>
 
 
-//constant struct
+// constant struct
 
 namespace cth::mta {
 
 template<class T, template<class> class Trait>
-concept applicable = requires() {
-    typename Trait<T>;
-};
+concept applicable = requires() { typename Trait<T>; };
 
 
 }
 
 
-//trait functions
+// trait functions
 
 namespace cth::mta {
 template<class T, template<class> class Trait, size_t N = 1>
@@ -63,7 +61,6 @@ using rcvr_t = std::remove_cvref_t<T>;
 }
 
 
-
 #include "inl/traits.inl"
 
 #include "traits/trait_packs.hpp"
@@ -88,4 +85,4 @@ using remove_rvalue_reference_t = dev::remove_rvalue_reference<T>::value_type;
 template<class T>
 using remove_rvalue_ref_t = remove_rvalue_reference_t<T>;
 
-} 
+}

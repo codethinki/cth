@@ -1,11 +1,11 @@
 #include "test.hpp"
 
-#include "cth/meta/variadic.hpp"
 #include "cth/meta/debug.hpp"
+#include "cth/meta/variadic.hpp"
 
 namespace cth::mta {
 class z {};
-class d{};
+class d {};
 using a = int;
 using b = d;
 

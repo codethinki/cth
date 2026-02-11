@@ -6,7 +6,6 @@
 #include <memory>
 
 
-
 namespace cth::except {
 class win_exception : public default_exception {
 public:
@@ -20,19 +19,14 @@ public:
 }
 
 
-#define CTH_WIN_WARN(expression, fmt_message, ...)\
+#define CTH_WIN_WARN(expression, fmt_message, ...)                                                           \
     CTH_WARN_T(cth::except::win_exception, expression, fmt_message, __VA_ARGS__)
 
-#define CTH_WIN_STABLE_ERR(expression, fmt_message, ...) \
+#define CTH_WIN_STABLE_ERR(expression, fmt_message, ...)                                                     \
     CTH_STABLE_ERR_T(cth::except::win_exception, expression, fmt_message, __VA_ARGS__)
 
-#define CTH_WIN_STABLE_THROW(expression, fmt_message, ...) \
-    CTH_STABLE_THROW_T(\
-        cth::except::win_exception,\
-        expression,\
-        fmt_message,\
-        __VA_ARGS__\
-    )
+#define CTH_WIN_STABLE_THROW(expression, fmt_message, ...)                                                   \
+    CTH_STABLE_THROW_T(cth::except::win_exception, expression, fmt_message, __VA_ARGS__)
 
 
 namespace cth::win {
@@ -129,7 +123,6 @@ inline void swap(window_class_t& a, window_class_t& b) noexcept {
     std::swap(a.hInstance, b.hInstance);
     std::swap(a.id, b.id);
 }
-
 
 
 struct window_t {

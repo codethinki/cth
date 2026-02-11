@@ -1,6 +1,6 @@
 #pragma once
-#include <cth/os/osdef.hpp>
 #include <cth/coro/exception.hpp>
+#include <cth/os/osdef.hpp>
 
 #ifdef CTH_FS_WINDOWS
 #define CTH_CO_WIN_POSIX_VALUE(win, posix) win
@@ -9,7 +9,6 @@
 #else
 #error "unsupported filesystem used"
 #endif
-
 
 
 namespace cth::co::os {

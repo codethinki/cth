@@ -20,8 +20,9 @@ struct optional;
 
 struct optional_base {
 
-    [[nodiscard]] constexpr explicit operator bool(this auto const& self) noexcept { return self.has_value(); }
-
+    [[nodiscard]] constexpr explicit operator bool(this auto const& self) noexcept {
+        return self.has_value();
+    }
 
 
     template<class Self, class F>
@@ -32,12 +33,12 @@ struct optional_base {
         using raw_result_t = mta::conditional_pack_t<
             inVoid,
             mta::trait_pack<std::invoke_result_t, F>,
-            mta::trait_pack<std::invoke_result_t, F, internal_t>
-        >;
+            mta::trait_pack<std::invoke_result_t, F, internal_t>>;
 
         using R = mta::rcvr_t<raw_result_t>;
 
-        if(!self.has_value()) return optional<R>{std::nullopt};
+        if(!self.has_value())
+            return optional<R>{std::nullopt};
 
         if constexpr(mta::is_void<R>) {
             if constexpr(inVoid)
@@ -66,19 +67,17 @@ struct optional_base {
                 return std::invoke(std::forward<F>(f), *std::forward<Self>(self));
         }
 
-        using result_t = mta::rcvr_t<
-            mta::conditional_pack_t<
-                inVoid,
-                mta::trait_pack<std::invoke_result_t, F>,
-                mta::trait_pack<std::invoke_result_t, F, internal_t>
-            >
-        >;
+        using result_t = mta::rcvr_t<mta::conditional_pack_t<
+            inVoid,
+            mta::trait_pack<std::invoke_result_t, F>,
+            mta::trait_pack<std::invoke_result_t, F, internal_t>>>;
         return result_t{std::nullopt};
     }
 
     template<class Self, class F>
     constexpr auto or_else(this Self&& self, F&& f) {
-        if(self.has_value()) return std::forward<Self>(self);
+        if(self.has_value())
+            return std::forward<Self>(self);
         return std::invoke(std::forward<F>(f));
     }
 };
@@ -88,34 +87,48 @@ struct optional : optional_base {
     constexpr optional() : optional{std::nullopt} {}
     constexpr optional(std::nullopt_t) noexcept : _value{std::nullopt} {}
 
-    template<class U = T> requires std::constructible_from<T, U> && (!std::same_as<std::decay_t<U>, optional>)
+    template<class U = T>
+    requires std::constructible_from<T, U> && (!std::same_as<std::decay_t<U>, optional>)
     constexpr optional(U&& val) : _value{std::forward<U>(val)} {}
 
     template<class... Args>
-    constexpr explicit optional(std::in_place_t, Args&&... args) : _value{std::in_place, std::forward<Args>(args)...} {}
+    constexpr explicit optional(std::in_place_t, Args&&... args) :
+        _value{std::in_place, std::forward<Args>(args)...} {}
 
     constexpr void swap(optional& other) noexcept { _value.swap(other._value); }
     constexpr void reset() noexcept { _value.reset(); }
 
     template<class... Args>
-    constexpr T& emplace(Args&&... args) { return _value.emplace(std::forward<Args>(args)...); }
+    constexpr T& emplace(Args&&... args) {
+        return _value.emplace(std::forward<Args>(args)...);
+    }
 
     [[nodiscard]] constexpr bool has_value() const noexcept { return _value.has_value(); }
 
-    template<class Self> constexpr auto&& operator*(this Self&& self) { return *std::forward<Self>(self)._value; }
-    template<class Self> constexpr auto&& operator->(this Self&& self) {
+    template<class Self>
+    constexpr auto&& operator*(this Self&& self) {
+        return *std::forward<Self>(self)._value;
+    }
+    template<class Self>
+    constexpr auto&& operator->(this Self&& self) {
         return std::forward<Self>(self)._value.operator->();
     }
 
-    template<class Self> constexpr auto&& value(this Self&& self) {
-        if(!self.has_value()) throw std::bad_optional_access{};
+    template<class Self>
+    constexpr auto&& value(this Self&& self) {
+        if(!self.has_value())
+            throw std::bad_optional_access{};
         return *std::forward<Self>(self)._value;
     }
 
     template<class U>
-    constexpr T value_or(U&& def) const & { return _value.value_or(std::forward<U>(def)); }
+    constexpr T value_or(U&& def) const& {
+        return _value.value_or(std::forward<U>(def));
+    }
     template<class U>
-    constexpr T value_or(U&& def) && { return std::move(_value).value_or(std::forward<U>(def)); }
+    constexpr T value_or(U&& def) && {
+        return std::move(_value).value_or(std::forward<U>(def));
+    }
 
 private:
     std::optional<T> _value;
@@ -153,13 +166,15 @@ struct optional<T> : optional_base {
     constexpr base_type* operator->() const { return _value; }
 
     constexpr T value() const {
-        if(!_value) throw std::bad_optional_access{};
+        if(!_value)
+            throw std::bad_optional_access{};
         return *_value;
     }
 
     template<std::convertible_to<T> U>
     constexpr T value_or(U&& def) const {
-        if(_value) return *_value;
+        if(_value)
+            return *_value;
         return static_cast<T>(std::forward<U>(def));
     }
 
@@ -180,7 +195,10 @@ struct optional<void> : optional_base {
     [[nodiscard]] constexpr bool has_value() const noexcept { return _hasValue; }
 
     constexpr void operator*() const noexcept {}
-    constexpr void value() const { if(!_hasValue) throw std::bad_optional_access{}; }
+    constexpr void value() const {
+        if(!_hasValue)
+            throw std::bad_optional_access{};
+    }
     constexpr void value_or() const noexcept {}
 
 private:

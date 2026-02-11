@@ -224,7 +224,9 @@ DATA_TEST(miniram, defragmentation) {
     miniram ram(10240);
     std::vector<mini_alloc> allocations;
 
-    for(int i = 0; i < 10; ++i) { allocations.push_back(ram.allocate(500)); }
+    for(int i = 0; i < 10; ++i) {
+        allocations.push_back(ram.allocate(500));
+    }
 
     ram.free(allocations[0]);
     ram.free(allocations[1]);
@@ -249,11 +251,17 @@ DATA_TEST(miniheap, post_defrag_integrity) {
     miniram ram(20480);
     std::vector<mini_alloc> allocations;
 
-    for(int i = 0; i < 20; ++i) { allocations.push_back(ram.allocate(512)); }
+    for(int i = 0; i < 20; ++i) {
+        allocations.push_back(ram.allocate(512));
+    }
 
     std::map<miniram::index_type, mini_alloc> liveAllocs;
     for(size_t i = 0; i < allocations.size(); ++i) {
-        if(i % 2 == 0) { ram.free(allocations[i]); } else { liveAllocs[allocations[i].id] = allocations[i]; }
+        if(i % 2 == 0) {
+            ram.free(allocations[i]);
+        } else {
+            liveAllocs[allocations[i].id] = allocations[i];
+        }
     }
 
     auto report = ram.defragment();
@@ -281,7 +289,9 @@ DATA_TEST(miniheap, post_defrag_integrity) {
 
     ram.free(a);
     ram.free(b);
-    for(auto const& alloc : liveAllocs | std::views::values) { ram.free(alloc); }
+    for(auto const& alloc : liveAllocs | std::views::values) {
+        ram.free(alloc);
+    }
 
     EXPECT_EQ(ram.remaining(), ram.capacity());
     EXPECT_EQ(ram.max_alloc(), ram.capacity());

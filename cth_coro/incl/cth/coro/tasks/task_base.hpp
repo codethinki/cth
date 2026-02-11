@@ -13,7 +13,6 @@ public:
     using awaiter_type = Awaiter<Promise>;
 
 
-
     constexpr ~task_base() = default;
 
 protected:
@@ -25,8 +24,10 @@ private:
 public:
     [[nodiscard]] constexpr auto handle(this auto&& self) { return self._handle.get(); }
 
-    [[nodiscard]] constexpr auto operator co_await() const & noexcept { return awaiter_type{handle()}; }
-    [[nodiscard]] constexpr auto operator co_await() && noexcept { return awaiter_type{this->_handle.extract()}; }
+    [[nodiscard]] constexpr auto operator co_await() const& noexcept { return awaiter_type{handle()}; }
+    [[nodiscard]] constexpr auto operator co_await() && noexcept {
+        return awaiter_type{this->_handle.extract()};
+    }
 
     task_base(task_base const&) = delete;
     task_base operator=(task_base const&) = delete;

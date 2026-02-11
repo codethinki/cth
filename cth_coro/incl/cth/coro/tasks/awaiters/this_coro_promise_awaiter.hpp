@@ -1,13 +1,15 @@
 #pragma once
-#include "cth/coro/tasks/awaiters/this_coro_promise_awaiter_base.hpp"
 #include "cth/coro/tasks/awaiters/dev/basic_promise_awaiter.hpp"
+#include "cth/coro/tasks/awaiters/this_coro_promise_awaiter_base.hpp"
 
-#include <exception>
 #include <cth/meta/coro.hpp>
+#include <exception>
 
 namespace cth::co {
 template<cth_promise Promise>
-struct this_coro_promise_awaiter : this_coro_promise_awaiter_base, private dev::basic_promise_awaiter<Promise> {
+struct this_coro_promise_awaiter :
+    this_coro_promise_awaiter_base,
+    private dev::basic_promise_awaiter<Promise> {
 private:
     using base_t = dev::basic_promise_awaiter<Promise>;
 
@@ -17,9 +19,9 @@ public:
     using promise_type = base_t::promise_type;
 
 
-    using base_t::base_t;
     using base_t::await_ready;
     using base_t::await_resume;
+    using base_t::base_t;
 
 
     template<class T>
@@ -27,6 +29,5 @@ public:
         this_coro_promise_awaiter_base::inject_payload_into(base_t::handle);
         return base_t::await_suspend(caller);
     }
-
 };
 }

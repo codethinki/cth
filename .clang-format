@@ -11,8 +11,9 @@ AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: Inline
+AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: false
+AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
@@ -65,8 +66,9 @@ InsertNewlineAtEOF: true
 MacroBlockBegin: ''
 MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
-NamespaceIndentation: None
+NamespaceIndentation: Inner
 PointerAlignment: Left
+RequiresClausePosition: WithPreceding
 SpaceAfterCStyleCast: true
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false
@@ -85,5 +87,8 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 TabWidth: 4
 UseTab: Never
+PenaltyBreakBeforeFirstCallParameter: 0
+PenaltyBreakTemplateDeclaration: 0
+PenaltyReturnTypeOnItsOwnLine: 10
 ...
 

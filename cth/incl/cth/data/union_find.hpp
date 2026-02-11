@@ -15,7 +15,9 @@ private:
     [[nodiscard]] constexpr auto& size(this auto& s, index_type x) { return s._data.template data<1>()[x]; }
 
     template<class S>
-    [[nodiscard]] constexpr auto& parent(this S& s, index_type x) { return s._data.template data<0>()[x]; }
+    [[nodiscard]] constexpr auto& parent(this S& s, index_type x) {
+        return s._data.template data<0>()[x];
+    }
 
 public:
     /**
@@ -45,7 +47,8 @@ public:
     union_find(size_t n, std::initializer_list<group_t> groups) : union_find{n, std::span{groups}} {}
 
     // ReSharper disable once CppNonExplicitConvertingConstructor
-    union_find(std::span<group_t const> groups) : union_find(std::ranges::max(groups | std::views::join) + 1, groups) {}
+    union_find(std::span<group_t const> groups) :
+        union_find(std::ranges::max(groups | std::views::join) + 1, groups) {}
 
     union_find(std::initializer_list<group_t> groups) : union_find(std::span{groups}) {}
 
@@ -69,7 +72,9 @@ public:
      */
     [[nodiscard]] constexpr index_type find(this union_find const& self, index_type x) {
         auto r = x;
-        do { r = self.parent(r); } while(!self.root(r));
+        do {
+            r = self.parent(r);
+        } while(!self.root(r));
 
         return r;
     }
@@ -81,9 +86,11 @@ public:
         auto child = self.find(lhs);
         auto parent = self.find(rhs);
 
-        if(child == parent) return;
+        if(child == parent)
+            return;
 
-        if(parent < child) std::swap(child, parent);
+        if(parent < child)
+            std::swap(child, parent);
 
         self.parent(child) = parent;
         self.size(parent) += self.size(child);
@@ -93,14 +100,16 @@ public:
      * @param group merge pair
      */
     void merge(group_t const& group) {
-        if(group.empty()) return;
+        if(group.empty())
+            return;
         auto const root = find(*group.begin());
         auto& rootSize = size(root);
 
         for(auto& node : group) {
             auto& p = parent(node);
 
-            if(p == root) continue;
+            if(p == root)
+                continue;
 
             rootSize++;
             p = root;
@@ -111,7 +120,8 @@ public:
     [[nodiscard]] constexpr size_t chain_length(this auto const& self, index_type x) {
         size_t len = 0;
         auto p = x;
-        for(; !self.root(p); len++) p = self.parent(p);
+        for(; !self.root(p); len++)
+            p = self.parent(p);
 
         return len;
     }

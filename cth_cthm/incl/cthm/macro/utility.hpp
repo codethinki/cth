@@ -3,4 +3,5 @@
 #define cval consteval
 #define declauto decltype(auto)
 
-#define CPT(concept) []<concept>{}
+#define CPT(concept)                                                                                         \
+    []<concept> {}

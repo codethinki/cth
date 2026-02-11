@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../test.hpp"
-#include "cth/coro/tasks/sync_task.hpp"
 #include "cth/coro/executor.hpp"
 #include "cth/coro/sync.hpp"
+#include "cth/coro/tasks/sync_task.hpp"
 
 #define THIS_CORO_EX_TEST(ex, suite, name) CORO_EX_TEST(_this_coro##ex, suite, name)
 

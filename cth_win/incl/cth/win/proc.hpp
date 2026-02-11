@@ -37,4 +37,3 @@ std::optional<bool> active(std::wstring_view process_name);
 std::optional<size_t> count(std::wstring_view process_name);
 
 }
-

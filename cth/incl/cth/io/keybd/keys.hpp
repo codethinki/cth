@@ -1,8 +1,8 @@
 #pragma once
 #include "cth/chrono.hpp"
 
-#include "cth/macro.hpp"
 #include "cth/enums.hpp"
+#include "cth/macro.hpp"
 #include "cth/os/osdef.hpp"
 #include "cth/string/format.hpp"
 
@@ -10,7 +10,7 @@
 namespace cth::io {
 /**
  * A Key enum which covers most of the common keyboard keys
- * @details 
+ * @details
       - comparison operators may be used for symbol ranges, see implementation for supported ones.
       - operator*() converts to the underlying type
  */
@@ -18,13 +18,44 @@ enum class Key : uint16_t {
     NONE, // No key, or invalid key (keep this near the end for logical grouping)
 
     // --- Alphabetical Keys (A-Z) ---
-    A, B, C, D, E, F, G, H, I, J,
-    K, L, M, N, O, P, Q, R, S, T,
-    U, V, W, X, Y, Z,
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+    P,
+    Q,
+    R,
+    S,
+    T,
+    U,
+    V,
+    W,
+    X,
+    Y,
+    Z,
 
     // --- Numerical Keys (0-9) ---
-    DIGIT_0, DIGIT_1, DIGIT_2, DIGIT_3, DIGIT_4,
-    DIGIT_5, DIGIT_6, DIGIT_7, DIGIT_8, DIGIT_9,
+    DIGIT_0,
+    DIGIT_1,
+    DIGIT_2,
+    DIGIT_3,
+    DIGIT_4,
+    DIGIT_5,
+    DIGIT_6,
+    DIGIT_7,
+    DIGIT_8,
+    DIGIT_9,
 
     // --- Symbol Keys (Common Symbols, somewhat grouped by location on keyboard) ---
     SPACE,
@@ -74,8 +105,18 @@ enum class Key : uint16_t {
     PLATFORM, // OS Specific Platform key (Win/Cmd/Super)
 
     // --- Function Keys (F1-F12) ---
-    F1, F2, F3, F4, F5, F6,
-    F7, F8, F9, F10, F11, F12,
+    F1,
+    F2,
+    F3,
+    F4,
+    F5,
+    F6,
+    F7,
+    F8,
+    F9,
+    F10,
+    F11,
+    F12,
 
     NUM_LOCK,
 

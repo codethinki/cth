@@ -4,8 +4,8 @@
 
 
 namespace cth::io {
-using std::println;
 using std::print;
+using std::println;
 
 IO_TEST(console, text_col) {
     using namespace cth::io;
@@ -27,7 +27,6 @@ IO_TEST(console, text_col) {
     console.println(WHITE_TEXT_COL, "i am white");
 
     console.println(DEFAULT_TEXT_COL, "i am default");
-
 }
 IO_TEST(console, background) {
     using namespace cth::io;
@@ -133,7 +132,6 @@ IO_TEST(console, text_style) {
 
     error.resetState();
     println("i am DEFAULT_TEXT");
-
 }
 
 IO_TEST(console, state) {

@@ -1,8 +1,8 @@
 #include "cth/win/io.hpp"
 
-#include "win_include.hpp"
 #include "cth/macro.hpp"
 #include "cth/win/string.hpp"
+#include "win_include.hpp"
 
 #include "cth/win/win_types.hpp"
 
@@ -14,17 +14,15 @@ void read_unbuffered(std::string_view path, std::vector<std::byte>& buffer) {
 
     auto const wPath = win::to_wstring(path);
 
-    win_file_ptr const handle{
-        CreateFileW(
-            wPath.data(),
-            GENERIC_READ,
-            FILE_SHARE_READ,
-            nullptr,
-            OPEN_EXISTING,
-            FILE_FLAG_NO_BUFFERING,
-            nullptr
-        )
-    };
+    win_file_ptr const handle{CreateFileW(
+        wPath.data(),
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        nullptr,
+        OPEN_EXISTING,
+        FILE_FLAG_NO_BUFFERING,
+        nullptr
+    )};
 
     CTH_WIN_STABLE_THROW(handle.get() == INVALID_HANDLE_VALUE, "failed to create handle for io ({})", path) {}
 
@@ -38,13 +36,8 @@ void read_unbuffered(std::string_view path, std::vector<std::byte>& buffer) {
     _OVERLAPPED overlapped{.hEvent = event};
 
     DWORD bytesRead = 0;
-    auto const readFileResult = ReadFile(
-        handle.get(),
-        buffer.data(),
-        static_cast<DWORD>(buffer.size()),
-        &bytesRead,
-        &overlapped
-    );
+    auto const readFileResult =
+        ReadFile(handle.get(), buffer.data(), static_cast<DWORD>(buffer.size()), &bytesRead, &overlapped);
 
     CTH_WIN_STABLE_THROW(readFileResult == 0, "failed to read file: {}", path) {}
 
@@ -80,11 +73,13 @@ private:
 std::optional<std::string> read_clipboard() {
     clipbd_access const access{};
 
-    if(!access) return std::nullopt;
+    if(!access)
+        return std::nullopt;
 
     auto const data = GetClipboardData(CF_UNICODETEXT);
 
-    if(!data) return std::nullopt;
+    if(!data)
+        return std::nullopt;
 
     win_global_lock const textLock{GlobalLock(data)};
 

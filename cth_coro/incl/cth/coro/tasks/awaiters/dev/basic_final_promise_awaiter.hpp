@@ -6,8 +6,10 @@ struct basic_final_promise_awaiter {
     constexpr bool await_ready() noexcept { return false; }
 
     template<class Promise>
-    [[nodiscard]] constexpr auto await_suspend(std::coroutine_handle<Promise> h) noexcept -> std::coroutine_handle<> {
-        if(auto continuation = h.promise().continuation) return continuation;
+    [[nodiscard]] constexpr auto
+    await_suspend(std::coroutine_handle<Promise> h) noexcept -> std::coroutine_handle<> {
+        if(auto continuation = h.promise().continuation)
+            return continuation;
         return std::noop_coroutine();
     }
 

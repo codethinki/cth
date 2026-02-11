@@ -3,6 +3,4 @@
 #include "cth/coro/global_switch.hpp"
 
 
-namespace cth::coro {
-
-}
+namespace cth::coro {}

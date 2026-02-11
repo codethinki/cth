@@ -5,8 +5,6 @@
 #include "cth/ptr/not_null.hpp"
 
 
-
-
 namespace cth {
 int constexpr EXAMPLE_NUMBER = 42;
 struct TestStruct {

@@ -5,18 +5,13 @@
 #include "cth/string/format.hpp"
 
 
-
 namespace test {
-
 
 
 enum Test1 {
     VALUE1,
 };
-enum Test2 {
-    VALUE2
-};
-
+enum Test2 { VALUE2 };
 
 
 constexpr std::string_view to_string(Test1 e) {

@@ -5,8 +5,8 @@
 namespace cth::mta {
 TYPE_TEST(md_range, 2d) {
     using rng_t = std::vector<std::vector<size_t>>;
-    EXPECT_TRUE((md_range<rng_t, 2>));
-    EXPECT_FALSE((md_range<rng_t, 3>));
+    EXPECT_TRUE((md_range<rng_t, 2>) );
+    EXPECT_FALSE((md_range<rng_t, 3>) );
 }
 
 
@@ -48,4 +48,4 @@ TYPE_TEST(mdspan_t, compile) {
     [[maybe_unused]] result_t span{example.data(), extent, extent, extent};
 }
 
-} //namespace cth::mta
+} // namespace cth::mta

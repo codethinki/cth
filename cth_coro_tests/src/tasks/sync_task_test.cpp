@@ -20,15 +20,13 @@ CORO_TEST(sync_task, blocks_until_finished) {
     EXPECT_FALSE(task.handle().done());
 
     fence awaiterStarted{};
-    fence finished{}; //technically can't verify behavior, hopefully at least flaky
+    fence finished{}; // technically can't verify behavior, hopefully at least flaky
 
-    std::jthread awaiter{
-        [&task, &awaiterStarted, &finished]() {
-            awaiterStarted.signal();
-            task.handle().promise().wait();
-            finished.signal();
-        }
-    };
+    std::jthread awaiter{[&task, &awaiterStarted, &finished]() {
+        awaiterStarted.signal();
+        task.handle().promise().wait();
+        finished.signal();
+    }};
 
     awaiterStarted.wait();
     EXPECT_FALSE(finished.signaled());

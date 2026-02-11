@@ -1,6 +1,6 @@
 #pragma once
-#include <cth/os/osdef.hpp>
 #include <cth/coro/os/native_handle.hpp>
+#include <cth/os/osdef.hpp>
 
 #ifdef CTH_FS_WINDOWS
 #ifndef WIN32_LEAN_AND_MEAN

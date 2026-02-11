@@ -18,7 +18,9 @@ constexpr auto basic_miniram<SizeType, IndexType>::ceil_to_float(size_type size)
     size_type exp = 0;
     size_type mantissa = 0;
 
-    if(size < MANTISSA_VALUE) { mantissa = size; } else {
+    if(size < MANTISSA_VALUE) {
+        mantissa = size;
+    } else {
         auto const mantissaStartBit = highest_bit(size) - MANTISSA_BITS;
         exp = mantissaStartBit + 1;
         mantissa = (size >> mantissaStartBit) & MANTISSA_MASK;
@@ -57,9 +59,12 @@ constexpr auto basic_miniram<SizeType, IndexType>::to_uint(size_type float_value
 
 // Constructor
 template<uint SizeType, uint IndexType>
-constexpr basic_miniram<SizeType, IndexType>::basic_miniram(size_type capacity, size_t initial_alloc_capacity) :
-    _capacity(capacity),
-    _maxAllocs(initial_alloc_capacity) { clear(); }
+constexpr basic_miniram<SizeType, IndexType>::basic_miniram(
+    size_type capacity,
+    size_t initial_alloc_capacity
+) : _capacity(capacity), _maxAllocs(initial_alloc_capacity) {
+    clear();
+}
 
 // Clear
 template<uint SizeType, uint IndexType>
@@ -76,7 +81,8 @@ constexpr void basic_miniram<SizeType, IndexType>::clear() {
 
 // Insert Node
 template<uint SizeType, uint IndexType>
-constexpr auto basic_miniram<SizeType, IndexType>::insertNode(size_type size, size_type data_offset) -> index_type {
+constexpr auto
+basic_miniram<SizeType, IndexType>::insertNode(size_type size, size_type data_offset) -> index_type {
     auto const nodeIndex = newNode(size);
 
     auto const binIndex = floor_to_float(size);
@@ -91,11 +97,7 @@ constexpr auto basic_miniram<SizeType, IndexType>::insertNode(size_type size, si
 
     index_type const listPos = _binIndices[binIndex];
 
-    _nodes[nodeIndex] = {
-        .dataOffset = data_offset,
-        .dataSize = size,
-        .binListNext = listPos
-    };
+    _nodes[nodeIndex] = {.dataOffset = data_offset, .dataSize = size, .binListNext = listPos};
 
     if(listPos != INVALID_INDEX)
         _nodes[listPos].binListPrev = nodeIndex;
@@ -174,10 +176,9 @@ constexpr auto basic_miniram<SizeType, IndexType>::defragment(size_type new_size
     index_type lastUsedNode = INVALID_INDEX;
 
     if(!usedNodes.empty()) {
-        std::ranges::sort(
-            usedNodes,
-            [&](index_type a, index_type b) { return _nodes[a].dataOffset < _nodes[b].dataOffset; }
-        );
+        std::ranges::sort(usedNodes, [&](index_type a, index_type b) {
+            return _nodes[a].dataOffset < _nodes[b].dataOffset;
+        });
 
         compactedOffset = compactUsedNodes(usedNodes, report);
         lastUsedNode = usedNodes.back();
@@ -234,15 +235,16 @@ constexpr auto basic_miniram<SizeType, IndexType>::allocate(size_type size) -> a
 
 // To Disjunct Copies
 template<uint SizeType, uint IndexType>
-constexpr auto basic_miniram<SizeType, IndexType>::to_disjunct_copies(
-    std::vector<memmove_type> const& moves
-)
-    -> std::vector<memmove_type> {
+constexpr auto basic_miniram<SizeType, IndexType>::to_disjunct_copies(std::vector<memmove_type> const& moves
+) -> std::vector<memmove_type> {
     std::vector<memmove_type> disjunctMoves{};
     disjunctMoves.reserve(moves.size() * 2);
 
     for(auto const& move : moves) {
-        CTH_CRITICAL(move.dstOffset > move.srcOffset, "This function does not support 'move-right' operations.") {}
+        CTH_CRITICAL(
+            move.dstOffset > move.srcOffset,
+            "This function does not support 'move-right' operations."
+        ) {}
 
         auto const chunkSize = move.srcOffset - move.dstOffset;
         bool const overlap = move.size > chunkSize;
@@ -333,12 +335,14 @@ constexpr void basic_miniram<SizeType, IndexType>::sliceTopBinNode(
 
 // Find Lowest Bit After
 template<uint SizeType, uint IndexType>
-constexpr auto basic_miniram<SizeType, IndexType>::findLowestBitAfter(top_bin_mask_t bit_mask, size_t start_id) -> size_t {
+constexpr auto
+basic_miniram<SizeType, IndexType>::findLowestBitAfter(top_bin_mask_t bit_mask, size_t start_id) -> size_t {
     auto const maskBefore = (top_bin_mask_t{1} << start_id) - 1;
     auto const maskAfter = ~maskBefore;
     auto const bitsAfter = bit_mask & maskAfter;
 
-    if(bitsAfter == 0) return static_cast<size_t>(-1);
+    if(bitsAfter == 0)
+        return static_cast<size_t>(-1);
 
     return std::countr_zero(bitsAfter);
 }
@@ -412,7 +416,8 @@ constexpr auto basic_miniram<SizeType, IndexType>::size_of(alloc_type allocation
 // Max Alloc
 template<uint SizeType, uint IndexType>
 constexpr auto basic_miniram<SizeType, IndexType>::max_alloc() const -> size_type {
-    if(remaining() == 0) return 0;
+    if(remaining() == 0)
+        return 0;
 
     size_t const topBinIndex = highest_bit(_usedBinsTop);
     size_t const leafBinIndex = highest_bit(static_cast<size_type>(_usedBins[topBinIndex]));
@@ -467,8 +472,8 @@ constexpr auto basic_miniram<SizeType, IndexType>::compactUsedNodes(
         report.updatedAllocs.emplace_back(compactedOffset, currentNodeID);
 
         if(oldOffset != compactedOffset) {
-            bool const contiguous = prevNodeId != INVALID_INDEX
-                && oldOffset == prevNodeOldOffset + _nodes[prevNodeId].dataSize;
+            bool const contiguous =
+                prevNodeId != INVALID_INDEX && oldOffset == prevNodeOldOffset + _nodes[prevNodeId].dataSize;
 
             if(contiguous && !report.moves.empty())
                 report.moves.back().size += nodeSize;
@@ -540,7 +545,8 @@ constexpr void basic_miniram<SizeType, IndexType>::reconstructFreeSpace(
 
 // Free Regions
 template<uint SizeType, uint IndexType>
-constexpr auto basic_miniram<SizeType, IndexType>::free_regions() const -> std::array<regions_type, NUM_LEAF_BINS> {
+constexpr auto
+basic_miniram<SizeType, IndexType>::free_regions() const -> std::array<regions_type, NUM_LEAF_BINS> {
     std::array<regions_type, NUM_LEAF_BINS> regions{};
 
     for(size_t i = 0; i < NUM_LEAF_BINS; ++i) {

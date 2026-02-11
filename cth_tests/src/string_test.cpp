@@ -22,7 +22,8 @@ STR_TEST(to_string, value_only_rng) {
     static cxpr size_t COUNT = 10;
 
     std::map<size_t, size_t> map{};
-    for(size_t i = 0; i < COUNT; i++) map[i] = i;
+    for(size_t i = 0; i < COUNT; i++)
+        map[i] = i;
 
     auto view = map | std::views::keys | std::views::filter([](auto const id) { return id % 2 == 0; });
 
@@ -76,8 +77,6 @@ STR_TEST(split, main) {
 
     for(size_t i = 0; i < res.size(); ++i)
         EXPECT_EQ(res[i], validRes[i]);
-
-
 }
 
 } // namespace cth

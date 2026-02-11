@@ -9,7 +9,7 @@ struct TestStruct {
     int value;
 };
 
-auto const data = std::make_unique<TestStruct>(EXAMPLE_NUMBER);  // NOLINT(cert-err58-cpp)
+auto const data = std::make_unique<TestStruct>(EXAMPLE_NUMBER); // NOLINT(cert-err58-cpp)
 
 
 CTH_TEST(move_ptr, comparison) {
@@ -107,6 +107,6 @@ CTH_TEST(move_ptr, move_assignment) {
     move_ptr<TestStruct> ptr(data.get());
     move_ptr<TestStruct> const movedPtr = std::move(ptr);
     ASSERT_TRUE(movedPtr);
-    ASSERT_FALSE(ptr); 
+    ASSERT_FALSE(ptr);
 }
 }

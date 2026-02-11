@@ -21,7 +21,9 @@ public:
 
 
     template<this_coro_awaitable Awaitable>
-    auto steal(Awaitable&& awaitable) -> awaiter_t<Awaitable> { return co::steal(scheduler(), awaitable); }
+    auto steal(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
+        return co::steal(scheduler(), awaitable);
+    }
 
     template<non_this_coro_awaitable Awaitable>
     auto steal(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
@@ -30,7 +32,9 @@ public:
 
 
     template<class T>
-    auto spawn(scheduled_task<T> task) -> scheduled_task<T> { return executor::steal(std::move(task)); }
+    auto spawn(scheduled_task<T> task) -> scheduled_task<T> {
+        return executor::steal(std::move(task));
+    }
 
     template<awaitable Awaitable>
     auto spawn(Awaitable task) -> scheduled_task<awaited_t<Awaitable>> {
@@ -39,11 +43,8 @@ public:
 
 private:
     template<awaitable Awaitable>
-    static auto spawn(
-        [[maybe_unused]] this_coro::payload p,
-        executor& s,
-        Awaitable task
-    ) -> scheduled_task<awaited_t<Awaitable>> {
+    static auto spawn([[maybe_unused]] this_coro::payload p, executor& s, Awaitable task)
+        -> scheduled_task<awaited_t<Awaitable>> {
         co_await s.schedule();
         co_return co_await s.steal(std::move(task));
     }

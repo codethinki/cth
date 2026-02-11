@@ -38,14 +38,12 @@ void gen_hist(miniram const& ram) {
     else
         for(auto const& [bucket_size, count] : histogram) {
             constexpr int maxBarWidth = 50;
-            int const barWidth = (maxCount > 0)
-                                 ? static_cast<int>((static_cast<double>(count) / maxCount) * maxBarWidth)
-                                 : 0;
+            int const barWidth =
+                (maxCount > 0) ? static_cast<int>((static_cast<double>(count) / maxCount) * maxBarWidth) : 0;
             std::println("{} <= {} ({}b)", std::string(barWidth, '#'), count, bucket_size);
         }
     std::println("-----------------------------------------");
 }
-
 
 
 MEM_TEST(miniram, FragmentationStressTest) {
@@ -57,7 +55,7 @@ MEM_TEST(miniram, FragmentationStressTest) {
 
     // --- Setup ---
     miniram ram(ramSize);
-    std::vector<mini_alloc > liveAllocations;
+    std::vector<mini_alloc> liveAllocations;
     liveAllocations.reserve(numOperations);
 
     // Use a high-quality random number generator
@@ -71,9 +69,9 @@ MEM_TEST(miniram, FragmentationStressTest) {
         if(opDist(gen) < allocChancePercent) {
             // Try to allocate
             uint32_t size = sizeDist(gen);
-            mini_alloc  newAlloc = ram.allocate(size);
-            if(newAlloc.id != miniram::INVALID_INDEX) { 
-                liveAllocations.push_back(newAlloc); 
+            mini_alloc newAlloc = ram.allocate(size);
+            if(newAlloc.id != miniram::INVALID_INDEX) {
+                liveAllocations.push_back(newAlloc);
             }
         } else {
             // Try to free
@@ -94,7 +92,11 @@ MEM_TEST(miniram, FragmentationStressTest) {
     std::println();
     std::println("--- Fragmentation Stress Test Results ---");
 
-    std::println("ram State after {} operations ({} live allocations)", numOperations, liveAllocations.size());
+    std::println(
+        "ram State after {} operations ({} live allocations)",
+        numOperations,
+        liveAllocations.size()
+    );
     gen_hist(ram);
 
     auto report = ram.defragment();

@@ -1,10 +1,10 @@
 #include "cth/data/pool.hpp"
 #include "test.hpp"
 
+#include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <algorithm>
 
 
 namespace cth::dt {
@@ -117,7 +117,8 @@ DATA_TEST(pool, append_range) {
     for(int val : input) {
         bool found = false;
         for(int acq : acquiredVals) {
-            if(acq == val) found = true;
+            if(acq == val)
+                found = true;
         }
         EXPECT_TRUE(found);
     }

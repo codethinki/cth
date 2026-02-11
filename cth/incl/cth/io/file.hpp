@@ -15,7 +15,8 @@ cxpr uintmax_t GB = MB * 1024;
 
 template<uintmax_t Divisor = KB>
 uintmax_t size(std::filesystem::path const& path) {
-    if(!std::filesystem::exists(path)) return -1;
+    if(!std::filesystem::exists(path))
+        return -1;
 
     return file_size(path) / Divisor;
 }
@@ -43,7 +44,8 @@ std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {
     file.close();
 
 
-    if(!file.eof() && !line.empty()) result.push_back(line);
+    if(!file.eof() && !line.empty())
+        result.push_back(line);
 
 
     return result;

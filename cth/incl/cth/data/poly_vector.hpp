@@ -12,14 +12,16 @@
 
 namespace cth::dt {
 
-template<mta::trivial... Ts> requires(sizeof...(Ts) >= 1)
+template<mta::trivial... Ts>
+requires(sizeof...(Ts) >= 1)
 class raw_poly_vector {
 public:
     static constexpr size_t MIN_ALIGN = alignof(std::max_align_t);
     static constexpr size_t SIZE = sizeof...(Ts);
     static constexpr size_t N = sizeof...(Ts);
 
-    template<size_t I> requires(I < N)
+    template<size_t I>
+    requires(I < N)
     using value_type = mta::get_t<I, Ts...>;
 
 private:
@@ -31,7 +33,8 @@ private:
 public:
     explicit constexpr raw_poly_vector(std::span<size_t const> sizes) { realloc(sizes); }
 
-    explicit constexpr raw_poly_vector(std::initializer_list<size_t> sizes) : raw_poly_vector(std::span{sizes}) {}
+    explicit constexpr raw_poly_vector(std::initializer_list<size_t> sizes) :
+        raw_poly_vector(std::span{sizes}) {}
 
     constexpr virtual ~raw_poly_vector() { free(); }
 
@@ -68,7 +71,8 @@ public:
             offset += typeSizes[i] * sizes[i];
         }
 
-        if(offset == 0) return;
+        if(offset == 0)
+            return;
 
         data() = static_cast<std::byte*>(::operator new(offset, ALLOC_ALIGN));
 
@@ -80,7 +84,8 @@ public:
 
 private:
     constexpr void free() {
-        if(data() == nullptr) return;
+        if(data() == nullptr)
+            return;
 
         ::operator delete(data(), ALLOC_ALIGN);
     }
@@ -103,7 +108,6 @@ public:
 }
 
 
-
 namespace cth::dt {
 
 template<mta::trivial... Ts>
@@ -118,8 +122,11 @@ private:
     template<class S>
     using cbase_t = mta::fwd_const_t<S, base_t>;
 
-    template<size_t I, class S> requires(I <= N)
-    [[nodiscard]] auto* raw_data(this S& s) noexcept { return s._base.template data<I>(); }
+    template<size_t I, class S>
+    requires(I <= N)
+    [[nodiscard]] auto* raw_data(this S& s) noexcept {
+        return s._base.template data<I>();
+    }
 
     template<class S>
     [[nodiscard]] auto* raw_sizes(this S& s) noexcept {
@@ -128,7 +135,8 @@ private:
     }
 
 public:
-    template<size_t I> requires(I < N)
+    template<size_t I>
+    requires(I < N)
     using value_type = mta::get_t<I, Ts...>;
 
     explicit constexpr poly_vector(std::span<size_t const> sz) : _base{make_sizes_array(sz)} {
@@ -141,18 +149,27 @@ public:
 
     constexpr ~poly_vector() = default;
 
-    template<size_t I, class S> requires(I < N)
-    [[nodiscard]] constexpr auto data(this S& s) noexcept { return s.template raw_data<I + 1>(); }
+    template<size_t I, class S>
+    requires(I < N)
+    [[nodiscard]] constexpr auto data(this S& s) noexcept {
+        return s.template raw_data<I + 1>();
+    }
 
-    template<size_t I, class S> requires(I < N)
+    template<size_t I, class S>
+    requires(I < N)
     [[nodiscard]] constexpr auto get(this S& s) noexcept {
         return std::span{s.template data<I>(), s.template size<I>()};
     }
 
-    template<size_t I> requires(I < N)
-    [[nodiscard]] constexpr size_t size(this auto const& s) noexcept { return s.raw_sizes()[I]; }
+    template<size_t I>
+    requires(I < N)
+    [[nodiscard]] constexpr size_t size(this auto const& s) noexcept {
+        return s.raw_sizes()[I];
+    }
 
-    [[nodiscard]] constexpr std::span<size_t const> sizes(this auto const& s) noexcept { return {s.raw_sizes(), N}; }
+    [[nodiscard]] constexpr std::span<size_t const> sizes(this auto const& s) noexcept {
+        return {s.raw_sizes(), N};
+    }
 
 private:
     static constexpr auto make_sizes_array(std::span<size_t const> sz) {
@@ -188,7 +205,8 @@ public:
     constexpr poly_vector& operator=(poly_vector const& other) {
         auto& self = *this;
 
-        if(&other == this) return self;
+        if(&other == this)
+            return self;
 
         self._base.realloc(make_sizes_array(other.sizes()));
         self.copy_base_data(other);
@@ -197,7 +215,6 @@ public:
     }
     constexpr poly_vector(poly_vector&& other) noexcept = default;
     constexpr poly_vector& operator=(poly_vector&& other) noexcept = default;
-
 };
 
 } // namespace cth::dt

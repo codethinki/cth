@@ -1,10 +1,10 @@
 #pragma once
+#include <Windows.h>
 #include <array>
 #include <functional>
 #include <mutex>
 #include <queue>
 #include <vector>
-#include <Windows.h>
 
 #include "../io/log.hpp"
 
@@ -26,7 +26,7 @@ namespace dev {
     inline std::jthread::id threadId{};
     inline uint32_t queueCount = 0;
 
-} //namespace dev
+} // namespace dev
 
 
 using EventQueue = dev::EventQueueTemplate<false>;
@@ -35,17 +35,17 @@ using CallbackEventQueue = dev::CallbackEventQueueTemplate<false>;
 using RawCallbackEventQueue = dev::CallbackEventQueueTemplate<true>;
 
 using event_t = struct {
-    uint32_t key; //virtual windows key code
-    uint32_t action; //0 if released or > 0 for times pressed
+    uint32_t key; // virtual windows key code
+    uint32_t action; // 0 if released or > 0 for times pressed
 };
 using raw_event_t = struct {
     KBDLLHOOKSTRUCT key;
     WPARAM action;
 };
-using callback_t = void(uint32_t, uint32_t); //key, action
-using raw_callback_t = void(KBDLLHOOKSTRUCT const&, WPARAM); //key, action
+using callback_t = void(uint32_t, uint32_t); // key, action
+using raw_callback_t = void(KBDLLHOOKSTRUCT const&, WPARAM); // key, action
 
-} //namespace cth::win::keybd
+} // namespace cth::win::keybd
 
 //-------------------------
 //     DECLARATIONS
@@ -83,8 +83,7 @@ private:
 
     std::mutex _queueMtx{};
 
-    uint32_t _lastKey = 0; //count repeated keypresses on normal queue
-
+    uint32_t _lastKey = 0; // count repeated keypresses on normal queue
 
 
     static void addEventQueue(EventQueueTemplate* queue);
@@ -93,7 +92,6 @@ private:
 
     inline static std::vector<EventQueueTemplate*> _queues{};
     inline static std::mutex _queuesMtx{};
-
 
 
     friend LRESULT CALLBACK hookFunc(int n_code, WPARAM action, LPARAM l_param);
@@ -107,7 +105,8 @@ struct CallbackEventQueueTemplate {
     using template_event_t = std::conditional_t<Raw, raw_event_t, event_t>;
     using template_callback_t = std::conditional_t<Raw, raw_callback_t, callback_t>;
 
-    explicit CallbackEventQueueTemplate(std::function<template_callback_t> callback_function) : callback(std::move(callback_function)) {}
+    explicit CallbackEventQueueTemplate(std::function<template_callback_t> callback_function) :
+        callback(std::move(callback_function)) {}
 
     [[nodiscard]] bool empty() const { return eventQueue.empty(); }
 
@@ -122,7 +121,6 @@ struct CallbackEventQueueTemplate {
 };
 
 
-
 } // namespace cth::win::keybd::dev
 
 
@@ -132,9 +130,10 @@ struct CallbackEventQueueTemplate {
 namespace cth::win::keybd::dev {
 
 
-
 template<bool Raw>
-EventQueueTemplate<Raw>::EventQueueTemplate() { addEventQueue(this); }
+EventQueueTemplate<Raw>::EventQueueTemplate() {
+    addEventQueue(this);
+}
 template<bool Raw>
 auto EventQueueTemplate<Raw>::pop() -> template_event_t {
     CTH_ERR(_baseQueue.empty(), "pop: baseQueue is empty")
@@ -142,19 +141,20 @@ auto EventQueueTemplate<Raw>::pop() -> template_event_t {
 
     std::lock_guard lock(_queueMtx);
 
-    if constexpr(!Raw) _lastKey = 0;
+    if constexpr(!Raw)
+        _lastKey = 0;
 
     template_event_t keyEvent = _baseQueue.front();
     _baseQueue.pop();
 
     return keyEvent;
-
 }
 template<bool Raw>
 auto EventQueueTemplate<Raw>::popQueue() -> std::vector<template_event_t> {
     std::lock_guard lock(_queueMtx);
 
-    if constexpr(!Raw) _lastKey = 0;
+    if constexpr(!Raw)
+        _lastKey = 0;
 
 
     std::vector<template_event_t> events{};
@@ -168,7 +168,8 @@ template<bool Raw>
 void EventQueueTemplate<Raw>::clear() {
     std::lock_guard lock(_queueMtx);
 
-    while(!empty()) _baseQueue.pop();
+    while(!empty())
+        _baseQueue.pop();
 }
 template<bool Raw>
 void EventQueueTemplate<Raw>::dumpFront() {
@@ -185,7 +186,8 @@ void EventQueueTemplate<Raw>::push(template_event_t event) {
             if(_lastKey == event.key) {
                 _baseQueue.pop();
                 event.action += 1;
-            } else _lastKey = event.key;
+            } else
+                _lastKey = event.key;
         }
     _baseQueue.push(event);
 }
@@ -193,7 +195,8 @@ void EventQueueTemplate<Raw>::push(template_event_t event) {
 
 template<bool Raw>
 void EventQueueTemplate<Raw>::addEventQueue(EventQueueTemplate* queue) {
-    if(queueCount++ == 0) hook();
+    if(queueCount++ == 0)
+        hook();
     CTH_STABLE_ERR(keyboardHookThread.get_id() != threadId, "hook thread crashed")
     throw details->exception();
 
@@ -213,19 +216,23 @@ void EventQueueTemplate<Raw>::eraseEventQueue(size_t id) {
     std::ranges::for_each(_queues.begin() + id, _queues.end(), [](auto q) { q->id -= 1; });
 
 
-    if(--queueCount == 0) unhook();
+    if(--queueCount == 0)
+        unhook();
 }
 template<bool Raw>
 int EventQueueTemplate<Raw>::eraseEventQueue(size_t id, int error_code) {
-    if(keyboardHookThread.get_id() != threadId) return error_code;
-    if(queueCount <= 0) return error_code;
+    if(keyboardHookThread.get_id() != threadId)
+        return error_code;
+    if(queueCount <= 0)
+        return error_code;
 
     std::lock_guard lock(_queuesMtx);
     _queues.erase(_queues.begin() + id);
     std::for_each(_queues.begin() + id, _queues.end(), [](auto q) { q->_id -= 1; });
 
 
-    if(--queueCount == 0) unhook();
+    if(--queueCount == 0)
+        unhook();
     return EXIT_SUCCESS;
 }
 
@@ -254,11 +261,15 @@ LRESULT CALLBACK hookFunc(int n_code, WPARAM action, LPARAM l_param) {
         pressedKeys[vkCode] = 0;
 
         std::unique_lock lock(EventQueue::_queuesMtx);
-        std::ranges::for_each(EventQueue::_queues, [vkCode, keyUp](auto q) { q->push(event_t{vkCode, keyUp ? 0u : 1u}); });
+        std::ranges::for_each(EventQueue::_queues, [vkCode, keyUp](auto q) {
+            q->push(event_t{vkCode, keyUp ? 0u : 1u});
+        });
         lock.unlock();
 
         std::unique_lock rawLock(RawEventQueue::_queuesMtx);
-        std::ranges::for_each(RawEventQueue::_queues, [keyStruct, action](auto q) { q->push(raw_event_t{keyStruct, action}); });
+        std::ranges::for_each(RawEventQueue::_queues, [keyStruct, action](auto q) {
+            q->push(raw_event_t{keyStruct, action});
+        });
         rawLock.unlock();
     }
     return CallNextHookEx(nullptr, n_code, action, l_param);
@@ -282,7 +293,7 @@ void threadProc(std::stop_token const& stop) {
         UnhookWindowsHookEx(hookHandle);
     } catch(...) {
         UnhookWindowsHookEx(hookHandle);
-        //just return and unhook
+        // just return and unhook
     }
 }
 
@@ -296,4 +307,4 @@ void unhook() {
     threadId = std::jthread::id{};
 }
 
-} //namespace cth::win::keybd::dev
+} // namespace cth::win::keybd::dev

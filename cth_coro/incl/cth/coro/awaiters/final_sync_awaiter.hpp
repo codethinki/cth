@@ -11,7 +11,8 @@ struct final_sync_awaiter {
 
         h.promise().signal();
 
-        if(co) return co;
+        if(co)
+            return co;
         return std::noop_coroutine();
     }
 

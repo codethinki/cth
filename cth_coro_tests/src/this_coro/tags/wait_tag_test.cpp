@@ -2,8 +2,8 @@
 
 #include "cth/coro/executor.hpp"
 #include "cth/coro/scheduler.hpp"
-#include "cth/coro/this_coro.hpp"
 #include "cth/coro/tasks/executor_task.hpp"
+#include "cth/coro/this_coro.hpp"
 
 #include <chrono>
 
@@ -29,7 +29,7 @@ TAG_TEST(wait_tag, sub_1ms) {
          auto start2 = clock_t::now();
          sync_wait(exec, task());
          auto end2 = clock_t::now();
- 
+
          std::println("waited for: {}", std::chrono::duration_cast<std::chrono::microseconds>(end2 - start2));
      }*/
 }
@@ -53,5 +53,5 @@ TAG_TEST(wait_until, main) {
 }
 
 
-//IMPLEMENT concurrent wait test
+// IMPLEMENT concurrent wait test
 }

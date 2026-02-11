@@ -2,11 +2,11 @@
 
 #include "cth/coro/executor.hpp"
 #include "cth/coro/scheduler.hpp"
-#include "cth/coro/this_coro.hpp"
 #include "cth/coro/tasks/executor_task.hpp"
+#include "cth/coro/this_coro.hpp"
 
 namespace cth::co::this_coro {
-//AI
+// AI
 
 TAG_TEST(executor_tag, returns_correct_executor) {
     co::scheduler sched{autostart, 1};

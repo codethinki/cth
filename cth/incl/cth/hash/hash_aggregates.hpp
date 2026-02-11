@@ -17,10 +17,8 @@ cxpr size_t hash_aggregate(T const& t) {
 }
 
 
-#define CTH_HASH_AGGREGATE(type)\
-template<>\
-struct std::hash<type> {\
-    cxpr size_t operator()(type const& x) const noexcept {\
-        return cth::hash::hash_aggregate(x);\
-    }\
-};
+#define CTH_HASH_AGGREGATE(type)                                                                             \
+    template<>                                                                                               \
+    struct std::hash<type> {                                                                                 \
+        cxpr size_t operator()(type const& x) const noexcept { return cth::hash::hash_aggregate(x); }        \
+    };

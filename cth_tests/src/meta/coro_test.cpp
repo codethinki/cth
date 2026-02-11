@@ -1,4 +1,4 @@
-#include  "cth/meta/coro.hpp"
+#include "cth/meta/coro.hpp"
 
 #include "test.hpp"
 
@@ -68,49 +68,22 @@ TYPE_TEST(awaitable, main) {
 }
 
 TYPE_TEST(awaiter_t, main) {
-    static_assert(
-        std::same_as<
-            awaiter_t<basic_with_operator_co_await<int&>>,
-            basic_awaiter<int&>
-        >
-    );
+    static_assert(std::same_as<awaiter_t<basic_with_operator_co_await<int&>>, basic_awaiter<int&>>);
 
-    static_assert(
-        std::same_as<
-            awaiter_t<with_operator_co_await>,
-            with_operator_co_await::awaiter
-        >
-    );
+    static_assert(std::same_as<awaiter_t<with_operator_co_await>, with_operator_co_await::awaiter>);
 
-    static_assert(
-        std::same_as<
-            awaiter_t<with_free_co_await>,
-            with_free_co_await::awaiter
-        >
-    );
+    static_assert(std::same_as<awaiter_t<with_free_co_await>, with_free_co_await::awaiter>);
 
-    static_assert(
-        std::same_as<
-            awaiter_t<with_both_co_await>,
-            with_both_co_await::awaiter
-        >
-    );
+    static_assert(std::same_as<awaiter_t<with_both_co_await>, with_both_co_await::awaiter>);
 }
 
 
-
 TYPE_TEST(awaited_t, main) {
-    static_assert(
-        std::same_as<awaited_t<basic_awaiter<double>>, double>
-    );
+    static_assert(std::same_as<awaited_t<basic_awaiter<double>>, double>);
 
-    static_assert(
-        std::same_as<awaited_t<basic_awaiter<double&>>, double&>
-    );
+    static_assert(std::same_as<awaited_t<basic_awaiter<double&>>, double&>);
 
-    static_assert(
-        std::same_as<awaited_t<basic_with_operator_co_await<double&>>, double&>
-    );
+    static_assert(std::same_as<awaited_t<basic_with_operator_co_await<double&>>, double&>);
 }
 
 }

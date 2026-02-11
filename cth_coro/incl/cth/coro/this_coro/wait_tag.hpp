@@ -9,9 +9,7 @@
 namespace cth::co::this_coro {
 struct [[nodiscard]] wait_tag : tag_base {
     constexpr explicit wait_tag(time_point_t t) : timePoint{t} {}
-    constexpr auto operator()(payload const& p) const {
-        return wait_awaiter{timePoint, p.scheduler()};
-    }
+    constexpr auto operator()(payload const& p) const { return wait_awaiter{timePoint, p.scheduler()}; }
 
     time_point_t timePoint;
 };

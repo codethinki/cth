@@ -1,12 +1,12 @@
-//THIS FILE IS 100% ai generated bc idgaf
+// THIS FILE IS 100% ai generated bc idgaf
 
-#include "test.hpp"
 #include "cth/coro/fence.hpp"
+#include "test.hpp"
 #include <cth/coro/scheduler.hpp>
 
 #include <atomic>
-#include <latch>
 #include <barrier>
+#include <latch>
 #include <thread>
 
 namespace cth::co {
@@ -67,12 +67,10 @@ CORO_TEST(scheduler, sequential_tasks) {
 
     sched.start();
     for(int i = 0; i < taskCount; ++i) {
-        sched.post(
-            [&] {
-                counter.fetch_add(1, std::memory_order_relaxed);
-                allDone.count_down();
-            }
-        );
+        sched.post([&] {
+            counter.fetch_add(1, std::memory_order_relaxed);
+            allDone.count_down();
+        });
     }
 
     allDone.wait();
@@ -89,12 +87,10 @@ CORO_TEST(scheduler, concurrent_execution) {
     sched.start();
 
     for(size_t i = 0; i < workers; ++i) {
-        sched.post(
-            [&] {
-                workerSync.arrive_and_wait();
-                tasksDone.count_down();
-            }
-        );
+        sched.post([&] {
+            workerSync.arrive_and_wait();
+            tasksDone.count_down();
+        });
     }
 
     tasksDone.wait();
@@ -123,23 +119,19 @@ CORO_TEST(scheduler, post_during_execution) {
     sched.start();
 
     for(int i = 0; i < batch1; ++i) {
-        sched.post(
-            [&] {
-                counter.fetch_add(1, std::memory_order_relaxed);
-                batch1Done.count_down();
-            }
-        );
+        sched.post([&] {
+            counter.fetch_add(1, std::memory_order_relaxed);
+            batch1Done.count_down();
+        });
     }
 
     batch1Done.wait();
 
     for(int i = 0; i < batch2; ++i) {
-        sched.post(
-            [&] {
-                counter.fetch_add(1, std::memory_order_relaxed);
-                batch2Done.count_down();
-            }
-        );
+        sched.post([&] {
+            counter.fetch_add(1, std::memory_order_relaxed);
+            batch2Done.count_down();
+        });
     }
 
     batch2Done.wait();
@@ -154,12 +146,12 @@ CORO_TEST(scheduler, owns_thread_in_task) {
     std::latch allDone{taskCount};
 
     for(int i = 0; i < taskCount; ++i) {
-        sched.post(
-            [&] {
-                if(sched.owns_thread()) { successCount.fetch_add(1, std::memory_order_relaxed); }
-                allDone.count_down();
+        sched.post([&] {
+            if(sched.owns_thread()) {
+                successCount.fetch_add(1, std::memory_order_relaxed);
             }
-        );
+            allDone.count_down();
+        });
     }
 
     allDone.wait();
@@ -175,12 +167,10 @@ CORO_TEST(scheduler, task_ordering_single_worker) {
 
     sched.post([&] { val = 1; });
     sched.post([&] { val = 2; });
-    sched.post(
-        [&] {
-            val = 3;
-            done.signal();
-        }
-    );
+    sched.post([&] {
+        val = 3;
+        done.signal();
+    });
 
     done.wait();
     EXPECT_EQ(val, 3);
@@ -193,12 +183,10 @@ CORO_TEST(scheduler, restart) {
     {
         fence done;
         sched.start();
-        sched.post(
-            [&] {
-                counter++;
-                done.signal();
-            }
-        );
+        sched.post([&] {
+            counter++;
+            done.signal();
+        });
         done.wait();
         sched.await_stop();
     }
@@ -207,12 +195,10 @@ CORO_TEST(scheduler, restart) {
     {
         fence done;
         sched.start();
-        sched.post(
-            [&] {
-                counter++;
-                done.signal();
-            }
-        );
+        sched.post([&] {
+            counter++;
+            done.signal();
+        });
         done.wait();
     }
     EXPECT_EQ(counter, 2);
@@ -225,22 +211,18 @@ CORO_TEST(scheduler, destructor_waits) {
     fence taskStarted;
     fence allowFinish;
 
-    std::jthread runner(
-        [&] {
-            {
-                scheduler sched{autostart};
-                sched.post(
-                    [&] {
-                        taskStarted.signal();
-                        allowFinish.wait();
-                        taskDone = true;
-                    }
-                );
-                taskStarted.wait();
-            }
-            dtorDone = true;
+    std::jthread runner([&] {
+        {
+            scheduler sched{autostart};
+            sched.post([&] {
+                taskStarted.signal();
+                allowFinish.wait();
+                taskDone = true;
+            });
+            taskStarted.wait();
         }
-    );
+        dtorDone = true;
+    });
 
     taskStarted.wait();
 
@@ -259,17 +241,17 @@ CORO_TEST(scheduler, stop_prevents_new_tasks) {
 
     sched.start();
 
-    sched.post(
-        [&] {
-            taskRunning.signal();
-            allowTaskFinish.wait();
-        }
-    );
+    sched.post([&] {
+        taskRunning.signal();
+        allowTaskFinish.wait();
+    });
     taskRunning.wait();
 
     sched.request_stop();
 
-    for(int i = 0; i < 10; ++i) { sched.post([&] { ++counter; }); }
+    for(int i = 0; i < 10; ++i) {
+        sched.post([&] { ++counter; });
+    }
 
     allowTaskFinish.signal();
     sched.await_stop();
@@ -284,21 +266,17 @@ CORO_TEST(scheduler, await_stop_waits) {
     fence allowTaskFinish;
     fence awaitStopReturned;
 
-    sched.post(
-        [&] {
-            taskRunning.signal();
-            allowTaskFinish.wait();
-        }
-    );
+    sched.post([&] {
+        taskRunning.signal();
+        allowTaskFinish.wait();
+    });
 
     taskRunning.wait();
 
-    [[maybe_unused]] std::jthread stopper(
-        [&] {
-            sched.await_stop();
-            awaitStopReturned.signal();
-        }
-    );
+    [[maybe_unused]] std::jthread stopper([&] {
+        sched.await_stop();
+        awaitStopReturned.signal();
+    });
 
     EXPECT_FALSE(awaitStopReturned.signaled());
 
@@ -317,13 +295,11 @@ CORO_TEST(scheduler, active_worker_count) {
     sched.start();
 
     for(int i = 0; i < taskCount; ++i) {
-        sched.post(
-            [&] {
-                stepSync.arrive_and_wait();
-                stepSync.arrive_and_wait();
-                mainLatch.arrive_and_wait();
-            }
-        );
+        sched.post([&] {
+            stepSync.arrive_and_wait();
+            stepSync.arrive_and_wait();
+            mainLatch.arrive_and_wait();
+        });
 
         stepSync.arrive_and_wait();
 
@@ -362,12 +338,10 @@ CORO_TEST(scheduler, many_small_tasks) {
     sched.start();
 
     for(int i = 0; i < taskCount; ++i)
-        sched.post(
-            [&]() {
-                counter.fetch_add(1, std::memory_order_relaxed);
-                latch.count_down();
-            }
-        );
+        sched.post([&]() {
+            counter.fetch_add(1, std::memory_order_relaxed);
+            latch.count_down();
+        });
 
     latch.wait();
     EXPECT_EQ(counter.load(), taskCount);

@@ -50,24 +50,25 @@ inline void screenshot_to(std::span<uint8_t> buffer, HWND hwnd, glm::ivec2 size,
     CTH_STABLE_ERR(!windowDc, "failed to create copy DC") throw details->exception();
 
 
-    BITMAPINFO const bmpInfo{
-        .bmiHeader{
-            .biSize = sizeof(BITMAPINFOHEADER),
-            .biWidth = static_cast<LONG>(size.x),
-            .biHeight = static_cast<LONG>(size.y),
-            .biPlanes = 1,
-            .biBitCount = static_cast<WORD>(PIXEL_BITS),
-            .biCompression = BI_RGB,
-        }
-    };
+    BITMAPINFO const bmpInfo{.bmiHeader{
+        .biSize = sizeof(BITMAPINFOHEADER),
+        .biWidth = static_cast<LONG>(size.x),
+        .biHeight = static_cast<LONG>(size.y),
+        .biPlanes = 1,
+        .biBitCount = static_cast<WORD>(PIXEL_BITS),
+        .biCompression = BI_RGB,
+    }};
     void* bits = nullptr;
 
     bmp_ptr const bmp{CreateDIBSection(copyDc.get(), &bmpInfo, DIB_RGB_COLORS, &bits, nullptr, 0)};
     CTH_STABLE_ERR(!bmp, "failed to create DIB section") throw details->exception();
 
-    [[maybe_unused]] bmp_swap_ptr oldBmp{SelectObject(copyDc.get(), bmp.get()), [&copyDc](auto const& old) { SelectObject(copyDc.get(), old); }};
+    [[maybe_unused]] bmp_swap_ptr oldBmp{SelectObject(copyDc.get(), bmp.get()), [&copyDc](auto const& old) {
+                                             SelectObject(copyDc.get(), old);
+                                         }};
 
-    auto const blitResult = !BitBlt(copyDc.get(), 0, 0, size.x, size.y, windowDc, offset.x, offset.y, SRCCOPY | CAPTUREBLT);
+    auto const blitResult =
+        !BitBlt(copyDc.get(), 0, 0, size.x, size.y, windowDc, offset.x, offset.y, SRCCOPY | CAPTUREBLT);
     CTH_STABLE_ERR(!blitResult, "failed to blit to copy") {
         details->add("error code:", GetLastError());
         throw details->exception();
@@ -87,18 +88,17 @@ inline void reg_global_raw_input(HWND hwnd) {
     using rid_t = RAWINPUTDEVICE;
 
     std::array const rawInputDevices{
-        rid_t{
-            .usUsagePage = 0x01,
-            .usUsage = 0x06,
-            .dwFlags = RIDEV_INPUTSINK,
-            .hwndTarget = hwnd
-        }
+        rid_t{.usUsagePage = 0x01, .usUsage = 0x06, .dwFlags = RIDEV_INPUTSINK, .hwndTarget = hwnd}
     };
 
-    auto const result = RegisterRawInputDevices(rawInputDevices.data(), static_cast<UINT>(rawInputDevices.size()), sizeof(rid_t));
+    auto const result = RegisterRawInputDevices(
+        rawInputDevices.data(),
+        static_cast<UINT>(rawInputDevices.size()),
+        sizeof(rid_t)
+    );
 
     CTH_STABLE_ERR(result == FALSE, "failed to register raw input devices, error: {}", GetLastError())
-         throw details->exception();
+    throw details->exception();
 }
 
 }

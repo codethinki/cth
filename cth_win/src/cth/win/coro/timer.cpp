@@ -58,7 +58,6 @@ void timer::cancel() {
     auto const success = CancelWaitableTimer(native_handle());
 
     CTH_WIN_STABLE_THROW(!success, "failed to cancel timer") {}
-
 }
 void timer::reset() {
     set(time_point_t::max());
@@ -72,14 +71,7 @@ closing_handle timer::create_timer_handle(bool auto_reset) {
         flags |= CREATE_WAITABLE_TIMER_MANUAL_RESET;
 
 
-    closing_handle handle{
-        CreateWaitableTimerExW(
-            nullptr,
-            nullptr,
-            flags,
-            TIMER_ALL_ACCESS
-        )
-    };
+    closing_handle handle{CreateWaitableTimerExW(nullptr, nullptr, flags, TIMER_ALL_ACCESS)};
 
     CTH_WIN_STABLE_THROW(handle == nullptr, "failed to create timer handle") {}
 

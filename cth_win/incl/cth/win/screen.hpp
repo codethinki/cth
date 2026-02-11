@@ -6,7 +6,6 @@
 #include <span>
 
 
-
 namespace cth::win {
 
 hwnd_t desktop_handle();
@@ -20,7 +19,8 @@ hwnd_t desktop_handle();
  * @throws cth::except::win_exception on window class registration failure
  * @throws cth::except::win_exception on window creation failure
  */
-window_t create_window(std::string_view name, rect_t rect, bool visible = true, std::string_view class_name = {});
+window_t
+create_window(std::string_view name, rect_t rect, bool visible = true, std::string_view class_name = {});
 
 
 /**
@@ -67,7 +67,7 @@ private:
 rect_t window_rect(hwnd_t hwnd);
 
 
-/** 
+/**
  * Gets the desktop rect, origin top left
  * @details calls @ref window_rect(hwnd_t)
  */
@@ -98,7 +98,7 @@ inline double desktop_scale() { return window_scale(desktop_handle()); }
  * blits from src to dst
  * @param src for blit
  * @param dst for blit
- * @throws 
+ * @throws
  */
 void raw_blit(
     hbmp_t src,
@@ -174,10 +174,7 @@ inline void make_rgba_opaque(std::span<std::byte> pixel_fragments) {
     CTH_CRITICAL(pixel_fragments.size() % 4 != 0, "illegal pixel fragments") {}
     using pixel = std::byte[4];
 
-    std::span<pixel> pixels{
-        reinterpret_cast<pixel*>(pixel_fragments.data()),
-        pixel_fragments.size() / 4
-    };
+    std::span<pixel> pixels{reinterpret_cast<pixel*>(pixel_fragments.data()), pixel_fragments.size() / 4};
 
 #pragma omp simd
     for(auto& pixel : pixels)
@@ -230,8 +227,18 @@ public:
      * @throws cth::except::win_exception if BitBlt fails
      */
     void write() const {
-        //TODO figure out why writes are not visible on screen
-        blit_to_screen(_memoryDc.get(), 0, 0, _screenDc.get(), _rect.x, _rect.y, _rect.width, _rect.height, _dpiAware);
+        // TODO figure out why writes are not visible on screen
+        blit_to_screen(
+            _memoryDc.get(),
+            0,
+            0,
+            _screenDc.get(),
+            _rect.x,
+            _rect.y,
+            _rect.width,
+            _rect.height,
+            _dpiAware
+        );
         flush();
     }
 
@@ -272,8 +279,8 @@ public:
     void const* data() const { return _data; }
 
     template<class S>
-    [[nodiscard]] auto view(this S&& s) -> std::span<mta::fwd_const_t<S, std::byte>> { return std::span{s.raw(), s.bytes()}; }
-
-
+    [[nodiscard]] auto view(this S&& s) -> std::span<mta::fwd_const_t<S, std::byte>> {
+        return std::span{s.raw(), s.bytes()};
+    }
 };
 }

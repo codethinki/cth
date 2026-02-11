@@ -14,16 +14,13 @@
 #include <boost/asio/steady_timer.hpp>
 
 
-
 namespace cth::co {
 
 struct scheduler::Impl {
     using guard_t = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
 
     // ReSharper disable once CppNonExplicitConvertingConstructor
-    Impl(size_t workers) : ctx{static_cast<int>(workers)}, timerPool{ctx} {
-        ctx.stop();
-    }
+    Impl(size_t workers) : ctx{static_cast<int>(workers)}, timerPool{ctx} { ctx.stop(); }
 
     [[nodiscard]] bool active() const { return workGuard != std::nullopt || !ctx.stopped(); }
 
@@ -40,13 +37,13 @@ struct scheduler::Impl {
 
     void await(native_handle handle, void_func callback) {
         auto handler = wrap_unique(handle, ctx);
-        handler->async_wait(
-            [h = std::move(handler), this, cb = std::move(callback)](boost::system::error_code const& ec) mutable {
-                BOOST_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", h->native_handle())
+        handler->async_wait([h = std::move(handler),
+                             this,
+                             cb = std::move(callback)](boost::system::error_code const& ec) mutable {
+            BOOST_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", h->native_handle())
 
-                cb();
-            }
-        );
+            cb();
+        });
     }
 
     void await(time_point_t time_point, void_func callback) {
@@ -65,8 +62,7 @@ struct scheduler::Impl {
 namespace cth::co {
 
 scheduler::scheduler(size_t workers) :
-    _impl{std::make_unique<Impl>(workers)},
-    _activeWorkers{std::make_unique<std::atomic<size_t>>()},
+    _impl{std::make_unique<Impl>(workers)}, _activeWorkers{std::make_unique<std::atomic<size_t>>()},
     _workers{workers} {
     CTH_CRITICAL((!expr::num::in(workers, 1, std::numeric_limits<int>::max())), "workers out of range") {}
 }
@@ -84,19 +80,18 @@ void scheduler::await(std::chrono::steady_clock::time_point time_point, void_fun
 void scheduler::start() {
     impl().start();
     for(auto& worker : _workers)
-        worker = std::jthread(
-            [&ctx = impl().ctx, impl = _impl.get(), &count = *_activeWorkers] {
-                ++count;
-                _threadScheduler = impl;
+        worker = std::jthread([&ctx = impl().ctx, impl = _impl.get(), &count = *_activeWorkers] {
+            ++count;
+            _threadScheduler = impl;
 
-                ctx.run();
-                --count;
-            }
-        );
+            ctx.run();
+            --count;
+        });
 }
 void scheduler::request_stop() {
     impl().request_stop();
-    for(auto& worker : _workers) worker.request_stop();
+    for(auto& worker : _workers)
+        worker.request_stop();
 }
 
 bool scheduler::active() const {

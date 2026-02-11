@@ -39,7 +39,6 @@ public:
     fence& operator=(fence const&) = delete;
     fence(fence&&) = delete;
     fence& operator=(fence&&) = delete;
-
 };
 }
 
@@ -53,14 +52,26 @@ public:
 
     ~heap_fence() = default;
 
-    void signal() { if(_fence) _fence->signal(); }
+    void signal() {
+        if(_fence)
+            _fence->signal();
+    }
 
-    void force_signal() { if(_fence) _fence->force_signal(); }
+    void force_signal() {
+        if(_fence)
+            _fence->force_signal();
+    }
 
 
-    void reset() { if(_fence) _fence->reset(); }
+    void reset() {
+        if(_fence)
+            _fence->reset();
+    }
 
-    void wait() const { if(_fence) _fence->wait(); }
+    void wait() const {
+        if(_fence)
+            _fence->wait();
+    }
 
 private:
     std::unique_ptr<fence> _fence;
@@ -73,7 +84,6 @@ public:
 
     heap_fence(heap_fence const&) = delete;
     heap_fence& operator=(heap_fence const&) = delete;
-
 };
 
 }

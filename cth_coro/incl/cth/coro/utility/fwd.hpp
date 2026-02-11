@@ -10,9 +10,12 @@ class executor;
 
 
 namespace cth::co {
-template<class T> class executor_task;
-template<class T> class capture_task;
-template<class T> class scheduled_task;
+template<class T>
+class executor_task;
+template<class T>
+class capture_task;
+template<class T>
+class scheduled_task;
 }
 
 

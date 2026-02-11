@@ -1,17 +1,19 @@
 #pragma once
-#include "utility.hpp"
 #include "cth/macro.hpp"
+#include "utility.hpp"
 
 #include <utility>
 
 
-//tuple functions
+// tuple functions
 
 namespace cth::mta {
 
 namespace dev {
     template<class T, size_t... I>
-    cval auto n_tuple_gen(T fill, std::index_sequence<I...>) { return std::tuple{(mta::zero(I), fill)...}; }
+    cval auto n_tuple_gen(T fill, std::index_sequence<I...>) {
+        return std::tuple{(mta::zero(I), fill)...};
+    }
 }
 
 template<size_t N, class T>
@@ -20,6 +22,8 @@ template<size_t N, class T>
 }
 
 template<size_t N>
-[[nodiscard]] cval auto n_tuple() { return n_tuple<N>(0); }
+[[nodiscard]] cval auto n_tuple() {
+    return n_tuple<N>(0);
+}
 
 }

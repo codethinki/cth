@@ -7,7 +7,6 @@
 #define HASH_TEST(suite, name) CTH_EX_TEST(_hash, suite, name)
 
 
-
 namespace asdf {
 struct X {
     int a;
@@ -41,7 +40,6 @@ HASH_TEST(macro_CTH_HASH_AGGREGATE, main) {
 
     [[maybe_unused]] auto val = std::hash<T>{}(example);
 }
-
 
 
 }

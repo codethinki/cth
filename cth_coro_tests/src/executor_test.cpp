@@ -1,17 +1,17 @@
-#include "test.hpp"
 #include "cth/coro/tasks/sync_task.hpp"
+#include "test.hpp"
 
-#include <cth/coro/scheduler.hpp>
 #include <cth/coro/executor.hpp>
+#include <cth/coro/scheduler.hpp>
 #include <cth/coro/tasks/executor_task.hpp>
 #include <cth/coro/this_coro.hpp>
 
 #include <atomic>
 #include <latch>
-#include <thread>
 #include <memory>
-#include <vector>
 #include <stdexcept>
+#include <thread>
+#include <vector>
 
 
 namespace cth::co {
@@ -116,7 +116,9 @@ CORO_TEST(executor, context_deep_recursion) {
 
     struct Recursive {
         auto operator()(int depth) -> executor_task<executor> {
-            if(depth == 0) { co_return co_await this_coro::executor; }
+            if(depth == 0) {
+                co_return co_await this_coro::executor;
+            }
             co_return co_await (*this)(depth - 1);
         }
     };
@@ -128,7 +130,9 @@ CORO_TEST(executor, context_deep_recursion) {
 struct foreign_task {
     struct awaiter {
         bool await_ready() { return false; }
-        void await_suspend(std::coroutine_handle<> h) { std::thread([h] { h.resume(); }).detach(); }
+        void await_suspend(std::coroutine_handle<> h) {
+            std::thread([h] { h.resume(); }).detach();
+        }
         void await_resume() {}
     };
     awaiter operator co_await() { return {}; }
@@ -139,7 +143,9 @@ struct foreign_value_task {
     struct awaiter {
         int v;
         bool await_ready() { return false; }
-        void await_suspend(std::coroutine_handle<> h) { std::thread([h] { h.resume(); }).detach(); }
+        void await_suspend(std::coroutine_handle<> h) {
+            std::thread([h] { h.resume(); }).detach();
+        }
         int await_resume() { return v; }
     };
     awaiter operator co_await() { return {val}; }
@@ -156,8 +162,10 @@ CORO_TEST(executor, interop_steal_foreign_void) {
         co_await foreign_task{};
         auto const id2 = std::this_thread::get_id();
 
-        if(id1 == mid) throw std::runtime_error("Started on main thread");
-        if(id1 != id2) throw std::runtime_error("Did not return to executor thread");
+        if(id1 == mid)
+            throw std::runtime_error("Started on main thread");
+        if(id1 != id2)
+            throw std::runtime_error("Did not return to executor thread");
     };
 
     sync_wait(exec, task(mainID));
@@ -195,7 +203,8 @@ CORO_TEST(executor, interop_cross_executor_migration) {
 
     auto root_task = [](executor& e1, executor& e2, auto st) -> executor_task<std::optional<executor>> {
         auto e = co_await this_coro::executor;
-        if(e != e1) co_return std::nullopt;
+        if(e != e1)
+            co_return std::nullopt;
 
         co_return co_await e2.steal(st());
     };
@@ -215,7 +224,11 @@ CORO_TEST(executor, errors_exception_in_spawned_task) {
 
     auto wrapper = [](auto t) -> executor_task<bool> {
         bool caught = false;
-        try { co_await t(); } catch(std::runtime_error const&) { caught = true; }
+        try {
+            co_await t();
+        } catch(std::runtime_error const&) {
+            caught = true;
+        }
         co_return caught;
     };
 
@@ -236,7 +249,11 @@ CORO_TEST(executor, errors_exception_in_nested_task) {
 
     auto wrapper = [](auto r, auto ch) -> executor_task<bool> {
         bool caught = false;
-        try { co_await r(ch); } catch(std::logic_error const&) { caught = true; }
+        try {
+            co_await r(ch);
+        } catch(std::logic_error const&) {
+            caught = true;
+        }
         co_return caught;
     };
 
@@ -256,14 +273,14 @@ CORO_TEST(executor, stress_concurrent_spawns) {
     std::latch allDone{count};
 
     auto increment_task = [&](std::atomic<int>& ctr) -> executor_task<void> {
-        //ref capture is fine bc no co_await
+        // ref capture is fine bc no co_await
         ctr.fetch_add(1, std::memory_order_relaxed);
         allDone.count_down();
         co_return;
     };
 
     auto spawner = [&](std::vector<scheduled_task<void>>& t) -> executor_task<void> {
-        //ref capture fine bc no co_await
+        // ref capture fine bc no co_await
         for(int i = 0; i < count; ++i) {
             auto h = exec.spawn(increment_task(completed));
             h.handle().resume();

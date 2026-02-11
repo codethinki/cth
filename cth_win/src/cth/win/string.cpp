@@ -1,7 +1,7 @@
 #include "cth/win/string.hpp"
 
-#include "win_include.hpp"
 #include "cth/win/win_types.hpp"
+#include "win_include.hpp"
 
 #include <cth/io/log.hpp>
 
@@ -33,16 +33,8 @@ std::string to_string(std::wstring_view view) {
     auto const viewSize = static_cast<int>(view.size());
     auto const viewPtr = view.data();
 
-    auto const size = WideCharToMultiByte(
-        CP_UTF8,
-        WC_ERR_INVALID_CHARS,
-        viewPtr,
-        viewSize,
-        nullptr,
-        0,
-        nullptr,
-        nullptr
-    );
+    auto const size =
+        WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, viewPtr, viewSize, nullptr, 0, nullptr, nullptr);
 
 
     CTH_WIN_STABLE_THROW(size < 0, "encoding failed with size [{}]", size) {}

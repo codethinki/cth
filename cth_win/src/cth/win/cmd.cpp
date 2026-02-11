@@ -1,7 +1,7 @@
 #include "cth/win/cmd.hpp"
 
-#include "win_include.hpp"
 #include "cth/win/string.hpp"
+#include "win_include.hpp"
 
 namespace cth::win::cmd {
 size_t hidden_dir(std::string_view dir, std::string_view command) {
@@ -40,7 +40,7 @@ size_t hidden_dir(std::string_view dir, std::string_view command) {
     auto waitResult = WaitForSingleObject(hProcess.get(), INFINITE);
 
     CTH_WIN_STABLE_THROW(waitResult != 0, "wait for command failed")
-        details->add("wait result: {}", waitResult);
+    details->add("wait result: {}", waitResult);
 
 
     DWORD returnValue = 0;

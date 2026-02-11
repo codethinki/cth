@@ -1,5 +1,5 @@
 #pragma once
-//heavily inspired by Sebastian Aaltonen: https://github.com/sebbbi/OffsetAllocator
+// heavily inspired by Sebastian Aaltonen: https://github.com/sebbbi/OffsetAllocator
 
 #include <array>
 #include <bit>
@@ -12,7 +12,9 @@ template<class T>
 concept uint = std::unsigned_integral<T>;
 
 template<uint T>
-consteval auto invalid() { return T{} - 1; }
+consteval auto invalid() {
+    return T{} - 1;
+}
 
 namespace dev {
     // Internal node structure, made public for development/debugging purposes.
@@ -169,7 +171,8 @@ private:
     constexpr size_type compactUsedNodes(std::vector<index_type> const& used_nodes, defrag_type& report);
     constexpr void reconstructFreeSpace(size_type compacted_offset, index_type last_used_node);
 
-    constexpr void sliceTopBinNode(size_type slice_size, size_t bin_id, size_t top_bin_id, size_t leaf_bin_id);
+    constexpr void
+    sliceTopBinNode(size_type slice_size, size_t bin_id, size_t top_bin_id, size_t leaf_bin_id);
     constexpr static size_t findLowestBitAfter(top_bin_mask_t bit_mask, size_t start_id);
 
     constexpr index_type insertNode(size_type size, size_type data_offset);
@@ -238,7 +241,8 @@ public:
      * rates the fragmentation [0, 1] (good to bad)
      */
     [[nodiscard]] constexpr float fragmentation() const {
-        if(remaining() == 0) return 0.0f;
+        if(remaining() == 0)
+            return 0.0f;
         return 1.0f - static_cast<float>(max_alloc()) / static_cast<float>(remaining());
     }
 

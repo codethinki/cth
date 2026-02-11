@@ -7,7 +7,6 @@
 #include <random>
 
 
-
 namespace cth::dt {
 DATA_TEST(union_find, gt1_chain) {
     union_find uf(3);
@@ -33,12 +32,10 @@ DATA_TEST(union_find, ctors) {
     for(size_t i = 0; i < SIZE; i++)
         ASSERT_TRUE(sizeCtor.root(i));
 
-    static std::array<std::unordered_set<size_t>, SIZE> groups{
-        {
-            {0, 1, 2},
-            {3},
-        }
-    };
+    static std::array<std::unordered_set<size_t>, SIZE> groups{{
+        {0, 1, 2},
+        {3},
+    }};
 
 
     union_find spanSizeCtor(SIZE, groups);

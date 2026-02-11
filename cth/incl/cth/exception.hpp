@@ -47,7 +47,8 @@ namespace cth::except {
 class default_exception : public std::exception {
     template<class S>
     cxpr S& addNoCpy(this S& s, std::string_view msg) noexcept {
-        if(s._details.empty()) s._details = "DETAILS:\n";
+        if(s._details.empty())
+            s._details = "DETAILS:\n";
         s._details += std::format("\t{}\n", msg);
 
         s._what = std::format("{}\n {}", s._msg, s._details);
@@ -55,9 +56,12 @@ class default_exception : public std::exception {
     }
 
 public:
-    explicit default_exception(std::string msg, Severity const severity = cth::except::ERR,
-                               std::source_location loc = std::source_location::current(),
-                               std::stacktrace trace = std::stacktrace::current()) :
+    explicit default_exception(
+        std::string msg,
+        Severity const severity = cth::except::ERR,
+        std::source_location loc = std::source_location::current(),
+        std::stacktrace trace = std::stacktrace::current()
+    ) :
         _severity(severity), _msg{std::format(" {0}\n", msg)}, _sourceLocation{loc}, _trace{std::move(trace)},
         _what{msg} {}
     ~default_exception() override = default;
@@ -69,7 +73,7 @@ public:
     }
 
     template<class S, typename... Args>
-        requires(sizeof...(Args) > 0u)
+    requires(sizeof...(Args) > 0u)
     cxpr declauto add(this S& self, std::format_string<Args...> f_str, Args&&... types) noexcept {
         return self.addNoCpy(std::format(f_str, std::forward<Args>(types)...));
     }
@@ -84,7 +88,14 @@ public:
 
 
     [[nodiscard]] std::string string() const noexcept {
-        return std::format("{0} {1} {2} {3} {4}", _msg, _details, func_string(), loc_string(), trace_string());
+        return std::format(
+            "{0} {1} {2} {3} {4}",
+            _msg,
+            _details,
+            func_string(),
+            loc_string(),
+            trace_string()
+        );
     }
     [[nodiscard]] std::string brief() const noexcept {
         return std::format("{0} {1} {2}", _msg, func_string(), loc_string());
@@ -92,8 +103,12 @@ public:
 
     [[nodiscard]] std::string loc_string() const noexcept {
         auto const filename = std::string(_sourceLocation.file_name());
-        return std::format("LOCATION: {0}({1}:{2})\n", filename.substr(filename.find_last_of('\\') + 1),
-                           _sourceLocation.line(), _sourceLocation.column());
+        return std::format(
+            "LOCATION: {0}({1}:{2})\n",
+            filename.substr(filename.find_last_of('\\') + 1),
+            _sourceLocation.line(),
+            _sourceLocation.column()
+        );
     }
     [[nodiscard]] std::string func_string() const noexcept {
         return std::format("FUNCTION: {0}\n", _sourceLocation.function_name());
@@ -103,8 +118,12 @@ public:
 
         std::for_each(_trace.begin(), _trace.end() - 2, [&](auto const& entry) {
             std::filesystem::path const path{entry.source_file()};
-            str +=
-                std::format("\t{2} : {0}({1})\n", path.filename().string(), entry.source_line(), entry.description());
+            str += std::format(
+                "\t{2} : {0}({1})\n",
+                path.filename().string(),
+                entry.source_line(),
+                entry.description()
+            );
         });
         return str;
     }
@@ -136,10 +155,13 @@ public:
 template<typename T>
 class data_exception : public default_exception {
 public:
-    data_exception(std::string msg, T data, Severity const severity = cth::except::ERR,
-                   std::source_location loc = std::source_location::current(),
-                   std::stacktrace trace = std::stacktrace::current()) :
-        default_exception{std::move(msg), severity, loc, std::move(trace)}, _dataObj{std::move(data)} {}
+    data_exception(
+        std::string msg,
+        T data,
+        Severity const severity = cth::except::ERR,
+        std::source_location loc = std::source_location::current(),
+        std::stacktrace trace = std::stacktrace::current()
+    ) : default_exception{std::move(msg), severity, loc, std::move(trace)}, _dataObj{std::move(data)} {}
     data_exception(T data, default_exception exception) :
         default_exception{std::move(exception)}, _dataObj{std::move(data)} {}
     [[nodiscard]] T const& data() const noexcept { return _dataObj; }

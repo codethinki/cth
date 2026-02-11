@@ -2,11 +2,11 @@
 
 #include "test.hpp"
 
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
-#include <ranges>
 
 namespace cth::dt {
 

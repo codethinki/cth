@@ -48,9 +48,7 @@ public:
      * @param ms to timeout on
      * @details calls @ref cth::win::co::wait(void*, unsigned long)
      */
-    WaitResult wait(unsigned long ms) {
-        return co::wait(native_handle(), ms);
-    }
+    WaitResult wait(unsigned long ms) { return co::wait(native_handle(), ms); }
 
 private:
     /**
@@ -64,12 +62,9 @@ public:
     closing_handle::pointer native_handle() const noexcept { return _handle.get(); }
 };
 
-constexpr size_t hash(timer const& t) {
-    return cth::hash::combine(t.native_handle());
-}
+constexpr size_t hash(timer const& t) { return cth::hash::combine(t.native_handle()); }
 
 }
-
 
 
 CTH_HASH_OVERLOAD(cth::win::co::timer, cth::win::co::hash);

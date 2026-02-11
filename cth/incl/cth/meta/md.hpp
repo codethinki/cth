@@ -1,6 +1,6 @@
 #pragma once
-#include "tuple.hpp"
 #include "../macro.hpp"
+#include "tuple.hpp"
 
 #include <mdspan>
 
@@ -9,7 +9,7 @@ namespace cth::mta {
 
 /**
  * @brief creates a std::extents with D dimensions and equal extents
- * @tparam D dimensions 
+ * @tparam D dimensions
  * @tparam Extent extent of every dimension
  * @return std::extents
  */

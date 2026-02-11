@@ -1,7 +1,7 @@
 #pragma once
-#include "cth/string.hpp"
 #include "cth/meta/ranges.hpp"
 #include "cth/meta/traits.hpp"
+#include "cth/string.hpp"
 
 
 #include <gtest/gtest.h>
@@ -19,25 +19,26 @@ namespace cth::test {
 template<std::ranges::range LRng, std::ranges::range RRng>
 [[nodiscard]] cxpr bool operator==(LRng&& l_rng, RRng&& r_rng) {
     if constexpr(cth::mta::all_satisfy<CPT(std::ranges::sized_range), LRng, RRng>)
-        if(std::ranges::size(l_rng) != std::ranges::size(r_rng)) return false;
+        if(std::ranges::size(l_rng) != std::ranges::size(r_rng))
+            return false;
 
     for(auto&& [l, r] : std::views::zip(std::forward<LRng>(l_rng), std::forward<RRng>(r_rng)))
-        if(!(l == r)) return false;
+        if(!(l == r))
+            return false;
 
     return true;
 }
 
 
-
 template<class L, class R>
 [[nodiscard]] cxpr bool expect_range_eq(L&& l, R&& r) {
-    if(std::forward<L>(l) == std::forward<R>(r)) return true;
+    if(std::forward<L>(l) == std::forward<R>(r))
+        return true;
     std::println("ranges are not equal!");
 
     return false;
 }
 }
-
 
 
 #define EXPECT_RANGE_EQ(l_rng, r_rng) ASSERT_TRUE(cth::test::expect_range_eq(l_rng, r_rng))

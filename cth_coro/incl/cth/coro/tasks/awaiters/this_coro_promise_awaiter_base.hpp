@@ -29,19 +29,22 @@ struct this_coro_promise_awaiter_base {
         );
 
 
-        if constexpr(injectable) h.promise().inject(*_payload);
+        if constexpr(injectable)
+            h.promise().inject(*_payload);
     }
 
     /**
      * injects the this_coro payload into this awaiter unless it already has one
      * @param payload to inject
      */
-    constexpr void inject(this_coro::payload payload) { if(!_payload) _payload.emplace(payload); }
+    constexpr void inject(this_coro::payload payload) {
+        if(!_payload)
+            _payload.emplace(payload);
+    }
 
 private:
     std::optional<this_coro::payload> _payload{};
 };
-
 
 
 }

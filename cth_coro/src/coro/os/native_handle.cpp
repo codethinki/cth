@@ -8,15 +8,14 @@
 
 
 #ifdef CTH_FS_WINDOWS
-#include <cth/win/win_types.hpp>
 #include <cth/win/coro/wait.hpp>
+#include <cth/win/win_types.hpp>
 #elifdef CTH_FS_POSIX
 #include <poll.h>
 #endif
 
 
 namespace cth::co::os {
-
 
 
 bool check_ready(os::native_handle_t handle) {

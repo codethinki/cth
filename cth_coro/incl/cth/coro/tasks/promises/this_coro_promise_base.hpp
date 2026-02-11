@@ -19,7 +19,9 @@ struct this_coro_promise_base {
     template<this_coro::tag Tag>
     [[nodiscard]] constexpr decltype(auto) await_transform(Tag&& t) {
         static_assert(
-            requires(Tag t) { { t.operator()(std::declval<this_coro::payload>()) } -> awaitable; },
+            requires(Tag t) {
+                { t.operator()(std::declval<this_coro::payload>()) } -> awaitable;
+            },
             "a this_coro tag must implement a call operator"
         );
 
@@ -37,7 +39,9 @@ struct this_coro_promise_base {
     }
 
     template<captured_awaitable Awaitable>
-    [[nodiscard]] constexpr auto await_transform(Awaitable&& captured) { return cth::co::extract_awaiter(captured); }
+    [[nodiscard]] constexpr auto await_transform(Awaitable&& captured) {
+        return cth::co::extract_awaiter(captured);
+    }
 
     template<foreign_awaitable Awaitable>
     [[nodiscard]] auto await_transform(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {

@@ -5,7 +5,6 @@
 #include "cth/io/file.hpp"
 
 
-
 namespace cth::io::file {
 
 FILE_TEST(chop, main) {
@@ -16,4 +15,3 @@ FILE_TEST(chop, main) {
     auto const result2 = chop(path, ' ');
 }
 }
-

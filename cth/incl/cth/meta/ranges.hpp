@@ -1,13 +1,13 @@
 #pragma once
 #include "concepts.hpp"
+#include "cth/macro.hpp"
 #include "traits.hpp"
 #include "utility.hpp"
-#include "cth/macro.hpp"
 
 #include <ranges>
 
 
-//md_range
+// md_range
 
 namespace cth::mta {
 
@@ -35,7 +35,8 @@ namespace dev {
 
 
 /**
- * @brief type trait to get the first non range type or the @ref D -th dimension range value type of @ref Rng
+ * @brief type trait to get the first non range type or the @ref D -th dimension range value type of @ref
+ * Rng
  * @tparam Rng range
  * @tparam D dimension (optional)
  */
@@ -72,21 +73,20 @@ concept range_over = std::ranges::range<Rng> && std::same_as<std::ranges::range_
 namespace cth::rng {
 
 template<class Rng>
-concept static_dim_rng = std::ranges::range<Rng> && !std::same_as<std::ranges::range_value_t<Rng>, mta::rcvr_t<Rng>>;
+concept static_dim_rng =
+    std::ranges::range<Rng> && !std::same_as<std::ranges::range_value_t<Rng>, mta::rcvr_t<Rng>>;
 
 /**
  * @brief accepts viewable or copy viewable ranges
  */
 template<class Rng>
-concept viewable_rng = std::ranges::viewable_range<Rng>
-    || (
-        std::ranges::viewable_range<mta::rcvr_t<Rng>>
-        && requires(Rng rng) { mta::rcvr_t<Rng>{rng}; }
-    );
+concept viewable_rng = std::ranges::viewable_range<Rng> ||
+    (std::ranges::viewable_range<mta::rcvr_t<Rng>> && requires(Rng rng) { mta::rcvr_t<Rng>{rng}; });
 
 template<viewable_rng Rng>
 auto cxpr to_viewable(Rng&& rng) {
-    if constexpr(std::ranges::viewable_range<Rng>) return std::forward<Rng>(rng);
+    if constexpr(std::ranges::viewable_range<Rng>)
+        return std::forward<Rng>(rng);
     else {
         static_assert(requires() { mta::rcvr_t<Rng>{rng}; }, "range must be view- or copyable");
         return mta::rcvr_t<Rng>{rng};

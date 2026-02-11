@@ -24,9 +24,7 @@ public:
     /**
      * calls @ref force_off()
      */
-    ~global_switch() {
-        force_off();
-    }
+    ~global_switch() { force_off(); }
 
     /**
      * acquires the switch, only calls on if count was 0
@@ -60,7 +58,8 @@ public:
      * @attention all previous acquires are discarded, calling release for a previous acquire is UB.
      */
     void force_off() {
-        if(_count.load() == 0) return;
+        if(_count.load() == 0)
+            return;
 
         _off();
         _count = 0;
@@ -76,12 +75,8 @@ public:
     /**
      * gets the amount of outstanding acquires
      */
-    [[nodiscard]] size_t acquire_count() const {
-        return _count.load();
-    }
+    [[nodiscard]] size_t acquire_count() const { return _count.load(); }
 
-    [[nodiscard]] bool acquired() const {
-        return acquire_count() > 0;
-    }
+    [[nodiscard]] bool acquired() const { return acquire_count() > 0; }
 };
 }

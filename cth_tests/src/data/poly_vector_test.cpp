@@ -52,7 +52,9 @@ DATA_TEST(raw_poly_vector, DataAndAlignmentAndIntegrity) {
     p1[2] = {303};
     std::iota(p2, p2 + n2, -10);
 
-    for(size_t i = 0; i < n0; ++i) { EXPECT_EQ(p0[i], 'Z'); }
+    for(size_t i = 0; i < n0; ++i) {
+        EXPECT_EQ(p0[i], 'Z');
+    }
     EXPECT_EQ(p1[0].val, 101);
     EXPECT_EQ(p1[1].val, 202);
     EXPECT_EQ(p1[2].val, 303);
@@ -170,8 +172,14 @@ DATA_TEST(poly_vector, GetAndDataConst) {
     auto const& pv = pvMut;
     auto cspan0 = pv.get<0>();
     auto cspan1 = pv.get<1>();
-    static_assert(std::same_as<typename decltype(cspan0)::element_type, first_t const>, "const& -> const span");
-    static_assert(std::same_as<typename decltype(cspan1)::element_type, second_t const>, "const& -> const span");
+    static_assert(
+        std::same_as<typename decltype(cspan0)::element_type, first_t const>,
+        "const& -> const span"
+    );
+    static_assert(
+        std::same_as<typename decltype(cspan1)::element_type, second_t const>,
+        "const& -> const span"
+    );
     EXPECT_EQ(cspan0.size(), firstSize);
     EXPECT_EQ(cspan1.size(), secondSize);
 
@@ -239,7 +247,9 @@ DATA_TEST(poly_vector, AlignmentAndDataIntegrity) {
 
     auto const& pv = pvMut;
 
-    for(char val : pv.get<0>()) { EXPECT_EQ(val, 'Z'); }
+    for(char val : pv.get<0>()) {
+        EXPECT_EQ(val, 'Z');
+    }
 
     auto const s1 = pv.get<1>();
     EXPECT_EQ(s1[0].val, 101);
@@ -274,8 +284,6 @@ DATA_TEST(poly_vector, copy) {
     base_t copyAssign{{1, 2, 3}};
     copyAssign = base;
     check_equal(copyAssign, base);
-
-
 }
 
 }

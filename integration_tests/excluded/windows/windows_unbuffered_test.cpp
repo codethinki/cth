@@ -7,7 +7,6 @@
 #include <vector>
 
 
-
 namespace cth::win::test {
 
 
@@ -33,14 +32,16 @@ auto bench(auto&& function) {
 std::vector<char> loadBuffered(std::string_view file_path) {
     std::ifstream file(file_path.data(), std::ios::binary | std::ios::ate);
 
-    if(!file.is_open()) std::terminate();
+    if(!file.is_open())
+        std::terminate();
 
     auto const size = file.tellg();
     file.seekg(0, std::ios::beg);
 
     std::vector<char> buffer(size);
 
-    if(!file.read(buffer.data(), size)) std::terminate();
+    if(!file.read(buffer.data(), size))
+        std::terminate();
 
     return buffer;
 }
@@ -52,9 +53,7 @@ void bench(std::string_view path) {
         return data;
     });
 
-    auto const [bufferedTime, expected] = test::bench([path]() {
-        return test::loadBuffered(path);
-    });
+    auto const [bufferedTime, expected] = test::bench([path]() { return test::loadBuffered(path); });
 
     ASSERT_EQ(result, expected);
 
@@ -65,7 +64,6 @@ void bench(std::string_view path) {
 }
 
 
-
 namespace cth::win {
 
 WIN_TEST(readUnbuffered, 1_4_mb) {
@@ -73,7 +71,6 @@ WIN_TEST(readUnbuffered, 1_4_mb) {
     constexpr std::string_view path = "res/testImage.jpg";
 
     test::bench(path);
-
 }
 
 WIN_TEST(readUnbuffered, 76_1_mb) {

@@ -18,8 +18,10 @@ namespace cth::win::cmd {
  * @param command = "cmd.exe /c (...)"
  * @note paths only work with '\' NOT '/'
  */
-template<typename... Types> requires(sizeof...(Types) > 0u)
-[[nodiscard]] size_t hidden_dir(std::string_view dir, std::format_string<Types...> command, Types&&... types) {
+template<typename... Types>
+requires(sizeof...(Types) > 0u)
+[[nodiscard]] size_t
+hidden_dir(std::string_view dir, std::format_string<Types...> command, Types&&... types) {
     return cth::win::cmd::hidden_dir(dir, std::format(command, std::forward<Types>(types)...));
 }
 
@@ -38,7 +40,8 @@ template<typename... Types> requires(sizeof...(Types) > 0u)
  * @note command is executed in the proc dir
  * @note paths only work with '\' NOT '/'
  */
-template<typename... Types> requires(sizeof...(Types) > 0u)
+template<typename... Types>
+requires(sizeof...(Types) > 0u)
 [[nodiscard]] size_t hidden(std::format_string<Types...> command, Types&&... types) {
     return cth::win::cmd::hidden(std::format(command, std::forward<Types>(types)...));
 }

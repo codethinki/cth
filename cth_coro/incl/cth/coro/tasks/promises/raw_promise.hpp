@@ -16,7 +16,9 @@ struct raw_promise {
     void unhandled_exception() { exception = std::current_exception(); }
 
     template<class U>
-    void return_value(U&& value) noexcept { result.emplace(std::forward<U>(value)); }
+    void return_value(U&& value) noexcept {
+        result.emplace(std::forward<U>(value));
+    }
 };
 
 template<>

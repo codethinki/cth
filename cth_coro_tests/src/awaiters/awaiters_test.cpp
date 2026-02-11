@@ -9,9 +9,7 @@
 
 namespace cth::co {
 
-auto const now() {
-    return std::chrono::steady_clock::now();
-}
+auto const now() { return std::chrono::steady_clock::now(); }
 
 scheduler scheduler{};
 

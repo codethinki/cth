@@ -12,7 +12,8 @@
 namespace cth::alg {
 
 /**
- * \brief creates a vector of unique elements with exactly one element from each given range. order is preserved
+ * \brief creates a vector of unique elements with exactly one element from each given range. order is
+ * preserved
  * \tparam Rng rng<rng<std::equality_comparable>>
  * \param selections range of ranges
  * \return vector of T, empty if no unique selection is possible
@@ -72,11 +73,15 @@ auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<mta::rang
         !std::ranges::all_of(
             a_b_options,
             [&b_max](std::span<T const> b_options) {
-            return std::ranges::all_of(
-                b_options, [&b_max](auto const index) { return 0 <= index && index < std::ranges::size(b_max); });
-            }),
+                return std::ranges::all_of(b_options, [&b_max](auto const index) {
+                    return 0 <= index && index < std::ranges::size(b_max);
+                });
+            }
+        ),
         "0 <= indices < size(b_max) required"
-    ) { details->add("size(b_max): {}", std::ranges::size(b_max)); }
+    ) {
+        details->add("size(b_max): {}", std::ranges::size(b_max));
+    }
 
 
     std::vector<T> bOptionsIndices(std::ranges::size(a_b_options));

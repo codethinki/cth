@@ -7,19 +7,20 @@
 
 namespace cth::dt {
 class joiner {
-#define CTH_DEV_JOINER_FORWARD_STRING_METHOD(str, method_name)\
-    template<class... Args>\
-    [[nodiscard]] auto method_name(this auto&& self, Args&&... args)\
-        requires requires (std::string s, Args... args) { s.method_name(std::forward<Args>(args)...); } {\
-        return self.str.method_name(std::forward<Args>(args)...);\
+#define CTH_DEV_JOINER_FORWARD_STRING_METHOD(str, method_name)                                               \
+    template<class... Args>                                                                                  \
+    [[nodiscard]] auto method_name(this auto&& self, Args&&... args)                                         \
+        requires requires(std::string s, Args... args) { s.method_name(std::forward<Args>(args)...); }       \
+    {                                                                                                        \
+        return self.str.method_name(std::forward<Args>(args)...);                                            \
     }
 
 public:
-    explicit joiner(std::string delimiter = " ")
-        : _delimiter(std::move(delimiter)) {}
+    explicit joiner(std::string delimiter = " ") : _delimiter(std::move(delimiter)) {}
 
-    joiner(std::string delimiter, size_t capacity)
-        : _delimiter(std::move(delimiter)) { _buffer.reserve(capacity); }
+    joiner(std::string delimiter, size_t capacity) : _delimiter(std::move(delimiter)) {
+        _buffer.reserve(capacity);
+    }
 
     template<class T>
     auto& operator+=(this auto&& self, T&& value) {
@@ -34,11 +35,11 @@ public:
         return self;
     }
 
-    [[nodiscard]] std::string const& string() const & { return _buffer; }
+    [[nodiscard]] std::string const& string() const& { return _buffer; }
     [[nodiscard]] std::string string() && { return std::move(_buffer); }
     [[nodiscard]] std::string const& delim() const { return _delimiter; }
 
-    operator std::string() const & { return _buffer; }
+    operator std::string() const& { return _buffer; }
     operator std::string() && { return std::move(_buffer); }
     [[nodiscard]] operator std::string_view() const { return _buffer; }
 
@@ -73,9 +74,13 @@ public:
     CTH_DEV_JOINER_FORWARD_STRING_METHOD(_buffer, find_last_not_of)
 
     template<class... Args>
-    [[nodiscard]] auto substr(this auto&& self, Args&&... args) requires requires(std::string str, Args... args) {
-        std::string_view{str}.substr(std::forward<Args>(args)...);
-    } { return std::string_view{self._buffer}.substr(std::forward<Args>(args)...); }
+    [[nodiscard]] auto substr(this auto&& self, Args&&... args)
+        requires requires(std::string str, Args... args) {
+            std::string_view{str}.substr(std::forward<Args>(args)...);
+        }
+    {
+        return std::string_view{self._buffer}.substr(std::forward<Args>(args)...);
+    }
 
 private:
     std::string _buffer;
@@ -97,9 +102,10 @@ template<class T>
 
 [[nodiscard]] inline bool operator==(joiner const& sj, std::string const& str) { return sj.string() == str; }
 [[nodiscard]] inline bool operator==(std::string const& str, joiner const& sj) { return sj == str; }
-[[nodiscard]] inline bool operator==(joiner const& sj, std::string_view str) { return std::string_view{sj} == str; }
+[[nodiscard]] inline bool operator==(joiner const& sj, std::string_view str) {
+    return std::string_view{sj} == str;
+}
 [[nodiscard]] inline bool operator==(std::string_view str, joiner const& sj) { return sj == str; }
-
 
 
 }

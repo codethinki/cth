@@ -1,0 +1,24 @@
+# To use this:
+# 1. pip install pre-commit
+# 2. pre-commit install
+# 3. (Optional) pre-commit run --all-files
+
+repos:
+  # Clang-format hook
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.5  # Change this to match your local clang-format version if needed
+    hooks:
+      - id: clang-format
+        types_or: [c++, c] 
+        # Ensure it uses your .clang-format file
+        args: ["-style=file"]
+
+  # CMake formatting
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.13
+    hooks:
+      - id: cmake-format
+        args: [--in-place]
+        types: [cmake]
+      - id: cmake-lint
+        types: [cmake]

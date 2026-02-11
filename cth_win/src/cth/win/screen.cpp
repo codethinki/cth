@@ -4,8 +4,8 @@
 
 #include "win_include.hpp"
 
-#include <dwmapi.h>
 #include <ShellScalingApi.h>
+#include <dwmapi.h>
 
 
 #pragma comment(lib, "Dwmapi.lib")
@@ -14,7 +14,6 @@
 namespace cth::win {
 
 hwnd_t desktop_handle() { return GetDesktopWindow(); }
-
 
 
 window_t create_window(std::string_view name, rect_t rect, bool visible, std::string_view class_name) {
@@ -45,22 +44,20 @@ window_t create_window(std::string_view name, rect_t rect, bool visible, std::st
 
     window_t window{
         .classOpt{std::move(classOpt)},
-        .handle{
-            CreateWindowExW(
-                0,
-                wClassName.c_str(),
-                wName.c_str(),
-                visible ? WS_VISIBLE : 0,
-                static_cast<int>(rect.x),
-                static_cast<int>(rect.y),
-                static_cast<int>(rect.width),
-                static_cast<int>(rect.height),
-                nullptr,
-                nullptr,
-                GetModuleHandle(nullptr),
-                nullptr
-            )
-        }
+        .handle{CreateWindowExW(
+            0,
+            wClassName.c_str(),
+            wName.c_str(),
+            visible ? WS_VISIBLE : 0,
+            static_cast<int>(rect.x),
+            static_cast<int>(rect.y),
+            static_cast<int>(rect.width),
+            static_cast<int>(rect.height),
+            nullptr,
+            nullptr,
+            GetModuleHandle(nullptr),
+            nullptr
+        )}
     };
 
     CTH_WIN_STABLE_THROW(window.handle == nullptr, "failed to create temp window: {}", name) {}
@@ -87,10 +84,9 @@ rect_t to_rect(RECT rect) {
 namespace cth::win {
 
 
-
 std::vector<monitor_t> enum_monitors() {
     std::vector<monitor_t> out{};
-    out.reserve(4); //pulled that number out my ass
+    out.reserve(4); // pulled that number out my ass
 
     auto enum_lambda = [](HMONITOR handle, HDC, LPRECT m_rect, LPARAM pout) -> BOOL {
         auto& list = *reinterpret_cast<std::vector<monitor_t>*>(pout);
@@ -110,17 +106,16 @@ namespace cth::win::screen {
 namespace {
     using mapping_t = std::pair<DPI_AWARENESS_CONTEXT, DpiAwareness>;
     inline std::array<mapping_t, 4> const mappings = {
-        {
-            {DPI_AWARENESS_CONTEXT_UNAWARE, DpiAwareness::NONE},
-            {DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED, DpiAwareness::GDI_SCALED},
-            {DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE, DpiAwareness::PER_MONITOR_LEGACY},
-            {DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, DpiAwareness::PER_MONITOR}
-        }
+        {{DPI_AWARENESS_CONTEXT_UNAWARE, DpiAwareness::NONE},
+         {DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED, DpiAwareness::GDI_SCALED},
+         {DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE, DpiAwareness::PER_MONITOR_LEGACY},
+         {DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, DpiAwareness::PER_MONITOR}}
     };
 
     DpiAwareness from_win(DPI_AWARENESS_CONTEXT ctx) {
         for(auto const& m : mappings)
-            if(ctx == m.first) return m.second;
+            if(ctx == m.first)
+                return m.second;
 
         CTH_CRITICAL(false, "unknown dpi awareness") {}
         return DpiAwareness::NONE;
@@ -128,7 +123,8 @@ namespace {
 
     DPI_AWARENESS_CONTEXT to_win(DpiAwareness awareness) {
         for(auto const& m : mappings) {
-            if(m.second == awareness) return m.first;
+            if(m.second == awareness)
+                return m.first;
         }
         CTH_CRITICAL(false, "unknown dpi awareness") {}
         return DPI_AWARENESS_CONTEXT_UNAWARE;
@@ -165,20 +161,15 @@ namespace {
             swapMode();
             CTH_STABLE_THROW(_prevMode == 0, "failed to swap stretch blt mode") {}
         }
-        ~scoped_stretch_blt_mode() {
-            swapMode();
-        }
+        ~scoped_stretch_blt_mode() { swapMode(); }
 
     private:
-        void swapMode() {
-            _prevMode = SetStretchBltMode(_hdc, _prevMode);
-        }
+        void swapMode() { _prevMode = SetStretchBltMode(_hdc, _prevMode); }
 
         HDC _hdc;
         int _prevMode;
     };
 }
-
 
 
 double monitor_scale(hbmp_t bmp, ssize_t x, ssize_t y) {
@@ -206,7 +197,6 @@ double monitor_scale(hbmp_t bmp, ssize_t x, ssize_t y) {
 
     return static_cast<double>(dpiX) / 96.0;
 }
-
 
 
 double window_scale(hwnd_t window) {
@@ -284,8 +274,7 @@ void blit(
 }
 
 
-namespace {
-}
+namespace {}
 
 
 void blit_to_screen(
@@ -346,23 +335,20 @@ void blit_from_screen(
 namespace cth::win::screen {
 namespace {
     BITMAPINFO create_bmp_header(long width, long height) {
-        return {
-            .bmiHeader{
-                .biSize = sizeof(BITMAPINFOHEADER),
-                .biWidth = width,
+        return {.bmiHeader{
+            .biSize = sizeof(BITMAPINFOHEADER),
+            .biWidth = width,
 
-                // negative height for top-down bitmap
-                .biHeight = -height,
+            // negative height for top-down bitmap
+            .biHeight = -height,
 
 
-                .biPlanes = 1,
-                .biBitCount = section::PIXEL_SIZE * 8,
-                .biCompression = BI_RGB,
-            }
-        };
+            .biPlanes = 1,
+            .biBitCount = section::PIXEL_SIZE * 8,
+            .biCompression = BI_RGB,
+        }};
     }
 }
-
 
 
 section::section(rect_t rect, bool dpi_aware) : _rect{rect}, _dpiAware{dpi_aware} {
@@ -376,14 +362,8 @@ section::section(rect_t rect, bool dpi_aware) : _rect{rect}, _dpiAware{dpi_aware
 
     auto const header = create_bmp_header(_rect.width, rect.height);
 
-    auto* hBmpRaw = CreateDIBSection(
-        static_cast<HDC>(_memoryDc.get()),
-        &header,
-        DIB_RGB_COLORS,
-        &_data,
-        nullptr,
-        0
-    );
+    auto* hBmpRaw =
+        CreateDIBSection(static_cast<HDC>(_memoryDc.get()), &header, DIB_RGB_COLORS, &_data, nullptr, 0);
 
     CTH_STABLE_THROW(!_data || !hBmpRaw, "failed to create DIB section") {}
 
@@ -391,7 +371,10 @@ section::section(rect_t rect, bool dpi_aware) : _rect{rect}, _dpiAware{dpi_aware
 
     _oldBmp = selectBmp(_bmp.get());
 }
-section::~section() { if(_oldBmp && _memoryDc) selectBmp(_oldBmp); }
+section::~section() {
+    if(_oldBmp && _memoryDc)
+        selectBmp(_oldBmp);
+}
 
 void section::relocate(ssize_t x, ssize_t y) {
     _rect.x = x;

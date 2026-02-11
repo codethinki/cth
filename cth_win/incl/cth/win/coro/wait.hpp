@@ -1,11 +1,7 @@
 #pragma once
 
 namespace cth::win::co {
-enum class WaitResult {
-    WAITED,
-    TIMEOUT,
-    ABANDONED
-};
+enum class WaitResult { WAITED, TIMEOUT, ABANDONED };
 
 /**
  * waits for the handle

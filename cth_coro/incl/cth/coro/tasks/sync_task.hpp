@@ -12,7 +12,9 @@
 
 namespace cth::co::dev {
 template<class T>
-struct sync_promise_template : sync_promise_base, basic_promise<T, std::suspend_always{}, final_sync_awaiter{}> {};
+struct sync_promise_template :
+    sync_promise_base,
+    basic_promise<T, std::suspend_always{}, final_sync_awaiter{}> {};
 
 template<sync_promise_type Promise, template<class> class Awaiter>
 class [[nodiscard]] sync_task_template : public task_base<Promise, Awaiter> {
@@ -23,7 +25,6 @@ class [[nodiscard]] sync_task_template : public task_base<Promise, Awaiter> {
 
 public:
     void wait() const noexcept { this->handle().promise().wait(); }
-
 };
 }
 
@@ -71,7 +72,8 @@ public:
 using sync_void_task = sync_task<void>;
 
 template<class T>
-class sync_executor_task : public dev::sync_task_template<dev::sync_executor_promise<T>, this_coro_promise_awaiter> {};
+class sync_executor_task :
+    public dev::sync_task_template<dev::sync_executor_promise<T>, this_coro_promise_awaiter> {};
 
 using sync_executor_void_task = sync_executor_task<void>;
 }

@@ -1,21 +1,19 @@
 #pragma once
 #include "traits.hpp"
 
-#include <type_traits>
-#include <coroutine>
 #include <concepts>
+#include <coroutine>
+#include <type_traits>
 #include <utility>
-
 
 
 namespace cth::co {
 template<class T>
 concept awaiter = requires(T t, std::coroutine_handle<> h) {
-    //just pray it has await suspend :D (cant detect bc Promise in std::coroutine_handle is unknown
+    // just pray it has await suspend :D (cant detect bc Promise in std::coroutine_handle is unknown
     { t.await_ready() } -> std::convertible_to<bool>;
     { t.await_resume() };
 };
-
 
 
 template<class T>
@@ -39,7 +37,7 @@ concept awaitable = task<T> || awaiter<T>;
 namespace cth::co::dev {
 template<awaitable Awaitable>
 consteval auto awaiter_type() {
-    if constexpr(!task<Awaitable>) { //!task<T> intentional, bc task<T> && awaiter_type<T> is possible
+    if constexpr(!task<Awaitable>) { //! task<T> intentional, bc task<T> && awaiter_type<T> is possible
         static_assert(awaiter<Awaitable>, "must be an awaiter_type");
         return std::type_identity<Awaitable>{};
     } else if constexpr(has_op_co_await<Awaitable>) {
@@ -79,7 +77,6 @@ concept void_awaitable = awaitable<Awaitable> && std::same_as<void, mta::rcvr_t<
 }
 
 
-
 namespace cth::co {
 template<class T>
 concept promise = requires(T t) {
@@ -93,7 +90,10 @@ template<class T>
 concept void_promise = promise<T> && requires(T t) { t.return_void(); };
 
 template<class T>
-concept cth_promise = promise<T> && requires() { typename T::value_type; };
+concept cth_promise = promise<T>&& requires()
+{
+    typename T::value_type;
+};
 
 template<cth_promise Promise>
 using promise_value_type = Promise::value_type;

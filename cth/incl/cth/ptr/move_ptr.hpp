@@ -25,7 +25,7 @@ public:
     [[nodiscard]] constexpr auto get(this auto& s) noexcept { return s._ptr; }
 
     /**
-     * @brief returns current pointer and resets the object 
+     * @brief returns current pointer and resets the object
      */
     [[nodiscard]] constexpr T* release(this move_ptr& s) noexcept { return std::exchange(s._ptr, nullptr); }
     [[nodiscard]] constexpr auto operator->(this auto& s) noexcept { return s._ptr; }
@@ -43,7 +43,9 @@ public:
     }
 };
 template<typename T>
-constexpr void swap(move_ptr<T>& left, move_ptr<T>& right) noexcept { left.swap(right); }
+constexpr void swap(move_ptr<T>& left, move_ptr<T>& right) noexcept {
+    left.swap(right);
+}
 
 template<typename T, typename... Args>
 [[nodiscard]] constexpr move_ptr<T> make_move(Args&&... args) {
@@ -76,13 +78,21 @@ template<typename T, typename U>
 }
 
 template<typename T>
-[[nodiscard]] constexpr bool operator==(move_ptr<T> const& ptr, std::nullptr_t) { return !ptr.get(); }
+[[nodiscard]] constexpr bool operator==(move_ptr<T> const& ptr, std::nullptr_t) {
+    return !ptr.get();
+}
 template<typename T>
-[[nodiscard]] constexpr bool operator==(std::nullptr_t, move_ptr<T> const& ptr) { return !ptr.get(); }
+[[nodiscard]] constexpr bool operator==(std::nullptr_t, move_ptr<T> const& ptr) {
+    return !ptr.get();
+}
 template<typename T>
-[[nodiscard]] constexpr bool operator!=(move_ptr<T> const& ptr, std::nullptr_t) { return ptr.get(); }
+[[nodiscard]] constexpr bool operator!=(move_ptr<T> const& ptr, std::nullptr_t) {
+    return ptr.get();
+}
 template<typename T>
-[[nodiscard]] constexpr bool operator!=(std::nullptr_t, move_ptr<T> const& ptr) { return ptr.get(); }
+[[nodiscard]] constexpr bool operator!=(std::nullptr_t, move_ptr<T> const& ptr) {
+    return ptr.get();
+}
 template<typename T>
 [[nodiscard]] constexpr bool operator<(move_ptr<T> const& left, nullptr_t) {
     return std::less<T*>{}(left.get(), nullptr);

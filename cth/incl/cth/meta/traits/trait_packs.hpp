@@ -9,9 +9,7 @@ namespace cth::mta {
 
 template<template<class...> class Trait, class... Args>
 struct trait_pack {
-    static constexpr bool can_unpack = requires {
-        typename Trait<Args...>;
-    };
+    static constexpr bool can_unpack = requires { typename Trait<Args...>; };
 
     static constexpr auto unpack() {
         if constexpr(can_unpack)
@@ -35,7 +33,6 @@ consteval auto first_pack() {
 
 template<class... TraitPacks>
 using first_pack_t = identity_t<first_pack<TraitPacks...>()>;
-
 
 
 template<class Pack>

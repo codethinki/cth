@@ -35,7 +35,9 @@ THIS_CORO_TEST(promise_base, deep_recursion_propagation) {
 
     struct Recursive {
         auto operator()(int depth) -> executor_task<executor> {
-            if(depth == 0) { co_return co_await this_coro::executor; }
+            if(depth == 0) {
+                co_return co_await this_coro::executor;
+            }
             co_return co_await (*this)(depth - 1);
         }
     };

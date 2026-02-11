@@ -23,7 +23,8 @@ PROC_TEST(name, main) {
     size_t names = 0;
     for(auto const id : processIds) {
         auto const str = name(id, false);
-        if(str.has_value()) ++names;
+        if(str.has_value())
+            ++names;
     }
 
     EXPECT_TRUE(names > 0);

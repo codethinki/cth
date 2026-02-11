@@ -6,7 +6,7 @@
 #include "cth/coro/this_coro.hpp"
 
 namespace cth::co::this_coro {
-//AI
+// AI
 
 TAG_TEST(scheduler_tag, returns_correct_scheduler) {
     co::scheduler sched{autostart, 1};

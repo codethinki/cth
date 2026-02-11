@@ -16,11 +16,14 @@ VAR_TEST(overload, main) {
     constexpr variant_t z = 42.f;
 
     auto overloadTest = [](variant_t const& v) {
-        return std::visit(cth::var::overload{
-            [](int) { return "int"; },
-            [](float) { return "float"; },
-            [](double) { return "double"; }
-        }, v);
+        return std::visit(
+            cth::var::overload{
+                [](int) { return "int"; },
+                [](float) { return "float"; },
+                [](double) { return "double"; }
+            },
+            v
+        );
     };
     EXPECT_STREQ(overloadTest(x), "int");
     EXPECT_STREQ(overloadTest(y), "double");
@@ -33,13 +36,17 @@ VAR_TEST(visitor, main) {
     constexpr variant_t y = 42.0;
     constexpr variant_t z = 42.f;
     auto visitorTest = [](variant_t const& v) {
-        return std::visit(cth::var::visitor{
-            []<typename T>(T const& var) {
-                if constexpr(std::is_same_v<std::remove_cv_t<T>, int>) return "int";
-                if constexpr(std::is_same_v<std::remove_cv_t<T>, float>) return "float";
-                if constexpr(std::is_same_v<std::remove_cv_t<T>, double>) return "double";
-            }
-        }, v);
+        return std::visit(
+            cth::var::visitor{[]<typename T>(T const& var) {
+                if constexpr(std::is_same_v<std::remove_cv_t<T>, int>)
+                    return "int";
+                if constexpr(std::is_same_v<std::remove_cv_t<T>, float>)
+                    return "float";
+                if constexpr(std::is_same_v<std::remove_cv_t<T>, double>)
+                    return "double";
+            }},
+            v
+        );
     };
 
     EXPECT_STREQ(visitorTest(x), "int");

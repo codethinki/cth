@@ -2,10 +2,10 @@
 
 #include "test.hpp"
 
-#include <string>
 #include <memory>
-#include <vector>
 #include <optional>
+#include <string>
+#include <vector>
 
 // Assuming the optional header is included via a precompiled header or similar mechanism
 // as per the example structure.
@@ -137,7 +137,8 @@ DATA_TEST(optional, monadic_transform) {
 
 DATA_TEST(optional, monadic_and_then) {
     auto safe_div = [](int n) -> optional<int> {
-        if(n == 0) return std::nullopt;
+        if(n == 0)
+            return std::nullopt;
         return 100 / n;
     };
 
@@ -179,8 +180,8 @@ DATA_TEST(optional, monadic_or_else) {
 
     // Chaining recovery
     auto r3 = empty
-              .or_else([] { return optional<int>(std::nullopt); }) // still fails
-              .or_else([] { return optional<int>(30); }); // recovers
+                  .or_else([] { return optional<int>(std::nullopt); }) // still fails
+                  .or_else([] { return optional<int>(30); }); // recovers
     EXPECT_EQ(*r3, 30);
 }
 
@@ -193,11 +194,7 @@ DATA_TEST(optional, move_semantics) {
     EXPECT_EQ(ptr, nullptr); // Original moved from
 
     // Test transform with move-only type
-    auto res = std::move(opt).transform(
-        [](std::unique_ptr<int> p) {
-            return *p + 1;
-        }
-    );
+    auto res = std::move(opt).transform([](std::unique_ptr<int> p) { return *p + 1; });
 
     EXPECT_EQ(*res, 124);
     // opt is now in a valid but unspecified state (likely empty unique_ptr inside)

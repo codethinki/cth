@@ -27,7 +27,6 @@ WIN_SCREEN_TEST(create_window, ascii) {
 }
 
 
-
 WIN_SCREEN_TEST(monitors, main) { auto const monitors = enum_monitors(); }
 
 
@@ -74,7 +73,8 @@ inline std::string to_ascii_view(std::span<std::byte> pixels, size_t width, size
             size_t const idx = (y * width + x) * 4;
 
             // Safety check
-            if(idx + 2 >= pixels.size()) break;
+            if(idx + 2 >= pixels.size())
+                break;
 
             // 4. Read Colors (Windows is B-G-R-A)
             int const b = std::to_integer<int>(pixels[idx]);
@@ -106,7 +106,7 @@ WIN_SCREEN_TEST(section, read) {
 
     auto const view = section.capture();
 
-    //simple check if not everything is black
+    // simple check if not everything is black
     auto allBlack = std::ranges::all_of(view, [](auto const& e) { return e == std::byte{}; });
 
     EXPECT_FALSE(allBlack);

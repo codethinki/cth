@@ -10,7 +10,7 @@ using at_t = decltype(std::get<I, std::tuple<Ts...>>(std::declval<std::tuple<Ts.
 }
 
 
-//is_any_of
+// is_any_of
 
 namespace cth::mta {
 
@@ -39,13 +39,13 @@ template<class T, class... Ts>
 using any_of_t = any_of_trait<T, Ts...>::type;
 
 
-
 /**
  * \brief converts to the first type of Ts... that is the same as T
  * \tparam Ts to any of Ts...
  * \tparam T from
  */
-template<typename T, typename... Ts> requires (any_of<T, Ts...>)
+template<typename T, typename... Ts>
+requires(any_of<T, Ts...>)
 auto to_same_of(T&& arg);
 
 /**
@@ -58,7 +58,7 @@ auto to_same(T&& arg);
 }
 
 
-//convert to any
+// convert to any
 
 namespace cth::mta {
 /**
@@ -114,7 +114,8 @@ using convert_to_any_t = convert_to_any_trait<T, Ts...>::type;
  * \tparam U from
  * \note prioritizes to_same_of<T, Ts...> if available
  */
-template<typename U, typename... Ts, typename T> requires(convertible_to_any<T, Ts...>)
+template<typename U, typename... Ts, typename T>
+requires(convertible_to_any<T, Ts...>)
 auto to_convertible_from(T&& arg);
 
 /**
@@ -137,9 +138,8 @@ template<typename T, typename... Ts>
 concept any_constructible_from = (std::constructible_from<Ts, T> || ...);
 
 
-
 /**
- * \brief ::type is equal to first of Ts... that's constructible from T or Fallback if none are 
+ * \brief ::type is equal to first of Ts... that's constructible from T or Fallback if none are
  * \tparam Fallback if none of Ts... are constructible from T
  * \tparam T from
  * \tparam Ts to any of Ts...
@@ -169,7 +169,8 @@ using construct_any_from_t = construct_any_from_trait<T, Ts...>::type;
  * \tparam U from
  * \note prioritizes to_convertible<T, Ts...> if available
  */
-template<typename U, typename... Ts, typename T> requires(any_constructible_from<T, Ts...>)
+template<typename U, typename... Ts, typename T>
+requires(any_constructible_from<T, Ts...>)
 auto to_constructible_from(T&& arg);
 /**
  * \brief constructs the first type of Ts... that is constructible from T

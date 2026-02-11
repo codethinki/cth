@@ -1,7 +1,7 @@
 #pragma once
+#include "../io/log.hpp"
 #include "../macro.hpp"
 #include "../numeric.hpp"
-#include "../io/log.hpp"
 
 
 #include "win_include.hpp"
