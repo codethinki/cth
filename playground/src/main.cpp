@@ -9,11 +9,14 @@
 
 
 int main() {
-
 #ifdef  __cpp_reflection
     std::println("asdf");
 #endif
-
+    auto x = [
+            y = 1
+        ]() {
+        int x = 10;
+    };
 
 #ifdef _LIBCPP_VERSION
     std::cout << "Using LLVM libc++ version: " << _LIBCPP_VERSION << std::endl;
