@@ -28,7 +28,6 @@ add_subdirectory(cth_win_tests)
 add_subdirectory(integration_tests)
 
 # formatting
-
 cth_glob_cpp(
   FORMAT_FILES
   "cth"
@@ -38,8 +37,10 @@ cth_glob_cpp(
   "cth_tests"
   "cth_win"
   "cth_win_tests"
-  "integration_tests")
-cth_add_opt_clang_format_target(clang-format ${FORMAT_FILES})
+  "integration_tests"
+)
 
+cth_add_clang_format_target(clang-format OPTIONAL ${FORMAT_FILES})
+cth_add_uncrustify_format_target(uncrustify-format OPTIONAL ${FORMAT_FILES})
 # playground
 add_subdirectory(playground)

@@ -10,30 +10,20 @@
       }
     },
     {
-      "name": "vcpkg-location",
-      "hidden": true,
-      "environment": {
-        "VCPKG_ROOT": "C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\VC\\vcpkg\\"
-      }
-    },
-    {
       "name": "win_msvc_debug",
       "inherits": [
-        "vcpkg-location",
         "base_msvc_debug"
       ]
     },
     {
       "name": "win_msvc_release",
       "inherits": [
-        "vcpkg-location",
         "base_msvc_release"
       ]
     },
     {
       "name": "win_clang_debug",
       "inherits": [
-        "vcpkg-location",
         "user-llvm-path",
         "base_clang_debug"
       ]
@@ -41,7 +31,6 @@
     {
       "name": "win_clang_release",
       "inherits": [
-        "vcpkg-location",
         "user-llvm-path",
         "base_clang_release"
       ]
