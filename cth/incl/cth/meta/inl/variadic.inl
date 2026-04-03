@@ -5,8 +5,7 @@
 
 namespace cth::mta {
 
-template<typename T, typename... Ts>
-requires(any_of<T, Ts...>)
+template<typename T, typename... Ts> requires(is_any_of<T, Ts...>)
 auto to_same_of(T&& arg) {
     return std::forward<T>(arg);
 }
@@ -40,7 +39,7 @@ using fallback_convert_to_any_of_helper_t = fallback_convert_to_any_helper<Fallb
 template<typename Fb, typename T, typename... Ts>
 struct fallback_convert_to_any_trait {
     using type = std::conditional_t<
-        any_of<T, Ts...>,
+        is_any_of<T, Ts...>,
         opt_any_of_t<Fb, T, Ts...>,
         fallback_convert_to_any_of_helper_t<Fb, T, Ts...>>;
 };
@@ -55,7 +54,7 @@ struct convert_to_any_trait {
 template<typename U, typename... Ts, typename T>
 requires(convertible_to_any<T, Ts...>)
 auto to_convertible_from(T&& arg) {
-    if constexpr(any_of<T, Ts...>)
+    if constexpr(is_any_of<T, Ts...>)
         return mta::to_same_of<T, Ts...>(std::forward<T>(arg));
     else
         return static_cast<convert_to_any_t<U, Ts...>>(std::forward<T>(arg));
@@ -117,8 +116,7 @@ struct construct_any_from_trait {
     static_assert(!std::is_same_v<type, void>, "None of the types are constructable from T");
 };
 
-template<typename U, typename... Ts, typename T>
-requires(any_constructible_from<T, Ts...>)
+template<typename U, typename... Ts, typename T> requires(any_constructible_from<T, Ts...>)
 auto to_constructible_from(T&& arg) {
     if constexpr(convertible_to_any<U, Ts...>)
         return cth::mta::to_convertible_from<U, Ts...>(std::forward<T>(arg));

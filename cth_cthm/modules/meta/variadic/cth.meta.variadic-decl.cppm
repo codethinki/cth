@@ -17,12 +17,12 @@ using at_t = decltype(std::get<I, std::tuple<Ts...>>(std::declval<std::tuple<Ts.
 export namespace cth::mta {
 
 template<class T, class... Ts>
-concept any_of = (std::same_as<T, Ts> || ...);
+concept is_any_of = (std::same_as<T, Ts> || ...);
 
 
 template<class Opt, class T, class... Ts>
 struct opt_any_of_trait {
-    using type = std::conditional_t<any_of<T, Ts...>, T, Opt>;
+    using type = std::conditional_t<is_any_of<T, Ts...>, T, Opt>;
 };
 
 template<class Opt, class T, class... Ts>
@@ -31,7 +31,7 @@ using opt_any_of_t = opt_any_of_trait<Opt, T, Ts...>::type;
 template<class T, class... Ts>
 struct any_of_trait {
     using type = opt_any_of_trait<void, T, Ts...>;
-    static_assert(!any_of<T, Ts...>, "none of the types match");
+    static_assert(!is_any_of<T, Ts...>, "none of the types match");
 };
 
 /**
@@ -47,7 +47,7 @@ using any_of_t = any_of_trait<T, Ts...>::type;
  * \tparam Ts to any of Ts...
  * \tparam T from
  */
-template<typename T, typename... Ts> requires (any_of<T, Ts...>)
+template<typename T, typename... Ts> requires (is_any_of<T, Ts...>)
 auto to_same_of(T&& arg);
 
 /**
@@ -180,3 +180,36 @@ template<typename... Ts, typename T>
 auto to_constructible(T&& arg);
 }
 
+namespace cth::mta {
+namespace dev {
+    template<class T>
+    struct resolution_node {
+        static T operator()(T);
+    };
+
+    template<class... Ts>
+    struct overload_set : resolution_node<Ts>... {
+        using resolution_node<Ts>::operator()...;
+    };
+}
+
+/**
+ * Resolves the correct function overload type for T from Ts
+ * @tparam T resolve target
+ * @tparam Ts options to resolve from
+ */
+template<class T, class... Ts>
+struct resolve_overload_from : std::type_identity<
+        decltype(dev::overload_set<Ts...>::operator()(std::declval<T>()))
+    > {};
+
+
+/**
+ * shorthand for @ref resolve_overload_from
+ * @tparam T resolve target
+ * @tparam Ts options to resolve from
+ */
+template<class T, class... Ts>
+using resolve_overload_from_t = resolve_overload_from<T, Ts...>::type;
+
+}

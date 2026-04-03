@@ -40,7 +40,6 @@ cth_glob_cpp(
   "integration_tests"
 )
 
-cth_add_clang_format_target(clang-format OPTIONAL ${FORMAT_FILES})
-cth_add_uncrustify_format_target(uncrustify-format OPTIONAL ${FORMAT_FILES})
+cth_add_uncrustify_target(uncrustify-format OPTIONAL ${FORMAT_FILES})
 # playground
 add_subdirectory(playground)

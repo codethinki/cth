@@ -3,7 +3,7 @@
 namespace cth::var {
 /**
  * \brief std::visit lambda overload capsule
- * \note every std:variant visitation must be specified
+ * \note every std::variant visitation must be specified
  */
 template<class... Ts>
 struct overload : Ts... {

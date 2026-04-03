@@ -6,7 +6,7 @@
 
 namespace cth::mta {
 template<size_t I, class... Ts>
-using at_t = decltype(std::get<I, std::tuple<Ts...>>(std::declval<std::tuple<Ts...>>()));
+using at_t = std::tuple_element_t<I, std::tuple<Ts...>>;
 }
 
 
@@ -15,12 +15,12 @@ using at_t = decltype(std::get<I, std::tuple<Ts...>>(std::declval<std::tuple<Ts.
 namespace cth::mta {
 
 template<class T, class... Ts>
-concept any_of = (std::same_as<T, Ts> || ...);
+concept is_any_of = (std::same_as<T, Ts> || ...);
 
 
 template<class Opt, class T, class... Ts>
 struct opt_any_of_trait {
-    using type = std::conditional_t<any_of<T, Ts...>, T, Opt>;
+    using type = std::conditional_t<is_any_of<T, Ts...>, T, Opt>;
 };
 
 template<class Opt, class T, class... Ts>
@@ -29,7 +29,7 @@ using opt_any_of_t = opt_any_of_trait<Opt, T, Ts...>::type;
 template<class T, class... Ts>
 struct any_of_trait {
     using type = opt_any_of_trait<void, T, Ts...>;
-    static_assert(!any_of<T, Ts...>, "none of the types match");
+    static_assert(!is_any_of<T, Ts...>, "none of the types match");
 };
 
 /**
@@ -44,8 +44,7 @@ using any_of_t = any_of_trait<T, Ts...>::type;
  * \tparam Ts to any of Ts...
  * \tparam T from
  */
-template<typename T, typename... Ts>
-requires(any_of<T, Ts...>)
+template<typename T, typename... Ts> requires(is_any_of<T, Ts...>)
 auto to_same_of(T&& arg);
 
 /**
@@ -114,8 +113,7 @@ using convert_to_any_t = convert_to_any_trait<T, Ts...>::type;
  * \tparam U from
  * \note prioritizes to_same_of<T, Ts...> if available
  */
-template<typename U, typename... Ts, typename T>
-requires(convertible_to_any<T, Ts...>)
+template<typename U, typename... Ts, typename T> requires(convertible_to_any<T, Ts...>)
 auto to_convertible_from(T&& arg);
 
 /**
@@ -169,8 +167,7 @@ using construct_any_from_t = construct_any_from_trait<T, Ts...>::type;
  * \tparam U from
  * \note prioritizes to_convertible<T, Ts...> if available
  */
-template<typename U, typename... Ts, typename T>
-requires(any_constructible_from<T, Ts...>)
+template<typename U, typename... Ts, typename T> requires(any_constructible_from<T, Ts...>)
 auto to_constructible_from(T&& arg);
 /**
  * \brief constructs the first type of Ts... that is constructible from T
@@ -181,6 +178,77 @@ auto to_constructible_from(T&& arg);
 template<typename... Ts, typename T>
 auto to_constructible(T&& arg);
 }
+
+namespace cth::mta {
+
+namespace dev {
+
+    template<class Tuple, class... Ts>
+    struct unique_tuple_impl;
+
+    template<class Tuple, class T, class... Ts> requires(is_any_of<T, Ts...>)
+    struct unique_tuple_impl<Tuple, T, Ts...> : unique_tuple_impl<Tuple, Ts...> {};
+
+    template<class... TupleTs, class T, class... Ts> requires(!is_any_of<T, Ts...>)
+    struct unique_tuple_impl<std::tuple<TupleTs...>, T, Ts...> : unique_tuple_impl<std::tuple<TupleTs..., T>, Ts...> {};
+
+    template<class Tuple>
+    struct unique_tuple_impl<Tuple> {
+        using types = Tuple;
+    };
+}
+
+
+
+template<class... Ts>
+struct unique_tuple : dev::unique_tuple_impl<std::tuple<>, Ts...> {};
+
+template<class... Ts>
+using unique_tuple_t = unique_tuple<Ts...>::types;
+
+}
+
+namespace cth::mta {
+namespace dev {
+    template<class T>
+    struct resolution_node {
+        T operator()(T);
+    };
+
+    template<class... Ts>
+    struct overload_set : resolution_node<Ts>... {
+        using resolution_node<Ts>::operator()...;
+    };
+}
+
+/**
+ * Resolves the correct function overload type for T from Ts
+ * @tparam T resolve target
+ * @tparam Ts options to resolve from
+ */
+template<class T, class... Ts>
+struct resolve_overload_from : std::invoke_result<dev::overload_set<Ts...>, T> {};
+
+
+/**
+ * shorthand for @ref resolve_overload_from
+ * @tparam T resolve target
+ * @tparam Ts options to resolve from
+ */
+template<class T, class... Ts>
+using resolve_overload_from_t = resolve_overload_from<T, Ts...>::type;
+
+/**
+ * checks if T resolves to any of Ts via function overload resolution
+ * @tparam T resolve target
+ * @tparam Ts options to resolve from
+ */
+template<class T, class... Ts>
+concept resolves_to_any_of = std::same_as<unique_tuple_t<Ts...>, std::tuple<Ts...>> && requires {
+    typename resolve_overload_from<T, Ts...>::type;
+};
+}
+
 
 
 #include "inl/variadic.inl"
