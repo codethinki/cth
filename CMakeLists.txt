@@ -15,17 +15,15 @@ cth_set_latest_c_cpp_standard()
 add_subdirectory(cth)
 add_subdirectory(cth_win)
 add_subdirectory(cth_coro)
-add_subdirectory(cth_cthm)
+# add_subdirectory(cth_cthm) just a test and not up to date
 
 cth_create_package()
 
 # test
-enable_testing()
-add_subdirectory(cth_tests)
-add_subdirectory(cth_coro_tests)
-add_subdirectory(cth_win_tests)
-
-add_subdirectory(integration_tests)
+if(CTH_ENABLE_TESTS)
+	enable_testing()
+	add_subdirectory(integration_tests)
+endif()
 
 # formatting
 cth_glob_cpp(

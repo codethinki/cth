@@ -14,10 +14,10 @@ namespace cth::mta {
 /**
  * @brief counts the dimensions of @ref Rng
  * @tparam Rng range
- * @tparam Max optional max search depth
+ * @param max optional max search depth
  */
-template<class Rng, size_t Max = MAX_DEPTH>
-cval size_t dimensions();
+template<class Rng>
+cval size_t dimensions(size_t max = MAX_DEPTH);
 
 /**
  * @brief checks if @ref Rng is of at least @ref D dimensions
@@ -25,7 +25,7 @@ cval size_t dimensions();
  * @tparam D dimensions
  */
 template<class Rng, size_t D>
-concept md_range = dimensions<Rng, D>() == D;
+concept md_range = dimensions<Rng>(D) == D;
 
 
 namespace dev {
@@ -35,13 +35,13 @@ namespace dev {
 
 
 /**
- * @brief type trait to get the first non range type or the @ref D -th dimension range value type of @ref
- * Rng
+ * @brief type trait to get the first non range type or 
+ *  the `D` -th dimension range value type of `Rng`
  * @tparam Rng range
  * @tparam D dimension (optional)
  */
 template<class Rng, size_t D = MAX_DEPTH>
-using md_range_value_t = decltype(dev::md_range_value<Rng, D>())::type;
+using md_range_value_t = type_of_t<dev::md_range_value<Rng, D>()>;
 
 /**
  * @brief shortcut to @ref md_range_value_t<Rng, 2>

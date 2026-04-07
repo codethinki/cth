@@ -2,7 +2,7 @@ cth_glob_cpp(CTH_TESTS_SRC "src")
 
 add_executable(cth_tests ${CTH_TESTS_SRC})
 
-cth_target_enable_build_cache(cth_tests)
+cth_target_enable_build_cache(cth_tests OPTIONAL)
 
 target_include_directories(
         cth_tests

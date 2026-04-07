@@ -32,16 +32,16 @@ template<typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
 
 template<class T>
-concept character = std::same_as<pure_t<T>, char> || std::same_as<pure_t<T>, wchar_t>;
+concept character = std::same_as<std::decay_t<T>, char> || std::same_as<std::decay_t<T>, wchar_t>;
 
 template<class T>
-concept n_character = std::same_as<pure_t<T>, char>;
+concept n_character = std::same_as<std::decay_t<T>, char>;
 
 template<class T, auto TCpt>
 concept negate = !satisfies<T, TCpt>;
 
 template<class T>
-concept w_character = std::same_as<pure_t<T>, wchar_t>;
+concept w_character = std::same_as<std::decay_t<T>, wchar_t>;
 
 template<class Obj, auto Fn, class... Args>
 concept member_callable_with = requires(Obj obj) {

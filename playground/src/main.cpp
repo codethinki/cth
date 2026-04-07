@@ -1,4 +1,3 @@
-#include <windows.h>
 #include <iostream>
 #include <chrono>
 #include <filesystem>
@@ -29,6 +28,8 @@
 //#endif
 //}
 
+#include "cth/meta/ranges.hpp"
+
 #include <cth/meta/variadic.hpp>
 
 short test(short) { return {}; }
@@ -38,12 +39,15 @@ int test(int) { return {}; }
 bool test(bool) { return {}; }
 
 int main() {
-    using test_t = short;
+    using test_t = std::vector<std::vector<int>>;
 
 
-    using T = cth::mta::unique_tuple<int, int, int>;
+    using T = cth::mta::repeat_trait_t<2, std::ranges::range_value_t, test_t>;//cth::mta::md_range_value_t<test_t, 2>;
 
 
+    std::println("dimensions: {}", cth::mta::dimensions<T>(2));
 
-    std::println("type: {}", typeid(T::types).name());
+    std::println("test type: {}", typeid(test_t).name());
+
+    std::println("type: {}", typeid(T).name());
 }

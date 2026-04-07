@@ -2,7 +2,7 @@ cth_glob_cpp(CTH_CORO_TESTS_SRC "src")
 
 add_executable(cth_coro_tests ${CTH_CORO_TESTS_SRC})
 
-cth_target_enable_build_cache(cth_coro_tests)
+cth_target_enable_build_cache(cth_coro_tests OPTIONAL)
 
 target_include_directories(
         cth_coro_tests

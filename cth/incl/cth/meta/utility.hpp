@@ -17,8 +17,8 @@ using no_range_t = decltype(no_range);
 using empty_t = decltype(empty);
 
 
-template<auto TypeIdentity>
-using identity_t = decltype(TypeIdentity)::type;
+template<auto TraitValue>
+using type_of_t = decltype(TraitValue)::type;
 }
 
 
@@ -48,8 +48,3 @@ declauto copy_if(T&& value) {
 
 }
 
-
-namespace cth::mta {
-template<class T>
-using pure_t = std::decay_t<T>;
-}

@@ -8,6 +8,7 @@ import cth.meta.utility;
 import :decl;
 
 export namespace cth::mta {
+
 template<template<class...> class Trait, class... Args>
 struct trait_pack {
     static constexpr bool can_unpack = requires {
@@ -21,7 +22,7 @@ struct trait_pack {
             return std::type_identity<void>{};
     }
 
-    using unpacked_type = identity_t<unpack()>;
+    using unpacked_type = type_of_t<unpack()>;
 };
 
 template<class T>
@@ -39,7 +40,7 @@ consteval auto first_pack() {
 }
 
 template<class... TraitPacks>
-using first_pack_t = identity_t<first_pack<TraitPacks...>()>;
+using first_pack_t = type_of_t<first_pack<TraitPacks...>()>;
 
 
 
@@ -52,11 +53,13 @@ consteval auto unpack_trait() {
 }
 
 
+
+
 template<class TraitPack>
-using unpack_trait_t = identity_t<unpack_trait<TraitPack>()>;
+using unpack_trait_t = type_of_t<unpack_trait<TraitPack>()>;
 
 template<bool Condition, class LeftPack, class RightPack>
-consteval auto conditional_trait_pack() {
+consteval auto conditional_pack() {
     if constexpr(Condition)
         return unpack_trait<LeftPack>();
     else
@@ -64,7 +67,7 @@ consteval auto conditional_trait_pack() {
 }
 
 template<bool Condition, class LeftPack, class RightPack>
-using conditional_pack_t = identity_t<conditional_trait_pack<Condition, LeftPack, RightPack>()>;
+using conditional_pack_t = type_of_t<conditional_pack<Condition, LeftPack, RightPack>()>;
 
 
 

@@ -148,7 +148,7 @@ struct construct_any_from_trait {
     static_assert(!std::is_same_v<type, void>, "None of the types are constructable from T");
 };
 
-template<typename U, typename... Ts, typename T> requires(any_constructible_from<T, Ts...>)
+template<typename U, typename... Ts, typename T> requires(constructs_any_of<T, Ts...>)
 auto to_constructible_from(T&& arg) {
     if constexpr(convertible_to_any<U, Ts...>) return cth::mta::to_convertible_from<U, Ts...>(std::forward<T>(arg));
     else return construct_any_from_t<U, Ts...>{arg};

@@ -13,7 +13,7 @@ namespace cth::alg {
 
 /**
  * \brief creates a vector of unique elements with exactly one element from each given range. order is
- * preserved
+ *  preserved
  * \tparam Rng rng<rng<std::equality_comparable>>
  * \param selections range of ranges
  * \return vector of T, empty if no unique selection is possible

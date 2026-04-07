@@ -3,27 +3,39 @@
 #include "cth/meta/variadic.hpp"
 #include "cth/meta/debug.hpp"
 
+
 namespace cth::mta {
-class z {};
-class d {};
+struct z {};
+struct d {};
 using a = int;
 using b = d;
 
-TYPE_TEST(opt_any_of_t, main) {
-    using c = collapse_t<mta::opt_any_of_t<z, a, b, b, b, a, z>>;
+struct y : z {};
 
-    static_assert(std::same_as<c, a>);
+
+template<class T, class... Ts>
+concept instantiate_convert_any = requires {
+    typename convert_to_any<T, Ts...>;
+};
+
+
+
+TYPE_TEST(convert_to_any, main) {
+
+
+    static_assert(
+        std::same_as<
+            convert_to_any_t<y, a, b, z>,
+            z
+        >
+    );
+
+    static_assert(!trait_applicable<convert_to_any, z, a, b, y>);
+
 }
 
-TYPE_TEST(fallback_convert_to_any_t, main) {
-    using c = mta::collapse_t<mta::fallback_convert_to_any_t<z, a, b>>;
-    using d = mta::collapse_t<mta::fallback_convert_to_any_t<z, a, b, b, a>>;
-
-    static_assert(std::same_as<c, z>);
-    static_assert(std::same_as<d, a>);
 }
 
-}
 
 namespace cth::mta {
 struct base {};
@@ -86,6 +98,7 @@ TYPE_TEST(resolve_overload_from_t, exact_beats_conversion) {
 
 }
 
+
 namespace cth::mta {
 struct ambig {
     operator a() const { return 0; }
@@ -93,16 +106,16 @@ struct ambig {
 };
 TYPE_TEST(resolves_to_any_of, evaluation) {
     // Valid: Exact match, standard promotion, and upcasting
-    static_assert(resolves_to_any_of<a, z, b, a>);
-    static_assert(resolves_to_any_of<short, z, b, a>);
-    static_assert(resolves_to_any_of<derived, z, a, base>);
+    static_assert(resolves_to_overloads<a, z, b, a>);
+    static_assert(resolves_to_overloads<short, z, b, a>);
+    static_assert(resolves_to_overloads<derived, z, a, base>);
 
-    static_assert(!resolves_to_any_of<int, int, int>);
+    static_assert(!resolves_to_overloads<int, int, int>);
 
     // Invalid: Unrelated types, empty packs, and ambiguous conversions
-    static_assert(!resolves_to_any_of<z, a, b>);
-    static_assert(!resolves_to_any_of<a>);
-    static_assert(!resolves_to_any_of<ambig, a, z>);
+    static_assert(!resolves_to_overloads<z, a, b>);
+    static_assert(!resolves_to_overloads<a>);
+    static_assert(!resolves_to_overloads<ambig, a, z>);
 }
 
 TYPE_TEST(tuple_set, default) {

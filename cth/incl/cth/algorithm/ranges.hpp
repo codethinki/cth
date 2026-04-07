@@ -1,6 +1,7 @@
 #pragma once
-#include "cth/io/log.hpp"
 #include "cth/macro.hpp"
+#include "cth/io/log.hpp"
+#include "cth/meta/concepts.hpp"
 
 #include <ranges>
 
