@@ -1,4 +1,4 @@
-#include "cth/data/joiner.hpp"
+#include "cth/data/string_joiner.hpp"
 
 #include "test.hpp"
 
@@ -11,19 +11,19 @@
 namespace cth::dt {
 
 DATA_TEST(joiner, ConstructorsAndDelimiter) {
-    joiner const sjDefault;
+    string_joiner const sjDefault;
     ASSERT_EQ(sjDefault.delim(), " ");
 
-    joiner const sjCustom("-->");
+    string_joiner const sjCustom("-->");
     ASSERT_EQ(sjCustom.delim(), "-->");
 
-    joiner const sjReserve("--", 128);
+    string_joiner const sjReserve("--", 128);
     ASSERT_EQ(sjReserve.delim(), "--");
     ASSERT_GE(sjReserve.capacity(), 128);
 }
 
 DATA_TEST(joiner, OperatorPlusEquals) {
-    joiner sj(", ");
+    string_joiner sj(", ");
     sj += "one";
     ASSERT_EQ(sj.string(), "one");
     sj += "two";
@@ -33,10 +33,10 @@ DATA_TEST(joiner, OperatorPlusEquals) {
 }
 
 DATA_TEST(joiner, OperatorPlus) {
-    std::string const res1 = joiner(" | ") + "A" + "B" + "C";
+    std::string const res1 = string_joiner(" | ") + "A" + "B" + "C";
     ASSERT_EQ(res1, "A | B | C");
 
-    joiner sjBase(" ");
+    string_joiner sjBase(" ");
     sjBase += "base";
     auto const sjCopy = sjBase + "extended";
     ASSERT_EQ(sjBase.string(), "base");
@@ -44,8 +44,8 @@ DATA_TEST(joiner, OperatorPlus) {
 }
 
 DATA_TEST(joiner, OperatorEq) {
-    auto const sj = joiner{" "} + "a" + "b" + "c";
-    auto const sj2 = joiner{" "} + "a" + "b" + "c";
+    auto const sj = string_joiner{" "} + "a" + "b" + "c";
+    auto const sj2 = string_joiner{" "} + "a" + "b" + "c";
     std::string const expected = "a b c";
 
     EXPECT_EQ(sj, sj2);
@@ -53,7 +53,7 @@ DATA_TEST(joiner, OperatorEq) {
 }
 
 DATA_TEST(joiner, ConversionsAndAccessors) {
-    joiner sj(" ");
+    string_joiner sj(" ");
     sj += "test";
     sj += "string";
     std::string const expected = "test string";
@@ -61,7 +61,7 @@ DATA_TEST(joiner, ConversionsAndAccessors) {
     ASSERT_EQ(sj.string(), expected);
     ASSERT_EQ(std::move(sj).string(), expected);
 
-    joiner sj2(" ");
+    string_joiner sj2(" ");
     sj2 += "test";
     sj2 += "string";
     std::string const s = sj2;
@@ -71,7 +71,7 @@ DATA_TEST(joiner, ConversionsAndAccessors) {
 }
 
 DATA_TEST(joiner, Iterators) {
-    joiner const sj = joiner(" ") + "a" + "b" + "c";
+    string_joiner const sj = string_joiner(" ") + "a" + "b" + "c";
     std::string const expected = "a b c";
 
     std::string const fromFwdIter{std::from_range, sj};
@@ -84,7 +84,7 @@ DATA_TEST(joiner, Iterators) {
 }
 
 DATA_TEST(joiner, ElementAccess) {
-    joiner const sj = joiner("") + "abc";
+    string_joiner const sj = string_joiner("") + "abc";
     std::string const expected = "abc";
 
     ASSERT_EQ(sj.front(), expected.front());
@@ -94,7 +94,7 @@ DATA_TEST(joiner, ElementAccess) {
 }
 
 DATA_TEST(joiner, CapacityAndModifiers) {
-    joiner sj(" ", 100);
+    string_joiner sj(" ", 100);
     ASSERT_TRUE(sj.empty());
     ASSERT_GE(sj.capacity(), 100);
 
@@ -109,7 +109,7 @@ DATA_TEST(joiner, CapacityAndModifiers) {
 }
 
 DATA_TEST(joiner, SearchAndInspectMethods) {
-    joiner const sj = joiner("/") + "path" + "to" + "file" + "file";
+    string_joiner const sj = string_joiner("/") + "path" + "to" + "file" + "file";
     std::string const expected = "path/to/file/file";
 
     ASSERT_EQ(sj.compare(expected), expected.compare(expected));

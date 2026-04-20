@@ -1,6 +1,7 @@
 #pragma once
 #include "utility.hpp"
 #include <concepts>
+#include <tuple>
 
 
 #define CPT(concept)                                                                                         \
@@ -112,6 +113,11 @@ concept emplacable = requires(T t, Where w) { w.emplace(t); };
 
 template<class To, class From>
 concept convertible_from = std::convertible_to<From, To>;
+
+template<class T>
+concept tuple_like = requires(T t) {
+    { std::apply([]<class... Args>(Args&&...) {}, t) } -> std::same_as<void>;
+};
 }
 
 

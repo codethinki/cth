@@ -68,7 +68,12 @@ concept range2d_over_cpt = md_range_over_cpt<Rng, TCpt, 2>;
 template<class Rng, class T>
 concept range_over = std::ranges::range<Rng> && std::same_as<std::ranges::range_value_t<Rng>, T>;
 
+template<class Rng, class T>
+concept range_over_convertible_to = std::ranges::range<Rng>
+    && std::convertible_to<std::ranges::range_value_t<Rng>, T>;
+
 }
+
 
 namespace cth::rng {
 
@@ -93,5 +98,6 @@ auto cxpr to_viewable(Rng&& rng) {
     }
 }
 }
+
 
 #include "inl/ranges.inl"

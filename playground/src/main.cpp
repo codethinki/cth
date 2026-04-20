@@ -6,6 +6,7 @@
 #include <numeric>
 #include <print>
 
+#include "cth/meta/concepts.hpp"
 //
 //int main() {
 //#ifdef  __cpp_reflection
@@ -28,26 +29,18 @@
 //#endif
 //}
 
-#include "cth/meta/ranges.hpp"
-
-#include <cth/meta/variadic.hpp>
-
 short test(short) { return {}; }
 double test(double) { return {}; }
 float test(float) { return {}; }
 int test(int) { return {}; }
 bool test(bool) { return {}; }
 
+
+
 int main() {
-    using test_t = std::vector<std::vector<int>>;
 
 
-    using T = cth::mta::repeat_trait_t<2, std::ranges::range_value_t, test_t>;//cth::mta::md_range_value_t<test_t, 2>;
+    std::vector a{1, 2, 3};
 
-
-    std::println("dimensions: {}", cth::mta::dimensions<T>(2));
-
-    std::println("test type: {}", typeid(test_t).name());
-
-    std::println("type: {}", typeid(T).name());
+    std::println("{}", a);
 }

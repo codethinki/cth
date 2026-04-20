@@ -1,12 +1,16 @@
 #pragma once
 #include "cth/string.hpp"
+#include "cth/data/string_joiner.hpp"
+#include "cth/meta/ranges.hpp"
+
 
 #include <array>
 #include <iostream>
-#include <print>
+#include <stack>
 
 
 namespace cth::io {
+using ansi_code_t = uint8_t;
 
 class col_stream;
 
@@ -14,59 +18,182 @@ class col_stream;
 //        CONSTANTS
 //-------------------------
 
-enum Text_Colors {
-    DEFAULT_TEXT_COL,
-    BLACK_TEXT_COL,
-    DARK_RED_TEXT_COL,
-    DARK_GREEN_TEXT_COL,
-    DARK_YELLOW_TEXT_COL,
-    DARK_BLUE_TEXT_COL,
-    DARK_MAGENTA_TEXT_COL,
-    DARK_CYAN_TEXT_COL,
-    DARK_WHITE_TEXT_COL,
-    BRIGHT_BLACK_TEXT_COL,
-    BRIGHT_RED_TEXT_COL,
-    BRIGHT_GREEN_TEXT_COL,
-    BRIGHT_YELLOW_TEXT_COL,
-    BRIGHT_BLUE_TEXT_COL,
-    BRIGHT_MAGENTA_TEXT_COL,
-    BRIGHT_CYAN_TEXT_COL,
-    WHITE_TEXT_COL,
-    TEXT_COL_SIZE
+enum class TextColor : ansi_code_t {
+    DEFAULT = 39,
+    BLACK = 30,
+    DARK_RED = 31,
+    DARK_GREEN = 32,
+    DARK_YELLOW = 33,
+    DARK_BLUE = 34,
+    DARK_MAGENTA = 35,
+    DARK_CYAN = 36,
+    DARK_WHITE = 37,
+    BRIGHT_BLACK = 90,
+    BRIGHT_RED = 91,
+    BRIGHT_GREEN = 92,
+    BRIGHT_YELLOW = 93,
+    BRIGHT_BLUE = 94,
+    BRIGHT_MAGENTA = 95,
+    BRIGHT_CYAN = 96,
+    WHITE = 97,
 };
-enum BG_Colors {
-    DEFAULT_BG_COL,
-    BLACK_BG_COL = DEFAULT_BG_COL,
-    DARK_RED_BG_COL,
-    DARK_GREEN_BG_COL,
-    DARK_YELLOW_BG_COL,
-    DARK_BLUE_BG_COL,
-    DARK_MAGENTA_BG_COL,
-    DARK_CYAN_BG_COL,
-    DARK_WHITE_BG_COL,
-    BRIGHT_BLACK_BG_COL,
-    BRIGHT_RED_BG_COL,
-    BRIGHT_GREEN_BG_COL,
-    BRIGHT_YELLOW_BG_COL,
-    BRIGHT_BLUE_BG_COL,
-    BRIGHT_MAGENTA_BG_COL,
-    BRIGHT_CYAN_BG_COL,
-    WHITE_BG_COL,
-    BG_COL_SIZE
-};
-enum Text_Styles {
-    BOLD_TEXT_STYLE,
-    FAINT_TEXT_STYLE,
-    ITALIC_TEXT_STYLE,
-    UNDERLINED_TEXT_STYLE,
-    DOUBLE_UNDERLINED_TEXT_STYLE,
-    BLINK_TEXT_STYLE,
-    INVERSE_TEXT_STYLE,
-    HIDDEN_TEXT_STYLE,
-    STRIKEOUT_TEXT_STYLE,
-    TEXT_STYLE_SIZE
-};
+
+[[nodiscard]] constexpr ansi_code_t to_ansi_code(TextColor color) {
+    return static_cast<ansi_code_t>(color);
 }
+
+enum class BGColor : ansi_code_t {
+    DEFAULT = 40,
+    BLACK = 40,
+    DARK_RED = 41,
+    DARK_GREEN = 42,
+    DARK_YELLOW = 43,
+    DARK_BLUE = 44,
+    DARK_MAGENTA = 45,
+    DARK_CYAN = 46,
+    DARK_WHITE = 47,
+    BRIGHT_BLACK = 100,
+    BRIGHT_RED = 101,
+    BRIGHT_GREEN = 102,
+    BRIGHT_YELLOW = 103,
+    BRIGHT_BLUE = 104,
+    BRIGHT_MAGENTA = 105,
+    BRIGHT_CYAN = 106,
+    WHITE = 107,
+};
+
+[[nodiscard]] constexpr ansi_code_t to_ansi_code(BGColor color) {
+    return static_cast<ansi_code_t>(color);
+}
+
+
+
+enum class TextIntensity : ansi_code_t {
+    NORMAL = 22,
+    BOLD = 1,
+    FAINT = 2,
+};
+
+[[nodiscard]] constexpr ansi_code_t to_ansi_code(TextIntensity intensity) {
+    return static_cast<ansi_code_t>(intensity);
+}
+
+
+enum class TextUnderline : ansi_code_t {
+    NONE = 24,
+    SINGLE = 4,
+    DOUBLE = 21
+};
+
+[[nodiscard]] constexpr ansi_code_t to_ansi_code(TextUnderline underline) {
+    return static_cast<ansi_code_t>(underline);
+}
+
+enum class TextModifiers : ansi_code_t {
+    ITALIC,
+    BLINK,
+    INVERSE,
+    HIDDEN,
+    STRIKEOUT,
+    TEXT_MODIFIER_SIZE
+};
+
+
+namespace dev {
+    [[nodiscard]] constexpr ansi_code_t to_ansi_code_on(TextModifiers modifier) {
+        switch(modifier) {
+            case TextModifiers::ITALIC: return 3;
+            case TextModifiers::BLINK: return 5;
+            case TextModifiers::INVERSE: return 7;
+            case TextModifiers::HIDDEN: return 8;
+            case TextModifiers::STRIKEOUT: return 9;
+            default: std::unreachable();
+        }
+    }
+
+    [[nodiscard]] constexpr ansi_code_t to_ansi_code_off(TextModifiers modifier) {
+        return to_ansi_code_on(modifier) + 20;
+    }
+}
+
+
+[[nodiscard]] constexpr ansi_code_t to_ansi_code(TextModifiers modifier, bool activate) {
+    return activate ? dev::to_ansi_code_on(modifier) : dev::to_ansi_code_off(modifier);
+}
+
+
+
+struct ansi_state {
+    static constexpr size_t MODIFIERS = static_cast<size_t>(TextModifiers::TEXT_MODIFIER_SIZE);
+    static constexpr size_t ATTRIBUTES = 4 + MODIFIERS;
+
+    TextColor textColor = TextColor::DEFAULT;
+    BGColor bgColor = BGColor::DEFAULT;
+    TextIntensity intensity = TextIntensity::NORMAL;
+    TextUnderline underline = TextUnderline::NONE;
+    std::array<bool, MODIFIERS> modifiers{};
+
+    constexpr bool& modifier(TextModifiers modifier) { return modifiers[static_cast<size_t>(modifier)]; }
+
+    constexpr bool update(TextColor t) { return opt_update(textColor, t); }
+    constexpr bool update(BGColor t) { return opt_update(bgColor, t); }
+    constexpr bool update(TextIntensity t) { return opt_update(intensity, t); }
+    constexpr bool update(TextUnderline t) { return opt_update(underline, t); }
+
+
+    constexpr bool update(TextModifiers mod, bool on) {
+        return opt_update(modifier(mod), on);
+    }
+
+    constexpr bool toggle(TextModifiers mod) { return modifier(mod) = !modifier(mod); }
+
+    constexpr std::array<ansi_code_t, ATTRIBUTES> encode() const {
+        std::array<ansi_code_t, ATTRIBUTES> codes{};
+
+        codes[0] = to_ansi_code(textColor);
+        codes[1] = to_ansi_code(bgColor);
+        codes[2] = to_ansi_code(intensity);
+        codes[3] = to_ansi_code(underline);
+
+        for(size_t i = 0; i < MODIFIERS; i++)
+            codes[4 + i] = to_ansi_code(static_cast<TextModifiers>(i), modifiers[i]);
+
+        return codes;
+    }
+
+private:
+    template<class T>
+    constexpr static bool opt_update(T& from, T to) {
+        std::swap(from, to);
+        return from != to;
+    }
+};
+
+
+namespace dev {
+    template<std::ranges::viewable_range Rng1, std::ranges::viewable_range Rng2>
+    [[nodiscard]] constexpr auto diff_view(Rng1& from, Rng2& to) {
+        return std::views::zip(from, to)
+            | std::views::filter([](auto const& pair) { return std::get<0>(pair) != std::get<1>(pair); })
+            | std::views::elements<1>;
+    }
+}
+
+
+[[nodiscard]] constexpr std::string_view ansi_clear_string() { return "\033[0m"; }
+
+template<std::ranges::viewable_range Rng>
+[[nodiscard]] std::string to_ansi_string(Rng&& codes) {
+    if(std::ranges::empty(codes))
+        return "";
+
+    return std::format("\033[{}m", cth::views::format(codes, ";"));
+}
+[[nodiscard]] inline std::string to_ansi_string(ansi_code_t code) {
+    return std::format("\033[{}m", code);
+}
+}
+
 
 namespace cth::io::dev {
 
@@ -95,243 +222,139 @@ enum Erase_Ids {
     ERASE_IDS_SIZE
 };
 
-
-inline cxpr std::array<char const*, TEXT_COL_SIZE> TEXT_COLOR_CODES_N = {{
-    "\033[39m",
-    // default
-    "\033[30m",
-    "\033[31m",
-    "\033[32m",
-    "\033[33m",
-    "\033[34m",
-    "\033[35m",
-    "\033[36m",
-    "\033[37m",
-    "\033[90m",
-    "\033[91m",
-    "\033[92m",
-    "\033[93m",
-    "\033[94m",
-    "\033[95m",
-    "\033[96m",
-    "\033[97m",
-}};
-inline cxpr std::array<char const*, BG_COL_SIZE> BG_COLOR_CODES_N = {{
-    "\033[40m",
-    "\033[41m",
-    "\033[42m",
-    "\033[43m",
-    "\033[44m",
-    "\033[45m",
-    "\033[46m",
-    "\033[47m",
-    "\033[100m",
-    "\033[101m",
-    "\033[102m",
-    "\033[103m",
-    "\033[104m",
-    "\033[105m",
-    "\033[106m",
-    "\033[107m",
-}};
-inline cxpr std::array<char const*, TEXT_STYLE_SIZE * 2> TEXT_STYLE_CODES_N = {{
-    "\033[1m",
-    "\033[22m",
-    // bold clear bold
-    "\033[2m",
-    "\033[22m",
-    // faint, clear bold
-    "\033[3m",
-    "\033[23m",
-    // italic, clear italic
-    "\033[4m",
-    "\033[24m",
-    // underline, clear underline
-    "\033[21m",
-    "\033[24m",
-    // double underline, clear underline
-    "\033[5m",
-    "\033[25m",
-    // blink, clear blink
-    "\033[7m",
-    "\033[27m",
-    // inverse, clear inverse
-    "\033[8m",
-    "\033[28m",
-    // hidden, clear hidden
-    "\033[9m",
-    "\033[29m" // strikeout, clear strikeout
-}};
-
-
-template<cth::mta::character T = char>
-cxpr std::string_view ansiCode(Text_Colors color) {
-    return TEXT_COLOR_CODES_N[color];
-}
-template<cth::mta::character T = char>
-cxpr std::string_view ansiCode(BG_Colors color) {
-    return BG_COLOR_CODES_N[color];
-}
-template<cth::mta::character T = char>
-cxpr std::string_view ansiCode(Text_Styles color) {
-    return TEXT_STYLE_CODES_N[color];
 }
 
-} // namespace dev
-
-//-------------------------
-//    DECLARATIONS
-//-------------------------
 
 namespace cth::io {
 
-struct col_stream_state {
-    cxpr col_stream_state() = default;
+class col_stream;
 
-    [[nodiscard]] cxpr Text_Colors textCol() const { return _textCol; }
-    [[nodiscard]] cxpr BG_Colors bgCol() const { return _bgCol; }
-    [[nodiscard]] cxpr bool styleActive(Text_Styles id) const { return _textStyles[id]; }
+struct scoped_color_state {
+    constexpr scoped_color_state(col_stream& stream);
+    constexpr ~scoped_color_state();
 
-    cxpr void setTextCol(Text_Colors text_color) { _textCol = text_color; }
-    cxpr void setBGCol(BG_Colors bg_color) { _bgCol = bg_color; }
-    cxpr void resetStyle() { _textStyles.fill(false); }
-
-    cxpr void setTextStyles(std::array<bool, TEXT_STYLE_SIZE> const& text_styles) {
-        _textStyles = text_styles;
-    }
-
-    cxpr void setStyle(Text_Styles style, bool const activate = true) { _textStyles[style] = activate; }
-
-private:
-    Text_Colors _textCol = DEFAULT_TEXT_COL;
-    BG_Colors _bgCol = DEFAULT_BG_COL;
-
-    std::array<bool, TEXT_STYLE_SIZE> _textStyles{};
-
-    friend col_stream;
+    col_stream& stream;
 };
 
 class col_stream {
 public:
-    /**
-     * \param out ostream to wrap
-     * \param current_state for sharing state between streams\n same output streams must be shared!
-     */
-    explicit col_stream(std::ostream* out, std::shared_ptr<col_stream_state> const& current_state = nullptr) :
-        _oStream(out) {
-        if(current_state != nullptr)
-            _current = current_state;
-        else
-            _current = std::make_shared<col_stream_state>();
+    constexpr col_stream(
+        std::ostream& out,
+        ansi_state state = {}
+    ) : _out{&out},
+        _stateStack{std::move(state)} {}
+    constexpr ~col_stream() = default;
+
+    constexpr void update(ansi_state new_state) {
+        state() = std::move(new_state);
+        invalidate_cache();
+    }
+
+    template<class T> requires (mta::convertible_to_any<T, TextColor, BGColor, TextIntensity, TextUnderline>)
+    constexpr void update(T updated) {
+        if(state().update(updated))
+            invalidate_cache();
+    }
+
+    constexpr void update(TextModifiers modifier, bool on) {
+        if(state().update(modifier, on))
+            invalidate_cache();
+    }
+
+    constexpr void enable(TextModifiers modifier) { update(modifier, true); }
+    constexpr void disable(TextModifiers modifier) { update(modifier, false); }
+
+    constexpr bool toggle(TextModifiers modifier) {
+        invalidate_cache();
+        return state().toggle(modifier);
     }
 
 
-    template<bool Cache = true>
-    void setTextCol(Text_Colors text_col) const;
-    void setCachedTextCol() const { setTextCol<false>(_current->textCol()); }
-    template<bool Cache = true>
-    void setBGCol(BG_Colors bg_col) const;
-    void setBGCol() const { setBGCol<false>(_current->bgCol()); }
-    template<bool Cache = true>
-    void setTextStyle(Text_Styles style, bool activate = true) const;
+    constexpr void pushState() {
+        _stateStack.push_back(state());
+    }
+    constexpr void popState() {
+        if(_stateStack.size() <= 1)
+            return;
+        _stateStack.pop_back();
+        invalidate_cache();
+    }
+    constexpr void clearStates() {
+        _stateStack[0] = state();
 
-    template<bool Cache = true>
-    void setState(col_stream_state new_state) const;
-
-    template<bool Cache = true>
-    void resetState() const {
-        setState<Cache>(col_stream_state());
+        _stateStack.resize(1);
+        invalidate_cache();
     }
 
-    void pushState() { _stack[_stackI++] = *_current; }
-    void popState() {
-        *_current = _stack[--_stackI];
-        setState<false>(*_current);
+    void print(ansi_state temp_state, std::string_view str) {
+        scoped_color_state _{*this};
+        update(temp_state);
+        print(str);
+    }
+    void println(ansi_state temp_state, std::string_view str) {
+        print(temp_state, str);
+        newline();
     }
 
-    [[nodiscard]] std::shared_ptr<col_stream_state> state() { return _current; }
-    [[nodiscard]] std::ostream& stream() const { return *_oStream; }
+    void print(TextColor temp_col, std::string_view str) {
+        scoped_color_state _{*this};
+        update(temp_col);
+        print(str);
+    }
+    void println(TextColor temp_col, std::string_view str) {
+        print(temp_col, str);
+        newline();
+    }
 
-    void print(std::string_view str) const { *_oStream << str; }
-    void println(std::string_view str) const { *_oStream << str << '\n'; }
+    void println(std::string_view str) {
+        print(str);
+        newline();
+    }
+    void print(std::string_view str) {
+        if(str.empty())
+            return;
 
-
-    void print(Text_Colors col, std::string_view str) const;
-    void println(Text_Colors col, std::string_view str) const;
-
-
-    template<class... Types>
-    requires(sizeof...(Types) > 0u)
-    void print(Text_Colors col, std::format_string<Types...> f_str, Types&&... types);
-    template<class... Types>
-    requires(sizeof...(Types) > 0u)
-    void println(Text_Colors col, std::format_string<Types...> f_str, Types&&... types);
+        if(!_ansiCache)
+            update_cache();
+        out() << *_ansiCache << str << ansi_clear_string();
+    }
 
 private:
-    std::ostream* _oStream;
+    void newline() const { out() << '\n'; }
+    constexpr void invalidate_cache() { _ansiCache.reset(); }
+    constexpr void update_cache() {
+        _ansiCache = to_ansi_string(state().encode());
+    }
 
-    std::shared_ptr<col_stream_state> _current = nullptr;
-    uint32_t _stackI = 0;
-    std::array<col_stream_state, dev::MAX_STACK_SIZE> _stack{};
+    [[nodiscard]] constexpr ansi_state& state() { return _stateStack.back(); }
+
+    std::ostream* _out;
+    std::vector<ansi_state> _stateStack;
+
+    std::optional<std::string> _ansiCache{};
+
+public:
+    [[nodiscard]] constexpr std::span<ansi_state const> stateStack() const { return _stateStack; }
+    [[nodiscard]] constexpr ansi_state const& state() const { return _stateStack.back(); }
+    [[nodiscard]] constexpr std::ostream& out() const { return *_out; }
+
 };
-} // namespace cth::io
+
+
+}
+
+
+namespace cth::io {
+constexpr scoped_color_state::scoped_color_state(col_stream& stream) : stream{stream} {
+    stream.pushState();
+}
+constexpr scoped_color_state::~scoped_color_state() { stream.popState(); }
+}
+
 
 namespace cth::io {
 
-template<bool Cache>
-void col_stream::setTextCol(Text_Colors text_col) const {
-    if constexpr(Cache)
-        _current->setTextCol(text_col);
-    *_oStream << dev::ansiCode(text_col);
-}
-template<bool Cache>
-void col_stream::setBGCol(BG_Colors bg_col) const {
-    if constexpr(Cache)
-        _current->setBGCol(bg_col);
-    *_oStream << dev::ansiCode(bg_col);
-}
-template<bool Cache>
-void col_stream::setTextStyle(Text_Styles style, bool activate) const {
-    if constexpr(Cache)
-        _current->setStyle(style, activate);
-    *_oStream << dev::ansiCode(static_cast<Text_Styles>(style * 2 + (activate ? 0 : 1)));
-}
-template<bool Cache>
-void col_stream::setState(col_stream_state new_state) const {
-    if constexpr(Cache)
-        *_current = new_state;
-    setTextCol<false>(new_state.textCol());
-    setBGCol<false>(new_state.bgCol());
-    for(uint32_t i = 0; i < TEXT_STYLE_SIZE; i++)
-        setTextStyle<false>(static_cast<Text_Styles>(i), new_state.styleActive(static_cast<Text_Styles>(i)));
-}
-
-inline void col_stream::print(Text_Colors col, std::string_view str) const {
-    *_oStream << dev::ansiCode(col) << str << dev::ansiCode(_current->textCol());
-}
-
-inline void col_stream::println(Text_Colors col, std::string_view str) const {
-    print(col, str);
-    *_oStream << '\n';
-}
-
-
-template<class... Types>
-requires(sizeof...(Types) > 0u)
-void col_stream::print(Text_Colors col, std::format_string<Types...> f_str, Types&&... types) {
-    col_stream::print(col, std::format(f_str, std::forward<Types>(types)...));
-}
-template<class... Types>
-requires(sizeof...(Types) > 0u)
-void col_stream::println(Text_Colors col, std::format_string<Types...> f_str, Types&&... types) {
-    col_stream::println(col, std::format(f_str, std::forward<Types>(types)...));
-}
-
-} // namespace cth::io
-
-namespace cth::io {
-
-inline col_stream console{&std::cout};
-inline col_stream error{&std::cerr, console.state()};
+inline col_stream console{std::cout};
+inline col_stream error{std::cerr};
 
 }

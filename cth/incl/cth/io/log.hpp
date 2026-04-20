@@ -25,18 +25,15 @@
 
 namespace cth::log::dev {
 inline bool colored = true;
-inline io::col_stream logStream{
-    &std::cerr,
-    io::error.state()
-}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+inline io::col_stream logStream{std::cerr}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-cxpr io::Text_Colors text_color(cth::except::Severity severity) {
+cxpr io::TextColor text_color(cth::except::Severity severity) {
     switch(severity) {
-        case cth::except::LOG: return io::WHITE_TEXT_COL;
-        case cth::except::Severity::INFO: return io::DARK_CYAN_TEXT_COL;
-        case cth::except::Severity::WARNING: return io::DARK_YELLOW_TEXT_COL;
-        case cth::except::Severity::ERR: return io::DARK_RED_TEXT_COL;
-        case cth::except::Severity::CRITICAL: return io::DARK_RED_TEXT_COL;
+        case cth::except::LOG: return io::TextColor::WHITE;
+        case cth::except::Severity::INFO: return io::TextColor::DARK_CYAN;
+        case cth::except::Severity::WARNING: return io::TextColor::DARK_YELLOW;
+        case cth::except::Severity::ERR: return io::TextColor::DARK_RED;
+        case cth::except::Severity::CRITICAL: return io::TextColor::DARK_RED;
         case except::SEVERITY_SIZE:
         default: std::unreachable();
     }
@@ -64,7 +61,7 @@ inline void set_log_stream(io::col_stream const& stream) {
     dev::colored = true;
     dev::logStream = stream;
 }
-inline void set_log_stream(std::ostream* stream) {
+inline void set_log_stream(std::ostream& stream) {
     dev::colored = false;
     dev::logStream = io::col_stream{stream};
 }
@@ -76,13 +73,13 @@ inline void msg(cth::except::Severity severity, std::string_view message) {
 
     if(dev::colored) {
         dev::logStream.pushState();
-        dev::logStream.setTextStyle(io::ITALIC_TEXT_STYLE);
-        dev::logStream.setTextStyle(io::UNDERLINED_TEXT_STYLE);
+        dev::logStream.update(io::TextModifiers::ITALIC, true);
+        dev::logStream.update(io::TextUnderline::SINGLE);
         dev::logStream.print(dev::text_color(severity), dev::label(severity));
         dev::logStream.popState();
         dev::logStream.print(" ");
         dev::logStream.pushState();
-        dev::logStream.setTextStyle(io::BOLD_TEXT_STYLE);
+        dev::logStream.update(io::TextIntensity::BOLD);
         dev::logStream.println(dev::text_color(severity), message);
         dev::logStream.popState();
     } else {
@@ -98,16 +95,14 @@ void msg(std::string_view message) noexcept {
 
     cth::log::msg(S, message);
 }
-template<class... Args>
-requires(sizeof...(Args) > 0u)
+template<class... Args> requires(sizeof...(Args) > 0u)
 void msg(cth::except::Severity severity, std::format_string<Args...> f_str, Args&&... args) noexcept {
     if(severity < CTH_LOG_LEVEL)
         return;
     log::msg(severity, std::format(f_str, std::forward<Args>(args)...));
 }
 
-template<cth::except::Severity S = cth::except::LOG, class... Args>
-requires(sizeof...(Args) > 0u)
+template<cth::except::Severity S = cth::except::LOG, class... Args> requires(sizeof...(Args) > 0u)
 void msg(std::format_string<Args...> f_str, Args&&... args) noexcept {
     if constexpr(S < CTH_LOG_LEVEL)
         return;
@@ -136,8 +131,7 @@ namespace dev {
                 std::terminate();
         }
         void add(std::string_view message) noexcept { _exception.add(std::string{message}); }
-        template<class... Types>
-        requires(sizeof...(Types) > 0u)
+        template<class... Types> requires(sizeof...(Types) > 0u)
         void add(std::format_string<Types...> f_str, Types&&... types) {
             _exception.add(f_str, std::forward<Types>(types)...);
         }
@@ -159,8 +153,10 @@ namespace dev {
             std::string out = "\n";
 
             switch(S) {
-                case except::CRITICAL: out += _exception.string(); break;
-                case except::ERR: out += _exception.string(); break;
+                case except::CRITICAL: out += _exception.string();
+                    break;
+                case except::ERR: out += _exception.string();
+                    break;
                 case except::WARNING:
                     out += std::format(
                         "{0} {1} {2} {3}",
@@ -204,12 +200,12 @@ namespace dev {
     };
 
 
-/**
- * \brief wrapper for dev::LogObj
- * \param expression (expression) == false -> code execution + delayed log message
- * \param fmt_message log message
- * \param severity log severity
- */
+    /**
+     * \brief wrapper for dev::LogObj
+     * \param expression (expression) == false -> code execution + delayed log message
+     * \param fmt_message log message
+     * \param severity log severity
+     */
 #define CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, severity, expression, fmt_message, ...)                         \
     if(auto const details = static_cast<bool>(expression)                                                    \
            ? std::make_unique<cth::log::dev::LogObj<severity, type>>(type{                                   \

@@ -1,6 +1,5 @@
 #include "cth/test.hpp"
 
-#include "cth/algorithm.hpp"
 #include "cth/algorithm/combine.hpp"
 #include "cth/string.hpp"
 
@@ -27,9 +26,11 @@ ALG_TEST(unique_combine, fail) {
 }
 
 ALG_TEST(assign, main) {
-    auto test = [](vector<vector<size_t>> const& a_b_options,
-                   vector<size_t> const& b_max,
-                   vector<size_t> const& expected) {
+    auto test = [](
+        vector<vector<size_t>> const& a_b_options,
+        vector<size_t> const& b_max,
+        vector<size_t> const& expected
+    ) {
         vector<size_t> const result = cth::alg::assign(a_b_options, b_max);
         ASSERT_EQ(result, expected);
     };

@@ -33,12 +33,12 @@ constexpr std::string_view to_string(Test2 e) {
 }
 
 
-CTH_FORMAT_TYPE(test::Test1, test::to_string);
+CTH_FORMAT_CLASS(test::Test1, "{}", test::to_string);
 CTH_FORMAT_CPT(test::test_concept, test::to_string);
 
 
 namespace cth::fmt {
-FMT_TEST(CTH_FORMAT_TYPE, main) {
+FMT_TEST(CTH_FORMAT_CLASS, main) {
     auto const str = std::format("{}", ::test::VALUE1);
 
     ASSERT_EQ("test::Test1{VALUE1}", str);

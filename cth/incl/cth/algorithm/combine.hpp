@@ -7,9 +7,10 @@
 #include <numeric>
 #include <queue>
 #include <ranges>
-#include <vector>
+#include <span>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 
 
@@ -99,7 +100,7 @@ template<mta::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
 
 
 namespace cth::alg {
-    //TEMP this algorithm is trash and can be written as a gold-plated version of the above
+
 /**
  * \brief assigns a's to b's based of every a's options for b's
  * \tparam Rng1 rng<rng<std::integral>>
@@ -108,15 +109,6 @@ namespace cth::alg {
  * \param b_max  max assignments for b's
  * \return vector<integral> based on Rng1
  */
-template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT(std::integral)> Rng2>
-auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<mta::range2d_value_t<Rng1>> {
-   #include <vector>
-#include <queue>
-#include <algorithm>
-#include <span>
-
-namespace cth::alg {
-
 template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT(std::integral)> Rng2>
 [[nodiscard]] auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<mta::range2d_value_t<Rng1>> {
     using T = std::remove_cvref_t<mta::range2d_value_t<Rng1>>;
@@ -143,8 +135,8 @@ template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT
 
     // 1. State Management
     std::vector<T> aToB(aCount, static_cast<T>(UNASSIGNED));
-    std::vector<std::vector<size_t>> bToA(bCount); 
-    
+    std::vector<std::vector<size_t>> bToA(bCount);
+
     for(size_t i = 0; i < bCount; ++i)
         bToA[i].reserve(b_max[i]); // Prevent reallocations
 
@@ -158,7 +150,7 @@ template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT
     auto find_augmenting_path = [&](size_t startA) -> size_t {
         std::ranges::fill(visitedB, false);
         std::ranges::fill(visitedA, false);
-        
+
         std::queue<size_t> q{{startA}};
         visitedA[startA] = true;
 
@@ -168,7 +160,7 @@ template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT
 
             for(T const bVal : a_b_options[currentA]) {
                 auto b = static_cast<size_t>(bVal);
-                
+
                 if(visitedB[b]) continue;
                 visitedB[b] = true;
                 parentB[b] = currentA; // Record path
@@ -181,7 +173,7 @@ template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT
                 for(auto previousA : bToA[b]) {
                     if(!visitedA[previousA]) {
                         visitedA[previousA] = true;
-                        parentA[previousA] = b; 
+                        parentA[previousA] = b;
                         q.push(previousA);
                     }
                 }
@@ -193,25 +185,25 @@ template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT
     // 3. Main Logic
     for(size_t i = 0; i < aCount; ++i) {
         auto endB = find_augmenting_path(i);
-        
+
         if(endB == UNASSIGNED) return std::vector<T>{}; // Dead end
 
         // Backtrack and flip assignments
         auto currentB = endB;
         while(true) {
             auto currentA = parentB[currentB];
-            
-            if(currentA != i) { 
+
+            if(currentA != i) {
                 auto previousB = parentA[currentA];
-                
+
                 // O(1) Swap-and-pop
                 auto it = std::ranges::find(bToA[previousB], currentA);
                 *it = bToA[previousB].back();
                 bToA[previousB].pop_back();
-                
+
                 bToA[currentB].push_back(currentA);
                 aToB[currentA] = static_cast<T>(currentB);
-                
+
                 currentB = previousB; // Move up
             } else {
                 bToA[currentB].push_back(currentA);
@@ -223,6 +215,5 @@ template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT
 
     return aToB;
 }
-}
 
-} // namespace cth::alg
+}
