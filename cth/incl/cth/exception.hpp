@@ -89,6 +89,7 @@ public:
     }
 
     template<class S, typename... Args> requires(sizeof...(Args) > 0u)
+    template<class S, typename... Args> requires(sizeof...(Args) > 0u)
     cxpr declauto add(this S& self, std::format_string<Args...> f_str, Args&&... types) noexcept {
         return self.addNoCpy(std::format(f_str, std::forward<Args>(types)...));
     }
@@ -131,6 +132,19 @@ public:
     [[nodiscard]] std::string trace_string() const noexcept {
         std::string str = "STACKTRACE:\n";
 
+        std::for_each(
+            _trace.begin(),
+            _trace.end() - 2,
+            [&](auto const& entry) {
+                std::filesystem::path const path{entry.source_file()};
+                str += std::format(
+                    "\t{2} : {0}({1})\n",
+                    path.filename().string(),
+                    entry.source_line(),
+                    entry.description()
+                );
+            }
+        );
         std::for_each(
             _trace.begin(),
             _trace.end() - 2,

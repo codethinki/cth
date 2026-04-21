@@ -18,8 +18,10 @@ struct trait_pack {
             return std::type_identity<void>{};
     }
 
-    using unpacked_type = identity_t<unpack()>;
+    using unpacked_type = type_of_t<unpack()>;
+    using type = unpacked_type;
 };
+
 
 template<class Pack, class... Rest>
 consteval auto first_pack() {
@@ -32,7 +34,7 @@ consteval auto first_pack() {
 }
 
 template<class... TraitPacks>
-using first_pack_t = identity_t<first_pack<TraitPacks...>()>;
+using first_pack_t = type_of_t<first_pack<TraitPacks...>()>;
 
 
 template<class Pack>
@@ -45,10 +47,10 @@ consteval auto unpack_trait() {
 
 
 template<class TraitPack>
-using unpack_trait_t = identity_t<unpack_trait<TraitPack>()>;
+using unpack_trait_t = decltype(unpack_trait<TraitPack>())::type;
 
 template<bool Condition, class LeftPack, class RightPack>
-consteval auto conditional_trait_pack() {
+consteval auto conditional_pack() {
     if constexpr(Condition)
         return unpack_trait<LeftPack>();
     else
@@ -56,6 +58,6 @@ consteval auto conditional_trait_pack() {
 }
 
 template<bool Condition, class LeftPack, class RightPack>
-using conditional_pack_t = identity_t<conditional_trait_pack<Condition, LeftPack, RightPack>()>;
+using conditional_pack_t = type_of_t<conditional_pack<Condition, LeftPack, RightPack>()>;
 
 }

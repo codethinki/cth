@@ -12,26 +12,31 @@
 namespace cth::mta {
 
 template<class T, template<class> class Trait>
-concept applicable = requires() { typename Trait<T>; };
+concept simple_trait_applicable = requires() { typename Trait<T>; };
 
-
+template<template<class> class Trait, class... Args>
+concept trait_applicable = requires() { typename Trait<Args...>; };
 }
 
 
 // trait functions
 
 namespace cth::mta {
-template<class T, template<class> class Trait, size_t N = 1>
-[[nodiscard]] cval auto iterate_trait();
+template<size_t N, template<class> class Trait, class T> requires(trait_applicable<Trait, T> || N == 0)
+struct repeat_trait : repeat_trait<N - 1, Trait, Trait<T>> {};
 
-template<class T, template<class> class Trait, size_t N = 1>
-using iterate_trait_t = decltype(iterate_trait<T, Trait, N>())::type;
+template<template<class> class Trait, class T>
+struct repeat_trait<0, Trait, T> : std::type_identity<T> {};
 
-template<class T, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
-[[nodiscard]] cval size_t trait_count();
+template<size_t N, template<class> class Trait, class T>
+using repeat_trait_t = repeat_trait<N, Trait, T>::type;
 
-template<class T, auto TCpt, template<class> class Trait, size_t MaxDepth = MAX_DEPTH>
-[[nodiscard]] cval size_t cpt_count();
+
+template<class T, template<class> class Trait>
+[[nodiscard]] cval size_t trait_count(size_t max_depth = MAX_DEPTH);
+
+template<class T, auto TCpt, template<class> class Trait>
+[[nodiscard]] cval size_t cpt_count(size_t max_depth = MAX_DEPTH);
 
 /**
  * should not be used, use std::forward_like instead
@@ -65,6 +70,7 @@ using rcvr_t = std::remove_cvref_t<T>;
 
 #include "traits/trait_packs.hpp"
 
+
 namespace cth::mta {
 
 namespace dev {
@@ -79,10 +85,13 @@ namespace dev {
     };
 }
 
+
 template<class T>
 using remove_rvalue_reference_t = dev::remove_rvalue_reference<T>::value_type;
 
 template<class T>
 using remove_rvalue_ref_t = remove_rvalue_reference_t<T>;
+
+
 
 }
