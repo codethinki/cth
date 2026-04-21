@@ -12,7 +12,7 @@ import cth.meta.concepts;
 namespace cth::mta::dev {
 template<class T, template<class> class Trait, size_t Max>
 cval size_t trait_count(size_t n = 0) {
-    if constexpr(!applicable<T, Trait>) return n;
+    if constexpr(!simple_trait_applicable<T, Trait>) return n;
     else {
         if(n >= Max) return n;
         return trait_count<iterate_trait_t<T, Trait>, Trait, Max>(n + 1);
@@ -23,7 +23,7 @@ cval size_t trait_count(size_t n = 0) {
 namespace cth::mta {
 template<class T, template<class> class Trait, size_t N>
 [[nodiscard]] cval auto iterate_trait() {
-    constexpr bool valid = applicable<T, Trait>;
+    constexpr bool valid = simple_trait_applicable<T, Trait>;
 
     if constexpr(N == 0) return std::type_identity<T>{};
     else if constexpr(!valid) static_assert(valid, "[Trait] not applicable on [T]");
@@ -49,7 +49,7 @@ namespace cth::mta::dev {
     cval size_t cpt_count(size_t n = 0) {
         if(n >= MaxDepth) return n;
         if constexpr(!satisfies<T, TCpt>) return n;
-        else if constexpr(!applicable<T, Trait>) throw Trait_must_be_applicable_on_T{};
+        else if constexpr(!simple_trait_applicable<T, Trait>) throw Trait_must_be_applicable_on_T{};
         else {
             using U = iterate_trait_t<T, Trait>;
             return cpt_count<U, TCpt, Trait, MaxDepth>(n + 1);

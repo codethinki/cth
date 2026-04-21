@@ -41,7 +41,6 @@ template<class T, class... Ts>
 using any_of_t = any_of_trait<T, Ts...>::type;
 
 
-
 /**
  * \brief converts to the first type of Ts... that is the same as T
  * \tparam Ts to any of Ts...
@@ -133,7 +132,7 @@ export namespace cth::mta {
  * @brief shortcut to @ref is_any_constructible_from_v
  */
 template<typename T, typename... Ts>
-concept any_constructible_from = (std::constructible_from<Ts, T> || ...);
+concept constructs_any_of = (std::constructible_from<Ts, T> || ...);
 
 
 
@@ -168,7 +167,7 @@ using construct_any_from_t = construct_any_from_trait<T, Ts...>::type;
  * \tparam U from
  * \note prioritizes to_convertible<T, Ts...> if available
  */
-template<typename U, typename... Ts, typename T> requires(any_constructible_from<T, Ts...>)
+template<typename U, typename... Ts, typename T> requires(constructs_any_of<T, Ts...>)
 auto to_constructible_from(T&& arg);
 /**
  * \brief constructs the first type of Ts... that is constructible from T

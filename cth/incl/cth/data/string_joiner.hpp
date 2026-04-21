@@ -1,12 +1,19 @@
 #pragma once
+#include "cth/algorithm/ranges.hpp"
+#include "cth/algorithm/views.hpp"
 #include "cth/meta/variadic.hpp"
 
 #include <string>
 #include <string_view>
 #include <utility>
+#include <format>
+#include <ranges>
+#include <concepts>
+
+
 
 namespace cth::dt {
-class joiner {
+class string_joiner {
 #define CTH_DEV_JOINER_FORWARD_STRING_METHOD(str, method_name)                                               \
     template<class... Args>                                                                                  \
     [[nodiscard]] auto method_name(this auto&& self, Args&&... args)                                         \
@@ -16,9 +23,14 @@ class joiner {
     }
 
 public:
-    explicit joiner(std::string delimiter = " ") : _delimiter(std::move(delimiter)) {}
+    explicit string_joiner(std::string_view delimiter = " ") : _delimiter{delimiter} {}
 
-    joiner(std::string delimiter, size_t capacity) : _delimiter(std::move(delimiter)) {
+
+    template<std::ranges::viewable_range Rng>
+    string_joiner(std::string_view delimiter, Rng&& rng) : _delimiter{delimiter},
+        _buffer{std::format("{}", rng | cth::views::format(_delimiter))} {}
+
+    string_joiner(std::string_view delimiter, size_t capacity) : _delimiter{delimiter} {
         _buffer.reserve(capacity);
     }
 
@@ -35,15 +47,15 @@ public:
         return self;
     }
 
-    [[nodiscard]] std::string const& string() const& { return _buffer; }
+    [[nodiscard]] std::string const& string() const & { return _buffer; }
     [[nodiscard]] std::string string() && { return std::move(_buffer); }
     [[nodiscard]] std::string const& delim() const { return _delimiter; }
 
-    operator std::string() const& { return _buffer; }
+    operator std::string() const & { return _buffer; }
     operator std::string() && { return std::move(_buffer); }
     [[nodiscard]] operator std::string_view() const { return _buffer; }
 
-    bool operator==(joiner const&) const = default;
+    bool operator==(string_joiner const&) const = default;
 
     CTH_DEV_JOINER_FORWARD_STRING_METHOD(_buffer, begin)
     CTH_DEV_JOINER_FORWARD_STRING_METHOD(_buffer, end)
@@ -74,38 +86,35 @@ public:
     CTH_DEV_JOINER_FORWARD_STRING_METHOD(_buffer, find_last_not_of)
 
     template<class... Args>
-    [[nodiscard]] auto substr(this auto&& self, Args&&... args)
-        requires requires(std::string str, Args... args) {
-            std::string_view{str}.substr(std::forward<Args>(args)...);
-        }
-    {
+    [[nodiscard]] auto substr(this auto&& self, Args&&... args) requires requires(std::string str, Args... args) {
+        std::string_view{str}.substr(std::forward<Args>(args)...);
+    } {
         return std::string_view{self._buffer}.substr(std::forward<Args>(args)...);
     }
 
 private:
-    std::string _buffer;
     std::string _delimiter;
+    std::string _buffer;
 };
 
 template<class T>
-[[nodiscard]] auto operator+(joiner&& sj, T&& value) {
+[[nodiscard]] auto operator+(string_joiner&& sj, T&& value) {
     sj += std::forward<T>(value);
     return std::move(sj);
 }
 
 template<class T>
-[[nodiscard]] auto operator+(joiner const& sj, T&& value) {
+[[nodiscard]] auto operator+(string_joiner const& sj, T&& value) {
     auto copy = sj;
     copy += std::forward<T>(value);
     return copy;
 }
 
-[[nodiscard]] inline bool operator==(joiner const& sj, std::string const& str) { return sj.string() == str; }
-[[nodiscard]] inline bool operator==(std::string const& str, joiner const& sj) { return sj == str; }
-[[nodiscard]] inline bool operator==(joiner const& sj, std::string_view str) {
+[[nodiscard]] inline bool operator==(string_joiner const& sj, std::string const& str) { return sj.string() == str; }
+[[nodiscard]] inline bool operator==(std::string const& str, string_joiner const& sj) { return sj == str; }
+[[nodiscard]] inline bool operator==(string_joiner const& sj, std::string_view str) {
     return std::string_view{sj} == str;
 }
-[[nodiscard]] inline bool operator==(std::string_view str, joiner const& sj) { return sj == str; }
-
+[[nodiscard]] inline bool operator==(std::string_view str, string_joiner const& sj) { return sj == str; }
 
 }

@@ -19,7 +19,7 @@ import cth.meta.variadic;
 
 export namespace cth::str {
 template<class T>
-concept char_formattable = cth::mta::any_constructible_from<T, std::string_view, std::string> ;
+concept char_formattable = cth::mta::constructs_any_of<T, std::string_view, std::string> ;
 }
 
 export namespace cth::str {
@@ -123,7 +123,7 @@ template<class T>
 concept printable_rng =
     cth::rng::viewable_rng<T>
     && cth::rng::static_dim_rng<cth::mta::rcvr_t<T>>
-    && !cth::mta::any_constructible_from<T, std::string_view, std::string>;
+    && !cth::mta::constructs_any_of<T, std::string_view, std::string>;
 }
 
 

@@ -1,4 +1,3 @@
-#include <windows.h>
 #include <iostream>
 #include <chrono>
 #include <filesystem>
@@ -7,6 +6,7 @@
 #include <numeric>
 #include <print>
 
+#include "cth/meta/concepts.hpp"
 //
 //int main() {
 //#ifdef  __cpp_reflection
@@ -29,21 +29,18 @@
 //#endif
 //}
 
-#include <cth/meta/variadic.hpp>
-
 short test(short) { return {}; }
 double test(double) { return {}; }
 float test(float) { return {}; }
 int test(int) { return {}; }
 bool test(bool) { return {}; }
 
+
+
 int main() {
-    using test_t = short;
 
 
-    using T = cth::mta::unique_tuple<int, int, int>;
+    std::vector a{1, 2, 3};
 
-
-
-    std::println("type: {}", typeid(T::types).name());
+    std::println("{}", a);
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "utility.hpp"
 #include <concepts>
+#include <tuple>
 
 
 #define CPT(concept)                                                                                         \
@@ -17,6 +18,26 @@ concept all_satisfy = (satisfies<Ts, TCpt> && ...);
 template<auto TCpt, class... Ts>
 concept any_satisfy = (satisfies<Ts, TCpt> || ...);
 
+template<class T, class... Ts>
+concept is_any_of = (std::same_as<T, Ts> || ...);
+
+/**
+ * @brief satisfied if any of Ts... are constructible from T
+ */
+template<class T, class... Ts>
+concept constructs_any_of = (std::constructible_from<Ts, T> || ...);
+
+/**
+ * @brief true if any of Ts... are convertible to T
+ */
+template<class T, class... Ts>
+concept any_convertible_to = (std::convertible_to<Ts, T> || ...);
+
+/**
+ * @brief true if T is convertible to any of Ts...
+ */
+template<class T, class... Ts>
+concept convertible_to_any = (std::convertible_to<T, Ts> || ...);
 }
 
 
@@ -29,16 +50,16 @@ template<typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
 
 template<class T>
-concept character = std::same_as<pure_t<T>, char> || std::same_as<pure_t<T>, wchar_t>;
+concept character = std::same_as<std::decay_t<T>, char> || std::same_as<std::decay_t<T>, wchar_t>;
 
 template<class T>
-concept n_character = std::same_as<pure_t<T>, char>;
+concept n_character = std::same_as<std::decay_t<T>, char>;
 
 template<class T, auto TCpt>
 concept negate = !satisfies<T, TCpt>;
 
 template<class T>
-concept w_character = std::same_as<pure_t<T>, wchar_t>;
+concept w_character = std::same_as<std::decay_t<T>, wchar_t>;
 
 template<class Obj, auto Fn, class... Args>
 concept member_callable_with = requires(Obj obj) { std::invoke(Fn, obj, std::declval<Args>()...); };
@@ -88,6 +109,15 @@ concept default_constructible = std::is_default_constructible_v<T>;
 
 template<class T, class Where>
 concept emplacable = requires(T t, Where w) { w.emplace(t); };
+
+
+template<class To, class From>
+concept convertible_from = std::convertible_to<From, To>;
+
+template<class T>
+concept tuple_like = requires(T t) {
+    { std::apply([]<class... Args>(Args&&...) {}, t) } -> std::same_as<void>;
+};
 }
 
 

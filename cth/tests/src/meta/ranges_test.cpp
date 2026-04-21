@@ -14,13 +14,13 @@ constexpr size_t rank = 3;
 namespace cth::mta {
 
 TYPE_TEST(dimensions, exact) {
-    constexpr auto result = dimensions<T, rank>();
+    constexpr auto result = dimensions<T>(rank);
 
     ASSERT_EQ(result, rank);
 }
 
 TYPE_TEST(dimensions, no_limit) {
-    constexpr auto result = dimensions<T>();
+    constexpr auto result = dimensions<T>(rank);
 
     ASSERT_EQ(result, rank);
 }
@@ -28,7 +28,7 @@ TYPE_TEST(dimensions, no_limit) {
 TYPE_TEST(dimensions, limited) {
     constexpr auto max = rank - 1;
 
-    constexpr auto result = dimensions<T, max>();
+    constexpr auto result = dimensions<T>(max);
 
     ASSERT_EQ(result, max);
 }

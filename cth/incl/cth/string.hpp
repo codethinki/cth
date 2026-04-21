@@ -15,8 +15,9 @@
 
 namespace cth::str {
 template<class T>
-concept char_formattable = cth::mta::any_constructible_from<T, std::string_view, std::string>;
+concept char_formattable = cth::mta::constructs_any_of<T, std::string_view, std::string>;
 }
+
 
 namespace cth::str {
 [[nodiscard]] cxpr std::vector<char const*> to_c_str_vector(std::span<std::string const> const& str_vec) {
@@ -68,8 +69,7 @@ template<cth::mta::arithmetic T>
  * @brief formats ranges to string
  * @tparam Rng must satisfy rng::static_dim_rng<Rng>
  */
-template<rng::viewable_rng Rng>
-requires(rng::static_dim_rng<mta::rcvr_t<Rng>>)
+template<rng::viewable_rng Rng> requires(rng::static_dim_rng<mta::rcvr_t<Rng>>)
 [[nodiscard]] cxpr std::string to_string(Rng&& range) {
     static cxpr bool MD_RANGE = mta::md_range<Rng, 2>;
 
@@ -113,10 +113,16 @@ template<
     using ret_t = std::vector<std::basic_string<char_t>>;
 
     auto const d =
-        mta::to_constructible_from<std::decay_t<U>, char_t, std::basic_string_view<char_t>>(delimiter);
+        mta::to_constructible_from<
+            std::decay_t<U>,
+            char_t,
+            std::basic_string_view<char_t>
+        >(delimiter);
 
-    return view | std::views::split(d) |
-        std::views::filter([](auto string_part) { return !string_part.empty(); }) | std::ranges::to<ret_t>();
+    return view
+        | std::views::split(d)
+        | std::views::filter([](auto string_part) { return !string_part.empty(); })
+        | std::ranges::to<ret_t>();
 }
 
 
@@ -126,7 +132,7 @@ template<
 namespace cth::str {
 template<class T>
 concept printable_rng = rng::viewable_rng<T> && rng::static_dim_rng<mta::rcvr_t<T>> &&
-    !cth::mta::any_constructible_from<T, std::string_view, std::string>;
+    !cth::mta::constructs_any_of<T, std::string_view, std::string>;
 }
 
 

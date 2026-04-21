@@ -23,7 +23,7 @@ using empty_t = decltype(empty);
 
 
 template<auto TypeIdentity>
-using identity_t = decltype(TypeIdentity)::type;
+using type_of_t = decltype(TypeIdentity)::type;
 }
 
 
@@ -43,10 +43,4 @@ declauto copy_if(T&& value) {
     else return std::forward<T>(value);
 }
 
-}
-
-
-export namespace cth::mta {
-template<class T>
-using pure_t = std::decay_t<T>;
 }

@@ -9,7 +9,7 @@ import cth.meta.utility;
 
 export namespace cth::mta {
 template<class T, template<class> class Trait>
-concept applicable = requires() {
+concept simple_trait_applicable = requires() {
     typename Trait<T>;
 };
 

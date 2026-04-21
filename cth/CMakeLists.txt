@@ -8,3 +8,8 @@ cth_pkg_target_include_directories(
         cth
         INTERFACE incl
 )
+
+# tests
+if(CTH_ENABLE_TESTS)
+    add_subdirectory(tests)
+endif()
