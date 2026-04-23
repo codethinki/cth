@@ -9,6 +9,7 @@ cth_target_enable_build_cache(cth_win OPTIONAL)
 cth_pkg_target_include_directories(
         cth_win
         PUBLIC incl
+        PRIVATE src
 )
 
 target_link_libraries(cth_win PUBLIC cth::cth)

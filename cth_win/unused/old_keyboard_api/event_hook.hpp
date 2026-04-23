@@ -1,5 +1,5 @@
 #pragma once
-#include "../io/log.hpp"
+#include "cth/io/log.hpp"
 #include "win_include.hpp"
 
 #include <functional>

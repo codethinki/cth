@@ -6,6 +6,7 @@
 #include "cth/os/osdef.hpp"
 #include "cth/string/format.hpp"
 
+#include <chrono>
 
 namespace cth::io {
 /**
@@ -261,24 +262,63 @@ cxpr std::string_view to_utf8_string(Key key) {
 
 CTH_GEN_ENUM_DEREF_OVERLOAD(cth::io::Key)
 
+CTH_FORMAT_CLASS_ATTRIBUTES(
+    cth::io::Key,
+    "{}",
+    ([](cth::io::Key const& key) { return cth::io::to_utf8_string(key); })
+);
+
 namespace cth::io {
 
 struct ex_key {
     Key key;
     bool right = false;
+
+    [[nodiscard]] constexpr bool operator==(ex_key const&) const = default;
 };
 
 struct key_state {
-    key_state(ex_key ex_key, bool down) : exKey{ex_key}, down{down} {}
-    key_state(Key key, bool right, bool down) : key_state{{key, right}, down} {}
+    constexpr key_state(ex_key ex_key, bool down) : exKey{ex_key}, down{down} {}
+    constexpr key_state(Key key, bool right, bool down) : key_state{{key, right}, down} {}
 
     ex_key exKey;
     bool down;
+
+    [[nodiscard]] constexpr bool operator==(key_state const&) const = default;
 };
 
 struct key_update {
     key_state data;
-    co::time_point_t time;
+    chrono::time_point_t time;
+
+    [[nodiscard]] constexpr bool operator==(key_update const&) const = default;
 };
 
 }
+
+CTH_FORMAT_CLASS_ATTRIBUTES(
+    cth::io::ex_key,
+    "{}, right: {}",
+    ([](cth::io::ex_key const& key) { return std::tie(key.key, key.right); })
+);
+
+
+CTH_FORMAT_CLASS_ATTRIBUTES(
+    cth::io::key_state,
+    "{}, down: {}",
+    ([](cth::io::key_state const& key){ return std::tie(key.exKey, key.down); })
+);
+
+
+CTH_FORMAT_CLASS_ATTRIBUTES(
+    cth::io::key_update,
+    "{}, time: {}",
+    (
+        [](cth::io::key_update const& update){
+        return std::forward_as_tuple(
+            update.data,
+            std::chrono::duration_cast<std::chrono::seconds>(update.time - cth::chrono::session_start)
+        );
+        }
+    )
+);

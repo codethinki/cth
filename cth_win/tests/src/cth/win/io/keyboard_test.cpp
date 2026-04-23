@@ -2,27 +2,46 @@
 
 #include "test.hpp"
 
+#include "cth/io/log.hpp"
+
+#include <array>
+
 #define KEYBD_TEST(suite, name) WIN_EX_TEST(keybd, suite, name)
 
-namespace cth::win {
-KEYBD_TEST(send, main) {
-    /*   std::this_thread::sleep_for(std::chrono::seconds{2});
+namespace cth::win::keybd {
 
-       std::array<io::Key, 5> keys{
-           io::Key::H,
-           io::Key::E,
-           io::Key::L,
-           io::Key::L,
-           io::Key::O
-       };
+/*
+KEYBD_TEST(send, asdf) {
+    std::this_thread::sleep_for(std::chrono::milliseconds{2000});
 
-       std::vector<io::key_state> updates{};
-       updates.reserve(keys.size() * 2);
+    constexpr std::array<io::key_state, 6> keys{
+        {
+            {io::Key::A, false, true},
+            {io::Key::A, false, false},
+            {io::Key::S, false, true},
+            {io::Key::S, false, false},
+            {io::Key::S, false, true},
+            {io::Key::S, false, false},
+        }
+    };
+    send(keys);
+}
 
-       for(auto& key : keys) {
-           updates.emplace_back(io::ex_key{key}, true);
-           updates.emplace_back(io::ex_key{key}, false);
-       }
-       keybd::send(updates);*/
+KEYBD_TEST(event_queue, test_recording) {
+    event_queue q{};
+
+    std::this_thread::sleep_for(std::chrono::seconds{4});
+
+    std::println("{}", q.pop_queue());
+}
+*/
+
+KEYBD_TEST(event_queue, basic) {
+    event_queue queue{};
+    CTH_CRITICAL(queue.empty(), "event queue should be empty after construction");
+
+    queue.clear();
+    auto events = queue.pop_queue();
+    CTH_CRITICAL(events.empty(), "pop_queue should return an empty vector for empty queue");
 }
 }

@@ -54,6 +54,14 @@ struct std::formatter<type> {                                                   
     }                                                                                               \
 }
 
+/**
+ * creates a format overload for a class, implicitly includes type name with type[<fmt_string>]
+ * @param type The class/struct type to format
+ * @param fmt_string The format string (e.g., "ID: {}, Val: {}")
+ * @param tie_func An expression involving 'obj' that returns a tuple/tie
+ */
+#define CTH_FORMAT_CLASS_ATTRIBUTES(type, fmt_string, tie_func)\
+    CTH_FORMAT_CLASS(type, #type "[" fmt_string "]", tie_func)
 
 /**
  * @brief creates a format overload for the concept

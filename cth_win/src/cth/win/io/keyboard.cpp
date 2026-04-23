@@ -1,191 +1,215 @@
 #include "cth/win/io/keyboard.hpp"
+#include "cth/coro/global_switch.hpp"
 
-#include "../win_include.hpp"
+// private
+#include "cth/win/win_include.hpp"
+#include "cth/win/io/win_key_convert.hpp"
 
+#include "hidusage.h"
 
-namespace cth::win {
+#include <algorithm>
+#include <mutex>
+#include <print>
+#include <ranges>
+#include <thread>
+#include <vector>
+
+namespace cth::win::keybd {
 namespace {
+    class hook_manager {
+    public:
+        hook_manager() = default;
+        ~hook_manager() { stop_hook(); }
 
-    struct win_key {
-        WORD vk;
-        DWORD flags;
-    };
+        hook_manager(hook_manager const&) = delete;
+        hook_manager& operator=(hook_manager const&) = delete;
 
-    constexpr win_key to_win_key(io::ex_key ex_key) {
-        auto& [key, right] = ex_key;
-
-        using io::Key;
-
-        if(key >= Key::A && key <= Key::Z)
-            return {static_cast<WORD>('A' + (*key - *Key::A)), 0};
-
-        if(key >= Key::DIGIT_0 && key <= Key::DIGIT_9)
-            return {static_cast<WORD>('0' + (*key - *Key::DIGIT_0)), 0};
-
-        if(key >= Key::F1 && key <= Key::F12)
-            return {static_cast<WORD>(VK_F1 + (*key - *Key::F1)), 0};
-
-        WORD vk = 0;
-        DWORD flags = 0;
-
-        switch(key) {
-            case Key::SPACE: vk = VK_SPACE;
-                break;
-            case Key::BACKTICK: vk = VK_OEM_3;
-                break;
-            case Key::MINUS: vk = VK_OEM_MINUS;
-                break;
-            case Key::EQUAL: vk = VK_OEM_PLUS;
-                break;
-            case Key::OPEN_BRACKET: vk = VK_OEM_4;
-                break;
-            case Key::CLOSE_BRACKET: vk = VK_OEM_6;
-                break;
-            case Key::BACKSLASH: vk = VK_OEM_5;
-                break;
-            case Key::SEMICOLON: vk = VK_OEM_1;
-                break;
-            case Key::QUOTE: vk = VK_OEM_7;
-                break;
-            case Key::COMMA: vk = VK_OEM_COMMA;
-                break;
-            case Key::PERIOD: vk = VK_OEM_PERIOD;
-                break;
-            case Key::SLASH: vk = VK_OEM_2;
-                break;
-            case Key::HASH: vk = VK_OEM_3;
-                break;
-            case Key::PLUS: vk = VK_ADD;
-                break;
-            case Key::STAR: vk = VK_MULTIPLY;
-                break;
-            case Key::LESS_THAN: vk = VK_OEM_COMMA;
-                break;
-
-            case Key::BACKSPACE: vk = VK_BACK;
-                break;
-            case Key::CAPS_LOCK: vk = VK_CAPITAL;
-                break;
-#pragma push_macro("DELETE")
-#undef DELETE
-            case Key::DELETE:
-#pragma pop_macro("DELETE")
-                vk = VK_DELETE;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::END:
-                vk = VK_END;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::ENTER: vk = VK_RETURN;
-                break;
-            case Key::ESCAPE: vk = VK_ESCAPE;
-                break;
-            case Key::HOME:
-                vk = VK_HOME;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::INSERT:
-                vk = VK_INSERT;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::PAGE_DOWN:
-                vk = VK_NEXT;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::PAGE_UP:
-                vk = VK_PRIOR;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::TAB: vk = VK_TAB;
-                break;
-
-            case Key::ARROW_DOWN:
-                vk = VK_DOWN;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::ARROW_LEFT:
-                vk = VK_LEFT;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::ARROW_RIGHT:
-                vk = VK_RIGHT;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::ARROW_UP:
-                vk = VK_UP;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-
-            case Key::ALT:
-                vk = right ? VK_RMENU : VK_LMENU;
-                if(right)
-                    flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::CONTROL:
-                vk = right ? VK_RCONTROL : VK_LCONTROL;
-                if(right)
-                    flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-            case Key::SHIFT: vk = right ? VK_RSHIFT : VK_LSHIFT;
-                break;
-
-            case Key::META: vk = VK_APPS;
-                break;
-            case Key::PLATFORM: vk = right ? VK_RWIN : VK_LWIN;
-                break;
-
-            case Key::NUM_LOCK:
-                vk = VK_NUMLOCK;
-                flags |= KEYEVENTF_EXTENDEDKEY;
-                break;
-
-            default: break;
+        void subscribe(event_queue& queue) {
+            {
+                std::scoped_lock lock{_mutex};
+                _queues.push_back(&queue);
+            }
+            _hookSwitch.acquire();
         }
 
-        CTH_CRITICAL(vk == 0, "failed to convert to win key") {}
-
-        return {vk, flags};
-    }
-
-
-    constexpr INPUT to_win_input(io::key_state state) {
-        auto const [vk, flags] = to_win_key(state.exKey);
-
-        return {
-            .type = INPUT_KEYBOARD,
-            .ki{
-                .wVk = vk,
-                .wScan = 0,
-                .dwFlags = static_cast<DWORD>(flags | (state.down ? 0 : KEYEVENTF_KEYUP)),
-                .time = 0,
-                .dwExtraInfo = 0
+        void unsubscribe(event_queue& queue) {
+            {
+                std::scoped_lock lock{_mutex};
+                std::erase(_queues, &queue);
             }
+            _hookSwitch.release();
+        }
+
+        void push_event(cth::io::key_update update) {
+            if(update.data.exKey.key == ::cth::io::Key::NONE)
+                return;
+
+            std::scoped_lock lock{_mutex};
+            for(auto* queue : _queues)
+                queue->push(update);
+        }
+
+        static LRESULT CALLBACK hook_callback(int n_code, WPARAM w_param, LPARAM l_param);
+
+    private:
+        std::vector<event_queue*> _queues;
+        std::mutex _mutex;
+        std::jthread _hookThread;
+        DWORD _hookThreadId{0};
+
+        // global_switch wired directly to our internal start/stop methods
+        cth::co::global_switch _hookSwitch{
+            [this] { start_hook(); },
+            [this] { stop_hook(); }
         };
-    }
-}
 
-}
+        void start_hook() { _hookThread = std::jthread{[this](std::stop_token const& stop) { thread_proc(stop); }}; }
 
+        void stop_hook() {
+            _hookThread.request_stop();
+            if(_hookThreadId != 0)
+                PostThreadMessageW(_hookThreadId, WM_QUIT, 0, 0);
 
-namespace cth::win {
+            if(_hookThread.joinable())
+                _hookThread.join();
+            _hookThreadId = 0;
+        }
 
+        void thread_proc(std::stop_token const& stop) {
+            // 1. Create a "Message-Only" Window (Invisible, doesn't show in taskbar)
+            wnd_ptr hwnd{
+                CreateWindowExW(
+                    0,
+                    L"Static",
+                    L"RawInputWindow",
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    HWND_MESSAGE,
+                    nullptr,
+                    nullptr,
+                    nullptr
+                )
+            };
 
-void keybd::send(io::key_state state) {
-    auto input = to_win_input(state);
+            CTH_WIN_STABLE_THROW(!hwnd, "failed to create hwnd") {}
 
-    SendInput(1, &input, sizeof(INPUT));
-}
-void keybd::send(std::span<io::key_state const> states) {
-    std::vector inputs{
-        std::from_range, states | std::views::transform(
-            [](auto const& state) {
-                return win::to_win_input(state);
+            // 2. Register for Keyboard Raw Input
+            RAWINPUTDEVICE rid{
+                .usUsagePage = HID_USAGE_PAGE_GENERIC,
+                .usUsage = 0x06,
+                .dwFlags = RIDEV_INPUTSINK,
+                .hwndTarget = static_cast<HWND>(hwnd.get())
+            };
+
+            if(!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
+                return;
+
+            _hookThreadId = GetCurrentThreadId();
+
+            MSG msg;
+            while(GetMessageW(&msg, nullptr, 0, 0) > 0 && !stop.stop_requested()) {
+                if(msg.message == WM_INPUT) {
+                    UINT dwSize = sizeof(RAWINPUT);
+                    RAWINPUT lpb{};
+
+                    GetRawInputData(
+                        reinterpret_cast<HRAWINPUT>(msg.lParam),
+                        RID_INPUT,
+                        &lpb,
+                        &dwSize,
+                        sizeof(RAWINPUTHEADER)
+                    );
+
+                    if(lpb.header.dwType == RIM_TYPEKEYBOARD)
+                        push_event(to_key_update(lpb.data.keyboard));
+                }
+                TranslateMessage(&msg);
+                DispatchMessageW(&msg);
             }
-        )
+
+            _hookThreadId = 0;
+        }
     };
 
-    SendInput(states.size(), inputs.data(), sizeof(INPUT));
-}
+    inline hook_manager keybdManager{};
+
+    LRESULT CALLBACK hook_manager::hook_callback(int n_code, WPARAM w_param, LPARAM l_param) {
+        if(n_code == HC_ACTION) {
+            auto const keyStruct = *reinterpret_cast<KBDLLHOOKSTRUCT const*>(l_param);
+            auto const event = to_key_update(keyStruct);
+
+            keybdManager.push_event(event);
+        }
+        return CallNextHookEx(nullptr, n_code, w_param, l_param);
+    }
 
 }
+}
+
+
+namespace cth::win::keybd {
+
+event_queue::event_queue() { keybdManager.subscribe(*this); }
+
+event_queue::~event_queue() { keybdManager.unsubscribe(*this); }
+
+[[nodiscard]] bool event_queue::empty() const {
+    std::scoped_lock lock{_queueMtx};
+    return _queue.empty();
+}
+
+[[nodiscard]] event_queue::event_t event_queue::front() const {
+    std::scoped_lock lock{_queueMtx};
+    return _queue.front();
+}
+
+[[nodiscard]] event_queue::event_t event_queue::pop() {
+    std::scoped_lock lock{_queueMtx};
+    auto const result = _queue.front();
+    _queue.pop();
+    return result;
+}
+
+[[nodiscard]] auto event_queue::pop_queue() -> std::vector<event_t> {
+    std::scoped_lock lock{_queueMtx};
+    std::vector<event_t> events;
+    while(!_queue.empty()) {
+        events.push_back(_queue.front());
+        _queue.pop();
+    }
+    return events;
+}
+
+void event_queue::clear() {
+    std::scoped_lock lock{_queueMtx};
+    while(!_queue.empty())
+        _queue.pop();
+}
+
+void event_queue::push(event_t event) {
+    std::scoped_lock lock{_queueMtx};
+    _queue.push(std::move(event));
+}
+
+} // namespace cth::win::io
+
+namespace cth::win::keybd {
+
+void send(cth::io::key_state state) {
+    auto input = win::to_win_input(state);
+    SendInput(1, &input, sizeof(INPUT));
+}
+
+void send(std::span<cth::io::key_state const> states) {
+    std::vector inputs{
+        std::from_range,
+        states | std::views::transform([](auto const& state) { return win::to_win_input(state); })
+    };
+
+    SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
+}
+
+} // namespace cth::win::io

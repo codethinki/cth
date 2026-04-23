@@ -123,4 +123,3 @@ std::optional<size_t> count(std::wstring_view process_name) {
 } // namespace cth::win::proc
 
 
-namespace cth::win::io {} // namespace cth::win::io
