@@ -89,7 +89,6 @@ public:
     }
 
     template<class S, typename... Args> requires(sizeof...(Args) > 0u)
-    template<class S, typename... Args> requires(sizeof...(Args) > 0u)
     cxpr declauto add(this S& self, std::format_string<Args...> f_str, Args&&... types) noexcept {
         return self.addNoCpy(std::format(f_str, std::forward<Args>(types)...));
     }

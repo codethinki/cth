@@ -8,18 +8,18 @@
 
 namespace cth::co::this_coro {
 struct [[nodiscard]] wait_tag : tag_base {
-    constexpr explicit wait_tag(time_point_t t) : timePoint{t} {}
+    constexpr explicit wait_tag(chrono::time_point_t t) : timePoint{t} {}
     constexpr auto operator()(payload const& p) const { return wait_awaiter{timePoint, p.scheduler()}; }
 
-    time_point_t timePoint;
+    chrono::time_point_t timePoint;
 };
 
 
-constexpr auto wait_until(time_point_t time_point) { return wait_tag{time_point}; }
+constexpr auto wait_until(chrono::time_point_t time_point) { return wait_tag{time_point}; }
 
 template<class Rep, class Period>
 constexpr auto wait(std::chrono::duration<Rep, Period> const& duration) {
-    return wait_tag{clock_t::now() + duration};
+    return wait_tag{chrono::clock_t::now() + duration};
 }
 
 }

@@ -2,7 +2,7 @@
 #include "cth/coro/utility.hpp"
 
 #include <functional>
-
+#include <atomic>
 
 namespace cth::co {
 /**

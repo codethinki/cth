@@ -37,18 +37,18 @@ struct scheduler::Impl {
 
     void await(native_handle handle, void_func callback) {
         auto handler = wrap_unique(handle, ctx);
-        handler->async_wait([h = std::move(handler),
-                             this,
-                             cb = std::move(callback)](boost::system::error_code const& ec) mutable {
-            BOOST_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", h->native_handle())
+        handler->async_wait(
+            [h = std::move(handler),
+                this,
+                cb = std::move(callback)](boost::system::error_code const& ec) mutable {
+                BOOST_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", h->native_handle())
 
-            cb();
-        });
+                cb();
+            }
+        );
     }
 
-    void await(time_point_t time_point, void_func callback) {
-        timerPool.set(time_point, std::move(callback));
-    }
+    void await(chrono::time_point_t time_point, void_func callback) { timerPool.set(time_point, std::move(callback)); }
 
 
     bas::io_context ctx;
@@ -62,7 +62,8 @@ struct scheduler::Impl {
 namespace cth::co {
 
 scheduler::scheduler(size_t workers) :
-    _impl{std::make_unique<Impl>(workers)}, _activeWorkers{std::make_unique<std::atomic<size_t>>()},
+    _impl{std::make_unique<Impl>(workers)},
+    _activeWorkers{std::make_unique<std::atomic<size_t>>()},
     _workers{workers} {
     CTH_CRITICAL((!expr::num::in(workers, 1, std::numeric_limits<int>::max())), "workers out of range") {}
 }
@@ -80,13 +81,15 @@ void scheduler::await(std::chrono::steady_clock::time_point time_point, void_fun
 void scheduler::start() {
     impl().start();
     for(auto& worker : _workers)
-        worker = std::jthread([&ctx = impl().ctx, impl = _impl.get(), &count = *_activeWorkers] {
-            ++count;
-            _threadScheduler = impl;
+        worker = std::jthread(
+            [&ctx = impl().ctx, impl = _impl.get(), &count = *_activeWorkers] {
+                ++count;
+                _threadScheduler = impl;
 
-            ctx.run();
-            --count;
-        });
+                ctx.run();
+                --count;
+            }
+        );
 }
 void scheduler::request_stop() {
     impl().request_stop();

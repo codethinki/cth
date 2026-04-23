@@ -27,7 +27,7 @@ namespace dev {
         adapted_timer(bas::io_context& ctx) :
             _timer{}, _handler{ctx, duplicate_awaitable_native_handle(_timer.native_handle())} {}
 
-        [[nodiscard]] native_handle_handler_t& set(time_point_t time_point) {
+        [[nodiscard]] native_handle_handler_t& set(chrono::time_point_t time_point) {
             _timer.set(time_point);
             return _handler;
         }
@@ -48,7 +48,7 @@ public:
 
     timer_pool(bas::io_context& ctx) : _ctx{ctx} {}
 
-    void set(time_point_t time_point, void_func callback) {
+    void set(chrono::time_point_t time_point, void_func callback) {
         auto& timer = new_timer();
         auto& handler = timer.set(time_point);
 

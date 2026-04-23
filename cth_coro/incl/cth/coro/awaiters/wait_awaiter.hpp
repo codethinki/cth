@@ -18,7 +18,7 @@ struct wait_awaiter {
     }
 
     void await_suspend(std::coroutine_handle<> h) const {
-        scheduler.await(timePoint, [h]() { h.resume(); });
+        scheduler.await(timePoint, [h] { h.resume(); });
     }
 
     constexpr void await_resume() const noexcept {}

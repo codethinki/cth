@@ -49,7 +49,7 @@ public:
     void post(void_func work) const;
 
     void await(native_handle, void_func cb) const;
-    void await(time_point_t time_point, void_func cb) const;
+    void await(chrono::time_point_t time_point, void_func cb) const;
 
 
     void start();
