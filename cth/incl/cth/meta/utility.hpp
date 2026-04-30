@@ -12,31 +12,22 @@ constexpr auto no_range = [] {};
 constexpr auto empty = [] {};
 constexpr size_t MAX_DEPTH = (std::numeric_limits<size_t>::max)();
 
-
 using no_range_t = decltype(no_range);
 using empty_t = decltype(empty);
-
 
 template<auto TraitValue>
 using type_of_t = decltype(TraitValue)::type;
 }
 
-
 namespace cth::mta {
 
 template<class T = size_t>
-size_t cval zero() {
-    return 0;
-}
+size_t cval zero() { return 0; }
 
 template<class T>
-size_t cval zero(T) {
-    return zero<T>();
-}
+size_t cval zero(T) { return zero<T>(); }
 template<auto Val>
-size_t cval zero() {
-    return mta::zero(Val);
-}
+size_t cval zero() { return mta::zero(Val); }
 
 template<bool Copy, class T>
 declauto copy_if(T&& value) {
@@ -47,4 +38,3 @@ declauto copy_if(T&& value) {
 }
 
 }
-

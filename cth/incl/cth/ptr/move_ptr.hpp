@@ -61,71 +61,86 @@ template<typename T, typename U>
     return !(left.get() == right.get());
 }
 template<typename T, typename U>
-[[nodiscard]] constexpr bool operator<(move_ptr<T> const& left, move_ptr<U> const& right) {
-    return std::less{}(left.get(), right.get());
+[[nodiscard]] constexpr bool operator<(
+    move_ptr<T> const& left,
+    move_ptr<U> const& right
+) { return std::less{}(left.get(), right.get());
 }
 template<typename T, typename U>
-[[nodiscard]] constexpr bool operator>(move_ptr<T> const& left, move_ptr<U> const& right) {
-    return std::greater{}(left.get(), right.get());
+[[nodiscard]] constexpr bool operator>(
+    move_ptr<T> const& left,
+    move_ptr<U> const& right
+) { return std::greater{}(left.get(), right.get());
 }
 template<typename T, typename U>
-[[nodiscard]] constexpr bool operator<=(move_ptr<T> const& left, move_ptr<U> const& right) {
-    return std::less_equal{}(left.get(), right.get());
+[[nodiscard]] constexpr bool operator<=(
+    move_ptr<T> const& left,
+    move_ptr<U> const& right
+) { return std::less_equal{}(left.get(), right.get());
 }
 template<typename T, typename U>
-[[nodiscard]] constexpr bool operator>=(move_ptr<T> const& left, move_ptr<U> const& right) {
-    return std::greater_equal{}(left.get(), right.get());
+[[nodiscard]] constexpr bool operator>=(
+    move_ptr<T> const& left,
+    move_ptr<U> const& right
+) { return std::greater_equal{}(left.get(), right.get());
 }
 
 template<typename T>
-[[nodiscard]] constexpr bool operator==(move_ptr<T> const& ptr, std::nullptr_t) {
-    return !ptr.get();
+[[nodiscard]] constexpr bool operator==(move_ptr<T> const& ptr, std::nullptr_t) { return !ptr.get(); }
+template<typename T>
+[[nodiscard]] constexpr bool operator==(std::nullptr_t, move_ptr<T> const& ptr) { return !ptr.get(); }
+template<typename T>
+[[nodiscard]] constexpr bool operator!=(move_ptr<T> const& ptr, std::nullptr_t) { return ptr.get(); }
+template<typename T>
+[[nodiscard]] constexpr bool operator!=(std::nullptr_t, move_ptr<T> const& ptr) { return ptr.get(); }
+template<typename T>
+[[nodiscard]] constexpr bool operator<(
+    move_ptr<T> const& left,
+    nullptr_t
+) { return std::less<T*>{}(left.get(), nullptr);
 }
 template<typename T>
-[[nodiscard]] constexpr bool operator==(std::nullptr_t, move_ptr<T> const& ptr) {
-    return !ptr.get();
+[[nodiscard]] constexpr bool operator<(
+    nullptr_t,
+    move_ptr<T> const& right
+) { return std::less{}(nullptr, right.get());
 }
 template<typename T>
-[[nodiscard]] constexpr bool operator!=(move_ptr<T> const& ptr, std::nullptr_t) {
-    return ptr.get();
+[[nodiscard]] constexpr bool operator>(
+    move_ptr<T> const& left,
+    nullptr_t
+) { return std::greater<T*>{}(left.get(), nullptr);
 }
 template<typename T>
-[[nodiscard]] constexpr bool operator!=(std::nullptr_t, move_ptr<T> const& ptr) {
-    return ptr.get();
+[[nodiscard]] constexpr bool operator>(
+    nullptr_t,
+    move_ptr<T> const& right
+) { return std::greater{}(nullptr, right.get());
 }
 template<typename T>
-[[nodiscard]] constexpr bool operator<(move_ptr<T> const& left, nullptr_t) {
-    return std::less<T*>{}(left.get(), nullptr);
+[[nodiscard]] constexpr bool operator<=(
+    move_ptr<T> const& left,
+    nullptr_t
+) { return std::less_equal<T*>{}(left.get(), nullptr);
 }
 template<typename T>
-[[nodiscard]] constexpr bool operator<(nullptr_t, move_ptr<T> const& right) {
-    return std::less{}(nullptr, right.get());
-}
-template<typename T>
-[[nodiscard]] constexpr bool operator>(move_ptr<T> const& left, nullptr_t) {
-    return std::greater<T*>{}(left.get(), nullptr);
-}
-template<typename T>
-[[nodiscard]] constexpr bool operator>(nullptr_t, move_ptr<T> const& right) {
-    return std::greater{}(nullptr, right.get());
-}
-template<typename T>
-[[nodiscard]] constexpr bool operator<=(move_ptr<T> const& left, nullptr_t) {
-    return std::less_equal<T*>{}(left.get(), nullptr);
-}
-template<typename T>
-[[nodiscard]] constexpr bool operator<=(nullptr_t, move_ptr<T> const& right) {
-    return std::less_equal{}(nullptr, right.get());
+[[nodiscard]] constexpr bool operator<=(
+    nullptr_t,
+    move_ptr<T> const& right
+) { return std::less_equal{}(nullptr, right.get());
 };
 template<typename T>
-[[nodiscard]] constexpr bool operator>=(move_ptr<T> const& left, nullptr_t) {
-    return std::greater_equal<T*>{}(left.get(), nullptr);
+[[nodiscard]] constexpr bool operator>=(
+    move_ptr<T> const& left,
+    nullptr_t
+) { return std::greater_equal<T*>{}(left.get(), nullptr);
 };
 template<typename T>
-[[nodiscard]] constexpr bool operator>=(nullptr_t, move_ptr<T> const& right) {
-    return std::greater_equal{}(nullptr, right.get());
+[[nodiscard]] constexpr bool operator>=(
+    nullptr_t,
+    move_ptr<T> const& right
+) { return std::greater_equal{}(nullptr, right.get());
 }
-
 
 template<typename T>
 constexpr std::ostream& operator<<(std::ostream& os, move_ptr<T> const& ptr) {
@@ -134,7 +149,6 @@ constexpr std::ostream& operator<<(std::ostream& os, move_ptr<T> const& ptr) {
 }
 
 } // namespace cth
-
 
 template<typename T>
 struct std::hash<cth::move_ptr<T>> /* NOLINT(cert-dcl58-cpp) this is a valid overload for std::hash */ {

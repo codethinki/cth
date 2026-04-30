@@ -45,7 +45,6 @@ enum class Key : uint16_t {
     X,
     Y,
     Z,
-
     // --- Numerical Keys (0-9) ---
     DIGIT_0,
     DIGIT_1,
@@ -57,7 +56,6 @@ enum class Key : uint16_t {
     DIGIT_7,
     DIGIT_8,
     DIGIT_9,
-
     // --- Symbol Keys (Common Symbols, somewhat grouped by location on keyboard) ---
     SPACE,
     BACKTICK, // ` ~
@@ -70,12 +68,11 @@ enum class Key : uint16_t {
     QUOTE, // ' "
     COMMA, // , <
     PERIOD, // . >
-    SLASH, // / ?
+    SLASH, /// ?
     HASH, // # (or other symbol depending on layout)
     PLUS, // + (often on numpad or shifted =)
     STAR,
     LESS_THAN, // < (often shifted comma)
-
 
     // --- Navigation and Editing Keys (No Left/Right Specifics) ---
     BACKSPACE,
@@ -89,13 +86,11 @@ enum class Key : uint16_t {
     PAGE_DOWN,
     PAGE_UP,
     TAB,
-
     // --- Arrow Keys ---
     ARROW_DOWN,
     ARROW_LEFT,
     ARROW_RIGHT,
     ARROW_UP,
-
     // --- Modifier Keys (Left/Right handled separately in adapter logic) ---
     ALT, // General Alt (Left or Right, disambiguation in handling)
     CONTROL, // General Control (Left or Right, disambiguation in handling)
@@ -118,16 +113,13 @@ enum class Key : uint16_t {
     F10,
     F11,
     F12,
-
     NUM_LOCK,
-
     // --- Custom Keys (User-Defined Functions or Layers) ---
     CUSTOM_0,
     CUSTOM_1,
     CUSTOM_2,
     CUSTOM_3,
     CUSTOM_4,
-
     ENUM_LAST_VALUE = CUSTOM_4 // Keep this LAST - for array sizing, iteration, etc.
 };
 
@@ -302,23 +294,21 @@ CTH_FORMAT_CLASS_ATTRIBUTES(
     ([](cth::io::ex_key const& key) { return std::tie(key.key, key.right); })
 );
 
-
 CTH_FORMAT_CLASS_ATTRIBUTES(
     cth::io::key_state,
     "{}, down: {}",
-    ([](cth::io::key_state const& key){ return std::tie(key.exKey, key.down); })
+    ([](cth::io::key_state const& key) { return std::tie(key.exKey, key.down); })
 );
-
 
 CTH_FORMAT_CLASS_ATTRIBUTES(
     cth::io::key_update,
     "{}, time: {}",
     (
-        [](cth::io::key_update const& update){
-        return std::forward_as_tuple(
-            update.data,
-            std::chrono::duration_cast<std::chrono::seconds>(update.time - cth::chrono::session_start)
-        );
+        [](cth::io::key_update const& update) {
+            return std::forward_as_tuple(
+                update.data,
+                std::chrono::duration_cast<std::chrono::seconds>(update.time - cth::chrono::session_start)
+            );
         }
     )
 );

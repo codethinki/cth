@@ -8,13 +8,11 @@
 
 namespace cth::dt {
 
-template<class T>
+template<class T> 
 concept uint = std::unsigned_integral<T>;
 
 template<uint T>
-consteval auto invalid() {
-    return T{} - 1;
-}
+consteval auto invalid() { return T{} - 1; }
 
 namespace dev {
     // Internal node structure, made public for development/debugging purposes.
@@ -59,7 +57,6 @@ struct basic_mini_defrag {
     std::vector<basic_mini_alloc<SizeType, IndexType>> updatedAllocs;
     std::vector<basic_mini_memmove<SizeType>> moves;
 };
-
 
 template<uint SizeType, uint IndexType>
 class basic_miniram {
@@ -171,8 +168,12 @@ private:
     constexpr size_type compactUsedNodes(std::vector<index_type> const& used_nodes, defrag_type& report);
     constexpr void reconstructFreeSpace(size_type compacted_offset, index_type last_used_node);
 
-    constexpr void
-    sliceTopBinNode(size_type slice_size, size_t bin_id, size_t top_bin_id, size_t leaf_bin_id);
+    constexpr void sliceTopBinNode(
+        size_type slice_size,
+        size_t bin_id,
+        size_t top_bin_id,
+        size_t leaf_bin_id
+    );
     constexpr static size_t findLowestBitAfter(top_bin_mask_t bit_mask, size_t start_id);
 
     constexpr index_type insertNode(size_type size, size_type data_offset);

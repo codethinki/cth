@@ -12,8 +12,6 @@
 #include <unordered_set>
 #include <vector>
 
-
-
 /**
  * @brief creates a vector of unique elements with exactly one element from each given range. order is
  *  preserved
@@ -97,12 +95,10 @@ template<mta::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
 
 }
 
-
-
 namespace cth::alg {
 
 /**
- * \brief assigns a's to b's based of every a's options for b's
+ * \brief assigns a's to b's based of every a's options for b's, prioritizing spread
  * \tparam Rng1 rng<rng<std::integral>>
  * \tparam Rng2 rng<std::integral>
  * \param a_b_options range of b options from a's
@@ -110,7 +106,10 @@ namespace cth::alg {
  * \return vector<integral> based on Rng1
  */
 template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT(std::integral)> Rng2>
-[[nodiscard]] auto assign(Rng1 const& a_b_options, Rng2 const& b_max) -> std::vector<mta::range2d_value_t<Rng1>> {
+[[nodiscard]] auto assign(
+    Rng1 const& a_b_options,
+    Rng2 const& b_max
+) -> std::vector<mta::range2d_value_t<Rng1>> {
     using T = std::remove_cvref_t<mta::range2d_value_t<Rng1>>;
     static constexpr size_t UNASSIGNED = static_cast<size_t>(-1);
 
@@ -118,15 +117,15 @@ template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT
         !std::ranges::all_of(
             a_b_options,
             [&b_max](std::span<T const> b_options) {
-            return std::ranges::all_of(b_options, [&b_max](auto const index) {
+            return std::ranges::all_of(b_options,
+                [&b_max](auto const index) {
                 return 0 <= index && index < std::ranges::size(b_max);
-                });
+                }
+            );
             }
         ),
         "0 <= indices < size(b_max) required"
-    ) {
-        details->add("size(b_max): {}", std::ranges::size(b_max));
-    }
+    ) { details->add("size(b_max): {}", std::ranges::size(b_max)); }
 
     auto const aCount = std::ranges::size(a_b_options);
     auto const bCount = std::ranges::size(b_max);
@@ -145,6 +144,10 @@ template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT
     std::vector<size_t> parentA(aCount, 0);
     std::vector<bool> visitedB(bCount, false);
     std::vector<bool> visitedA(aCount, false);
+
+    // NEW: State for "Water-filling" spreading
+    size_t assignedCount = 0;
+    std::vector<size_t> current_b_max(bCount, 0);
 
     // 2. Isolated BFS Engine
     auto find_augmenting_path = [&](size_t startA) -> size_t {
@@ -165,55 +168,73 @@ template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT
                 visitedB[b] = true;
                 parentB[b] = currentA; // Record path
 
-                // Path End: Open slot found
-                if(std::ranges::size(bToA[b]) < static_cast<size_t>(b_max[b]))
+                // MODIFIED: Compare against the current water level, NOT absolute max
+                if(std::ranges::size(bToA[b]) < current_b_max[b])
                     return b;
 
                 // Path Continuation: Displace existing residents
-                for(auto previousA : bToA[b]) {
+                for(auto previousA : bToA[b])
                     if(!visitedA[previousA]) {
                         visitedA[previousA] = true;
                         parentA[previousA] = b;
                         q.push(previousA);
                     }
-                }
             }
         }
         return UNASSIGNED;
     };
 
-    // 3. Main Logic
-    for(size_t i = 0; i < aCount; ++i) {
-        auto endB = find_augmenting_path(i);
+    // 3. Main Logic (Water-filling Loop)
+    bool capacity_increased = true;
 
-        if(endB == UNASSIGNED) return std::vector<T>{}; // Dead end
+    // Loop until all 'a's are assigned or we've exhausted true capacities
+    while(assignedCount < aCount && capacity_increased) {
+        capacity_increased = false;
 
-        // Backtrack and flip assignments
-        auto currentB = endB;
-        while(true) {
-            auto currentA = parentB[currentB];
+        // Step 3a: Raise the water level (allow 1 more allocation per family)
+        for(size_t i = 0; i < bCount; ++i)
+            if(current_b_max[i] < static_cast<size_t>(b_max[i])) {
+                current_b_max[i]++;
+                capacity_increased = true;
+            }
 
-            if(currentA != i) {
-                auto previousB = parentA[currentA];
+        // Step 3b: Try to assign all unassigned elements at this new capacity level
+        for(size_t i = 0; i < aCount; ++i) {
+            if(aToB[i] != static_cast<T>(UNASSIGNED)) continue; // Already assigned
 
-                // O(1) Swap-and-pop
-                auto it = std::ranges::find(bToA[previousB], currentA);
-                *it = bToA[previousB].back();
-                bToA[previousB].pop_back();
+            auto endB = find_augmenting_path(i);
 
-                bToA[currentB].push_back(currentA);
-                aToB[currentA] = static_cast<T>(currentB);
+            if(endB != UNASSIGNED) {
+                // Backtrack and flip assignments
+                auto currentB = endB;
+                while(true) {
+                    auto currentA = parentB[currentB];
 
-                currentB = previousB; // Move up
-            } else {
-                bToA[currentB].push_back(currentA);
-                aToB[currentA] = static_cast<T>(currentB);
-                break;
+                    if(currentA != i) {
+                        auto previousB = parentA[currentA];
+
+                        // O(1) Swap-and-pop
+                        auto it = std::ranges::find(bToA[previousB], currentA);
+                        *it = bToA[previousB].back();
+                        bToA[previousB].pop_back();
+
+                        bToA[currentB].push_back(currentA);
+                        aToB[currentA] = static_cast<T>(currentB);
+
+                        currentB = previousB; // Move up
+                    } else {
+                        bToA[currentB].push_back(currentA);
+                        aToB[currentA] = static_cast<T>(currentB);
+                        break;
+                    }
+                }
+                assignedCount++; // Successfully placed an 'a'
             }
         }
     }
 
+    if(assignedCount < aCount) return std::vector<T>{}; // Dead end
+
     return aToB;
 }
-
 }

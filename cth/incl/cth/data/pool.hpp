@@ -9,7 +9,6 @@
 #include <unordered_set>
 #include <vector>
 
-
 namespace cth::dt {
 
 struct basic_pool_manipulator {};
@@ -31,14 +30,12 @@ public:
 
     explicit pool(Manipulator manipulator = {}) : _manipulator{std::move(manipulator)} {}
 
-
     /**
      * constructs an instance of T in the pool
      * @post capacity increases by one
      * @param args to construct @ref T with
      */
-    template<class... CArgs>
-    requires std::constructible_from<T, CArgs...>
+    template<class... CArgs> requires std::constructible_from<T, CArgs...>
     void emplace(CArgs&&... args) {
         _storage.emplace_back(std::forward<CArgs>(args)...);
         _inactive.emplace_back(&_storage.back());
@@ -48,8 +45,7 @@ public:
      * forwards range to storage
      * @post pools capacity increases by size of @ref Rng
      */
-    template<class Rng>
-    requires requires(Rng r, storage_type s) { s.append_range(std::forward<Rng>(r)); }
+    template<class Rng> requires requires(Rng r, storage_type s) { s.append_range(std::forward<Rng>(r)); }
     void append_range(Rng&& rng) {
         size_t oldSize = _storage.size();
 
@@ -62,7 +58,6 @@ public:
 
         _inactive.append_range(pointers);
     }
-
 
     /**
      * acquires a resource from the pool, will not be acquired again until released
@@ -83,7 +78,6 @@ public:
      */
     void release(T& t) {
         auto const ptr = std::addressof(t);
-
 
         CTH_CRITICAL(std::ranges::contains(_inactive, ptr), "a resource must not be released twice") {}
         CTH_CRITICAL(
@@ -108,9 +102,11 @@ public:
         resetActive();
 
         _inactive.clear();
-        _inactive.append_range(_storage | std::views::transform([](auto& element) {
-                                   return std::addressof(element);
-                               }));
+        _inactive.append_range(
+            _storage | std::views::transform(
+                [](auto& element) { return std::addressof(element); }
+            )
+        );
     }
 
 private:

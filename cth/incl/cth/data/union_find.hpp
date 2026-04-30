@@ -3,7 +3,6 @@
 
 #include <unordered_set>
 
-
 namespace cth::dt {
 class union_find {
 public:
@@ -15,9 +14,7 @@ private:
     [[nodiscard]] constexpr auto& size(this auto& s, index_type x) { return s._data.template data<1>()[x]; }
 
     template<class S>
-    [[nodiscard]] constexpr auto& parent(this S& s, index_type x) {
-        return s._data.template data<0>()[x];
-    }
+    [[nodiscard]] constexpr auto& parent(this S& s, index_type x) { return s._data.template data<0>()[x]; }
 
 public:
     /**
@@ -47,8 +44,10 @@ public:
     union_find(size_t n, std::initializer_list<group_t> groups) : union_find{n, std::span{groups}} {}
 
     // ReSharper disable once CppNonExplicitConvertingConstructor
-    union_find(std::span<group_t const> groups) :
-        union_find(std::ranges::max(groups | std::views::join) + 1, groups) {}
+    union_find(std::span<group_t const> groups) : union_find(
+        std::ranges::max(groups | std::views::join) + 1,
+        groups
+    ) {}
 
     union_find(std::initializer_list<group_t> groups) : union_find(std::span{groups}) {}
 
@@ -62,7 +61,8 @@ public:
             auto& p = self.parent(r);
             p = self.parent(p);
             r = p;
-        } while(!self.root(r));
+        }
+        while(!self.root(r));
 
         return r;
     }
@@ -72,9 +72,8 @@ public:
      */
     [[nodiscard]] constexpr index_type find(this union_find const& self, index_type x) {
         auto r = x;
-        do {
-            r = self.parent(r);
-        } while(!self.root(r));
+        do { r = self.parent(r); }
+        while(!self.root(r));
 
         return r;
     }
@@ -115,7 +114,6 @@ public:
             p = root;
         }
     }
-
 
     [[nodiscard]] constexpr size_t chain_length(this auto const& self, index_type x) {
         size_t len = 0;

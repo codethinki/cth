@@ -6,9 +6,7 @@
 
 #include "cth/meta/concepts.hpp"
 
-
 #include "string.hpp"
-
 
 namespace cth::mta {
 
@@ -19,7 +17,6 @@ template<size_t I, class... Ts>
 using at_t = at<I, Ts...>::type;
 }
 
-
 namespace cth::meta {
 
 template<auto TCpt, class... Ts>
@@ -28,7 +25,6 @@ constexpr auto cpt_mask() {
         mta::satisfies<Ts, TCpt>...
     };
 }
-
 
 /**
  * @brief finds idx of the first type in `Ts...` satisfying `TCpt`
@@ -46,7 +42,6 @@ consteval size_t cpt_find_idx() {
     );
 }
 
-
 /**
  * @brief Carries the first of `Ts` that satisfies `TCpt`
  *
@@ -63,7 +58,6 @@ template<auto TCpt, class... Ts>
 using cpt_find_t = cpt_find<TCpt, Ts...>::type;
 
 }
-
 
 namespace cth::mta {
 
@@ -84,12 +78,11 @@ namespace dev {
 template<class T, class... Ts> requires (convertible_to_any<T, Ts...>)
 struct convert_to_any : decltype(dev::convert_to_any_fn<T, Ts...>()) {};
 
-
 template<class T, class... Ts>
 using convert_to_any_t = convert_to_any<T, Ts...>::type;
 
 /**
- * @brief converts to the first type of `To... that is convertible from `From`, 
+ * @brief converts to the first type of `To... that is convertible from `From`,
  *  does nothing if `From` is in `To...`
  * @tparam To possible conversions
  * @tparam From conversion type
@@ -106,16 +99,11 @@ decltype(auto) to_convertible_from(T&& arg) {
  * @brief shorthand for @ref to_convertible_from with U = T
  */
 template<class... Ts, class T>
-decltype(auto) to_convertible(T&& arg) {
-    return mta::to_convertible_from<T, Ts...>(std::forward<T>(arg));
-}
+decltype(auto) to_convertible(T&& arg) { return mta::to_convertible_from<T, Ts...>(std::forward<T>(arg)); }
 
 }
-
 
 namespace cth::mta {
-
-
 
 template<class T, class... Ts> requires(constructs_any_of<T, Ts...>)
 consteval auto construct_any_from_fn() {
@@ -126,17 +114,15 @@ consteval auto construct_any_from_fn() {
             CPT(std::constructible_from<T>),
             Ts...
         >{};
-
 }
 
-
 /**
- * Resolves to the first of `Ts...` that is constructible from `T`. 
+ * Resolves to the first of `Ts...` that is constructible from `T`.
  *  Tries to use @ref convert_to_any if possible
  * @tparam T constructor arg
  * @tparam Ts options for construction
  */
-template<class T, class... Ts> requires (constructs_any_of<T, Ts...>)
+template<class T, class... Ts> requires(constructs_any_of<T, Ts...>)
 struct construct_any_of : decltype(construct_any_from_fn<T, Ts...>()) {};
 
 /**
@@ -148,7 +134,7 @@ template<class T, class... Ts>
 using construct_any_from_t = construct_any_of<T, Ts...>::type;
 
 /**
- * constructs the first type of `Ts...` that is constructible from `T`, 
+ * constructs the first type of `Ts...` that is constructible from `T`,
  *  or calls @ref to_convertible_from<T, Ts...> if possible
  * @tparam Ts to any of Ts...
  * @tparam U from
@@ -166,11 +152,8 @@ auto to_constructible_from(T&& arg) {
  * @brief shorthand for @ref to_constructible_from with `U = T`
  */
 template<class... Ts, class T>
-auto to_constructible(T&& arg) {
-    return mta::to_constructible_from<T, Ts...>(std::forward<T>(arg));
+auto to_constructible(T&& arg) { return mta::to_constructible_from<T, Ts...>(std::forward<T>(arg)); }
 }
-}
-
 
 namespace cth::mta {
 
@@ -183,15 +166,14 @@ namespace dev {
     struct unique_tuple_impl<Tuple, T, Ts...> : unique_tuple_impl<Tuple, Ts...> {};
 
     template<class... TupleTs, class T, class... Ts> requires(!is_any_of<T, Ts...>)
-    struct unique_tuple_impl<std::tuple<TupleTs...>, T, Ts...> : unique_tuple_impl<std::tuple<TupleTs..., T>, Ts...> {};
+    struct unique_tuple_impl<std::tuple<TupleTs...>, T, Ts...> :
+        unique_tuple_impl<std::tuple<TupleTs..., T>, Ts...> {};
 
     template<class Tuple>
     struct unique_tuple_impl<Tuple> {
         using types = Tuple;
     };
 }
-
-
 
 template<class... Ts>
 struct unique_tuple : dev::unique_tuple_impl<std::tuple<>, Ts...> {};
@@ -200,7 +182,6 @@ template<class... Ts>
 using unique_tuple_t = unique_tuple<Ts...>::types;
 
 }
-
 
 namespace cth::mta {
 namespace dev {
@@ -215,7 +196,6 @@ namespace dev {
     };
 }
 
-
 /**
  * Resolves the correct function overload type for Overload from Overloads
  * @tparam T resolve target
@@ -223,7 +203,6 @@ namespace dev {
  */
 template<class T, class... Overloads>
 struct resolve_overload_from : std::invoke_result<dev::overload_set<Overloads...>, T> {};
-
 
 /**
  * shorthand for @ref resolve_overload_from
@@ -233,14 +212,16 @@ struct resolve_overload_from : std::invoke_result<dev::overload_set<Overloads...
 template<class T, class... Overloads>
 using resolve_overload_from_t = resolve_overload_from<T, Overloads...>::type;
 
-
 /**
  * checks if overload resolves to any of Overloads via function overload resolution
  * @tparam T resolve target
  * @tparam Ts options to resolve from
  */
-template<class T, class... Ts>
-concept resolves_to_overloads = std::same_as<unique_tuple_t<Ts...>, std::tuple<Ts...>> && requires {
-    typename resolve_overload_from<T, Ts...>::type;
-};
+template<class T, class... Ts> concept resolves_to_overloads =
+    std::same_as<
+        unique_tuple_t<Ts...>,
+        std::tuple<Ts...>
+    > && requires {
+        typename resolve_overload_from<T, Ts...>::type;
+    };
 }

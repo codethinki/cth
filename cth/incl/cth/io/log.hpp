@@ -6,7 +6,6 @@
 #include "cth/constants.hpp"
 #include "cth/exception.hpp"
 
-
 #define CTH_LOG_LEVEL_ALL 0
 #define CTH_LOG_LEVEL_DEBUG 0
 #define CTH_LOG_LEVEL_INFO 1
@@ -21,7 +20,6 @@
 
 #include <string>
 #include <utility>
-
 
 namespace cth::log::dev {
 inline bool colored = true;
@@ -52,7 +50,6 @@ cxpr io::TextColor text_color(cth::except::Severity severity) {
 }
 }
 
-
 namespace cth::log {
 /**
  * \brief sets a colored log stream. nullptr -> colored console output
@@ -65,7 +62,6 @@ inline void set_log_stream(std::ostream& stream) {
     dev::colored = false;
     dev::logStream = io::col_stream{stream};
 }
-
 
 inline void msg(cth::except::Severity severity, std::string_view message) {
     if(severity < CTH_LOG_LEVEL)
@@ -108,7 +104,6 @@ void msg(std::format_string<Args...> f_str, Args&&... args) noexcept {
         return;
     log::msg<S>(std::format(f_str, std::forward<Args>(args)...));
 }
-
 
 namespace dev {
 
@@ -199,54 +194,56 @@ namespace dev {
         }
     };
 
-
     /**
      * \brief wrapper for dev::LogObj
      * \param expression (expression) == false -> code execution + delayed log message
      * \param fmt_message log message
      * \param severity log severity
      */
-#define CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, severity, expression, fmt_message, ...)                         \
-    if(auto const details = static_cast<bool>(expression)                                                    \
-           ? std::make_unique<cth::log::dev::LogObj<severity, type>>(type{                                   \
-                 std::format(fmt_message, __VA_ARGS__),                                                      \
-                 severity,                                                                                   \
-                 std::source_location::current(),                                                            \
-                 std::stacktrace::current()                                                                  \
-             })                                                                                              \
-           : std::unique_ptr<cth::log::dev::LogObj<severity, type>>{nullptr};                                \
-       static_cast<bool>(expression)) [[unlikely]]
+#define CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, severity, expression, fmt_message, ...) \
+        if(auto const details = static_cast<bool>(expression)                        \
+            ? std::make_unique<cth::log::dev::LogObj<severity, type>>(type{          \
+            std::format(fmt_message, __VA_ARGS__),                                   \
+            severity,                                                                \
+            std::source_location::current(),                                         \
+            std::stacktrace::current()                                               \
+        }                                                                            \
+            )                                                                        \
+            : std::unique_ptr<cth::log::dev::LogObj<severity, type>>{nullptr};       \
+            static_cast<bool>(expression)) [[unlikely]]
 
-#define CTH_DEV_DELAYED_LOG_TEMPLATE(severity, expr, fmt_message, ...)                                       \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(cth::except::default_exception, severity, expr, fmt_message, __VA_ARGS__)
-
+#define CTH_DEV_DELAYED_LOG_TEMPLATE(severity, expr, fmt_message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(cth::except::default_exception, \
+            severity,                                                  \
+            expr,                                                      \
+            fmt_message,                                               \
+            __VA_ARGS__                                                \
+        )
 
     // while potentially correct the assume call triggers clang warnings
     // [[assume(!static_cast<bool>(expr))]];
 
-#define CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(type, expr)                                                     \
-    if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::CRITICAL, type>> details = nullptr;      \
-       static_cast<bool>(expr))                                                                              \
+#define CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(type, expr)                                                    \
+        if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::CRITICAL, type>> details = nullptr; \
+            static_cast<bool>(expr))                                                                        \
         for(std::unreachable();;)
 
-#define CTH_DEV_DISABLED_CRITICAL_TEMPLATE(expr)                                                             \
-    CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(cth::except::default_exception, expr)
+#define CTH_DEV_DISABLED_CRITICAL_TEMPLATE(expr) \
+        CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(cth::except::default_exception, expr)
 
-#define CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, severity)                                                      \
-    if(std::unique_ptr<cth::log::dev::LogObj<severity, type>> details = nullptr; false)
+#define CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, severity) \
+        if(std::unique_ptr<cth::log::dev::LogObj<severity, type>> details = nullptr; false)
 
 #define CTH_DEV_DISABLED_LOG_TEMPLATE() CTH_DEV_DISABLED_LOG_TEMPLATE_T(cth::except::default_exception)
 
-
-#define CTH_DEV_LOG_AUTO_THROW_TEMPLATE_T(type, severity, expression, message, ...)                          \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, severity, expression, message, __VA_ARGS__)                         \
-    for(; details != nullptr; details->throwE())
+#define CTH_DEV_LOG_AUTO_THROW_TEMPLATE_T(type, severity, expression, message, ...)      \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, severity, expression, message, __VA_ARGS__) \
+        for(; details != nullptr; details->throwE())
 }
 
-
-//------------------------------
-//  CTH_STABLE_LOGS
-//------------------------------
+// ------------------------------
+// CTH_STABLE_LOGS
+// ------------------------------
 /**
  * \brief can execute code before abort (use {} for multiple lines)
  * \param type exception type
@@ -256,8 +253,13 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_ASSERT_T(type, expression, message, ...)                                                  \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::CRITICAL, !(expression), message, __VA_ARGS__)
+#define CTH_STABLE_ASSERT_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,                \
+            cth::except::Severity::CRITICAL,                \
+            !(expression),                                  \
+            message,                                        \
+            __VA_ARGS__                                     \
+        )
 
 /**
  * \brief can execute code before abort (use {} for multiple lines)
@@ -267,8 +269,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_ASSERT(expression, message, ...)                                                          \
-    CTH_STABLE_ASSERT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_STABLE_ASSERT(expression, message, ...) \
+        CTH_STABLE_ASSERT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before abort (use {} for multiple lines)
@@ -279,8 +281,13 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_ABORT_T(type, expression, message, ...)                                                   \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::CRITICAL, expression, message, __VA_ARGS__)
+#define CTH_STABLE_ABORT_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,               \
+            cth::except::Severity::CRITICAL,               \
+            expression,                                    \
+            message,                                       \
+            __VA_ARGS__                                    \
+        )
 
 /**
  * \brief can execute code before abort (use {} for multiple lines)
@@ -290,8 +297,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_ABORT(expression, message, ...)                                                           \
-    CTH_STABLE_ABORT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_STABLE_ABORT(expression, message, ...) \
+        CTH_STABLE_ABORT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before error-msg (use {} for multiple lines)
@@ -302,8 +309,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_ERR_T(type, expression, message, ...)                                                     \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
+#define CTH_STABLE_ERR_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before error-msg (use {} for multiple lines)
@@ -313,8 +320,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_ERR(expression, message, ...)                                                             \
-    CTH_STABLE_ERR_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_STABLE_ERR(expression, message, ...) \
+        CTH_STABLE_ERR_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before warn (use {} for multiple lines)
@@ -325,8 +332,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_WARN_T(type, expression, message, ...)                                                    \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::WARNING, expression, message, __VA_ARGS__)
+#define CTH_STABLE_WARN_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::WARNING, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before warn (use {} for multiple lines)
@@ -336,8 +343,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_WARN(expression, message, ...)                                                            \
-    CTH_STABLE_WARN_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_STABLE_WARN(expression, message, ...) \
+        CTH_STABLE_WARN_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before info (use {} for multiple lines)
@@ -348,8 +355,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_INFO_T(type, expression, message, ...)                                                    \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::INFO, expression, message, __VA_ARGS__)
+#define CTH_STABLE_INFO_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::INFO, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before info (use {} for multiple lines)
@@ -359,8 +366,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_INFO(expression, message, ...)                                                            \
-    CTH_STABLE_INFO_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_STABLE_INFO(expression, message, ...) \
+        CTH_STABLE_INFO_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before log (use {} for multiple lines)
@@ -371,8 +378,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_LOG_T(type, expression, message, ...)                                                     \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::LOG, expression, message, __VA_ARGS__)
+#define CTH_STABLE_LOG_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::LOG, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before log (use {} for multiple lines)
@@ -382,9 +389,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_LOG(expression, message, ...)                                                             \
-    CTH_STABLE_LOG_T(cth::except::default_exception, expression, message, __VA_ARGS__)
-
+#define CTH_STABLE_LOG(expression, message, ...) \
+        CTH_STABLE_LOG_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before throwing (use {} for multiple lines)
@@ -395,8 +401,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_THROW_T(type, expression, message, ...)                                                   \
-    CTH_DEV_LOG_AUTO_THROW_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
+#define CTH_STABLE_THROW_T(type, expression, message, ...) \
+        CTH_DEV_LOG_AUTO_THROW_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
 
 /**
  * \brief can execute code before throwing (use {} for multiple lines)
@@ -406,45 +412,45 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note stable -> never disabled
  */
-#define CTH_STABLE_THROW(expression, message, ...)                                                           \
-    CTH_STABLE_THROW_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_STABLE_THROW(expression, message, ...) \
+        CTH_STABLE_THROW_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
-//------------------------------
-//        CTH_LOGS
-//------------------------------
-#define CTH_ASSERT_T(type, expression, message, ...)                                                         \
-    CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(type, !static_cast<bool>(expression))
-#define CTH_ASSERT(expression, message, ...)                                                                 \
-    CTH_ASSERT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+// ------------------------------
+// CTH_LOGS
+// ------------------------------
+#define CTH_ASSERT_T(type, expression, message, ...) \
+        CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(type, !static_cast<bool>(expression))
+#define CTH_ASSERT(expression, message, ...) \
+        CTH_ASSERT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 #define CTH_CRITICAL_T(type, expression, message, ...) CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(type, expression)
-#define CTH_CRITICAL(expression, message, ...)                                                               \
-    CTH_CRITICAL_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_CRITICAL(expression, message, ...) \
+        CTH_CRITICAL_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
-#define CTH_ERR_T(type, expression, message, ...)                                                            \
-    CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, cth::except::Severity::ERR)
-#define CTH_ERR(expression, message, ...)                                                                    \
-    CTH_ERR_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_ERR_T(type, expression, message, ...) \
+        CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, cth::except::Severity::ERR)
+#define CTH_ERR(expression, message, ...) \
+        CTH_ERR_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
-#define CTH_WARN_T(type, expression, message, ...)                                                           \
-    CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, cth::except::Severity::WARNING)
-#define CTH_WARN(expression, message, ...)                                                                   \
-    CTH_WARN_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_WARN_T(type, expression, message, ...) \
+        CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, cth::except::Severity::WARNING)
+#define CTH_WARN(expression, message, ...) \
+        CTH_WARN_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
-#define CTH_INFO_T(type, expression, message, ...)                                                           \
-    CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, cth::except::Severity::INFO)
-#define CTH_INFO(expression, message, ...)                                                                   \
-    CTH_INFO_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_INFO_T(type, expression, message, ...) \
+        CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, cth::except::Severity::INFO)
+#define CTH_INFO(expression, message, ...) \
+        CTH_INFO_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
-#define CTH_LOG_T(type, expression, message, ...)                                                            \
-    CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, cth::except::Severity::LOG)
-#define CTH_LOG(expression, message, ...)                                                                    \
-    CTH_LOG_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_LOG_T(type, expression, message, ...) \
+        CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, cth::except::Severity::LOG)
+#define CTH_LOG(expression, message, ...) \
+        CTH_LOG_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
-#define CTH_THROW_T(type, expression, message, ...)                                                          \
-    CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, cth::except::Severity::ERR)
-#define CTH_THROW(expression, message, ...)                                                                  \
-    CTH_THROW_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_THROW_T(type, expression, message, ...) \
+        CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, cth::except::Severity::ERR)
+#define CTH_THROW(expression, message, ...) \
+        CTH_THROW_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 #ifdef CTH_DEBUG_MODE
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_NONE
@@ -460,8 +466,13 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_ASSERT_T(type, expression, message, ...)                                                         \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::CRITICAL, !(expression), message, __VA_ARGS__)
+#define CTH_ASSERT_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,         \
+            cth::except::Severity::CRITICAL,         \
+            !(expression),                           \
+            message,                                 \
+            __VA_ARGS__                              \
+        )
 /**
  * \brief can execute code before abort (use {} for multiple lines)
  * \param expression static_cast<bool>(expression) == false -> abort
@@ -470,9 +481,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_ASSERT(expression, message, ...)                                                                 \
-    CTH_ASSERT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
-
+#define CTH_ASSERT(expression, message, ...) \
+        CTH_ASSERT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 #undef CTH_CRITICAL_T
 #undef CTH_CRITICAL
@@ -485,8 +495,13 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_CRITICAL_T(type, expression, message, ...)                                                       \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::CRITICAL, expression, message, __VA_ARGS__)
+#define CTH_CRITICAL_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,           \
+            cth::except::Severity::CRITICAL,           \
+            expression,                                \
+            message,                                   \
+            __VA_ARGS__                                \
+        )
 /**
  * \brief can execute code before abort (use {} for multiple lines)
  * \param expression static_cast<bool>(expression) == true -> abort
@@ -495,8 +510,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_CRITICAL(expression, message, ...)                                                               \
-    CTH_CRITICAL_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_CRITICAL(expression, message, ...) \
+        CTH_CRITICAL_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_CRITICAL
 
@@ -511,8 +526,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_THROW_T(type, expression, message, ...)                                                          \
-    CTH_DEV_LOG_AUTO_THROW_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
+#define CTH_THROW_T(type, expression, message, ...) \
+        CTH_DEV_LOG_AUTO_THROW_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
 /**
  * \brief can execute code before throwing (use {} for multiple lines)
  * \param expression static_cast<bool>(expression) == true -> throw
@@ -521,9 +536,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_THROW(expression, message, ...)                                                                  \
-    CTH_THROW_T(cth::except::default_exception, expression, message, __VA_ARGS__)
-
+#define CTH_THROW(expression, message, ...) \
+        CTH_THROW_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 #undef CTH_ERR_T
 #undef CTH_ERR
@@ -536,8 +550,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_ERR_T(type, expression, message, ...)                                                            \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
+#define CTH_ERR_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
 /**
  * \brief can execute code before error-msg (use {} for multiple lines)
  * \param expression static_cast<bool>(expression) == true -> error-msg
@@ -546,10 +560,9 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_ERR(expression, message, ...)                                                                    \
-    CTH_ERR_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_ERR(expression, message, ...) \
+        CTH_ERR_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_ERR
-
 
 #undef CTH_WARN_T
 #undef CTH_WARN
@@ -562,8 +575,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_WARN_T(type, expression, message, ...)                                                           \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::WARNING, expression, message, __VA_ARGS__)
+#define CTH_WARN_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::WARNING, expression, message, __VA_ARGS__)
 /**
  * \brief can execute code before warning (use {} for multiple lines)
  * \param expression static_cast<bool>(expression) == true -> warning
@@ -572,8 +585,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_WARN(expression, message, ...)                                                                   \
-    CTH_WARN_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_WARN(expression, message, ...) \
+        CTH_WARN_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_WARN
 
 #undef CTH_INFO_T
@@ -587,8 +600,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_INFO_T(type, expression, message, ...)                                                           \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::INFO, expression, message, __VA_ARGS__)
+#define CTH_INFO_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::INFO, expression, message, __VA_ARGS__)
 /**
  * \brief can execute code before info (use {} for multiple lines)
  * \param expression static_cast<bool>(expression) == true -> inform
@@ -597,8 +610,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_INFO(expression, message, ...)                                                                   \
-    CTH_INFO_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_INFO(expression, message, ...) \
+        CTH_INFO_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_INFO
 
 #undef CTH_LOG_T
@@ -612,8 +625,8 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_LOG_T(type, expression, message, ...)                                                            \
-    CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::LOG, expression, message, __VA_ARGS__)
+#define CTH_LOG_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::LOG, expression, message, __VA_ARGS__)
 /**
  * \brief can execute code before log (use {} for multiple lines)
  * \param expression static_cast<bool>(expression) == true -> log
@@ -622,15 +635,15 @@ namespace dev {
  * \note this macro MUST be followed by ; or {}
  * \note #ifndef _DEBUG -> disabled
  */
-#define CTH_LOG(expression, message, ...)                                                                    \
-    CTH_LOG_T(cth::except::default_exception, expression, message, __VA_ARGS__)
+#define CTH_LOG(expression, message, ...) \
+        CTH_LOG_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_DEBUG
 inline auto x = []() {
-    CTH_ASSERT(false, "invalid CTH_LOG_LEVEL macro value defined");
-    static_assert(false);
-    return 10;
-}();
+        CTH_ASSERT(false, "invalid CTH_LOG_LEVEL macro value defined");
+        static_assert(false);
+        return 10;
+    }();
 #endif
 
 #endif

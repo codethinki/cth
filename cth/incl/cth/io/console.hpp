@@ -3,20 +3,18 @@
 #include "cth/data/string_joiner.hpp"
 #include "cth/meta/ranges.hpp"
 
-
 #include <array>
 #include <iostream>
 #include <stack>
-
 
 namespace cth::io {
 using ansi_code_t = uint8_t;
 
 class col_stream;
 
-//-------------------------
-//        CONSTANTS
-//-------------------------
+// -------------------------
+// CONSTANTS
+// -------------------------
 
 enum class TextColor : ansi_code_t {
     DEFAULT = 39,
@@ -38,9 +36,7 @@ enum class TextColor : ansi_code_t {
     WHITE = 97,
 };
 
-[[nodiscard]] constexpr ansi_code_t to_ansi_code(TextColor color) {
-    return static_cast<ansi_code_t>(color);
-}
+[[nodiscard]] constexpr ansi_code_t to_ansi_code(TextColor color) { return static_cast<ansi_code_t>(color); }
 
 enum class BGColor : ansi_code_t {
     DEFAULT = 40,
@@ -62,11 +58,7 @@ enum class BGColor : ansi_code_t {
     WHITE = 107,
 };
 
-[[nodiscard]] constexpr ansi_code_t to_ansi_code(BGColor color) {
-    return static_cast<ansi_code_t>(color);
-}
-
-
+[[nodiscard]] constexpr ansi_code_t to_ansi_code(BGColor color) { return static_cast<ansi_code_t>(color); }
 
 enum class TextIntensity : ansi_code_t {
     NORMAL = 22,
@@ -77,7 +69,6 @@ enum class TextIntensity : ansi_code_t {
 [[nodiscard]] constexpr ansi_code_t to_ansi_code(TextIntensity intensity) {
     return static_cast<ansi_code_t>(intensity);
 }
-
 
 enum class TextUnderline : ansi_code_t {
     NONE = 24,
@@ -98,7 +89,6 @@ enum class TextModifiers : ansi_code_t {
     TEXT_MODIFIER_SIZE
 };
 
-
 namespace dev {
     [[nodiscard]] constexpr ansi_code_t to_ansi_code_on(TextModifiers modifier) {
         switch(modifier) {
@@ -116,12 +106,9 @@ namespace dev {
     }
 }
 
-
 [[nodiscard]] constexpr ansi_code_t to_ansi_code(TextModifiers modifier, bool activate) {
     return activate ? dev::to_ansi_code_on(modifier) : dev::to_ansi_code_off(modifier);
 }
-
-
 
 struct ansi_state {
     static constexpr size_t MODIFIERS = static_cast<size_t>(TextModifiers::TEXT_MODIFIER_SIZE);
@@ -140,10 +127,7 @@ struct ansi_state {
     constexpr bool update(TextIntensity t) { return opt_update(intensity, t); }
     constexpr bool update(TextUnderline t) { return opt_update(underline, t); }
 
-
-    constexpr bool update(TextModifiers mod, bool on) {
-        return opt_update(modifier(mod), on);
-    }
+    constexpr bool update(TextModifiers mod, bool on) { return opt_update(modifier(mod), on); }
 
     constexpr bool toggle(TextModifiers mod) { return modifier(mod) = !modifier(mod); }
 
@@ -169,7 +153,6 @@ private:
     }
 };
 
-
 namespace dev {
     template<std::ranges::viewable_range Rng1, std::ranges::viewable_range Rng2>
     [[nodiscard]] constexpr auto diff_view(Rng1& from, Rng2& to) {
@@ -178,7 +161,6 @@ namespace dev {
             | std::views::elements<1>;
     }
 }
-
 
 [[nodiscard]] constexpr std::string_view ansi_clear_string() { return "\033[0m"; }
 
@@ -194,7 +176,6 @@ template<std::ranges::viewable_range Rng>
 }
 }
 
-
 namespace cth::io::dev {
 
 inline cxpr size_t MAX_STACK_SIZE = 16;
@@ -209,7 +190,6 @@ enum Cursor_Ids {
     ID_CURSOR_RIGHT,
     ID_CURSOR_SET_X,
     ID_CURSOR_RESET,
-
     CURSOR_IDS_SIZE
 };
 enum Erase_Ids {
@@ -223,7 +203,6 @@ enum Erase_Ids {
 };
 
 }
-
 
 namespace cth::io {
 
@@ -269,10 +248,7 @@ public:
         return state().toggle(modifier);
     }
 
-
-    constexpr void pushState() {
-        _stateStack.push_back(state());
-    }
+    constexpr void pushState() { _stateStack.push_back(state()); }
     constexpr void popState() {
         if(_stateStack.size() <= 1)
             return;
@@ -322,9 +298,7 @@ public:
 private:
     void newline() const { out() << '\n'; }
     constexpr void invalidate_cache() { _ansiCache.reset(); }
-    constexpr void update_cache() {
-        _ansiCache = to_ansi_string(state().encode());
-    }
+    constexpr void update_cache() { _ansiCache = to_ansi_string(state().encode()); }
 
     [[nodiscard]] constexpr ansi_state& state() { return _stateStack.back(); }
 
@@ -340,17 +314,12 @@ public:
 
 };
 
-
 }
-
 
 namespace cth::io {
-constexpr scoped_color_state::scoped_color_state(col_stream& stream) : stream{stream} {
-    stream.pushState();
-}
+constexpr scoped_color_state::scoped_color_state(col_stream& stream) : stream{stream} { stream.pushState(); }
 constexpr scoped_color_state::~scoped_color_state() { stream.popState(); }
 }
-
 
 namespace cth::io {
 

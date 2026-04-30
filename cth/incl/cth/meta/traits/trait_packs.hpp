@@ -3,9 +3,7 @@
 
 #include <utility>
 
-
 namespace cth::mta {
-
 
 template<template<class...> class Trait, class... Args>
 struct trait_pack {
@@ -22,7 +20,6 @@ struct trait_pack {
     using type = unpacked_type;
 };
 
-
 template<class Pack, class... Rest>
 consteval auto first_pack() {
     if constexpr(Pack::can_unpack)
@@ -36,7 +33,6 @@ consteval auto first_pack() {
 template<class... TraitPacks>
 using first_pack_t = type_of_t<first_pack<TraitPacks...>()>;
 
-
 template<class Pack>
 consteval auto unpack_trait() {
     if constexpr(Pack::can_unpack)
@@ -44,7 +40,6 @@ consteval auto unpack_trait() {
     else
         static_assert(false, "Unable to unpack trait");
 }
-
 
 template<class TraitPack>
 using unpack_trait_t = decltype(unpack_trait<TraitPack>())::type;

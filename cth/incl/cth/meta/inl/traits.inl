@@ -3,9 +3,7 @@
 
 #include <stdexcept>
 
-
 namespace cth::mta {
-
 
 namespace dev {
     template<class T, template<class> class Trait>
@@ -20,12 +18,8 @@ namespace dev {
     }
 }
 
-
 template<class T, template<class> class Trait>
-[[nodiscard]] cval size_t trait_count(size_t max_depth) {
-    return dev::trait_count_helper<T, Trait>(max_depth);
-}
-
+[[nodiscard]] cval size_t trait_count(size_t max_depth) { return dev::trait_count_helper<T, Trait>(max_depth); }
 
 namespace dev {
     template<class T, auto TCpt, template<class> class Trait>
@@ -46,7 +40,6 @@ namespace dev {
         }
     }
 }
-
 
 template<class T, auto TCpt, template<class> class Trait>
 [[nodiscard]] cval size_t cpt_count(size_t max_depth) {

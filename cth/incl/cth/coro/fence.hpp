@@ -1,7 +1,6 @@
 #pragma once
 #include "cth/coro/utility.hpp"
 
-
 #include <atomic>
 #include <memory>
 
@@ -34,7 +33,6 @@ private:
 public:
     bool signaled() const noexcept { return _state.load(std::memory_order_acquire); }
 
-
     fence(fence const&) = delete;
     fence& operator=(fence const&) = delete;
     fence(fence&&) = delete;
@@ -61,7 +59,6 @@ public:
         if(_fence)
             _fence->force_signal();
     }
-
 
     void reset() {
         if(_fence)

@@ -10,29 +10,25 @@
 #include <ranges>
 #include <concepts>
 
-
-
 namespace cth::dt {
 class string_joiner {
-#define CTH_DEV_JOINER_FORWARD_STRING_METHOD(str, method_name)                                               \
-    template<class... Args>                                                                                  \
-    [[nodiscard]] auto method_name(this auto&& self, Args&&... args)                                         \
-        requires requires(std::string s, Args... args) { s.method_name(std::forward<Args>(args)...); }       \
-    {                                                                                                        \
-        return self.str.method_name(std::forward<Args>(args)...);                                            \
-    }
+#define CTH_DEV_JOINER_FORWARD_STRING_METHOD(str, method_name)                                       \
+        template<class... Args>                                                                      \
+        [[nodiscard]] auto method_name(this auto&& self, Args && ... args)                           \
+        requires requires(std::string s, Args... args) { s.method_name(std::forward<Args>(args)...); \
+        }                                                                                            \
+        {                                                                                            \
+            return self.str.method_name(std::forward<Args>(args)...);                                \
+        }
 
 public:
     explicit string_joiner(std::string_view delimiter = " ") : _delimiter{delimiter} {}
-
 
     template<std::ranges::viewable_range Rng>
     string_joiner(std::string_view delimiter, Rng&& rng) : _delimiter{delimiter},
         _buffer{std::format("{}", rng | cth::views::format(_delimiter))} {}
 
-    string_joiner(std::string_view delimiter, size_t capacity) : _delimiter{delimiter} {
-        _buffer.reserve(capacity);
-    }
+    string_joiner(std::string_view delimiter, size_t capacity) : _delimiter{delimiter} { _buffer.reserve(capacity); }
 
     template<class T>
     auto& operator+=(this auto&& self, T&& value) {
@@ -88,9 +84,7 @@ public:
     template<class... Args>
     [[nodiscard]] auto substr(this auto&& self, Args&&... args) requires requires(std::string str, Args... args) {
         std::string_view{str}.substr(std::forward<Args>(args)...);
-    } {
-        return std::string_view{self._buffer}.substr(std::forward<Args>(args)...);
-    }
+    } { return std::string_view{self._buffer}.substr(std::forward<Args>(args)...); }
 
 private:
     std::string _delimiter;

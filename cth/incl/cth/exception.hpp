@@ -14,9 +14,7 @@
 #include <stacktrace>
 #include <string>
 
-
 namespace cth::except {
-
 
 enum Severity {
     LOG,
@@ -40,7 +38,7 @@ enum Severity {
 }
 } // namespace cth::except
 
-template<> 
+template<>
 struct std::formatter<cth::except::Severity> {
     [[nodiscard]] constexpr auto parse(std::format_parse_context& ctx) { return ctx.begin(); }
     template<class FormatContext>
@@ -50,14 +48,13 @@ struct std::formatter<cth::except::Severity> {
             return std::format_to(ctx.out(), "{}", cth::except::to_string(obj));
         else
             return std::apply(
-                [&ctx]<class... Args>(Args&&... args) { 
-                    return std::format_to(ctx.out(), "{}", std::forward<Args>(args)...); 
+                [&ctx] < class... Args >(Args&&... args) {
+                    return std::format_to(ctx.out(), "{}", std::forward<Args>(args)...);
                 },
                 cth::except::to_string(obj)
             );
     }
 };
-
 
 namespace cth::except {
 class default_exception : public std::exception {
@@ -77,16 +74,15 @@ public:
         Severity const severity = cth::except::ERR,
         std::source_location loc = std::source_location::current(),
         std::stacktrace trace = std::stacktrace::current()
-    ) :
-        _severity(severity), _msg{std::format(" {0}\n", msg)}, _sourceLocation{loc}, _trace{std::move(trace)},
+    ) : _severity(severity),
+        _msg{std::format(" {0}\n", msg)},
+        _sourceLocation{loc},
+        _trace{std::move(trace)},
         _what{msg} {}
     ~default_exception() override = default;
 
-
     template<class S>
-    cxpr declauto add(this S&& self, std::string_view msg) noexcept {
-        return self.addNoCpy(msg);
-    }
+    cxpr declauto add(this S&& self, std::string_view msg) noexcept { return self.addNoCpy(msg); }
 
     template<class S, typename... Args> requires(sizeof...(Args) > 0u)
     cxpr declauto add(this S& self, std::format_string<Args...> f_str, Args&&... types) noexcept {
@@ -100,7 +96,6 @@ public:
 
         return self;
     }
-
 
     [[nodiscard]] std::string string() const noexcept {
         return std::format(
@@ -193,14 +188,14 @@ public:
         Severity const severity = cth::except::ERR,
         std::source_location loc = std::source_location::current(),
         std::stacktrace trace = std::stacktrace::current()
-    ) : default_exception{std::move(msg), severity, loc, std::move(trace)}, _dataObj{std::move(data)} {}
-    data_exception(T data, default_exception exception) :
-        default_exception{std::move(exception)}, _dataObj{std::move(data)} {}
+    ) : default_exception{std::move(msg), severity, loc, std::move(trace)},
+        _dataObj{std::move(data)} {}
+    data_exception(T data, default_exception exception) : default_exception{std::move(exception)},
+        _dataObj{std::move(data)} {}
     [[nodiscard]] T const& data() const noexcept { return _dataObj; }
 
 private:
     T _dataObj;
 };
-
 
 } // namespace cth::except

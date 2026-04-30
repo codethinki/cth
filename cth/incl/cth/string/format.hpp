@@ -39,7 +39,7 @@ struct std::formatter<type> {                                                   
                                                                                                     \
     template<class FormatContext>                                                                   \
     [[nodiscard]] constexpr auto format(type const& obj, FormatContext& ctx) const {                \
-        using T = decltype(tie_func(std::declval<type>()));                                          \
+        using T = decltype(tie_func(std::declval<type>()));                                         \
                                                                                                     \
         if constexpr(!cth::mta::tuple_like<T> && std::formattable<T, char>)                         \
             return std::format_to(ctx.out(), fmt_string, tie_func(obj));                            \

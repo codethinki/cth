@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 4.1.1)
 project(
   cth
   LANGUAGES CXX
-  VERSION 1.0.0)
+  VERSION 1.0.0
+)
 
 include(cth_setup_utilities)
 include(cth_target_utilities)
@@ -10,6 +11,10 @@ include(cth_install_utilities)
 
 cth_set_compiler_specifics()
 cth_set_latest_c_cpp_standard()
+set(CMAKE_CXX_SCAN_FOR_MODULES FALSE)
+
+set(CMAKE_C_COMPILER_LAUNCHER "buildcache")
+set(CMAKE_CXX_COMPILER_LAUNCHER "buildcache")
 
 # exported
 add_subdirectory(cth)
@@ -30,14 +35,13 @@ cth_glob_cpp(
   FORMAT_FILES
   "cth"
   "cth_coro"
-  "cth_coro_tests"
   "cth_cthm"
-  "cth_tests"
   "cth_win"
-  "cth_win_tests"
   "integration_tests"
+  "playground"
 )
 
-cth_add_uncrustify_target(uncrustify-format OPTIONAL ${FORMAT_FILES})
+#cth_add_uncrustify_target(uncrustify-format OPTIONAL ${FORMAT_FILES})
+
 # playground
 add_subdirectory(playground)

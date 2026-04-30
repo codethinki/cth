@@ -1,7 +1,6 @@
 #pragma once
 #include <array>
 
-
 namespace cth::mta {
 template<size_t Size, class CType = char>
 class cval_string {
@@ -17,7 +16,6 @@ public:
     constexpr bool operator==(cval_string const&) const = default;
 };
 
-
 template<size_t Sz1, size_t Sz2, class CType>
 [[nodiscard]] constexpr bool operator==(cval_string<Sz1, CType> left, cval_string<Sz2, CType> right) {
     if constexpr(Sz1 != Sz2)
@@ -31,7 +29,5 @@ template<size_t Sz1, size_t Sz2, class CType>
 }
 
 template<cval_string Str>
-[[nodiscard]] constexpr auto operator""_cval() {
-    return Str;
-}
+[[nodiscard]] constexpr auto operator""_cval() { return Str; }
 }

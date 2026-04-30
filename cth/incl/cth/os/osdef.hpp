@@ -1,6 +1,5 @@
 #pragma once
 
-
 #if defined(_WIN32) && !defined(CTH_PLATFORM_WINDOWS)
 #define CTH_PLATFORM_WINDOWS
 #endif
@@ -17,12 +16,11 @@
 #define CTH_PLATFORM_ANDROID
 #endif
 
-#if defined(CTH_PLATFORM_WINDOWS) + defined(CTH_PLATFORM_LINUX) + defined(CTH_PLATFORM_ANDROID) +            \
-        defined(CTH_PLATFORM_MACOS) !=                                                                       \
+#if defined(CTH_PLATFORM_WINDOWS) + defined(CTH_PLATFORM_LINUX) + defined(CTH_PLATFORM_ANDROID) + \
+    defined(CTH_PLATFORM_MACOS) !=                                                                \
     1
 #error "multiple or no platforms defined"
 #endif
-
 
 #ifdef CTH_PLATFORM_WINDOWS
 #define CTH_FS_WINDOWS

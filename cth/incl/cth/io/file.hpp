@@ -5,13 +5,11 @@
 #include <fstream>
 #include <ios>
 
-
 namespace cth::io::file {
 cxpr uintmax_t BYTE = 1;
 cxpr uintmax_t KB = BYTE * 1024;
 cxpr uintmax_t MB = KB * 1024;
 cxpr uintmax_t GB = MB * 1024;
-
 
 template<uintmax_t Divisor = KB>
 uintmax_t size(std::filesystem::path const& path) {
@@ -23,7 +21,6 @@ uintmax_t size(std::filesystem::path const& path) {
 
 cxpr size_t DEFAULT_CHOP_BUFFER_SIZE = 0xfff;
 
-
 template<class D, size_t Buffer = DEFAULT_CHOP_BUFFER_SIZE>
 std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {
     CTH_STABLE_ERR(!std::filesystem::exists(path), "file doesn't exist [{}]", path.string()) {
@@ -32,7 +29,6 @@ std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {
 
     std::vector<std::string> result{};
     std::ifstream file{path};
-
 
     std::array<char, Buffer> buffer;
     file.rdbuf()->pubsetbuf(buffer.data(), buffer.size());
@@ -43,14 +39,11 @@ std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {
 
     file.close();
 
-
     if(!file.eof() && !line.empty())
         result.push_back(line);
 
-
     return result;
 }
-
 
 template<size_t Buffer = DEFAULT_CHOP_BUFFER_SIZE>
 std::vector<std::string> chop(std::filesystem::path const& path, char delimiter = '\n') {
@@ -64,13 +57,11 @@ std::vector<T> read(std::filesystem::path const& path) {
         throw details->exception();
     }
 
-
     std::ifstream file{path, std::ios::binary};
     CTH_STABLE_ERR(!file.is_open(), "failed to open file") {
         details->add("file: {0}", path.string());
         throw details->exception();
     }
-
 
     size_t const fileSize = std::filesystem::file_size(path);
 
@@ -80,6 +71,5 @@ std::vector<T> read(std::filesystem::path const& path) {
 
     return bytecode;
 }
-
 
 }

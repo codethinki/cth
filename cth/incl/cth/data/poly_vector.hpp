@@ -9,19 +9,16 @@
 #include <span>
 #include <vector>
 
-
 namespace cth::dt {
 
-template<mta::trivial... Ts>
-requires(sizeof...(Ts) >= 1)
+template<mta::trivial... Ts> requires(sizeof...(Ts) >= 1)
 class raw_poly_vector {
 public:
     static constexpr size_t MIN_ALIGN = alignof(std::max_align_t);
     static constexpr size_t SIZE = sizeof...(Ts);
     static constexpr size_t N = sizeof...(Ts);
 
-    template<size_t I>
-    requires(I < N)
+    template<size_t I> requires(I < N)
     using value_type = mta::get_t<I, Ts...>;
 
 private:
@@ -55,7 +52,6 @@ public:
             sizes.size(),
             N
         ) {}
-
 
         constexpr std::array<size_t, N> typeSizes{sizeof(Ts)...};
         constexpr std::array<size_t, N> typeAligns{std::max(MIN_ALIGN, alignof(Ts))...};
@@ -107,7 +103,6 @@ public:
 };
 }
 
-
 namespace cth::dt {
 
 template<mta::trivial... Ts>
@@ -122,11 +117,8 @@ private:
     template<class S>
     using cbase_t = mta::fwd_const_t<S, base_t>;
 
-    template<size_t I, class S>
-    requires(I <= N)
-    [[nodiscard]] auto* raw_data(this S& s) noexcept {
-        return s._base.template data<I>();
-    }
+    template<size_t I, class S> requires(I <= N)
+    [[nodiscard]] auto* raw_data(this S& s) noexcept { return s._base.template data<I>(); }
 
     template<class S>
     [[nodiscard]] auto* raw_sizes(this S& s) noexcept {
@@ -135,8 +127,7 @@ private:
     }
 
 public:
-    template<size_t I>
-    requires(I < N)
+    template<size_t I> requires(I < N)
     using value_type = mta::get_t<I, Ts...>;
 
     explicit constexpr poly_vector(std::span<size_t const> sz) : _base{make_sizes_array(sz)} {
@@ -149,20 +140,17 @@ public:
 
     constexpr ~poly_vector() = default;
 
-    template<size_t I, class S>
-    requires(I < N)
+    template<size_t I, class S> requires(I < N)
     [[nodiscard]] constexpr auto data(this S& s) noexcept {
         return s.template raw_data<I + 1>();
     }
 
-    template<size_t I, class S>
-    requires(I < N)
+    template<size_t I, class S> requires(I < N)
     [[nodiscard]] constexpr auto get(this S& s) noexcept {
         return std::span{s.template data<I>(), s.template size<I>()};
     }
 
-    template<size_t I>
-    requires(I < N)
+    template<size_t I> requires(I < N)
     [[nodiscard]] constexpr size_t size(this auto const& s) noexcept {
         return s.raw_sizes()[I];
     }
@@ -191,7 +179,6 @@ private:
         auto* dst = s.template raw_data<0>();
         auto* src = other.template raw_data<0>();
         auto size = other.min_raw_size();
-
 
         std::memcpy(dst, src, size);
     }

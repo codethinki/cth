@@ -5,11 +5,10 @@
 
 #include "io/log.hpp"
 
-
 namespace cth {
-//------------------
+// ------------------
 // DECLARATIONS
-//------------------
+// ------------------
 namespace num {
     template<std::integral T, std::integral U>
     [[nodiscard]] cxpr auto abs_diff(T t, U u) {
@@ -20,7 +19,6 @@ namespace num {
 
         using diff_t = decltype(t - u);
         using cast_t = std::conditional_t<std::unsigned_integral<diff_t>, long long, diff_t>;
-
 
         if constexpr(std::same_as<size_t, base_t>)
             return static_cast<base_t>(std::max(t, u) - std::min(t, u));
@@ -66,9 +64,9 @@ namespace num {
     [[nodiscard]] cxpr T pow(T base, std::integral auto power);
 } // namespace num
 
-//-----------------------
+// -----------------------
 // IMPLEMENTATIONS
-//-----------------------
+// -----------------------
 namespace num {
 
     template<std::integral T>
@@ -80,10 +78,7 @@ namespace num {
 
     template<std::integral auto Size>
     requires(Size > 0)
-    cval bool power_2() {
-        return Size == 0 || ((Size & (Size - 1)) == 0);
-    }
-
+    cval bool power_2() { return Size == 0 || ((Size & (Size - 1)) == 0); }
 
     template<std::integral auto Multiple>
     requires(Multiple > 0)
@@ -96,10 +91,7 @@ namespace num {
     }
 
     template<class T>
-    cxpr auto align_to(std::integral auto unaligned) {
-        return cth::num::align_to<sizeof(T)>(unaligned);
-    }
-
+    cxpr auto align_to(std::integral auto unaligned) { return cth::num::align_to<sizeof(T)>(unaligned); }
 
     template<std::floating_point T>
     [[nodiscard]] cxpr T exp(T x, T precision) {
@@ -141,14 +133,13 @@ namespace num {
 
     [[nodiscard]] cxpr bool in_inc(auto x, auto a, auto b) { return a <= x && x <= b; }
 
-
     template<mta::arithmetic T, mta::arithmetic U>
     [[nodiscard]] cxpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y) {
         return num::in(x, a_x, b_x) && num::in(y, a_y, b_y);
     }
 
     /*  template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
-      [[nodiscard]] cxpr T sqam(T base, U power, V mod) {
+       [[nodiscard]] cxpr T sqam(T base, U power, V mod) {
           CTH_CRITICAL(mod < 0, "invalid input: mod ({}) > 0 required", mod) {}
 
           auto bitArr = bits::toBitArr(power);
@@ -161,7 +152,7 @@ namespace num {
               val %= mod;
           }
           return val;
-      }*/
+       }*/
 
     template<mta::arithmetic T>
     [[nodiscard]] cxpr T pow(T base, std::integral auto power) {
@@ -176,13 +167,11 @@ namespace num {
         return result;
     }
 
-
 }
 
-
-//---------------------
+// ---------------------
 // CONSTEXPR FUNC
-//---------------------
+// ---------------------
 namespace expr::num {
 
     [[nodiscard]] constexpr auto map(auto x, auto in_a, auto in_b, auto out_a, auto out_b) {
@@ -195,9 +184,7 @@ namespace expr::num {
     }
 
     template<std::integral T>
-    [[nodiscard]] cxpr T cycle(T x, T a, T b) {
-        return cth::num::cycle(x, a, b);
-    }
+    [[nodiscard]] cxpr T cycle(T x, T a, T b) { return cth::num::cycle(x, a, b); }
 
     template<mta::arithmetic T>
     [[nodiscard]] cxpr T dist(T x1, T y1, T x2, T y2, T const precision = static_cast<T>(1e-6)) {
@@ -214,14 +201,10 @@ namespace expr::num {
     }
 
     // template<std::integral T, std::unsigned_integral U, std::unsigned_integral V>
-    //[[nodiscard]] cxpr T sqam(T base, U power, V mod) { return cth::num::sqam(base, power, mod); }
-
+    // [[nodiscard]] cxpr T sqam(T base, U power, V mod) { return cth::num::sqam(base, power, mod); }
 
     template<mta::arithmetic T>
-    [[nodiscard]] cxpr T pow(T base, std::unsigned_integral auto power) {
-        return cth::num::pow(base, power);
-    }
-
+    [[nodiscard]] cxpr T pow(T base, std::unsigned_integral auto power) { return cth::num::pow(base, power); }
 
 }
 }
