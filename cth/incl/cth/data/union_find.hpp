@@ -4,14 +4,18 @@
 #include <unordered_set>
 
 namespace cth::dt {
+/**
+ * union find data structure implementation
+ * @pre not thread safe
+ */
 class union_find {
 public:
     using index_type = size_t;
     using size_type = uint32_t;
-    using group_t = std::unordered_set<index_type>;
+    using group_t = std::vector<index_type>;
 
 private:
-    [[nodiscard]] constexpr auto& size(this auto& s, index_type x) { return s._data.template data<1>()[x]; }
+    [[nodiscard]] constexpr auto& size_ref(this auto& s, index_type x) { return s._data.template data<1>()[x]; }
 
     template<class S>
     [[nodiscard]] constexpr auto& parent(this S& s, index_type x) { return s._data.template data<0>()[x]; }
@@ -23,7 +27,7 @@ public:
     explicit constexpr union_find(size_t size) : _data({size, size}), _size{size} {
         for(index_type i = 0; i < size; i++) {
             parent(i) = i;
-            this->size(i) = 1;
+            this->size_ref(i) = 1;
         }
     }
 
@@ -53,37 +57,30 @@ public:
 
     /**
      * finds the root of @ref x, uses path compression
+     * @param x must be in `[0, size)`
      * @return root index
      */
-    [[nodiscard]] constexpr index_type find(this union_find& self, index_type x) {
+    [[nodiscard]] constexpr index_type find(index_type x) const {
+        check_bounds(x);
         auto r = x;
         do {
-            auto& p = self.parent(r);
-            p = self.parent(p);
+            auto& p = parent(r);
+            p = parent(p);
             r = p;
         }
-        while(!self.root(r));
-
-        return r;
-    }
-    /**
-     * finds the root of @ref x, does NOT use path compression
-     * @return root index
-     */
-    [[nodiscard]] constexpr index_type find(this union_find const& self, index_type x) {
-        auto r = x;
-        do { r = self.parent(r); }
-        while(!self.root(r));
+        while(!root(r));
 
         return r;
     }
 
     /**
      * merges the sets of a and b
+     * @param lhs must be in bounds `[0, size)`
+     * @param rhs must be in bounds `[0, size)`
      */
-    constexpr void merge(this union_find& self, index_type lhs, index_type rhs) {
-        auto child = self.find(lhs);
-        auto parent = self.find(rhs);
+    constexpr void merge(this union_find& s, index_type lhs, index_type rhs) {
+        auto child = s.find(lhs);
+        auto parent = s.find(rhs);
 
         if(child == parent)
             return;
@@ -91,18 +88,20 @@ public:
         if(parent < child)
             std::swap(child, parent);
 
-        self.parent(child) = parent;
-        self.size(parent) += self.size(child);
+        s.parent(child) = parent;
+        s.size_ref(parent) += s.size_ref(child);
     }
     /**
      * delegates to @ref merge(index_type, index_type)
+     * @param group set of indices to merge
+     * @pre all of `group` in bounds `[0, size)`
      * @param group merge pair
      */
     void merge(group_t const& group) {
         if(group.empty())
             return;
         auto const root = find(*group.begin());
-        auto& rootSize = size(root);
+        auto& rootSize = size_ref(root);
 
         for(auto& node : group) {
             auto& p = parent(node);
@@ -115,35 +114,87 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr size_t chain_length(this auto const& self, index_type x) {
+    [[nodiscard]] constexpr size_t chain_length(index_type x) const {
         size_t len = 0;
         auto p = x;
-        for(; !self.root(p); len++)
-            p = self.parent(p);
+        for(; !root(p); len++)
+            p = parent(p);
 
         return len;
     }
 
     /**
      * finds all root indices
+     * @details O(N)
      * @return root indices
      */
-    [[nodiscard]] constexpr std::vector<index_type> roots(this auto const& self) {
+    [[nodiscard]] constexpr std::vector<index_type> roots() const {
         std::vector<index_type> res{};
-        res.reserve(self._size);
-        for(index_type i = 0; i < self._size; i++)
-            if(self.root(i))
+        for(index_type i = 0; i < size(); i++)
+            if(root(i))
                 res.push_back(i);
 
         return res;
     }
 
+
+    /**
+     * finds all indices with in the same group
+     * @pre `x` in bounds `[0, size)`
+     * @param x to find group members of
+     */
+    [[nodiscard]] constexpr std::vector<index_type> all_of(index_type x) {
+        check_bounds(x);
+
+
+        std::vector<index_type> result{};
+        auto const parent = find(x);
+
+        for(index_type i = 0; i < size(); i++)
+            if(find(i) == parent)
+                result.push_back(i);
+
+        return result;
+    }
+
+    [[nodiscard]] constexpr std::vector<group_t> all() {
+        std::vector<group_t> result{};
+
+        std::unordered_map<index_type, size_t> groups{};
+
+        for(index_type idx = 0; idx < size(); idx++) {
+            auto const parent = find(idx);
+            if(auto groupIt = groups.find(parent); groupIt != groups.end())
+                result[groupIt->second].emplace_back(idx);
+            else {
+                groups[parent] = result.size();
+                result.emplace_back(1)[0] = idx;
+            }
+        }
+        return result;
+    }
+
 private:
-    poly_vector<index_type, size_type> _data;
+    constexpr void check_bounds(this union_find const& self, index_type x) {
+        CTH_CRITICAL(x >= self.size(), "index({}) out of bounds for [0, {})", x, self.size()) {}
+    }
+
+    mutable poly_vector<index_type, size_type> _data;
 
     size_t _size;
 
 public:
+    bool operator==(union_find const& other) const {
+        if(size() != other.size())
+            return false;
+        auto size = static_cast<index_type>(this->size());
+        for(index_type i = 0; i < size; i++)
+            if(find(i) != other.find(i))
+                return false;
+
+        return true;
+    }
+
     /**
      * checks if @ref x is a root
      */

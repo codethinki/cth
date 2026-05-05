@@ -38,9 +38,14 @@ bool test(bool) { return {}; }
 
 
 int main() {
+    int x = 0;
+    bool a = true;
+    bool b = false;
+    if(a && (true, x = 3)) { std::println("asdf"); }
+    std::println("x: {}", x);
 
+    if(b && (true, x = 6)) { std::println("should not happen"); }
+    std::println("x: {}", x);
 
-    std::vector a{1, 2, 3};
-
-    std::println("{}", a);
+        int _ = 0;
 }

@@ -2,11 +2,13 @@
 
 #include "cth/data/union_find.hpp"
 
+#include "stb_image.h"
+
 #include "cth/numeric.hpp"
 
 #include <random>
 
-
+//TODO expand test suite
 namespace cth::dt {
 DATA_TEST(union_find, gt1_chain) {
     union_find uf(3);
@@ -32,10 +34,12 @@ DATA_TEST(union_find, ctors) {
     for(size_t i = 0; i < SIZE; i++)
         ASSERT_TRUE(sizeCtor.root(i));
 
-    static std::array<std::unordered_set<size_t>, SIZE> groups{{
-        {0, 1, 2},
-        {3},
-    }};
+    static std::array<std::vector<size_t>, SIZE> groups{
+        {
+            {0, 1, 2},
+            {3},
+        }
+    };
 
 
     union_find spanSizeCtor(SIZE, groups);
@@ -59,5 +63,40 @@ DATA_TEST(union_find, ctors) {
     check_groups(implicitSizeSpanCtor, SIZE - 1);
     check_groups(implicitSizeInitListCtor, SIZE - 1);
 }
+
+DATA_TEST(union_find, all_of) {
+    static constexpr size_t SIZE = 3;
+
+    static std::array<std::vector<size_t>, SIZE> expectedGroups{
+        {
+            {0, 1, 2},
+            {3},
+        }
+    };
+
+    union_find find{expectedGroups};
+
+    for(auto& expectedGroup : expectedGroups)
+        for(auto const& member : expectedGroup) {
+            auto actualGroup = find.all_of(member);
+            EXPECT_EQ(actualGroup, expectedGroup);
+        }
+}
+
+DATA_TEST(union_find, all) {
+
+    static std::array<std::vector<size_t>, 2> expectedGroups{
+        {
+            {0, 1, 2},
+            {3},
+        }
+    };
+
+    union_find find{expectedGroups};
+
+
+    EXPECT_TRUE(std::ranges::equal(find.all(), expectedGroups));
+}
+
 
 }
