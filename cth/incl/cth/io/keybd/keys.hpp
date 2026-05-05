@@ -254,7 +254,7 @@ cxpr std::string_view to_utf8_string(Key key) {
 
 CTH_GEN_ENUM_DEREF_OVERLOAD(cth::io::Key)
 
-CTH_FORMAT_CLASS_ATTRIBUTES(
+CTH_FORMAT_CLASS(
     cth::io::Key,
     "{}",
     ([](cth::io::Key const& key) { return cth::io::to_utf8_string(key); })
@@ -288,19 +288,19 @@ struct key_update {
 
 }
 
-CTH_FORMAT_CLASS_ATTRIBUTES(
+CTH_FORMAT_CLASS(
     cth::io::ex_key,
     "{}, right: {}",
     ([](cth::io::ex_key const& key) { return std::tie(key.key, key.right); })
 );
 
-CTH_FORMAT_CLASS_ATTRIBUTES(
+CTH_FORMAT_CLASS(
     cth::io::key_state,
     "{}, down: {}",
     ([](cth::io::key_state const& key) { return std::tie(key.exKey, key.down); })
 );
 
-CTH_FORMAT_CLASS_ATTRIBUTES(
+CTH_FORMAT_CLASS(
     cth::io::key_update,
     "{}, time: {}",
     (

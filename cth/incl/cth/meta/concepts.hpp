@@ -4,10 +4,6 @@
 #include <tuple>
 
 
-#define CPT(concept)                                                                                         \
-    []<concept> {}
-
-
 namespace cth::mta {
 template<class T, auto TCpt>
 concept satisfies = requires { TCpt.template operator()<T>(); };

@@ -643,7 +643,7 @@ inline auto x = []() {
         CTH_ASSERT(false, "invalid CTH_LOG_LEVEL macro value defined");
         static_assert(false);
         return 10;
-    }();
+}();
 #endif
 
 #endif
