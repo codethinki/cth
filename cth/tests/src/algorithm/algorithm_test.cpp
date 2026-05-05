@@ -1,7 +1,6 @@
 #include "cth/test.hpp"
 
 #include "cth/algorithm/combine.hpp"
-#include "cth/string.hpp"
 
 #include <vector>
 
@@ -37,7 +36,7 @@ ALG_TEST(assign, main) {
 
     test({{0, 1}, {0}, {0, 1, 2}}, {1, 2, 0}, {1, 0, 1});
     test({{0, 1}, {0}, {0, 1, 2}, {0}}, {2, 1, 1}, {1, 0, 2, 0});
-    test({{0, 1}, {0, 1}}, {3, 2, 1, 3}, {0, 0});
+    test({{0, 1}, {0, 1}}, {3, 2, 1, 3}, {0, 1});
     test({{0, 4}, {0, 4}}, {0, 3, 3, 3, 2}, {4, 4});
     test({{0}}, {16, 2, 8, 1, 1, 1}, {0});
 }
