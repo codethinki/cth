@@ -70,34 +70,36 @@ public:
         if(offset == 0)
             return;
 
-        data() = static_cast<std::byte*>(::operator new(offset, ALLOC_ALIGN));
+        data_ref() = static_cast<std::byte*>(::operator new(offset, ALLOC_ALIGN));
 
         for(size_t i = 0; i < N; ++i)
-            _begins[i] = data() + byteOffsets[i];
+            _begins[i] = data_ref() + byteOffsets[i];
     }
 
     void swap(this raw_poly_vector& s, raw_poly_vector& other) { std::swap(s._begins, other._begins); }
 
 private:
     constexpr void free() {
-        if(data() == nullptr)
+        if(data_ref() == nullptr)
             return;
 
-        ::operator delete(data(), ALLOC_ALIGN);
+        ::operator delete(data_ref(), ALLOC_ALIGN);
     }
 
     std::array<base_t*, N> _begins{};
 
-    base_t*& data() { return _begins[0]; }
+    base_t*& data_ref() { return _begins[0]; }
 
 public:
     constexpr raw_poly_vector(raw_poly_vector const& other) = delete;
     constexpr raw_poly_vector& operator=(raw_poly_vector const& other) = delete;
-    constexpr raw_poly_vector(raw_poly_vector&& other) noexcept { std::swap(*this, other); }
+    constexpr raw_poly_vector(raw_poly_vector&& other) noexcept : _begins{other._begins} {
+        other.data_ref() = nullptr;
+    }
     constexpr raw_poly_vector& operator=(raw_poly_vector&& other) noexcept {
         free();
         _begins = other._begins;
-        other.data() = nullptr;
+        other.data_ref() = nullptr;
         return *this;
     };
 };
