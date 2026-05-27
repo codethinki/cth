@@ -90,9 +90,18 @@ struct handle_closer {
      */
     void operator()(void* handle) const;
 };
-
-
 using closing_handle = std::unique_ptr<void, handle_closer>;
+
+struct mapping_data_closer {
+    /**
+     * Closes a generic windows handle
+     * @param handle to close
+     */
+    void operator()(void* handle) const;
+};
+
+
+using mapping_data_handle = std::unique_ptr<void, mapping_data_closer>;
 using file_ptr = closing_handle;
 
 

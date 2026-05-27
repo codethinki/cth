@@ -38,10 +38,9 @@ KEYBD_TEST(event_queue, test_recording) {
 
 KEYBD_TEST(event_queue, basic) {
     event_queue queue{};
-    CTH_CRITICAL(queue.empty(), "event queue should be empty after construction");
-
+    EXPECT_TRUE(queue.empty());
     queue.clear();
     auto events = queue.pop_queue();
-    CTH_CRITICAL(events.empty(), "pop_queue should return an empty vector for empty queue");
+    EXPECT_TRUE(events.empty());
 }
 }

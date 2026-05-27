@@ -1,8 +1,11 @@
 #pragma once
+#include "win_types.hpp"
+
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
+
 
 namespace cth::win::io {
 /**
@@ -19,5 +22,23 @@ inline std::vector<std::byte> read_unbuffered(std::string_view path) {
     return data;
 }
 
+}
+
+
+namespace cth::win::io {
+struct mapped_file {
+    closing_handle fileHandle;
+    closing_handle mappingHandle;
+    mapping_data_handle viewHandle;
+
+    std::span<std::byte const> data;
+};
+
+[[nodiscard]] mapped_file map_file(std::string_view path);
+}
+
+
+namespace cth::win::io {
 std::optional<std::string> read_clipboard();
+
 }
