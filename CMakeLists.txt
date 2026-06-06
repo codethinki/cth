@@ -43,5 +43,3 @@ cth_glob_cpp(
 
 #cth_add_uncrustify_target(uncrustify-format OPTIONAL ${FORMAT_FILES})
 
-# playground
-add_subdirectory(playground)
