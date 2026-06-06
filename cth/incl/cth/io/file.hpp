@@ -11,8 +11,8 @@ cxpr uintmax_t KB = BYTE * 1024;
 cxpr uintmax_t MB = KB * 1024;
 cxpr uintmax_t GB = MB * 1024;
 
-template<uintmax_t Divisor = KB>
-uintmax_t size(std::filesystem::path const& path) {
+template<uintmax_t Divisor>
+uintmax_t size_in(std::filesystem::path const& path) {
     if(!std::filesystem::exists(path))
         return -1;
 

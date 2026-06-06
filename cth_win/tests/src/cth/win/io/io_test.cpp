@@ -36,6 +36,15 @@ WIN_IO_TEST(read_unbuffered_with_unicode_path, main) {
 
     EXPECT_EQ(buffer, load_file_bytes(path));
 }
+WIN_IO_TEST(map_file_with_unicode_path, main) {
+    std::string const path{"res/cth/win/io/unicode🐸_image.jpg"};
+    auto const mapping = map_file(path);
+
+    std::vector data{std::from_range, mapping.data};
+
+    EXPECT_EQ(data, load_file_bytes(path));
+}
+
 
 WIN_IO_TEST(read_clipboard, main) {
     auto result = read_clipboard();
