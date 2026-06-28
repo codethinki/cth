@@ -8,10 +8,11 @@
 namespace cth::co {
 template<cth_promise Promise>
 struct this_coro_promise_awaiter
-    : this_coro_promise_awaiter_base
-    , private dev::basic_promise_awaiter<Promise> {
+    : this_coro_promise_awaiter_base<typename Promise::payload_type>,
+    private dev::basic_promise_awaiter<Promise> {
 private:
     using base_t = dev::basic_promise_awaiter<Promise>;
+    using payload_t = Promise::payload_type;
 
 public:
     this_coro_promise_awaiter() = delete;
@@ -26,7 +27,7 @@ public:
 
     template<class T>
     decltype(auto) await_suspend(std::coroutine_handle<T> caller) noexcept {
-        this_coro_promise_awaiter_base::inject_payload_into(base_t::handle);
+        this_coro_promise_awaiter_base<payload_t>::inject_payload_into(base_t::handle);
         return base_t::await_suspend(caller);
     }
 };
