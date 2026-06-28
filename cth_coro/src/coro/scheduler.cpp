@@ -71,7 +71,7 @@ scheduler::~scheduler() {
     if(_impl != nullptr)
         await_stop();
 }
-void scheduler::post(void_func work) const { bas::post(impl().ctx, std::move(work)); }
+void scheduler::post(void_func work) const { impl().post(std::move(work)); }
 
 void scheduler::await(native_handle handle, void_func cb) const { impl().await(handle, std::move(cb)); }
 void scheduler::await(std::chrono::steady_clock::time_point time_point, void_func cb) const {

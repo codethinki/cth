@@ -14,16 +14,14 @@ class executor {
 
 
 public:
-    executor(scheduler const& sched) noexcept : _sched(&sched) {}
-    ~executor() = default;
+    constexpr executor(scheduler const& sched) noexcept : _sched(&sched) {}
+    constexpr ~executor() = default;
 
     [[nodiscard]] constexpr auto schedule() const { return schedule_awaiter{scheduler()}; }
 
 
     template<this_coro_awaitable Awaitable>
-    auto steal(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
-        return co::steal(scheduler(), awaitable);
-    }
+    auto steal(Awaitable&& awaitable) -> awaiter_t<Awaitable> { return co::steal(scheduler(), awaitable); }
 
     template<non_this_coro_awaitable Awaitable>
     auto steal(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
@@ -32,9 +30,7 @@ public:
 
 
     template<class T>
-    auto spawn(scheduled_task<T> task) -> scheduled_task<T> {
-        return executor::steal(std::move(task));
-    }
+    auto spawn(scheduled_task<T> task) -> scheduled_task<T> { return executor::steal(std::move(task)); }
 
     template<awaitable Awaitable>
     auto spawn(Awaitable task) -> scheduled_task<awaited_t<Awaitable>> {
@@ -43,7 +39,11 @@ public:
 
 private:
     template<awaitable Awaitable>
-    static auto spawn([[maybe_unused]] this_coro::payload p, executor& s, Awaitable task)
+    static auto spawn(
+        [[maybe_unused]] this_coro::payload p,
+        executor& s,
+        Awaitable task
+    )
         -> scheduled_task<awaited_t<Awaitable>> {
         co_await s.schedule();
         co_return co_await s.steal(std::move(task));
@@ -52,14 +52,14 @@ private:
     scheduler const* _sched;
 
 public:
-    co::scheduler const& scheduler() const { return *_sched; }
+    constexpr co::scheduler const& scheduler() const { return *_sched; }
 
-    bool operator==(executor const&) const = default;
+    constexpr bool operator==(executor const&) const = default;
 
-    executor(executor const& other) = default;
-    executor(executor&& other) noexcept = default;
-    executor& operator=(executor const& other) = default;
-    executor& operator=(executor&& other) noexcept = default;
+    constexpr executor(executor const& other) = default;
+    constexpr executor(executor&& other) noexcept = default;
+    constexpr executor& operator=(executor const& other) = default;
+    constexpr executor& operator=(executor&& other) noexcept = default;
 };
 
 
@@ -68,7 +68,7 @@ public:
 
 namespace cth::co::this_coro {
 struct [[nodiscard]] executor_tag : tag_base {
-    static auto operator()(payload const& p) { return data_awaiter{executor{p.scheduler()}}; }
+    static [[nodiscard]] constexpr auto operator()(payload const& p) { return data_awaiter{executor{p.scheduler()}}; }
 };
 
 

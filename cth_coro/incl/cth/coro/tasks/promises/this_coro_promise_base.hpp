@@ -22,7 +22,7 @@ struct this_coro_promise_base {
             requires(Tag t) {
                 { t.operator()(std::declval<this_coro::payload>()) } -> awaitable;
             },
-            "a this_coro tag must implement a call operator"
+            "payload must satisfy the tags call operator"
         );
 
         return std::forward<Tag>(t).operator()(*_payload);

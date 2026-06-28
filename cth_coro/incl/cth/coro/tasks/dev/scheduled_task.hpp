@@ -11,8 +11,7 @@ namespace cth::co::dev {
 
 template<class T>
 struct scheduled_promise
-    : basic_promise<T>
-    , this_coro_promise_base {
+    : basic_promise<T>, this_coro_promise_base {
     explicit scheduled_promise(this_coro::payload payload) : this_coro_promise_base{std::move(payload)} {}
 
     template<class... Args>

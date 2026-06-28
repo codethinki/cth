@@ -30,7 +30,7 @@ ALG_TEST(assign, main) {
         vector<size_t> const& b_max,
         vector<size_t> const& expected
     ) {
-        vector<size_t> const result = cth::alg::assign(a_b_options, b_max);
+        auto const result = assign(a_b_options, b_max);
         ASSERT_EQ(result, expected);
     };
 
