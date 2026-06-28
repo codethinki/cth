@@ -10,31 +10,59 @@
 
 
 namespace cth::co {
+/**
+ * wraps the scheduler with coroutines functionality
+ */
 class executor {
-
-
 public:
     constexpr executor(scheduler const& sched) noexcept : _sched(&sched) {}
     constexpr ~executor() = default;
 
+    /**
+     * calling co_await on this will switch the execution context to this scheduler
+     * @details must already be this_coro compatible
+     */
     [[nodiscard]] constexpr auto schedule() const { return schedule_awaiter{scheduler()}; }
 
 
+    /**
+     * steals the execution context to the scheduler, keeps it as awaitable
+     * @tparam Awaitable must be compatible with the this_coro framework
+     * @param awaitable to steal context from
+     * @return awaitable with context stolen
+     */
     template<this_coro_awaitable Awaitable>
     auto steal(Awaitable&& awaitable) -> awaiter_t<Awaitable> { return co::steal(scheduler(), awaitable); }
 
+    /**
+     * steals the execution context to the scheduler
+     * @note converts the awaitable to a task
+     * @tparam Awaitable must not be compatible with the this_coro framework
+     * @param awaitable to steal context from
+     * @return task with context stolen
+     */
     template<non_this_coro_awaitable Awaitable>
     auto steal(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
         return co::steal(scheduler(), std::move(awaitable));
     }
 
 
+    /**
+     * runs the task on the scheduler once started
+     * @tparam T type to return
+     * @param task to run
+     */
     template<class T>
     auto spawn(scheduled_task<T> task) -> scheduled_task<T> { return executor::steal(std::move(task)); }
 
+    /**
+     * wraps the awaitable with a task running on the scheduler once started
+     * @param awaitable to wrap
+     * @return task
+     */
     template<awaitable Awaitable>
-    auto spawn(Awaitable task) -> scheduled_task<awaited_t<Awaitable>> {
-        return executor::spawn(this_coro::payload{scheduler()}, *this, std::move(task));
+    auto spawn(Awaitable awaitable) -> scheduled_task<awaited_t<Awaitable>> {
+        return executor::spawn(this_coro::payload{scheduler()}, *this, std::move(awaitable));
     }
 
 private:
@@ -52,6 +80,9 @@ private:
     scheduler const* _sched;
 
 public:
+    /**
+     * gets underlying scheduler
+     */
     constexpr co::scheduler const& scheduler() const { return *_sched; }
 
     constexpr bool operator==(executor const&) const = default;

@@ -13,8 +13,7 @@
 namespace cth::co::dev {
 template<class T>
 struct sync_promise_template
-    : sync_promise_base
-    , basic_promise<T, std::suspend_always{}, final_sync_awaiter{}> {};
+    : sync_promise_base, basic_promise<T, std::suspend_always{}, final_sync_awaiter{}> {};
 
 template<sync_promise_type Promise, template<class> class Awaiter>
 class [[nodiscard]] sync_task_template : public task_base<Promise, Awaiter> {
@@ -44,15 +43,17 @@ struct sync_promise : dev::sync_promise_template<T> {
 
 
 template<class T>
-struct sync_executor_promise
-    : this_coro_promise_base
-    , sync_promise_template<T> {
+struct sync_executor_promise : this_coro_promise_base, sync_promise_template<T> {
     sync_executor_task<T> get_return_object() noexcept;
 };
 }
 
 namespace cth::co {
 
+/**
+ * Task that can be block waited on without coroutine mechanisms
+ * @tparam T return type to await
+ */
 template<class T>
 class sync_task : public dev::sync_task_template<dev::sync_promise<T>, dev::basic_promise_awaiter> {
 public:
@@ -74,8 +75,10 @@ public:
 using sync_void_task = sync_task<void>;
 
 template<class T>
-class sync_executor_task
-    : public dev::sync_task_template<dev::sync_executor_promise<T>, this_coro_promise_awaiter> {};
+class sync_executor_task : public dev::sync_task_template<
+        dev::sync_executor_promise<T>,
+        this_coro_promise_awaiter
+    > {};
 
 using sync_executor_void_task = sync_executor_task<void>;
 }

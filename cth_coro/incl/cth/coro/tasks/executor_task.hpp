@@ -14,15 +14,17 @@ class executor_task;
 
 namespace cth::co::dev {
 template<class T>
-struct executor_promise
-    : basic_promise<T>
-    , this_coro_promise_base {
+struct executor_promise : basic_promise<T>, this_coro_promise_base {
     executor_task<T> get_return_object() noexcept;
 };
 }
 
 
 namespace cth::co {
+/**
+ * Task to be spawned on the @ref executor
+ * @tparam T task return type
+ */
 template<class T>
 class [[nodiscard]] executor_task : public task_base<dev::executor_promise<T>, this_coro_promise_awaiter> {
     using base_t = task_base<dev::executor_promise<T>, this_coro_promise_awaiter>;

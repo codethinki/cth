@@ -14,6 +14,11 @@ namespace cth::co {
 class executor;
 
 
+/**
+ * promises supporting the libs this_coro namespace must publicly inherit from this
+ * @details
+ * - children must forward the payload on construction
+ */
 struct this_coro_promise_base {
 
     template<this_coro::tag Tag>

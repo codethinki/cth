@@ -34,6 +34,9 @@ struct sync_promise_base;
 namespace cth::co::this_coro {
 struct payload;
 
+/**
+ * new this_coro tags must inherit from this
+ */
 struct [[nodiscard]] tag_base {};
 struct executor_tag;
 struct scheduler_tag;
