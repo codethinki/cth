@@ -12,8 +12,8 @@
 
 namespace cth::co::dev {
 template<class T>
-struct sync_promise_template
-    : sync_promise_base, basic_promise<T, std::suspend_always{}, final_sync_awaiter{}> {};
+struct sync_promise_template : sync_promise_base,
+    basic_promise<T, std::suspend_always{}, final_sync_awaiter{}> {};
 
 template<sync_promise_type Promise, template<class> class Awaiter>
 class [[nodiscard]] sync_task_template : public task_base<Promise, Awaiter> {
@@ -31,7 +31,7 @@ namespace cth::co {
 template<class T>
 class sync_task;
 
-template<class T>
+template<class T, payload Pyld>
 class sync_executor_task;
 }
 
@@ -42,9 +42,9 @@ struct sync_promise : dev::sync_promise_template<T> {
 };
 
 
-template<class T>
-struct sync_executor_promise : this_coro_promise_base, sync_promise_template<T> {
-    sync_executor_task<T> get_return_object() noexcept;
+template<class T, payload Pyld = this_coro::default_payload>
+struct sync_executor_promise : this_coro_promise_base<Pyld>, sync_promise_template<T> {
+    sync_executor_task<T, Pyld> get_return_object() noexcept;
 };
 }
 
@@ -74,9 +74,9 @@ public:
 };
 using sync_void_task = sync_task<void>;
 
-template<class T>
+template<class T, payload Pyld>
 class sync_executor_task : public dev::sync_task_template<
-        dev::sync_executor_promise<T>,
+        dev::sync_executor_promise<T, Pyld>,
         this_coro_promise_awaiter
     > {};
 
@@ -90,8 +90,8 @@ auto sync_promise<T>::get_return_object() noexcept -> sync_task<T> {
     return {std::coroutine_handle<sync_promise<T>>::from_promise(*this)};
 }
 
-template<class T>
-auto sync_executor_promise<T>::get_return_object() noexcept -> sync_executor_task<T> {
-    return {std::coroutine_handle<sync_executor_promise<T>>::from_promise(*this)};
+template<class T, payload Pyld>
+auto sync_executor_promise<T, Pyld>::get_return_object() noexcept -> sync_executor_task<T, Pyld> {
+    return {std::coroutine_handle<sync_executor_promise<T, Pyld>>::from_promise(*this)};
 }
 }

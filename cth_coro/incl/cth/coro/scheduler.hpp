@@ -1,10 +1,12 @@
 #pragma once
 
-#include "cth/io/log.hpp"
+#include <cth/io/log.hpp>
+#include <cth/chrono.hpp>
 
 #include "os/native_handle.hpp"
 
 #include "utility/fwd.hpp"
+
 
 #include <functional>
 #include <thread>
