@@ -9,25 +9,25 @@
 
 namespace cth::co::dev {
 
-template<class T>
-struct scheduled_promise : basic_promise<T>, this_coro_promise_base {
-    explicit scheduled_promise(this_coro::payload payload) : this_coro_promise_base{std::move(payload)} {}
+template<class T, payload Pyld = this_coro::default_payload>
+struct scheduled_promise : basic_promise<T>, this_coro_promise_base<Pyld> {
+    explicit scheduled_promise(Pyld const& payload) : this_coro_promise_base<Pyld>{payload} {}
 
     template<class... Args>
-    explicit scheduled_promise(this_coro::payload const& payload, Args&&...) : scheduled_promise{payload} {}
+    explicit scheduled_promise(Pyld const& payload, Args&&...) : scheduled_promise{payload} {}
 
 
-    scheduled_task<T> get_return_object() noexcept;
+    scheduled_task<T, Pyld> get_return_object() noexcept;
 };
 
 }
 
 namespace cth::co {
 
-template<class T>
+template<class T, payload Pyld>
 class [[nodiscard]] scheduled_task
-    : public task_base<dev::scheduled_promise<T>, dev::capture_promise_awaiter> {
-    using base_t = task_base<dev::scheduled_promise<T>, dev::capture_promise_awaiter>;
+    : public task_base<dev::scheduled_promise<T, Pyld>, dev::capture_promise_awaiter> {
+    using base_t = task_base<dev::scheduled_promise<T, Pyld>, dev::capture_promise_awaiter>;
 
     using base_t::base_t;
     friend base_t::promise_type;
@@ -40,9 +40,9 @@ public:
     scheduled_task& operator=(scheduled_task&& other) noexcept = default;
 };
 
-template<class T>
-scheduled_task<T> dev::scheduled_promise<T>::get_return_object() noexcept {
-    return scheduled_task<T>{std::coroutine_handle<scheduled_promise>::from_promise(*this)};
+template<class T, payload Pyld>
+scheduled_task<T, Pyld> dev::scheduled_promise<T, Pyld>::get_return_object() noexcept {
+    return scheduled_task<T, Pyld>{std::coroutine_handle<scheduled_promise>::from_promise(*this)};
 }
 
 }

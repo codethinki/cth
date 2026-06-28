@@ -26,55 +26,65 @@ public:
 
 
     /**
-     * steals the execution context to the scheduler, keeps it as awaitable
+     * steals the execution context to the scheduler after the coroutine finished, keeps it as awaitable
+     * @tparam Pyld payload type; the scheduler is injected automatically when it is a scheduler_payload
      * @tparam Awaitable must be compatible with the this_coro framework
      * @param awaitable to steal context from
+     * @param args extra arguments to construct the payload with (besides the auto-injected scheduler)
      * @return awaitable with context stolen
      */
-    template<this_coro_awaitable Awaitable>
-    auto steal(Awaitable&& awaitable) -> awaiter_t<Awaitable> { return co::steal(scheduler(), awaitable); }
-
-    /**
-     * steals the execution context to the scheduler
-     * @note converts the awaitable to a task
-     * @tparam Awaitable must not be compatible with the this_coro framework
-     * @param awaitable to steal context from
-     * @return task with context stolen
-     */
-    template<non_this_coro_awaitable Awaitable>
-    auto steal(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
-        return co::steal(scheduler(), std::move(awaitable));
+    template<payload Pyld = this_coro::default_payload, this_coro_awaitable Awaitable, class... Args>
+    [[nodiscard]] auto steal(Awaitable&& awaitable, Args&&... args) const -> awaiter_t<Awaitable> {
+        if constexpr(this_coro::scheduler_payload<Pyld>)
+            return co::steal(std::forward<Awaitable>(awaitable), Pyld{scheduler(), std::forward<Args>(args)...});
+        else
+            return co::steal(std::forward<Awaitable>(awaitable), Pyld{std::forward<Args>(args)...});
     }
 
+    /**
+     * steals the execution context to the scheduler after the coroutine finished
+     * @note converts the awaitable to a task
+     * @tparam Pyld payload type; the scheduler is injected automatically when it is a scheduler_payload
+     * @tparam Awaitable must not be compatible with the this_coro framework
+     * @param awaitable to steal context from
+     * @param args extra arguments to construct the payload with (besides the auto-injected scheduler)
+     * @return task with context stolen
+     */
+    template<payload Pyld = this_coro::default_payload, non_this_coro_awaitable Awaitable, class... Args>
+    [[nodiscard]] auto steal(Awaitable awaitable, Args&&... args) const -> capture_task<awaited_t<Awaitable>> {
+        if constexpr(this_coro::scheduler_payload<Pyld>)
+            return co::steal(std::move(awaitable), Pyld{scheduler(), std::forward<Args>(args)...});
+        else
+            return co::steal(std::move(awaitable), Pyld{std::forward<Args>(args)...});
+    }
 
     /**
-     * runs the task on the scheduler once started
-     * @tparam T type to return
-     * @param task to run
+     * runs the coroutine on the scheduler once started, then captures execution back
+     * @tparam Pyld payload type; the scheduler is injected automatically when it is a scheduler_payload
+     * @param task coroutine to run on the scheduler
+     * @param args extra arguments to construct the payload with (besides the auto-injected scheduler)
+     * @return cold scheduled task; starts on the scheduler when awaited
      */
-    template<class T>
-    auto spawn(scheduled_task<T> task) -> scheduled_task<T> { return executor::steal(std::move(task)); }
-
-    /**
-     * wraps the awaitable with a task running on the scheduler once started
-     * @param awaitable to wrap
-     * @return task
-     */
-    template<awaitable Awaitable>
-    auto spawn(Awaitable awaitable) -> scheduled_task<awaited_t<Awaitable>> {
-        return executor::spawn(this_coro::payload{scheduler()}, *this, std::move(awaitable));
+    template<payload Pyld = this_coro::default_payload, awaitable Awaitable, class... Args>
+    [[nodiscard]] auto spawn(Awaitable task, Args&&... args) const -> scheduled_task<awaited_t<Awaitable>, Pyld> {
+        if constexpr(this_coro::scheduler_payload<Pyld>)
+            return spawn_impl(Pyld{scheduler(), std::forward<Args>(args)...}, *this, std::move(task));
+        else
+            return spawn_impl(Pyld{std::forward<Args>(args)...}, *this, std::move(task));
     }
 
 private:
-    template<awaitable Awaitable>
-    static auto spawn(
-        [[maybe_unused]] this_coro::payload p,
-        executor& s,
+    template<payload Pyld, awaitable Awaitable>
+    static auto spawn_impl(
+        Pyld payload,
+        executor self,
         Awaitable task
     )
-        -> scheduled_task<awaited_t<Awaitable>> {
-        co_await s.schedule();
-        co_return co_await s.steal(std::move(task));
+        -> scheduled_task<awaited_t<Awaitable>, Pyld> {
+        co_await self.schedule();
+
+        // inject the payload into the child and finish back on this executor
+        co_return co_await co::steal(std::move(task), payload);
     }
 
     scheduler const* _sched;
@@ -99,7 +109,9 @@ public:
 
 namespace cth::co::this_coro {
 struct [[nodiscard]] executor_tag : tag_base {
-    static [[nodiscard]] constexpr auto operator()(payload const& p) { return data_awaiter{executor{p.scheduler()}}; }
+    static [[nodiscard]] constexpr auto operator()(default_payload const& p) {
+        return data_awaiter{executor{p.scheduler()}};
+    }
 };
 
 
