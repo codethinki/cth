@@ -104,7 +104,7 @@ struct optional : optional_base {
     template<class Self>
     constexpr auto&& operator*(this Self&& self) { return *std::forward<Self>(self)._value; }
     template<class Self>
-    constexpr auto&& operator->(this Self&& self) { return std::forward<Self>(self)._value.operator->(); }
+    constexpr auto operator->(this Self&& self) { return std::forward<Self>(self)._value.operator->(); }
 
     template<class Self>
     constexpr auto&& value(this Self&& self) {
