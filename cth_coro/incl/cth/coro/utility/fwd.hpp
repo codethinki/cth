@@ -48,6 +48,12 @@ namespace dev {
      * @details base to detect this_coro support
      */
     struct this_coro_base_type {};
+
+    /**
+     * dev only, use @ref raw_promise
+     * @details token marking the raw_promise
+     */
+    struct raw_promise_base {};
 }
 
 template<payload Pyld = this_coro::default_payload>
@@ -58,6 +64,12 @@ struct this_coro_base;
  */
 template<class T>
 concept this_coro_compatible = std::is_base_of_v<dev::this_coro_base_type, std::remove_cvref_t<T>>;
+
+/**
+ * true if @ref T carries the raw_promise surface (result, exception, value_type)
+ */
+template<class T>
+concept raw_promise_type = std::is_base_of_v<dev::raw_promise_base, std::remove_cvref_t<T>>;
 
 /**
  * true if `From` is convertible to `to`
@@ -78,6 +90,13 @@ concept pyld_compatible_with = payload<Pyld> && payload<To> && pyld_injectable_t
 
 
 namespace cth::co {
+template<class T>
+class capture_task;
+
+template<class T>
+class sync_task;
+
+
 template<class T, payload Pyld = this_coro::default_payload>
 class executor_task;
 
@@ -86,10 +105,6 @@ class scheduled_task;
 
 template<class T, payload Pyld = this_coro::default_payload>
 class sync_executor_task;
-
-
-template<class T>
-class capture_task;
 }
 
 

@@ -1,12 +1,11 @@
 #pragma once
-#include "task_base.hpp"
-
+#include "cth/coro/tasks/task_base.hpp"
 #include "cth/coro/tasks/awaiters/this_coro_promise_awaiter.hpp"
-
 #include "cth/coro/tasks/awaiters/dev/basic_promise_awaiter.hpp"
 #include "cth/coro/tasks/promises/sync_promise_base.hpp"
+#include "cth/coro/tasks/promises/this_coro_promise_base.hpp"
+#include "cth/coro/utility/fwd.hpp"
 
-#include "promises/this_coro_promise_base.hpp"
 
 #include <utility>
 
@@ -15,25 +14,35 @@ template<class T>
 struct sync_promise_template : sync_promise_base,
     basic_promise<T, std::suspend_always{}, final_sync_awaiter{}> {};
 
-template<sync_promise_type Promise, template<class> class Awaiter>
+template<sync_promise_type Promise, template<class> class Awaiter> requires raw_promise_type<Promise>
 class [[nodiscard]] sync_task_template : public task_base<Promise, Awaiter> {
     using base_t = task_base<Promise, Awaiter>;
     using base_t::task_base;
 
     friend base_t::promise_type;
 
+    using value_type = typename Promise::value_type;
+
 public:
+    decltype(auto) start() { return this->handle().resume(); }
+
     void wait() const noexcept { this->handle().promise().wait(); }
+
+    [[nodiscard]] value_type await() {
+        this->wait();
+
+        auto& exceptionPtr = this->handle().promise().exception;
+        if(exceptionPtr)
+            std::rethrow_exception(exceptionPtr);
+
+        if constexpr(mta::is_void<value_type>)
+            return;
+        else
+            return std::forward<value_type>(*(this->handle().promise().result));
+    }
 };
 }
 
-namespace cth::co {
-template<class T>
-class sync_task;
-
-template<class T, payload Pyld>
-class sync_executor_task;
-}
 
 namespace cth::co::dev {
 template<class T>
@@ -55,23 +64,7 @@ namespace cth::co {
  * @tparam T return type to await
  */
 template<class T>
-class sync_task : public dev::sync_task_template<dev::sync_promise<T>, dev::basic_promise_awaiter> {
-public:
-    decltype(auto) resume() { return this->handle().resume(); }
-
-    [[nodiscard]] T await() {
-        this->wait();
-
-        auto& exceptionPtr = this->handle().promise().exception;
-        if(exceptionPtr)
-            std::rethrow_exception(exceptionPtr);
-
-        if constexpr(mta::is_void<T>)
-            return;
-        else
-            return std::forward<T>(*(this->handle().promise().result));
-    }
-};
+class sync_task : public dev::sync_task_template<dev::sync_promise<T>, dev::basic_promise_awaiter> {};
 using sync_void_task = sync_task<void>;
 
 template<class T, payload Pyld>

@@ -16,7 +16,7 @@ auto sync(Awaitable awaitable) -> awaited_t<Awaitable> {
             co_return co_await a;
     }(std::move(awaitable));
 
-    syncTask.resume();
+    syncTask.start();
 
 
     return syncTask.await();

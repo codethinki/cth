@@ -1,4 +1,6 @@
 #pragma once
+#include "cth/coro/utility/fwd.hpp"
+
 #include <cth/data/optional.hpp>
 
 #include <coroutine>
@@ -6,7 +8,7 @@
 
 namespace cth::co {
 template<class T>
-struct raw_promise {
+struct raw_promise : dev::raw_promise_base {
     using value_type = T;
 
     dt::optional<T> result;
@@ -22,7 +24,7 @@ struct raw_promise {
 };
 
 template<>
-struct raw_promise<void> {
+struct raw_promise<void> : dev::raw_promise_base {
     using value_type = void;
 
     dt::optional<void> result;
