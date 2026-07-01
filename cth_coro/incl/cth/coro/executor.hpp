@@ -19,10 +19,11 @@ public:
     constexpr ~executor() = default;
 
     /**
-     * calling co_await on this will switch the execution context to this scheduler
-     * @details must already be this_coro compatible
+     * calling co_await on this switches the execution context to this scheduler and stays there
+     * @tparam Pyld payload the caller must carry, defaulted to @ref this_coro::default_payload
      */
-    [[nodiscard]] constexpr auto schedule() const { return schedule_awaiter{scheduler()}; }
+    template<payload Pyld = this_coro::default_payload>
+    [[nodiscard]] constexpr auto schedule() const { return schedule_awaiter<Pyld>{scheduler()}; }
 
 
     /**
@@ -81,7 +82,7 @@ private:
         Awaitable task
     )
         -> scheduled_task<awaited_t<Awaitable>, Pyld> {
-        co_await self.schedule();
+        co_await self.schedule<Pyld>();
 
         // inject the payload into the child and finish back on this executor
         co_return co_await co::steal(std::move(task), payload);

@@ -213,6 +213,44 @@ CORO_TEST(executor, interop_cross_executor_migration) {
     EXPECT_EQ(actual, expected);
 }
 
+// Regression for the stale-payload bug: hopping onto a *different* executor via schedule() moves the
+// physical thread but never rewrites the promise's payload, so the this_coro tags keep resolving
+// against the original (home) scheduler. Two distinct schedulers are required -- executor equality
+// compares the scheduler pointer, so a single shared scheduler could not tell the two apart.
+// Expected behaviour: after the hop, this_coro::executor reports the hop target. Fails until fixed.
+CORO_TEST(executor, context_reflects_schedule_hop) {
+    scheduler home{autostart, 1};
+    scheduler other{autostart, 1};
+    executor homeExec{home};
+    executor otherExec{other};
+
+    auto task = [](executor target) -> executor_task<executor> {
+        co_await target.schedule();             // physically hop onto `target`
+        co_return co_await this_coro::executor; // ask "which executor am I on?"
+    };
+
+    auto const actual = sync_wait(homeExec, task(otherExec));
+    EXPECT_EQ(actual, otherExec);
+}
+
+// Same defect observed through the scheduler tag: after the hop this_coro::scheduler must name the
+// scheduler the coroutine is now running on, not the one baked into the payload at spawn.
+CORO_TEST(executor, context_scheduler_reflects_schedule_hop) {
+    scheduler home{autostart, 1};
+    scheduler other{autostart, 1};
+    executor homeExec{home};
+    executor otherExec{other};
+
+    auto task = [](executor target) -> executor_task<scheduler const*> {
+        co_await target.schedule();
+        scheduler const& current = co_await this_coro::scheduler;
+        co_return &current;
+    };
+
+    auto const* actual = sync_wait(homeExec, task(otherExec));
+    EXPECT_EQ(actual, &other);
+}
+
 CORO_TEST(executor, errors_exception_in_spawned_task) {
     scheduler sched{autostart, 1};
     executor exec{sched};

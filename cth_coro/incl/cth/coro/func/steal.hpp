@@ -19,11 +19,11 @@ template<this_coro::scheduler_payload Pyld, non_this_coro_awaitable Awaitable>
 
     if constexpr(std::same_as<void, result_t>) {
         co_await std::move(awaitable);
-        co_await schedule_awaiter{payload.scheduler()};
+        co_await schedule_awaiter<Pyld>{payload.scheduler()};
         co_return;
     } else {
         decltype(auto) result = co_await std::move(awaitable);
-        co_await schedule_awaiter{payload.scheduler()};
+        co_await schedule_awaiter<Pyld>{payload.scheduler()};
         co_return result;
     }
 }
@@ -31,7 +31,10 @@ template<this_coro::scheduler_payload Pyld, non_this_coro_awaitable Awaitable>
 
 template<payload Pyld, this_coro_awaitable Awaitable>
 constexpr auto steal(Awaitable&& awaitable, Pyld const& payload) -> awaiter_t<Awaitable> {
-    static_assert(this_coro_awaitable_with<Awaitable, Pyld>, "awaitable not compatible with payload type");
+    static_assert(
+        this_coro::awaitable_injectable_with<Awaitable, Pyld>,
+        "this coro awaitable not compatible with used payload type"
+    );
 
     auto awaiter = co::extract_awaiter(std::forward<Awaitable>(awaitable));
     awaiter.inject(payload);

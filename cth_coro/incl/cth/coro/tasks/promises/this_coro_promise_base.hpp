@@ -21,9 +21,7 @@ class executor;
  * - children must forward the payload on construction
  */
 template<payload Pyld>
-struct this_coro_promise_base {
-    using payload_type = Pyld;
-
+struct this_coro_promise_base : this_coro_base<Pyld> {
     template<this_coro::tag Tag>
     [[nodiscard]] constexpr decltype(auto) await_transform(Tag&& t) {
         static_assert(
@@ -35,25 +33,18 @@ struct this_coro_promise_base {
     }
 
 
-    template<this_coro_awaitable_with<Pyld> Awaitable>
+    template<this_coro_awaitable Awaitable>
     [[nodiscard]] constexpr auto await_transform(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
+        static_assert(
+            this_coro::awaitable_injectable_with<Awaitable, Pyld>,
+            "awaited task carries a payload incompatible with this coroutine's payload"
+        );
+
         auto awaiter = co::extract_awaiter(awaitable);
 
         awaiter.inject(*_payload);
 
         return awaiter;
-    }
-
-    // a this_coro awaitable whose payload Pyld cannot satisfy -- diagnose instead of falling through to
-    // "no viable await_transform" (it is not foreign: foreign excludes this_coro awaitables by design)
-    template<class Awaitable>
-        requires (this_coro_awaitable<Awaitable> && !this_coro_awaitable_with<Awaitable, Pyld>)
-    [[nodiscard]] constexpr auto await_transform(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
-        static_assert(
-            this_coro_awaitable_with<Awaitable, Pyld>,
-            "awaited task carries a payload incompatible with this coroutine's payload"
-        );
-        return co::extract_awaiter(std::forward<Awaitable>(awaitable));
     }
 
     template<captured_awaitable Awaitable>
@@ -69,6 +60,18 @@ struct this_coro_promise_base {
      * @param payload to inject
      */
     constexpr void inject(Pyld const& payload) { _payload = payload; }
+
+    /**
+     * repoints the promise's payload at a new scheduler, preserving every other payload field
+     * @details only available for scheduler payloads; the payload is engaged on every path that reaches
+     *  this (a this_coro co_await goes through await_transform, which derefs the payload first)
+     * @param scheduler the coroutine has migrated onto
+     */
+    constexpr void rebind_scheduler(co::scheduler const& scheduler)
+        requires this_coro::scheduler_payload<Pyld>
+    {
+        _payload->rebind_scheduler(scheduler);
+    }
 
     this_coro_promise_base(Pyld const& payload) noexcept : _payload{payload} {}
     this_coro_promise_base() noexcept = default;

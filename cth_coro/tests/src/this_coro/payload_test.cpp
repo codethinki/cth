@@ -96,7 +96,7 @@ THIS_CORO_TEST(custom_payload, custom_and_builtin_tags_in_one_task) {
     executor exec{sched};
 
     auto task = []() -> executor_task<int, tagged_payload> {
-        (void)co_await this_coro::executor; // built-in tag resolves under the custom payload
+        (void) co_await this_coro::executor; // built-in tag resolves under the custom payload
         co_return co_await marker;          // custom tag reads the injected marker
     };
 
