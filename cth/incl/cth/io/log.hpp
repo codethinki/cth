@@ -18,12 +18,14 @@
 #define CTH_LOG_LEVEL CTH_LOG_LEVEL_ALL
 #endif
 
+#include <mutex>
 #include <string>
 #include <utility>
 
 namespace cth::log::dev {
 inline bool colored = true;
 inline io::col_stream logStream{std::cerr}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+inline std::mutex logMtx; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 cxpr io::TextColor text_color(cth::except::Severity severity) {
     switch(severity) {
@@ -55,10 +57,12 @@ namespace cth::log {
  * \brief sets a colored log stream. nullptr -> colored console output
  */
 inline void set_log_stream(io::col_stream const& stream) {
+    std::scoped_lock const lock{dev::logMtx};
     dev::colored = true;
     dev::logStream = stream;
 }
 inline void set_log_stream(std::ostream& stream) {
+    std::scoped_lock const lock{dev::logMtx};
     dev::colored = false;
     dev::logStream = io::col_stream{stream};
 }
@@ -66,6 +70,9 @@ inline void set_log_stream(std::ostream& stream) {
 inline void msg(cth::except::Severity severity, std::string_view message) {
     if(severity < CTH_LOG_LEVEL)
         return;
+
+    // the single choke point all msg() overloads funnel through -- lock here to make logging thread-safe.
+    std::scoped_lock const lock{dev::logMtx};
 
     if(dev::colored) {
         dev::logStream.pushState();
