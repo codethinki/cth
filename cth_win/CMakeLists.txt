@@ -14,6 +14,9 @@ cth_pkg_target_include_directories(
 
 target_link_libraries(cth_win PUBLIC cth::cth)
 
+# components
+add_subdirectory(capture)
+
 # tests
 if(CTH_ENABLE_TESTS)
     add_subdirectory(tests)

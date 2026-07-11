@@ -2,8 +2,8 @@
 #include "cth/coro/global_switch.hpp"
 
 // private
-#include "cth/win/win_include.hpp"
-#include "cth/win/io/win_key_convert.hpp"
+#include "../win_include.hpp"
+#include "win_key_convert.hpp"
 
 #include "hidusage.h"
 

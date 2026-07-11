@@ -1,12 +1,12 @@
 #include "test.hpp"
 #define WIN_SCREEN_TEST(suite, test_name) WIN_EX_TEST(_screen, suite, test_name)
 
-#include "cth/win/screen.hpp"
+#include "cth/win/ui/screen.hpp"
 
 #include "cth/win/string.hpp"
 
 
-namespace cth::win {
+namespace cth::win::ui {
 
 WIN_SCREEN_TEST(create_window, unicode) {
     std::string const name{"( ͡° ͜ʖ ͡°)🦣"};
@@ -33,7 +33,7 @@ WIN_SCREEN_TEST(monitors, main) { auto const monitors = enum_monitors(); }
 }
 
 
-namespace cth::win::screen {
+namespace cth::win::ui {
 WIN_SCREEN_TEST(desktop_rect, main) {
     auto const rect = desktop_rect();
     EXPECT_TRUE(rect.width > 0 && rect.height > 0);
@@ -100,7 +100,7 @@ inline std::string to_ascii_view(std::span<std::byte> pixels, size_t width, size
 }
 
 
-namespace cth::win::screen {
+namespace cth::win::ui {
 WIN_SCREEN_TEST(section, read) {
     section section({100, 100, 10, 10});
 

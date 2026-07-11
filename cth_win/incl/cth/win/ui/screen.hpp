@@ -1,12 +1,12 @@
 #pragma once
-#include "win_types.hpp"
+#include "cth/win/win_types.hpp"
 
 #include <cth/io/log.hpp>
 
 #include <span>
 
 
-namespace cth::win {
+namespace cth::win::ui {
 
 hwnd_t desktop_handle();
 
@@ -19,8 +19,12 @@ hwnd_t desktop_handle();
  * @throws cth::except::win_exception on window class registration failure
  * @throws cth::except::win_exception on window creation failure
  */
-window_t
-create_window(std::string_view name, rect_t rect, bool visible = true, std::string_view class_name = {});
+window_t create_window(
+    std::string_view name,
+    rect_t rect,
+    bool visible = true,
+    std::string_view class_name = {}
+);
 
 
 /**
@@ -32,7 +36,7 @@ std::vector<monitor_t> enum_monitors();
 }
 
 
-namespace cth::win::screen {
+namespace cth::win::ui {
 enum class DpiAwareness {
     NONE,
     GDI_SCALED,
@@ -89,7 +93,7 @@ inline size_t desktop_frame_count() { return window_frame_count(desktop_handle()
 }
 
 
-namespace cth::win::screen {
+namespace cth::win::ui {
 double window_scale(hwnd_t window);
 
 inline double desktop_scale() { return window_scale(desktop_handle()); }
@@ -167,7 +171,7 @@ void blit_from_screen(
 }
 
 
-namespace cth::win::screen {
+namespace cth::win::ui {
 
 
 inline void make_rgba_opaque(std::span<std::byte> pixel_fragments) {
@@ -177,8 +181,8 @@ inline void make_rgba_opaque(std::span<std::byte> pixel_fragments) {
     std::span<pixel> pixels{reinterpret_cast<pixel*>(pixel_fragments.data()), pixel_fragments.size() / 4};
 
 #pragma omp simd
-    for(auto& pixel : pixels)
-        pixel[3] = std::byte{0xff};
+    for(auto& p : pixels)
+        p[3] = std::byte{0xff};
 }
 
 /**

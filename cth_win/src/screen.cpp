@@ -1,4 +1,4 @@
-#include "cth/win/screen.hpp"
+#include "cth/win/ui/screen.hpp"
 
 #include "cth/win/string.hpp"
 
@@ -11,7 +11,7 @@
 #pragma comment(lib, "Dwmapi.lib")
 #pragma comment(lib, "Shcore.lib")
 
-namespace cth::win {
+namespace cth::win::ui {
 
 hwnd_t desktop_handle() { return GetDesktopWindow(); }
 
@@ -68,7 +68,7 @@ window_t create_window(std::string_view name, rect_t rect, bool visible, std::st
 }
 
 
-namespace cth::win {
+namespace cth::win::ui {
 rect_t to_rect(RECT rect) {
     auto const left = static_cast<ssize_t>(rect.left);
     auto const top = static_cast<ssize_t>(rect.top);
@@ -81,7 +81,7 @@ rect_t to_rect(RECT rect) {
 }
 
 
-namespace cth::win {
+namespace cth::win::ui {
 
 
 std::vector<monitor_t> enum_monitors() {
@@ -102,7 +102,7 @@ std::vector<monitor_t> enum_monitors() {
 }
 
 
-namespace cth::win::screen {
+namespace cth::win::ui {
 namespace {
     using mapping_t = std::pair<DPI_AWARENESS_CONTEXT, DpiAwareness>;
     inline std::array<mapping_t, 4> const mappings = {
@@ -332,7 +332,7 @@ void blit_from_screen(
 }
 
 
-namespace cth::win::screen {
+namespace cth::win::ui {
 namespace {
     BITMAPINFO create_bmp_header(long width, long height) {
         return {.bmiHeader{
