@@ -12,7 +12,6 @@ void hdc_deleter::operator()(void* hdc) const { DeleteDC(static_cast<HDC>(hdc));
 void hdc_releaser::operator()(void* hdc) const { ReleaseDC(nullptr, static_cast<HDC>(hdc)); }
 
 void hwnd_deleter::operator()(hwnd_t handle) const { DestroyWindow(static_cast<HWND>(handle)); }
-void handle_closer::operator()(void* handle) const { CloseHandle(handle); }
 void mapping_data_closer::operator()(void* handle) const {
     UnmapViewOfFile(handle);
 }

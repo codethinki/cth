@@ -3,9 +3,9 @@
 #include <cth/io/log.hpp>
 #include <cth/chrono.hpp>
 
-#include "os/native_handle.hpp"
-
 #include "utility/fwd.hpp"
+
+#include <cth/os/native_handle.hpp>
 
 
 #include <functional>
@@ -25,7 +25,7 @@ class scheduler {
     static inline thread_local Impl* _threadScheduler = nullptr;
 
 public:
-    using native_handle = cth::co::os::native_handle_t;
+    using native_handle = cth::os::native_handle_t;
     using void_func = std::move_only_function<void()>;
 
     // ReSharper disable once CppNonExplicitConvertingConstructor

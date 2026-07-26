@@ -15,7 +15,7 @@ void read_unbuffered(std::string_view path, std::vector<std::byte>& buffer) {
 
     auto const wPath = win::to_wstring(path);
 
-    win_file_ptr const handle{
+    os::unique_native_handle const handle{
         CreateFileW(
             wPath.data(),
             GENERIC_READ,
@@ -64,7 +64,7 @@ void read_unbuffered(std::string_view path, std::vector<std::byte>& buffer) {
 namespace cth::win::io {
 mapped_file map_file(std::string_view path) {
     auto const wPath = to_wstring(path);
-    closing_handle file{
+    os::unique_native_handle file{
         CreateFileW(
             wPath.data(),
             GENERIC_READ,
@@ -81,7 +81,7 @@ mapped_file map_file(std::string_view path) {
 
     auto fileSize = std::filesystem::file_size(wPath);
 
-    closing_handle mapping{CreateFileMappingA(file.get(), nullptr, PAGE_READONLY, 0, 0, nullptr)};
+    os::unique_native_handle mapping{CreateFileMappingA(file.get(), nullptr, PAGE_READONLY, 0, 0, nullptr)};
     CTH_WIN_STABLE_THROW(mapping.get() == INVALID_HANDLE_VALUE, "failed to create file mapping ({})", path) {}
 
 

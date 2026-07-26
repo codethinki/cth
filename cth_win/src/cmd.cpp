@@ -33,8 +33,8 @@ size_t hidden_dir(std::string_view dir, std::string_view command) {
         return EXIT_FAILURE;
     }
 
-    closing_handle const hProcess{std::exchange(pInfo.hProcess, nullptr)};
-    [[maybe_unused]] closing_handle hThread{std::exchange(pInfo.hThread, nullptr)};
+    os::unique_native_handle const hProcess{std::exchange(pInfo.hProcess, nullptr)};
+    [[maybe_unused]] os::unique_native_handle hThread{std::exchange(pInfo.hThread, nullptr)};
 
 
     auto waitResult = WaitForSingleObject(hProcess.get(), INFINITE);

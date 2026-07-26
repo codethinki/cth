@@ -27,8 +27,8 @@ inline std::vector<std::byte> read_unbuffered(std::string_view path) {
 
 namespace cth::win::io {
 struct mapped_file {
-    closing_handle fileHandle;
-    closing_handle mappingHandle;
+    os::unique_native_handle fileHandle;
+    os::unique_native_handle mappingHandle;
     mapping_data_handle viewHandle;
 
     std::span<std::byte const> data;

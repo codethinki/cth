@@ -1,7 +1,8 @@
 #pragma once
 
-#include "cth/coro/os/native_handle.hpp"
 #include "cth/coro/scheduler.hpp"
+
+#include <cth/os/wait.hpp>
 
 #include <coroutine>
 

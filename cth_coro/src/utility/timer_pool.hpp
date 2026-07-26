@@ -1,31 +1,26 @@
 #pragma once
-#include <cth/os/osdef.hpp>
-
 #include "boost.hpp"
+#include "native_handle_helpers.hpp"
+
 #include "cth/coro/utility/fwd.hpp"
+
+#include <cth/data/pool.hpp>
+#include <cth/os/timer.hpp>
 
 #include <boost/asio/io_context.hpp>
 
 
-#ifdef CTH_FS_WINDOWS
-#include "native_handle_helpers.hpp"
-
-
-#include <cth/data/pool.hpp>
-#include <cth/win/coro/timer.hpp>
-
 namespace cth::co {
 namespace dev {
 
-
     /**
-     * win timer with boost handle integration
+     * os timer with boost handle integration
      */
     class adapted_timer {
 
     public:
         adapted_timer(bas::io_context& ctx) :
-            _timer{}, _handler{ctx, duplicate_awaitable_native_handle(_timer.native_handle())} {}
+            _timer{}, _handler{ctx, os::duplicate_handle(_timer.native_handle())} {}
 
         [[nodiscard]] native_handle_handler_t& set(chrono::time_point_t time_point) {
             _timer.set(time_point);
@@ -33,7 +28,7 @@ namespace dev {
         }
 
     private:
-        win::co::timer _timer;
+        cth::os::timer _timer;
         native_handle_handler_t _handler;
     };
 
@@ -84,36 +79,3 @@ private:
 };
 
 }
-
-
-#else
-#include <boost/asio/steady_timer.hpp>
-
-
-namespace cth::co {
-
-class timer_pool {
-public:
-    using void_func = std::move_only_function<void()>;
-
-    timer_pool(boost::asio::io_context& ctx) : _ctx{ctx} {}
-
-    void set(cth::co::time_point_t time_point, void_func callback) const {
-        auto timer = std::make_unique<bas::steady_timer>(_ctx, time_point);
-
-        timer->async_wait([this, time_point, t = std::move(timer), cb = std::move(callback)](
-                              boost::system::error_code const& ec
-                          ) mutable {
-            BOOST_EC_STABLE_THROW(ec, "async wait for time_point [{}] failed", time_point.time_since_epoch())
-
-            cb();
-        });
-    }
-
-private:
-    bas::io_context& _ctx;
-};
-}
-
-
-#endif

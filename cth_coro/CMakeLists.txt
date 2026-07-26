@@ -13,13 +13,9 @@ cth_pkg_target_include_directories(
 
 cth_pkg_target_find_package(cth_coro Boost CONFIG REQUIRED COMPONENTS asio)
 
-target_link_libraries(cth_coro PUBLIC cth::cth)
+target_link_libraries(cth_coro PUBLIC cth::cth cth::os)
 
 target_link_libraries(cth_coro PRIVATE Boost::asio)
-
-if(WIN32)
-    target_link_libraries(cth_coro PRIVATE cth::win)
-endif()
 
 
 # tests

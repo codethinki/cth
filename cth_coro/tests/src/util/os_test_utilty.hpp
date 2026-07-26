@@ -1,5 +1,5 @@
 #pragma once
-#include <cth/coro/os/native_handle.hpp>
+#include <cth/os/native_handle.hpp>
 #include <cth/os/osdef.hpp>
 
 #ifdef CTH_FS_WINDOWS
@@ -12,7 +12,7 @@
 #include <unistd.h>
 #endif
 
-namespace cth::co::os {
+namespace cth::os {
 
 inline native_handle_t create_event() {
 #ifdef CTH_FS_WINDOWS
@@ -31,12 +31,6 @@ inline void signal_event(native_handle_t handle) {
 #endif
 }
 
-inline void close_handle(native_handle_t handle) {
-#ifdef CTH_FS_WINDOWS
-    CloseHandle(handle);
-#elifdef CTH_FS_POSIX
-    close(handle);
-#endif
-}
+// close_handle comes from cth/os/native_handle.hpp now
 
-} // namespace cth::co::os
+} // namespace cth::os

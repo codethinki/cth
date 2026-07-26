@@ -2,6 +2,7 @@
 
 #include <cth/exception.hpp>
 #include <cth/io/log.hpp>
+#include <cth/os/native_handle.hpp>
 
 #include <memory>
 
@@ -83,15 +84,6 @@ struct hwnd_deleter {
     void operator()(hwnd_t handle) const;
 };
 
-struct handle_closer {
-    /**
-     * Closes a generic windows handle
-     * @param handle to close
-     */
-    void operator()(void* handle) const;
-};
-using closing_handle = std::unique_ptr<void, handle_closer>;
-
 struct mapping_data_closer {
     /**
      * Closes a generic windows handle
@@ -102,7 +94,7 @@ struct mapping_data_closer {
 
 
 using mapping_data_handle = std::unique_ptr<void, mapping_data_closer>;
-using file_ptr = closing_handle;
+using file_ptr = os::unique_native_handle;
 
 
 using wnd_ptr = std::unique_ptr<void, hwnd_deleter>;

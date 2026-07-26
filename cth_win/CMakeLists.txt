@@ -12,7 +12,7 @@ cth_pkg_target_include_directories(
         PRIVATE src
 )
 
-target_link_libraries(cth_win PUBLIC cth::cth)
+target_link_libraries(cth_win PUBLIC cth::cth cth::os)
 
 # components
 add_subdirectory(capture)

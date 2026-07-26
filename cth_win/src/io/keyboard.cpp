@@ -26,7 +26,7 @@ namespace {
 
         void subscribe(event_queue& queue) {
             {
-                std::scoped_lock lock{_mutex};
+                std::scoped_lock _{_mutex};
                 _queues.push_back(&queue);
             }
             _hookSwitch.acquire();
@@ -34,7 +34,7 @@ namespace {
 
         void unsubscribe(event_queue& queue) {
             {
-                std::scoped_lock lock{_mutex};
+                std::scoped_lock _{_mutex};
                 std::erase(_queues, &queue);
             }
             _hookSwitch.release();
@@ -44,7 +44,7 @@ namespace {
             if(update.data.exKey.key == ::cth::io::Key::NONE)
                 return;
 
-            std::scoped_lock lock{_mutex};
+            std::scoped_lock _{_mutex};
             for(auto* queue : _queues)
                 queue->push(update);
         }
@@ -157,24 +157,38 @@ event_queue::event_queue() { keybdManager.subscribe(*this); }
 event_queue::~event_queue() { keybdManager.unsubscribe(*this); }
 
 [[nodiscard]] bool event_queue::empty() const {
-    std::scoped_lock lock{_queueMtx};
+    std::scoped_lock _{_queueMtx};
     return _queue.empty();
 }
 
+[[nodiscard]] size_t event_queue::size() const {
+    std::scoped_lock _{_queueMtx};
+    return _queue.size();
+}
+
 [[nodiscard]] event_queue::event_t event_queue::front() const {
-    std::scoped_lock lock{_queueMtx};
+    std::scoped_lock _{_queueMtx};
+    return _queue.front();
+}
+
+[[nodiscard]] auto event_queue::peek() const -> std::optional<event_t> {
+    std::scoped_lock _{_queueMtx};
+
+    if(_queue.empty())
+        return std::nullopt;
+
     return _queue.front();
 }
 
 [[nodiscard]] event_queue::event_t event_queue::pop() {
-    std::scoped_lock lock{_queueMtx};
+    std::scoped_lock _{_queueMtx};
     auto const result = _queue.front();
     _queue.pop();
     return result;
 }
 
 [[nodiscard]] auto event_queue::pop_queue() -> std::vector<event_t> {
-    std::scoped_lock lock{_queueMtx};
+    std::scoped_lock _{_queueMtx};
     std::vector<event_t> events;
     while(!_queue.empty()) {
         events.push_back(_queue.front());
@@ -184,14 +198,51 @@ event_queue::~event_queue() { keybdManager.unsubscribe(*this); }
 }
 
 void event_queue::clear() {
-    std::scoped_lock lock{_queueMtx};
+    std::scoped_lock _{_queueMtx};
     while(!_queue.empty())
         _queue.pop();
 }
 
 void event_queue::push(event_t event) {
-    std::scoped_lock lock{_queueMtx};
-    _queue.push(std::move(event));
+    {
+        std::scoped_lock _{_queueMtx};
+        _queue.push(std::move(event));
+    }
+    notify_hooks();
+}
+
+auto event_queue::add_key_hook(key_hook_t hook) -> key_hook_id_t {
+    CTH_CRITICAL(!hook, "empty key hook") {}
+
+    std::scoped_lock _{_hooksMtx};
+
+    auto const free = std::ranges::find_if(_hooks, [](auto const& slot) { return !slot; });
+
+    if(free == _hooks.end()) {
+        _hooks.push_back(std::move(hook));
+        return _hooks.size() - 1;
+    }
+
+    *free = std::move(hook);
+    return static_cast<key_hook_id_t>(std::ranges::distance(_hooks.begin(), free));
+}
+
+void event_queue::remove_key_hook(key_hook_id_t id) {
+    std::scoped_lock _{_hooksMtx};
+    _hooks[id] = nullptr;
+}
+
+bool event_queue::key_hook_active(key_hook_id_t id) const {
+    std::scoped_lock _{_hooksMtx};
+    return id < _hooks.size() && _hooks[id] != nullptr;
+}
+
+void event_queue::notify_hooks() {
+    std::scoped_lock _{_hooksMtx};
+
+    for(auto& hook : _hooks)
+        if(hook)
+            hook();
 }
 
 } // namespace cth::win::io
