@@ -48,7 +48,7 @@ public:
      * @param ms to timeout on
      * @details calls @ref cth::win::co::wait(void*, unsigned long)
      */
-    WaitResult wait(unsigned long ms) { return co::wait(native_handle(), ms); }
+    wait_result wait(unsigned long ms) { return co::wait(native_handle(), ms); }
 
 private:
     /**
