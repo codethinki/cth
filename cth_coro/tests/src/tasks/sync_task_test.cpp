@@ -4,10 +4,10 @@
 
 namespace cth::co {
 CORO_TEST(sync_task, blocks_until_finished) {
-    fence coroStarted{};
-    fence allowClose{};
+    atomic_fence coroStarted{};
+    atomic_fence allowClose{};
 
-    auto task = [](fence& started, fence const& close) -> sync_task<void> {
+    auto task = [](atomic_fence& started, atomic_fence const& close) -> sync_task<void> {
         started.signal();
         close.wait();
         co_return;
@@ -19,8 +19,8 @@ CORO_TEST(sync_task, blocks_until_finished) {
 
     EXPECT_FALSE(task.handle().done());
 
-    fence awaiterStarted{};
-    fence finished{}; // technically can't verify behavior, hopefully at least flaky
+    atomic_fence awaiterStarted{};
+    atomic_fence finished{}; // technically can't verify behavior, hopefully at least flaky
 
     std::jthread awaiter{[&task, &awaiterStarted, &finished]() {
         awaiterStarted.signal();

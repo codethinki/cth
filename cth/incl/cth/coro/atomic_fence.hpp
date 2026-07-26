@@ -6,13 +6,13 @@
 
 namespace cth::co {
 
-class fence {
+class atomic_fence {
 
 public:
-    fence() noexcept : _state{false} {}
-    explicit fence(signaled_t) noexcept : _state{true} {}
+    atomic_fence() noexcept : _state{false} {}
+    explicit atomic_fence(signaled_t) noexcept : _state{true} {}
 
-    ~fence() { signal(); }
+    ~atomic_fence() { signal(); }
 
     void signal() noexcept {
         if(!_state.exchange(true, std::memory_order_release))
@@ -33,22 +33,22 @@ private:
 public:
     bool signaled() const noexcept { return _state.load(std::memory_order_acquire); }
 
-    fence(fence const&) = delete;
-    fence& operator=(fence const&) = delete;
-    fence(fence&&) = delete;
-    fence& operator=(fence&&) = delete;
+    atomic_fence(atomic_fence const&) = delete;
+    atomic_fence& operator=(atomic_fence const&) = delete;
+    atomic_fence(atomic_fence&&) = delete;
+    atomic_fence& operator=(atomic_fence&&) = delete;
 };
 }
 
 namespace cth::co {
 
-class heap_fence {
+class atomic_heap_fence {
 
 public:
-    heap_fence() : _fence(std::make_unique<fence>()) {}
-    explicit heap_fence(signaled_t) : _fence(std::make_unique<fence>(co::signaled)) {}
+    atomic_heap_fence() : _fence(std::make_unique<atomic_fence>()) {}
+    explicit atomic_heap_fence(signaled_t) : _fence(std::make_unique<atomic_fence>(co::signaled)) {}
 
-    ~heap_fence() = default;
+    ~atomic_heap_fence() = default;
 
     void signal() {
         if(_fence)
@@ -71,16 +71,16 @@ public:
     }
 
 private:
-    std::unique_ptr<fence> _fence;
+    std::unique_ptr<atomic_fence> _fence;
 
 public:
     bool signaled() const { return _fence && _fence->signaled(); }
 
-    heap_fence(heap_fence&&) noexcept = default;
-    heap_fence& operator=(heap_fence&&) noexcept = default;
+    atomic_heap_fence(atomic_heap_fence&&) noexcept = default;
+    atomic_heap_fence& operator=(atomic_heap_fence&&) noexcept = default;
 
-    heap_fence(heap_fence const&) = delete;
-    heap_fence& operator=(heap_fence const&) = delete;
+    atomic_heap_fence(atomic_heap_fence const&) = delete;
+    atomic_heap_fence& operator=(atomic_heap_fence const&) = delete;
 };
 
 }

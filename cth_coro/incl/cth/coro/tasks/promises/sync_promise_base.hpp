@@ -2,7 +2,7 @@
 #include "basic_promise.hpp"
 
 #include "cth/coro/awaiters/final_sync_awaiter.hpp"
-#include "cth/coro/fence.hpp"
+#include "cth/coro/atomic_fence.hpp"
 
 namespace cth::co {
 struct sync_promise_base {
@@ -13,6 +13,6 @@ struct sync_promise_base {
 
     void signal() noexcept { fence.signal(); }
 
-    fence fence{};
+    atomic_fence fence{};
 };
 }

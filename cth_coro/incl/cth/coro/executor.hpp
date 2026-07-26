@@ -110,7 +110,7 @@ public:
 
 namespace cth::co::this_coro {
 struct [[nodiscard]] executor_tag : tag_base {
-    static [[nodiscard]] constexpr auto operator()(default_payload const& p) {
+    [[nodiscard]] static constexpr auto operator()(default_payload const& p) {
         return data_awaiter{executor{p.scheduler()}};
     }
 };

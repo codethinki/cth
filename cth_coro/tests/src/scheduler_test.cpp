@@ -1,6 +1,6 @@
 // THIS FILE IS 100% ai generated bc idgaf
 
-#include "cth/coro/fence.hpp"
+#include "cth/coro/atomic_fence.hpp"
 #include "test.hpp"
 #include <cth/coro/scheduler.hpp>
 
@@ -51,7 +51,7 @@ CORO_TEST(scheduler, owns_thread) {
 
 CORO_TEST(scheduler, single_task) {
     scheduler sched(1);
-    fence done;
+    atomic_fence done;
 
     sched.start();
     sched.post([&] { done.signal(); });
@@ -98,7 +98,7 @@ CORO_TEST(scheduler, concurrent_execution) {
 
 CORO_TEST(scheduler, post_before_start) {
     scheduler sched(1);
-    fence done;
+    atomic_fence done;
 
     sched.post([&] { done.signal(); });
     EXPECT_FALSE(done.signaled());
@@ -161,7 +161,7 @@ CORO_TEST(scheduler, owns_thread_in_task) {
 CORO_TEST(scheduler, task_ordering_single_worker) {
     scheduler sched(1);
     int val = 0;
-    fence done;
+    atomic_fence done;
 
     sched.start();
 
@@ -181,7 +181,7 @@ CORO_TEST(scheduler, restart) {
     int counter = 0;
 
     {
-        fence done;
+        atomic_fence done;
         sched.start();
         sched.post([&] {
             counter++;
@@ -193,7 +193,7 @@ CORO_TEST(scheduler, restart) {
     EXPECT_EQ(counter, 1);
 
     {
-        fence done;
+        atomic_fence done;
         sched.start();
         sched.post([&] {
             counter++;
@@ -208,8 +208,8 @@ CORO_TEST(scheduler, destructor_waits) {
     std::atomic<bool> taskDone{false};
     std::atomic<bool> dtorDone{false};
 
-    fence taskStarted;
-    fence allowFinish;
+    atomic_fence taskStarted;
+    atomic_fence allowFinish;
 
     std::jthread runner([&] {
         {
@@ -236,8 +236,8 @@ CORO_TEST(scheduler, stop_prevents_new_tasks) {
     scheduler sched{1};
     std::atomic<int> counter{0};
 
-    fence taskRunning;
-    fence allowTaskFinish;
+    atomic_fence taskRunning;
+    atomic_fence allowTaskFinish;
 
     sched.start();
 
@@ -262,9 +262,9 @@ CORO_TEST(scheduler, stop_prevents_new_tasks) {
 CORO_TEST(scheduler, await_stop_waits) {
     scheduler sched{autostart, 1};
 
-    fence taskRunning;
-    fence allowTaskFinish;
-    fence awaitStopReturned;
+    atomic_fence taskRunning;
+    atomic_fence allowTaskFinish;
+    atomic_fence awaitStopReturned;
 
     sched.post([&] {
         taskRunning.signal();
