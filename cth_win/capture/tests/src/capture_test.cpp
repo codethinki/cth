@@ -27,4 +27,18 @@ WIN_CAPTURE_TEST(window_capture, frame) {
     EXPECT_GT(capture.height(), 0);
 }
 
+// the ctor always requests borderless capture, this must not break frame delivery
+WIN_CAPTURE_TEST(window_capture, borderless) {
+    if(!supported()) GTEST_SKIP() << "window capture not supported";
+
+    auto const window = ui::create_window("cth borderless capture test", {100, 100, 300, 200});
+
+    window_capture capture{window.handle.get()};
+
+    auto const view = capture.next_frame(std::chrono::seconds{5});
+
+    EXPECT_FALSE(view.empty());
+    EXPECT_FALSE(capture.closed());
+}
+
 }

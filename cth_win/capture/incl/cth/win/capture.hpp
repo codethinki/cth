@@ -1,5 +1,5 @@
 #pragma once
-#include "cth/win/win_types.hpp"
+#include <cth/win/win_types.hpp>
 
 #include <chrono>
 #include <memory>
@@ -14,12 +14,16 @@ namespace cth::win::capture {
  */
 bool supported();
 
+struct window_capture_config{
+    bool captureCursor = true;
+};
 
 /**
  * captures a window's buffer via Windows.Graphics.Capture
- * @note the color format is BGRA
- * @note occluded windows are captured, minimized windows produce no frames
- * @note the system may draw a border around the captured window
+ * @details
+ * - the color format is BGRA
+ * - minimized is skipped, occluded still captured
+ * - requests borderless capture
  */
 class window_capture {
 public:
@@ -28,6 +32,8 @@ public:
      */
     static constexpr size_t PIXEL_SIZE = 4;
 
+    using config_t = window_capture_config;
+
     /**
      * begins capturing the window's buffer
      * @param window to capture, must not be minimized
@@ -35,7 +41,7 @@ public:
      * @throws cth::except::win_exception on capture creation failure
      * @note initializes WinRT (MTA) on the calling thread if required
      */
-    explicit window_capture(hwnd_t window);
+    explicit window_capture(hwnd_t window, config_t = {});
     ~window_capture();
 
     /**
