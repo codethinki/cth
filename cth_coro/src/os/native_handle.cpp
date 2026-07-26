@@ -21,7 +21,7 @@ namespace cth::co::os {
 bool check_ready(os::native_handle_t handle) {
 #ifdef CTH_FS_WINDOWS
     try {
-        return cth::win::co::wait(handle, 0) == win::co::WaitResult::WAITED;
+        return cth::win::co::wait(handle, 0) == win::co::wait_result::WAITED;
     } catch(cth::except::win_exception const& e) {
         throw except::coro_exception{e.msg(), e.severity(), e.location(), e.stacktrace()};
     }
