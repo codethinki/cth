@@ -11,7 +11,7 @@ namespace cth::co::dev {
  * Base for awaitables which support payload injection
  * @tparam Pyld payload to work with defaulted to @ref this_coro::default_payload
  */
-template<payload Pyld>
+template<payload Pyld = this_coro::default_payload>
 struct this_coro_awaiter_base : this_coro_base<Pyld> {
     constexpr this_coro_awaiter_base() = default;
 
@@ -45,6 +45,7 @@ struct this_coro_awaiter_base : this_coro_base<Pyld> {
 
 protected:
     Pyld& payload() { return *_payload; }
+    Pyld const& payload() const { return *_payload; }
 
 private:
     cth::dt::optional<Pyld> _payload{};

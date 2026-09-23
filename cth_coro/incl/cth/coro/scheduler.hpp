@@ -66,7 +66,7 @@ public:
     }
 
 private:
-    Impl& impl() const { return *_impl.get(); }
+    [[nodiscard]] Impl& impl() const { return *_impl; }
 
     std::unique_ptr<Impl> _impl;
     std::unique_ptr<std::atomic<size_t>> _activeWorkers{};

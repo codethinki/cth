@@ -41,7 +41,27 @@ CO_TEST(probe, queue_ctor_dtor_only) {
 // PROBE: queue lifetime + push, no coroutines
 CO_TEST(probe, queue_push_only) {
     keybd_event_queue queue{};
-    queue.queue().push(test_event());
+    queue.push(test_event());
+}
+
+CO_TEST(event_queue, exposes_queue_api) {
+    keybd_event_queue queue{};
+
+    EXPECT_TRUE(queue.empty());
+    queue.push(test_event());
+    EXPECT_EQ(queue.size(), 1);
+    [[maybe_unused]] auto const front = queue.front();
+    EXPECT_TRUE(queue.peek().has_value());
+    [[maybe_unused]] auto const popped = queue.pop();
+    EXPECT_TRUE(queue.empty());
+
+    queue.push(test_event());
+    queue.push(test_event());
+    EXPECT_EQ(queue.pop_queue().size(), 2);
+
+    queue.push(test_event());
+    queue.clear();
+    EXPECT_TRUE(queue.empty());
 }
 
 // PROBE: scheduler only, no queue
@@ -59,11 +79,11 @@ CO_TEST(event_queue, ready_when_already_queued) {
     cth::co::executor exec{sched};
 
     keybd_event_queue queue{};
-    queue.queue().push(test_event());
+    queue.push(test_event());
 
     auto task = [](keybd_event_queue& q) -> cth::co::executor_task<bool> {
-        auto const event = co_await q.next();
-        co_return event.has_value();
+        [[maybe_unused]] auto const event = co_await q.next();
+        co_return true;
     };
 
     EXPECT_TRUE(sync_wait(exec, task(queue)));
@@ -82,19 +102,19 @@ CO_TEST(event_queue, suspends_until_pushed) {
         [&queue, &pushed] {
             std::this_thread::sleep_for(25ms);
             pushed = true;
-            queue.queue().push(test_event());
+            queue.push(test_event());
         }
     };
 
     auto task = [](keybd_event_queue& q, std::atomic<bool> const& flag) -> cth::co::executor_task<bool> {
-        auto const event = co_await q.next();
-        co_return event.has_value() && flag.load();
+        [[maybe_unused]] auto const event = co_await q.next();
+        co_return flag.load();
     };
 
     EXPECT_TRUE(sync_wait(exec, task(queue, pushed)));
 }
 
-// the hook must hand the resume to the scheduler, never run it on the pushing thread
+// the OS wait must hand the resume to the scheduler, never run it on the pushing thread
 CO_TEST(event_queue, resumes_on_scheduler_thread) {
     cth::co::scheduler sched{cth::co::autostart, 1};
     cth::co::executor exec{sched};
@@ -108,7 +128,7 @@ CO_TEST(event_queue, resumes_on_scheduler_thread) {
         [&queue, &pusherId] {
             pusherId = std::this_thread::get_id();
             std::this_thread::sleep_for(25ms);
-            queue.queue().push(test_event());
+            queue.push(test_event());
         }
     };
 
@@ -134,16 +154,17 @@ CO_TEST(event_queue, survives_burst) {
         [&queue] {
             std::this_thread::sleep_for(25ms);
             for(int i = 0; i < 16; ++i)
-                queue.queue().push(test_event());
+                queue.push(test_event());
         }
     };
 
     auto task = [](keybd_event_queue& q) -> cth::co::executor_task<size_t> {
         size_t taken = 0;
 
-        while(taken < 16)
-            if(co_await q.next())
-                ++taken;
+        while(taken < 16) {
+            [[maybe_unused]] auto const event = co_await q.next();
+            ++taken;
+        }
 
         co_return taken;
     };

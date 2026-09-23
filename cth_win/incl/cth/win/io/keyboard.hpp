@@ -1,7 +1,8 @@
 #pragma once
 #include "cth/io/keybd/keys.hpp"
 
-#include <functional>
+#include <cth/os/fence.hpp>
+
 #include <mutex>
 #include <optional>
 #include <queue>
@@ -21,18 +22,6 @@ namespace cth::win {
 
 struct keybd_event_queue {
     using event_t = ::cth::io::key_update;
-
-    /**
-     * notification hook, invoked once per @ref push()
-     * @attention key hook must not change queue's hook registration
-     */
-    using key_hook_t = std::move_only_function<void()>;
-    /**
-     * index of the hook's slot
-     * @details @ref remove_key_hook() empties the slot and @ref add_key_hook() reuses it, so ids are
-     *  handed out again -- an id kept past its own removal addresses whatever hook took the slot over
-     */
-    using key_hook_id_t = std::size_t;
 
     keybd_event_queue();
     keybd_event_queue(keybd_event_queue const&) = delete;
@@ -64,49 +53,21 @@ struct keybd_event_queue {
      */
     void clear();
 
-    /**
-     * pushes onto the queue, notifies every hook
-     * @param event to push
-     */
+    /** pushes onto the queue and signals @ref fence() */
     void push(event_t event);
 
-    /**
-     * registers a notification hook
-     * @param hook see @ref key_hook_t
-     * @pre hook != nullptr
-     * @return id to pass to @ref remove_key_hook()
-     */
-    key_hook_id_t add_key_hook(key_hook_t hook);
-
-    /**
-     * unregisters a hook
-     * @param id from @ref add_key_hook()
-     * @pre @ref key_hook_active(id)
-     */
-    void remove_key_hook(key_hook_id_t id);
-
-    /**
-     * checks whether an id addresses a registered hook
-     * @param id from @ref add_key_hook()
-     * @return false for a removed id and for an id this queue never handed out
-     */
-    [[nodiscard]] bool key_hook_active(key_hook_id_t id) const;
-
 private:
-    /**
-     * invokes every registered hook, called by @ref push() with the queue mutex released
-     */
-    void notify_hooks();
-
     std::queue<event_t> _queue{};
     mutable std::mutex _queueMtx{};
-
-    // separate lock: hooks are user code and must not run under _queueMtx
-    // slot index is the id, a removed slot stays in place as empty and gets reused
-    std::vector<key_hook_t> _hooks{};
-    mutable std::mutex _hooksMtx{};
+    os::fence _readyFence{};
 
 public:
+    /**
+     * queue readiness fence
+     * @return a manual-reset fence which remains signaled while the queue is nonempty
+     */
+    [[nodiscard]] os::fence const& fence() const noexcept { return _readyFence; }
+
     /**
      * size of current buffer queue
      */

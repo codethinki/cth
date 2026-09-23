@@ -1,5 +1,5 @@
 #pragma once
-#include "boost.hpp"
+#include "asio.hpp"
 #include "native_handle_helpers.hpp"
 
 #include "cth/coro/utility/fwd.hpp"
@@ -7,7 +7,7 @@
 #include <cth/data/pool.hpp>
 #include <cth/os/timer.hpp>
 
-#include <boost/asio/io_context.hpp>
+#include <asio/io_context.hpp>
 
 
 namespace cth::co {
@@ -48,8 +48,8 @@ public:
         auto& handler = timer.set(time_point);
 
         handler.async_wait(
-            [&handler, &timer, this, cb = std::move(callback)](boost::system::error_code const& ec) mutable {
-                BOOST_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", handler.native_handle())
+            [&handler, &timer, this, cb = std::move(callback)](asio::error_code const& ec) mutable {
+                ASIO_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", handler.native_handle())
 
                 release(timer);
 

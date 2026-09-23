@@ -19,8 +19,9 @@ set(CMAKE_CXX_COMPILER_LAUNCHER "buildcache")
 # exported
 add_subdirectory(cth)
 add_subdirectory(cth_os)
-add_subdirectory(cth_win)
 add_subdirectory(cth_coro)
+add_subdirectory(cth_net)
+add_subdirectory(cth_win)
 # add_subdirectory(cth_cthm) just a test and not up to date
 
 cth_create_package()
@@ -37,6 +38,7 @@ cth_glob_cpp(
   "cth"
   "cth_coro"
   "cth_cthm"
+  "cth_net"
   "cth_os"
   "cth_win"
   "integration_tests"

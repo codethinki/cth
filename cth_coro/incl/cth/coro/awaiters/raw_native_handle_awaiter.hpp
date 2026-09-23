@@ -8,7 +8,7 @@
 
 
 namespace cth::co {
-struct native_handle_awaiter {
+struct raw_native_handle_awaiter {
     scheduler const& scheduler;
     os::native_handle_t handle;
 

@@ -1,6 +1,6 @@
 #include "cth/coro/scheduler.hpp"
 
-#include "utility/boost.hpp"
+#include "utility/asio.hpp"
 #include "utility/native_handle_helpers.hpp"
 #include "utility/timer_pool.hpp"
 
@@ -8,16 +8,14 @@
 #include <cth/numeric.hpp>
 
 
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/post.hpp>
-#include <boost/asio/steady_timer.hpp>
+#include <asio/io_context.hpp>
+#include <asio/post.hpp>
 
 
 namespace cth::co {
 
 struct scheduler::Impl {
-    using guard_t = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+    using guard_t = asio::executor_work_guard<asio::io_context::executor_type>;
 
     // ReSharper disable once CppNonExplicitConvertingConstructor
     Impl(size_t workers) : ctx{static_cast<int>(workers)}, timerPool{ctx} { ctx.stop(); }
@@ -26,7 +24,7 @@ struct scheduler::Impl {
 
     void start() {
         ctx.restart();
-        workGuard.emplace(boost::asio::make_work_guard(ctx));
+        workGuard.emplace(asio::make_work_guard(ctx));
     }
     void request_stop() {
         workGuard = std::nullopt;
@@ -38,17 +36,20 @@ struct scheduler::Impl {
     void await(native_handle handle, void_func callback) {
         auto handler = wrap_unique(handle, ctx);
         handler->async_wait(
-            [h = std::move(handler),
-                this,
-                cb = std::move(callback)](boost::system::error_code const& ec) mutable {
-                BOOST_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", h->native_handle())
+            [
+                h = std::move(handler),
+                cb = std::move(callback)
+            ](asio::error_code const& ec) mutable {
+                ASIO_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", h->native_handle())
 
                 cb();
             }
         );
     }
 
-    void await(chrono::time_point_t time_point, void_func callback) { timerPool.set(time_point, std::move(callback)); }
+    void await(chrono::time_point_t time_point, void_func callback) {
+        timerPool.set(time_point, std::move(callback));
+    }
 
 
     bas::io_context ctx;
@@ -61,8 +62,7 @@ struct scheduler::Impl {
 
 namespace cth::co {
 
-scheduler::scheduler(size_t workers) :
-    _impl{std::make_unique<Impl>(workers)},
+scheduler::scheduler(size_t workers) : _impl{std::make_unique<Impl>(workers)},
     _activeWorkers{std::make_unique<std::atomic<size_t>>()},
     _workers{workers} {
     CTH_CRITICAL((!expr::num::in(workers, 1, std::numeric_limits<int>::max())), "workers out of range") {}

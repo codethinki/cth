@@ -3,14 +3,14 @@
 #include <cth/os/osdef.hpp>
 
 #ifdef CTH_FS_WINDOWS
-#include <boost/asio/windows/object_handle.hpp>
+#include <asio/windows/object_handle.hpp>
 #elifdef CTH_FS_POSIX
-#include <boost/asio/posix/stream_descriptor.hpp>
+#include <asio/posix/stream_descriptor.hpp>
 #endif
 
 #include <memory>
 
-namespace bas = boost::asio;
+namespace bas = asio;
 
 namespace cth::co {
 using native_handle_handler_t =

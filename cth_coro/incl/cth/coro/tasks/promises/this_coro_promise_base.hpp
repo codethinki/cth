@@ -1,5 +1,6 @@
 #pragma once
 #include "cth/coro/utility.hpp"
+#include "cth/coro/awaiters/raw_native_handle_awaiter.hpp"
 #include "cth/coro/func/steal.hpp"
 #include "cth/coro/tasks/dev/capture_task.hpp"
 #include "cth/coro/this_coro/payload.hpp"
@@ -13,6 +14,11 @@
 
 namespace cth::co {
 class executor;
+
+template<class T>
+concept native_handle_waitable = requires(T const& value) {
+    { value.native_handle() } -> std::same_as<os::native_handle_t>;
+};
 
 
 /**
@@ -40,7 +46,7 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
             "awaited task carries a payload incompatible with this coroutine's payload"
         );
 
-        auto awaiter = co::extract_awaiter(awaitable);
+        auto awaiter = co::extract_awaiter(std::forward<Awaitable>(awaitable));
 
         awaiter.inject(*_payload);
 
@@ -50,7 +56,13 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
     template<captured_awaitable Awaitable>
     [[nodiscard]] constexpr auto await_transform(Awaitable&& captured) { return cth::co::extract_awaiter(captured); }
 
-    template<foreign_awaitable Awaitable> requires (this_coro::scheduler_payload<Pyld>)
+    template<native_handle_waitable Waitable> requires (this_coro::scheduler_payload<Pyld>)
+    [[nodiscard]] auto await_transform(Waitable const& waitable) {
+        return raw_native_handle_awaiter{_payload->scheduler(), waitable.native_handle()};
+    }
+
+    template<foreign_awaitable Awaitable>
+        requires (this_coro::scheduler_payload<Pyld> && !native_handle_waitable<Awaitable>)
     [[nodiscard]] auto await_transform(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
         return co::steal(std::move(awaitable), *_payload);
     }
