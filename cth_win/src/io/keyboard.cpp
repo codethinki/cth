@@ -14,17 +14,17 @@
 #include <thread>
 #include <vector>
 
-namespace cth::win::keybd {
+namespace cth::win {
 namespace {
-    class hook_manager {
+    class keybd_hook_manager {
     public:
-        hook_manager() = default;
-        ~hook_manager() { stop_hook(); }
+        keybd_hook_manager() = default;
+        ~keybd_hook_manager() { stop_hook(); }
 
-        hook_manager(hook_manager const&) = delete;
-        hook_manager& operator=(hook_manager const&) = delete;
+        keybd_hook_manager(keybd_hook_manager const&) = delete;
+        keybd_hook_manager& operator=(keybd_hook_manager const&) = delete;
 
-        void subscribe(event_queue& queue) {
+        void subscribe(keybd_event_queue& queue) {
             {
                 std::scoped_lock _{_mutex};
                 _queues.push_back(&queue);
@@ -32,7 +32,7 @@ namespace {
             _hookSwitch.acquire();
         }
 
-        void unsubscribe(event_queue& queue) {
+        void unsubscribe(keybd_event_queue& queue) {
             {
                 std::scoped_lock _{_mutex};
                 std::erase(_queues, &queue);
@@ -52,10 +52,11 @@ namespace {
         static LRESULT CALLBACK hook_callback(int n_code, WPARAM w_param, LPARAM l_param);
 
     private:
-        std::vector<event_queue*> _queues;
+        std::vector<keybd_event_queue*> _queues;
         std::mutex _mutex;
         std::jthread _hookThread;
-        DWORD _hookThreadId{0};
+
+        os::unique_native_handle _stopEvent{CreateEventW(nullptr, TRUE, FALSE, nullptr)};
 
         // global_switch wired directly to our internal start/stop methods
         cth::co::global_switch _hookSwitch{
@@ -63,19 +64,18 @@ namespace {
             [this] { stop_hook(); }
         };
 
-        void start_hook() { _hookThread = std::jthread{[this](std::stop_token const& stop) { thread_proc(stop); }}; }
+        void start_hook() { _hookThread = std::jthread{[this] { thread_proc(); }}; }
 
         void stop_hook() {
-            _hookThread.request_stop();
-            if(_hookThreadId != 0)
-                PostThreadMessageW(_hookThreadId, WM_QUIT, 0, 0);
+            SetEvent(_stopEvent.get());
 
             if(_hookThread.joinable())
                 _hookThread.join();
-            _hookThreadId = 0;
+
+            ResetEvent(_stopEvent.get());
         }
 
-        void thread_proc(std::stop_token const& stop) {
+        void thread_proc() {
             // 1. Create a "Message-Only" Window (Invisible, doesn't show in taskbar)
             wnd_ptr hwnd{
                 CreateWindowExW(
@@ -107,36 +107,35 @@ namespace {
             if(!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
                 return;
 
-            _hookThreadId = GetCurrentThreadId();
+            HANDLE const stopHandle = _stopEvent.get();
+            while(MsgWaitForMultipleObjects(1, &stopHandle, FALSE, INFINITE, QS_ALLINPUT) != WAIT_OBJECT_0) {
+                MSG msg;
+                while(PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+                    if(msg.message == WM_INPUT) {
+                        UINT dwSize = sizeof(RAWINPUT);
+                        RAWINPUT lpb{};
 
-            MSG msg;
-            while(GetMessageW(&msg, nullptr, 0, 0) > 0 && !stop.stop_requested()) {
-                if(msg.message == WM_INPUT) {
-                    UINT dwSize = sizeof(RAWINPUT);
-                    RAWINPUT lpb{};
+                        GetRawInputData(
+                            reinterpret_cast<HRAWINPUT>(msg.lParam),
+                            RID_INPUT,
+                            &lpb,
+                            &dwSize,
+                            sizeof(RAWINPUTHEADER)
+                        );
 
-                    GetRawInputData(
-                        reinterpret_cast<HRAWINPUT>(msg.lParam),
-                        RID_INPUT,
-                        &lpb,
-                        &dwSize,
-                        sizeof(RAWINPUTHEADER)
-                    );
-
-                    if(lpb.header.dwType == RIM_TYPEKEYBOARD)
-                        push_event(to_key_update(lpb.data.keyboard));
+                        if(lpb.header.dwType == RIM_TYPEKEYBOARD)
+                            push_event(to_key_update(lpb.data.keyboard));
+                    }
+                    TranslateMessage(&msg);
+                    DispatchMessageW(&msg);
                 }
-                TranslateMessage(&msg);
-                DispatchMessageW(&msg);
             }
-
-            _hookThreadId = 0;
         }
     };
 
-    inline hook_manager keybdManager{};
+    inline keybd_hook_manager keybdManager{};
 
-    LRESULT CALLBACK hook_manager::hook_callback(int n_code, WPARAM w_param, LPARAM l_param) {
+    LRESULT CALLBACK keybd_hook_manager::hook_callback(int n_code, WPARAM w_param, LPARAM l_param) {
         if(n_code == HC_ACTION) {
             auto const keyStruct = *reinterpret_cast<KBDLLHOOKSTRUCT const*>(l_param);
             auto const event = to_key_update(keyStruct);
@@ -150,28 +149,28 @@ namespace {
 }
 
 
-namespace cth::win::keybd {
+namespace cth::win {
 
-event_queue::event_queue() { keybdManager.subscribe(*this); }
+keybd_event_queue::keybd_event_queue() { keybdManager.subscribe(*this); }
 
-event_queue::~event_queue() { keybdManager.unsubscribe(*this); }
+keybd_event_queue::~keybd_event_queue() { keybdManager.unsubscribe(*this); }
 
-[[nodiscard]] bool event_queue::empty() const {
+[[nodiscard]] bool keybd_event_queue::empty() const {
     std::scoped_lock _{_queueMtx};
     return _queue.empty();
 }
 
-[[nodiscard]] size_t event_queue::size() const {
+[[nodiscard]] size_t keybd_event_queue::size() const {
     std::scoped_lock _{_queueMtx};
     return _queue.size();
 }
 
-[[nodiscard]] event_queue::event_t event_queue::front() const {
+[[nodiscard]] keybd_event_queue::event_t keybd_event_queue::front() const {
     std::scoped_lock _{_queueMtx};
     return _queue.front();
 }
 
-[[nodiscard]] auto event_queue::peek() const -> std::optional<event_t> {
+[[nodiscard]] auto keybd_event_queue::peek() const -> std::optional<event_t> {
     std::scoped_lock _{_queueMtx};
 
     if(_queue.empty())
@@ -180,14 +179,14 @@ event_queue::~event_queue() { keybdManager.unsubscribe(*this); }
     return _queue.front();
 }
 
-[[nodiscard]] event_queue::event_t event_queue::pop() {
+[[nodiscard]] keybd_event_queue::event_t keybd_event_queue::pop() {
     std::scoped_lock _{_queueMtx};
     auto const result = _queue.front();
     _queue.pop();
     return result;
 }
 
-[[nodiscard]] auto event_queue::pop_queue() -> std::vector<event_t> {
+[[nodiscard]] auto keybd_event_queue::pop_queue() -> std::vector<event_t> {
     std::scoped_lock _{_queueMtx};
     std::vector<event_t> events;
     while(!_queue.empty()) {
@@ -197,13 +196,13 @@ event_queue::~event_queue() { keybdManager.unsubscribe(*this); }
     return events;
 }
 
-void event_queue::clear() {
+void keybd_event_queue::clear() {
     std::scoped_lock _{_queueMtx};
     while(!_queue.empty())
         _queue.pop();
 }
 
-void event_queue::push(event_t event) {
+void keybd_event_queue::push(event_t event) {
     {
         std::scoped_lock _{_queueMtx};
         _queue.push(std::move(event));
@@ -211,7 +210,7 @@ void event_queue::push(event_t event) {
     notify_hooks();
 }
 
-auto event_queue::add_key_hook(key_hook_t hook) -> key_hook_id_t {
+auto keybd_event_queue::add_key_hook(key_hook_t hook) -> key_hook_id_t {
     CTH_CRITICAL(!hook, "empty key hook") {}
 
     std::scoped_lock _{_hooksMtx};
@@ -227,17 +226,17 @@ auto event_queue::add_key_hook(key_hook_t hook) -> key_hook_id_t {
     return static_cast<key_hook_id_t>(std::ranges::distance(_hooks.begin(), free));
 }
 
-void event_queue::remove_key_hook(key_hook_id_t id) {
+void keybd_event_queue::remove_key_hook(key_hook_id_t id) {
     std::scoped_lock _{_hooksMtx};
     _hooks[id] = nullptr;
 }
 
-bool event_queue::key_hook_active(key_hook_id_t id) const {
+bool keybd_event_queue::key_hook_active(key_hook_id_t id) const {
     std::scoped_lock _{_hooksMtx};
     return id < _hooks.size() && _hooks[id] != nullptr;
 }
 
-void event_queue::notify_hooks() {
+void keybd_event_queue::notify_hooks() {
     std::scoped_lock _{_hooksMtx};
 
     for(auto& hook : _hooks)
@@ -245,7 +244,7 @@ void event_queue::notify_hooks() {
             hook();
 }
 
-} // namespace cth::win::io
+} // namespace cth::win
 
 namespace cth::win::keybd {
 

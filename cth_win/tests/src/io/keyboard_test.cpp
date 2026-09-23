@@ -28,7 +28,7 @@ KEYBD_TEST(send, asdf) {
 }
 
 KEYBD_TEST(event_queue, test_recording) {
-    event_queue q{};
+    keybd_event_queue q{};
 
     std::this_thread::sleep_for(std::chrono::seconds{4});
 
@@ -37,7 +37,7 @@ KEYBD_TEST(event_queue, test_recording) {
 */
 
 KEYBD_TEST(event_queue, basic) {
-    event_queue queue{};
+    keybd_event_queue queue{};
     EXPECT_TRUE(queue.empty());
     queue.clear();
     auto events = queue.pop_queue();

@@ -14,8 +14,12 @@ namespace cth::win::keybd {
 void send(::cth::io::key_state);
 void send(std::span<::cth::io::key_state const> states);
 
+}
 
-struct event_queue {
+
+namespace cth::win {
+
+struct keybd_event_queue {
     using event_t = ::cth::io::key_update;
 
     /**
@@ -30,10 +34,10 @@ struct event_queue {
      */
     using key_hook_id_t = std::size_t;
 
-    event_queue();
-    event_queue(event_queue const&) = delete;
-    event_queue(event_queue&&) = delete;
-    ~event_queue();
+    keybd_event_queue();
+    keybd_event_queue(keybd_event_queue const&) = delete;
+    keybd_event_queue(keybd_event_queue&&) = delete;
+    ~keybd_event_queue();
 
     /**
      * gets the queues front
@@ -114,4 +118,4 @@ public:
     [[nodiscard]] bool empty() const;
 };
 
-} // namespace cth::win::io
+} // namespace cth::win
