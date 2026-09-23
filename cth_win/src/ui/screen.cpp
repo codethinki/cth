@@ -2,7 +2,7 @@
 
 #include "cth/win/string.hpp"
 
-#include "win_include.hpp"
+#include "../win_include.hpp"
 
 #include <ShellScalingApi.h>
 #include <dwmapi.h>
@@ -15,55 +15,8 @@ namespace cth::win::ui {
 
 hwnd_t desktop_handle() { return GetDesktopWindow(); }
 
+hwnd_t foreground_window() noexcept { return GetForegroundWindow(); }
 
-window_t create_window(std::string_view name, rect_t rect, bool visible, std::string_view class_name) {
-    CTH_CRITICAL(name.empty(), "name must not be empty") {}
-
-    auto const implicitClass = class_name.empty();
-
-    auto const wName = to_wstring(name);
-    auto const wClassName = implicitClass ? wName : to_wstring(class_name);
-
-    std::optional<window_class_t> classOpt{};
-
-    WNDCLASSEXW existingClass;
-    bool registered = GetClassInfoExW(GetModuleHandle(nullptr), wClassName.c_str(), &existingClass);
-
-    if(!registered) {
-        WNDCLASSEXW const wc{
-            .cbSize = sizeof(wc),
-            .lpfnWndProc = DefWindowProc,
-            .hInstance = GetModuleHandle(nullptr),
-            .lpszClassName = wClassName.c_str(),
-        };
-        auto const result = RegisterClassExW(&wc);
-        CTH_WIN_STABLE_THROW(result == 0, "failed to register window class: {}", to_string(wClassName)) {}
-
-        classOpt = {wc.hInstance, wClassName};
-    }
-
-    window_t window{
-        .classOpt{std::move(classOpt)},
-        .handle{CreateWindowExW(
-            0,
-            wClassName.c_str(),
-            wName.c_str(),
-            visible ? WS_VISIBLE : 0,
-            static_cast<int>(rect.x),
-            static_cast<int>(rect.y),
-            static_cast<int>(rect.width),
-            static_cast<int>(rect.height),
-            nullptr,
-            nullptr,
-            GetModuleHandle(nullptr),
-            nullptr
-        )}
-    };
-
-    CTH_WIN_STABLE_THROW(window.handle == nullptr, "failed to create temp window: {}", name) {}
-
-    return window;
-}
 
 }
 
@@ -99,6 +52,21 @@ std::vector<monitor_t> enum_monitors() {
     return out;
 }
 
+std::vector<hwnd_t> enum_windows() {
+    std::vector<hwnd_t> out{};
+
+    auto enum_lambda = [](HWND handle, LPARAM pout) -> BOOL {
+        auto& list = *reinterpret_cast<std::vector<hwnd_t>*>(pout);
+        list.emplace_back(handle);
+        return TRUE;
+    };
+
+    auto const result = EnumWindows(enum_lambda, reinterpret_cast<LPARAM>(&out));
+    CTH_WIN_STABLE_THROW(result == 0, "failed to enumerate windows") {}
+
+    return out;
+}
+
 }
 
 
@@ -106,10 +74,12 @@ namespace cth::win::ui {
 namespace {
     using mapping_t = std::pair<DPI_AWARENESS_CONTEXT, DpiAwareness>;
     inline std::array<mapping_t, 4> const mappings = {
-        {{DPI_AWARENESS_CONTEXT_UNAWARE, DpiAwareness::NONE},
-         {DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED, DpiAwareness::GDI_SCALED},
-         {DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE, DpiAwareness::PER_MONITOR_LEGACY},
-         {DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, DpiAwareness::PER_MONITOR}}
+        {
+            {DPI_AWARENESS_CONTEXT_UNAWARE, DpiAwareness::NONE},
+            {DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED, DpiAwareness::GDI_SCALED},
+            {DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE, DpiAwareness::PER_MONITOR_LEGACY},
+            {DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, DpiAwareness::PER_MONITOR}
+        }
     };
 
     DpiAwareness from_win(DPI_AWARENESS_CONTEXT ctx) {
@@ -137,14 +107,95 @@ namespace {
 DpiAwareness set_thread_dpi_awareness(DpiAwareness awareness) {
     return from_win(SetThreadDpiAwarenessContext(to_win(awareness)));
 }
-rect_t window_rect(hwnd_t hwnd) {
+
+window_t create_window(std::string_view name, rect_t rect, bool visible, std::string_view class_name) {
+    CTH_CRITICAL(name.empty(), "name must not be empty") {}
+
+    auto const implicitClass = class_name.empty();
+
+    auto const wName = to_wstring(name);
+    auto const wClassName = implicitClass ? wName : to_wstring(class_name);
+
+    std::optional<window_class_t> classOpt{};
+
+    WNDCLASSEXW existingClass;
+    bool registered = GetClassInfoExW(GetModuleHandle(nullptr), wClassName.c_str(), &existingClass);
+
+    if(!registered) {
+        WNDCLASSEXW const wc{
+            .cbSize = sizeof(wc),
+            .lpfnWndProc = DefWindowProcW,
+            .hInstance = GetModuleHandle(nullptr),
+            .lpszClassName = wClassName.c_str(),
+        };
+        auto const result = RegisterClassExW(&wc);
+        CTH_WIN_STABLE_THROW(result == 0, "failed to register window class: {}", to_string(wClassName)) {}
+
+        classOpt = {wc.hInstance, wClassName};
+    }
+
+    window_t window{
+        .classOpt{std::move(classOpt)},
+        .handle{
+            CreateWindowExW(
+                0,
+                wClassName.c_str(),
+                wName.c_str(),
+                visible ? WS_VISIBLE : 0,
+                static_cast<int>(rect.x),
+                static_cast<int>(rect.y),
+                static_cast<int>(rect.width),
+                static_cast<int>(rect.height),
+                nullptr,
+                nullptr,
+                GetModuleHandle(nullptr),
+                nullptr
+            )
+        }
+    };
+
+    CTH_WIN_STABLE_THROW(window.handle == nullptr, "failed to create temp window: {}", name) {}
+
+    return window;
+}
+
+rect_t window_rect(hwnd_t hwnd, bool resize_border) {
     RECT out;
-    auto const result = GetWindowRect(static_cast<HWND>(hwnd), &out);
-    CTH_WIN_STABLE_THROW(!result, "failed to get window rect of [{}]", hwnd) {}
+
+    if(resize_border) {
+        auto const result = GetWindowRect(static_cast<HWND>(hwnd), &out);
+        CTH_WIN_STABLE_THROW(!result, "failed to get window rect of [{}]", hwnd) {}
+    } else {
+        auto const result = DwmGetWindowAttribute(
+            static_cast<HWND>(hwnd),
+            DWMWA_EXTENDED_FRAME_BOUNDS,
+            &out,
+            sizeof(out)
+        );
+        CTH_WIN_STABLE_THROW(FAILED(result), "failed to get visible window rect of [{}]", hwnd) {}
+    }
+
     return to_rect(out);
 }
-size_t window_frame_count(hwnd_t hwnd) {
 
+std::string window_name(hwnd_t hwnd) {
+    SetLastError(ERROR_SUCCESS);
+    auto const length = GetWindowTextLengthW(static_cast<HWND>(hwnd));
+    CTH_WIN_STABLE_THROW(length == 0 && GetLastError() != ERROR_SUCCESS, "failed to get window name length") {}
+
+    std::wstring name(static_cast<size_t>(length) + 1, L'\0');
+    auto const written = GetWindowTextW(static_cast<HWND>(hwnd), name.data(), static_cast<int>(name.size()));
+    CTH_WIN_STABLE_THROW(written == 0 && length != 0, "failed to get window name") {}
+
+    name.resize(static_cast<size_t>(written));
+    return to_string(name);
+}
+
+bool window_visible(hwnd_t hwnd) noexcept { return IsWindowVisible(static_cast<HWND>(hwnd)) != 0; }
+
+bool window_minimized(hwnd_t hwnd) noexcept { return IsIconic(static_cast<HWND>(hwnd)) != 0; }
+
+size_t window_frame_count(hwnd_t hwnd) {
     DWM_TIMING_INFO timingInfo{.cbSize = sizeof(DWM_TIMING_INFO)};
 
     auto hresult = DwmGetCompositionTimingInfo(static_cast<HWND>(hwnd), &timingInfo);
@@ -335,18 +386,20 @@ void blit_from_screen(
 namespace cth::win::ui {
 namespace {
     BITMAPINFO create_bmp_header(long width, long height) {
-        return {.bmiHeader{
-            .biSize = sizeof(BITMAPINFOHEADER),
-            .biWidth = width,
+        return {
+            .bmiHeader{
+                .biSize = sizeof(BITMAPINFOHEADER),
+                .biWidth = width,
 
-            // negative height for top-down bitmap
-            .biHeight = -height,
+                // negative height for top-down bitmap
+                .biHeight = -height,
 
 
-            .biPlanes = 1,
-            .biBitCount = section::PIXEL_SIZE * 8,
-            .biCompression = BI_RGB,
-        }};
+                .biPlanes = 1,
+                .biBitCount = section::PIXEL_SIZE * 8,
+                .biCompression = BI_RGB,
+            }
+        };
     }
 }
 

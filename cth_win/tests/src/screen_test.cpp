@@ -29,6 +29,20 @@ WIN_SCREEN_TEST(create_window, ascii) {
 
 WIN_SCREEN_TEST(monitors, main) { auto const monitors = enum_monitors(); }
 
+WIN_SCREEN_TEST(windows, main) {
+    std::string const name{"cth enum windows test"};
+    auto window = create_window(name, {}, false);
+
+    auto const windows = enum_windows();
+    auto const handle = window.handle.get();
+    auto const found = std::ranges::find(windows, handle);
+
+    ASSERT_NE(found, windows.end());
+    EXPECT_EQ(window_name(*found), name);
+    EXPECT_FALSE(window_visible(*found));
+    EXPECT_FALSE(window_minimized(*found));
+}
+
 
 }
 
@@ -41,7 +55,7 @@ WIN_SCREEN_TEST(desktop_rect, main) {
 WIN_SCREEN_TEST(window_rect, main) {
     auto const desktop = desktop_handle();
 
-    auto const rect = window_rect(desktop);
+    auto const rect = window_rect(desktop, true);
     EXPECT_GT(rect.width, 0);
     EXPECT_GT(rect.height, 0);
 }

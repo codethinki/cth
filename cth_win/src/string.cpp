@@ -8,6 +8,9 @@
 namespace cth::win {
 
 std::wstring to_wstring(std::string_view view) {
+    if(view.empty())
+        return L"";
+
     auto const viewSize = static_cast<int>(view.size());
     auto const viewPtr = view.data();
 
@@ -30,6 +33,9 @@ std::wstring to_wstring(std::string_view view) {
     return out;
 }
 std::string to_string(std::wstring_view view) {
+    if(view.empty())
+        return "";
+
     auto const viewSize = static_cast<int>(view.size());
     auto const viewPtr = view.data();
 

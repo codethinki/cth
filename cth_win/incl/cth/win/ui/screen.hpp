@@ -4,33 +4,42 @@
 #include <cth/io/log.hpp>
 
 #include <span>
+#include <string>
+#include <vector>
 
 
 namespace cth::win::ui {
 
 hwnd_t desktop_handle();
 
+/**
+ * gets the window currently receiving foreground input
+ * @return foreground window, nullptr when no window has focus
+ */
+[[nodiscard]] hwnd_t foreground_window() noexcept;
+
+double desktop_scale();
+/**
+ * Gets the desktop rect, origin top left
+ * @details calls @ref window_rect(hwnd_t)
+ */
+rect_t desktop_rect();
 
 /**
- * creates a windows window
- * @param name of window (in utf8), must not be empty
- * @param rect pos + size
- * @param class_name (in utf8) if empty => name is used, class doesn't exist => created
- * @throws cth::except::win_exception on window class registration failure
- * @throws cth::except::win_exception on window creation failure
+ * gets the desktop frame count
+ * @details calls @ref window_frame_count(hwnd_t)
  */
-window_t create_window(
-    std::string_view name,
-    rect_t rect,
-    bool visible = true,
-    std::string_view class_name = {}
-);
-
+size_t desktop_frame_count();
 
 /**
  * Enumerates all monitors
  */
 std::vector<monitor_t> enum_monitors();
+
+/**
+ * Enumerates all top-level windows.
+ */
+std::vector<hwnd_t> enum_windows();
 
 
 }
@@ -64,18 +73,43 @@ private:
     DpiAwareness _awareness;
 };
 
+}
+
+
+
+namespace cth::win::ui {
+
+/**
+ * creates a windows window
+ * @param name of window (in utf8), must not be empty
+ * @param rect pos + size
+ * @param class_name (in utf8) if empty => name is used, class doesn't exist => created
+ * @throws cth::except::win_exception on window class registration failure
+ * @throws cth::except::win_exception on window creation failure
+ */
+window_t create_window(
+    std::string_view name,
+    rect_t rect,
+    bool visible = true,
+    std::string_view class_name = {}
+);
+
 /**
  * gets the rect of the window
+ * @param resize_border include the invisible resize border
  * @throws cth::except::win_exception on failure
  */
-rect_t window_rect(hwnd_t hwnd);
-
+rect_t window_rect(hwnd_t hwnd, bool resize_border = false);
 
 /**
- * Gets the desktop rect, origin top left
- * @details calls @ref window_rect(hwnd_t)
+ * gets the utf8 window name
  */
-inline rect_t desktop_rect() { return window_rect(desktop_handle()); }
+std::string window_name(hwnd_t hwnd);
+
+bool window_visible(hwnd_t hwnd) noexcept;
+
+bool window_minimized(hwnd_t hwnd) noexcept;
+
 
 
 /**
@@ -85,18 +119,14 @@ inline rect_t desktop_rect() { return window_rect(desktop_handle()); }
  */
 size_t window_frame_count(hwnd_t hwnd);
 
-/**
- * gets the desktop frame count
- * @details calls @ref window_frame_count(hwnd_t)
- */
-inline size_t desktop_frame_count() { return window_frame_count(desktop_handle()); }
+double window_scale(hwnd_t window);
+
 }
 
 
 namespace cth::win::ui {
-double window_scale(hwnd_t window);
 
-inline double desktop_scale() { return window_scale(desktop_handle()); }
+
 
 /**
  * blits from src to dst
@@ -168,11 +198,6 @@ void blit_from_screen(
     size_t height,
     bool dpi_aware
 );
-}
-
-
-namespace cth::win::ui {
-
 
 inline void make_rgba_opaque(std::span<std::byte> pixel_fragments) {
     CTH_CRITICAL(pixel_fragments.size() % 4 != 0, "illegal pixel fragments") {}
@@ -184,6 +209,10 @@ inline void make_rgba_opaque(std::span<std::byte> pixel_fragments) {
     for(auto& p : pixels)
         p[3] = std::byte{0xff};
 }
+}
+
+
+namespace cth::win::ui {
 
 /**
  * gives access to a section of the screen.
@@ -287,4 +316,13 @@ public:
         return std::span{s.raw(), s.bytes()};
     }
 };
+}
+
+
+namespace cth::win::ui {
+inline double desktop_scale() { return window_scale(desktop_handle()); }
+
+inline rect_t desktop_rect() { return window_rect(desktop_handle(), true); }
+
+inline size_t desktop_frame_count() { return window_frame_count(desktop_handle()); }
 }
