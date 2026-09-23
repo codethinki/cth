@@ -10,7 +10,7 @@
 namespace cth::except {
 class win_exception : public default_exception {
 public:
-    win_exception(
+    explicit win_exception(
         std::string_view msg,
         Severity severity = Severity::ERR,
         std::source_location const& loc = {},

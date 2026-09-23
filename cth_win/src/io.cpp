@@ -96,7 +96,7 @@ mapped_file map_file(std::string_view path) {
         std::move(file),
         std::move(mapping),
         std::move(dataHandle),
-        {static_cast<std::byte const*>(dataPtr), fileSize}
+        {static_cast<std::byte const*>(dataPtr), static_cast<std::size_t>(fileSize)}
     };
 }
 
