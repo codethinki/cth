@@ -67,10 +67,11 @@
       "name": "ci-build-linux",
       "hidden": true,
       "inherits": "ci-build-base",
-      "description": "cth_coro, cth_net and cth_win do not build on linux yet",
+      "description": "cth_net and cth_win do not build on linux yet",
       "targets": [
         "cth_tests",
-        "cth_os_tests"
+        "cth_os_tests",
+        "cth_coro_tests"
       ]
     },
     {
