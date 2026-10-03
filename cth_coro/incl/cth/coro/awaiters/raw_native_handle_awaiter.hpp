@@ -9,7 +9,7 @@
 
 namespace cth::co {
 struct raw_native_handle_awaiter {
-    scheduler const& scheduler;
+    co::scheduler const& scheduler;
     os::native_handle_t handle;
 
     [[nodiscard]] bool await_ready() const { return os::check_ready(handle); }

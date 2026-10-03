@@ -15,7 +15,7 @@ namespace cth::co {
  */
 class executor {
 public:
-    constexpr executor(scheduler const& sched) noexcept : _sched(&sched) {}
+    constexpr executor(co::scheduler const& sched) noexcept : _sched(&sched) {}
     constexpr ~executor() = default;
 
     /**
@@ -88,7 +88,7 @@ private:
         co_return co_await co::steal(std::move(task), payload);
     }
 
-    scheduler const* _sched;
+    co::scheduler const* _sched;
 
 public:
     /**
