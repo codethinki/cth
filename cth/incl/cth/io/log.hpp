@@ -217,7 +217,7 @@ namespace dev {
         }                                                                            \
             )                                                                        \
             : std::unique_ptr<cth::log::dev::LogObj<severity, type>>{nullptr};       \
-            static_cast<bool>(expression)) [[unlikely]]
+            details != nullptr) [[unlikely]]
 
 #define CTH_DEV_DELAYED_LOG_TEMPLATE(severity, expr, fmt_message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(cth::except::default_exception, \
