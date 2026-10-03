@@ -35,7 +35,9 @@ struct scheduler::Impl {
 
     void await(native_handle handle, void_func callback) {
         auto handler = wrap_unique(handle, ctx);
-        handler->async_wait(
+        auto& waiter = *handler; // before the move below, argument evaluation order is unspecified
+        async_wait_signaled(
+            waiter,
             [
                 h = std::move(handler),
                 cb = std::move(callback)
