@@ -210,7 +210,7 @@ namespace dev {
 #define CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, severity, expression, fmt_message, ...) \
         if(auto const details = static_cast<bool>(expression)                        \
             ? std::make_unique<cth::log::dev::LogObj<severity, type>>(type{          \
-            std::format(fmt_message, __VA_ARGS__),                                   \
+            std::format(fmt_message __VA_OPT__(,) __VA_ARGS__),                      \
             severity,                                                                \
             std::source_location::current(),                                         \
             std::stacktrace::current()                                               \
