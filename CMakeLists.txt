@@ -13,7 +13,6 @@ cth_set_compiler_specifics()
 cth_set_latest_c_cpp_standard()
 set(CMAKE_CXX_SCAN_FOR_MODULES FALSE)
 
-# must precede the subprojects, otherwise their tests are not registered with ctest
 if(CTH_ENABLE_TESTS)
 	enable_testing()
 endif()
@@ -26,7 +25,7 @@ add_subdirectory(cth_net)
 if(WIN32)
 	add_subdirectory(cth_win)
 endif()
-# add_subdirectory(cth_cthm) just a test and not up to date
+# add_subdirectory(cth_cthm) not up to date
 
 cth_create_package()
 
