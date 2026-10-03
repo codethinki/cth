@@ -25,6 +25,8 @@ jobs:
           submodules: recursive
 
       - uses: ./.github/actions/setup-windows
+        with:
+          compiler: ${{ inputs.compiler }}
 
       - name: Build
         uses: ./.github/actions/build-cth
