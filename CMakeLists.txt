@@ -23,7 +23,9 @@ add_subdirectory(cth)
 add_subdirectory(cth_os)
 add_subdirectory(cth_coro)
 add_subdirectory(cth_net)
-add_subdirectory(cth_win)
+if(WIN32)
+	add_subdirectory(cth_win)
+endif()
 # add_subdirectory(cth_cthm) just a test and not up to date
 
 cth_create_package()
