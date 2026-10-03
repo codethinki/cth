@@ -1,6 +1,7 @@
 #pragma once
 #include "cth/data/pool.hpp"
 
+#include <cstddef>
 #include <mutex>
 #include <thread>
 #include <unordered_map>

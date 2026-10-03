@@ -1,6 +1,8 @@
 #pragma once
+#include <cstddef>
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <string>
 
 #include "io/log.hpp"

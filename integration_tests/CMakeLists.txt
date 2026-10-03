@@ -12,7 +12,7 @@ target_include_directories(
 
 find_package(GTest CONFIG REQUIRED)
 
-target_link_libraries(integration_tests PRIVATE GTest::gtest_main cth cth::win)
+target_link_libraries(integration_tests PRIVATE GTest::gtest_main cth::cth)
 
 include(GoogleTest)
 gtest_discover_tests(integration_tests)

@@ -13,22 +13,24 @@ cth_set_compiler_specifics()
 cth_set_latest_c_cpp_standard()
 set(CMAKE_CXX_SCAN_FOR_MODULES FALSE)
 
-set(CMAKE_C_COMPILER_LAUNCHER "buildcache")
-set(CMAKE_CXX_COMPILER_LAUNCHER "buildcache")
+if(CTH_ENABLE_TESTS)
+	enable_testing()
+endif()
 
 # exported
 add_subdirectory(cth)
 add_subdirectory(cth_os)
 add_subdirectory(cth_coro)
 add_subdirectory(cth_net)
-add_subdirectory(cth_win)
-# add_subdirectory(cth_cthm) just a test and not up to date
+if(WIN32)
+	add_subdirectory(cth_win)
+endif()
+# add_subdirectory(cth_cthm) not up to date
 
 cth_create_package()
 
 # test
 if(CTH_ENABLE_TESTS)
-	enable_testing()
 	add_subdirectory(integration_tests)
 endif()
 

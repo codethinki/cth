@@ -47,7 +47,8 @@ public:
         auto& timer = new_timer();
         auto& handler = timer.set(time_point);
 
-        handler.async_wait(
+        async_wait_signaled(
+            handler,
             [&handler, &timer, this, cb = std::move(callback)](asio::error_code const& ec) mutable {
                 ASIO_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", handler.native_handle())
 

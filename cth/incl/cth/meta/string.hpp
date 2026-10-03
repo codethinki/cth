@@ -1,4 +1,6 @@
 #pragma once
+#include <cstddef>
+#include <algorithm>
 #include <array>
 
 namespace cth::mta {

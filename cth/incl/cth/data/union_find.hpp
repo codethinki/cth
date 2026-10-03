@@ -1,6 +1,8 @@
 #pragma once
 #include "cth/data/poly_vector.hpp"
 
+#include <cstddef>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace cth::dt {

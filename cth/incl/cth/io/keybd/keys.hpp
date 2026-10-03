@@ -6,6 +6,7 @@
 #include "cth/os/osdef.hpp"
 #include "cth/string/format.hpp"
 
+#include <cstddef>
 #include <chrono>
 
 namespace cth::io {

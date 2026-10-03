@@ -3,6 +3,7 @@
 #include "cth/constants.hpp"
 #include "cth/io/log.hpp"
 
+#include <cstddef>
 #include <memory>
 #include <type_traits>
 #include <vector>

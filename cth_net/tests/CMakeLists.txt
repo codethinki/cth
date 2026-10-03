@@ -11,7 +11,7 @@ target_include_directories(
 
 find_package(GTest CONFIG REQUIRED)
 
-target_link_libraries(cth_net_tests PRIVATE GTest::gtest_main cth::net cth::coro hv)
+target_link_libraries(cth_net_tests PRIVATE GTest::gtest_main cth::net cth::coro libhv::hv)
 
 if(WIN32)
     target_compile_definitions(cth_net_tests PRIVATE _WIN32_WINNT=0x0A00)
