@@ -1,0 +1,141 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "ci-vcpkg",
+      "hidden": true,
+      "cacheVariables": {
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/vcpkg_installed"
+      },
+      "environment": {
+        "VCPKG_BINARY_SOURCES": "clear;nuget,GitHub,readwrite"
+      }
+    },
+    {
+      "name": "ci-buildcache",
+      "hidden": true,
+      "environment": {
+        "BUILDCACHE_DIR": "${sourceDir}/.buildcache",
+        "BUILDCACHE_ACCURACY": "SLOPPY",
+        "BUILDCACHE_MAX_CACHE_SIZE": "524288000"
+      }
+    },
+    {
+      "name": "ci-config-base",
+      "hidden": true,
+      "inherits": [
+        "ci-vcpkg",
+        "ci-buildcache"
+      ]
+    },
+    {
+      "name": "ci_linux_gcc",
+      "inherits": [
+        "ci-config-base",
+        "gcc_release"
+      ]
+    },
+    {
+      "name": "ci_linux_clang",
+      "inherits": [
+        "ci-config-base",
+        "clang_release"
+      ]
+    },
+    {
+      "name": "ci_windows_msvc",
+      "inherits": [
+        "ci-config-base",
+        "msvc_release"
+      ]
+    },
+    {
+      "name": "ci_windows_clang",
+      "inherits": [
+        "ci-config-base",
+        "clang_release"
+      ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ci-build-base",
+      "hidden": true,
+      "configuration": "Release"
+    },
+    {
+      "name": "ci-build-linux",
+      "hidden": true,
+      "inherits": "ci-build-base",
+      "description": "cth_coro, cth_net and cth_win do not build on linux yet",
+      "targets": [
+        "cth_tests",
+        "cth_os_tests"
+      ]
+    },
+    {
+      "name": "ci_linux_gcc",
+      "configurePreset": "ci_linux_gcc",
+      "inherits": "ci-build-linux"
+    },
+    {
+      "name": "ci_linux_clang",
+      "configurePreset": "ci_linux_clang",
+      "inherits": "ci-build-linux"
+    },
+    {
+      "name": "ci_windows_msvc",
+      "configurePreset": "ci_windows_msvc",
+      "inherits": "ci-build-base"
+    },
+    {
+      "name": "ci_windows_clang",
+      "configurePreset": "ci_windows_clang",
+      "inherits": "ci-build-base"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "ci-test-base",
+      "hidden": true,
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "ci-test-linux",
+      "hidden": true,
+      "inherits": "ci-test-base",
+      "description": "skips the placeholders of test executables that are not built on linux yet",
+      "filter": {
+        "exclude": {
+          "name": "_NOT_BUILT$"
+        }
+      }
+    },
+    {
+      "name": "ci_linux_gcc",
+      "configurePreset": "ci_linux_gcc",
+      "inherits": "ci-test-linux"
+    },
+    {
+      "name": "ci_linux_clang",
+      "configurePreset": "ci_linux_clang",
+      "inherits": "ci-test-linux"
+    },
+    {
+      "name": "ci_windows_msvc",
+      "configurePreset": "ci_windows_msvc",
+      "inherits": "ci-test-base"
+    },
+    {
+      "name": "ci_windows_clang",
+      "configurePreset": "ci_windows_clang",
+      "inherits": "ci-test-base"
+    }
+  ]
+}
