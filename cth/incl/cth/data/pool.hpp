@@ -2,6 +2,7 @@
 #include "cth/io/log.hpp"
 #include "cth/meta/concepts.hpp"
 
+#include <cstddef>
 #include <deque>
 #include <functional>
 #include <memory>

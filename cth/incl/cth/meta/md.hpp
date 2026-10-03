@@ -2,6 +2,7 @@
 #include "../macro.hpp"
 #include "tuple.hpp"
 
+#include <cstddef>
 #include <mdspan>
 
 namespace cth::mta {

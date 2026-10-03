@@ -1,6 +1,7 @@
 #pragma once
 #include "cth/meta/concepts.hpp"
 
+#include <cstddef>
 #include <stdexcept>
 
 namespace cth::mta {

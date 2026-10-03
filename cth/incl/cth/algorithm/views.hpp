@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <format>
+#include <functional>
 #include <ranges>
 
 namespace cth::views {

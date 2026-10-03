@@ -1,6 +1,7 @@
 #pragma once
 #include "cth/io/log.hpp"
 
+#include <cstddef>
 #include <algorithm>
 #include <numeric>
 

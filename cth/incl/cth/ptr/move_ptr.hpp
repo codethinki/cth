@@ -1,6 +1,8 @@
 #pragma once
+#include <cstddef>
 #include <memory>
 #include <type_traits>
+#include <utility>
 
 namespace cth {
 /**
@@ -96,48 +98,48 @@ template<typename T>
 template<typename T>
 [[nodiscard]] constexpr bool operator<(
     move_ptr<T> const& left,
-    nullptr_t
+    std::nullptr_t
 ) { return std::less<T*>{}(left.get(), nullptr);
 }
 template<typename T>
 [[nodiscard]] constexpr bool operator<(
-    nullptr_t,
+    std::nullptr_t,
     move_ptr<T> const& right
 ) { return std::less{}(nullptr, right.get());
 }
 template<typename T>
 [[nodiscard]] constexpr bool operator>(
     move_ptr<T> const& left,
-    nullptr_t
+    std::nullptr_t
 ) { return std::greater<T*>{}(left.get(), nullptr);
 }
 template<typename T>
 [[nodiscard]] constexpr bool operator>(
-    nullptr_t,
+    std::nullptr_t,
     move_ptr<T> const& right
 ) { return std::greater{}(nullptr, right.get());
 }
 template<typename T>
 [[nodiscard]] constexpr bool operator<=(
     move_ptr<T> const& left,
-    nullptr_t
+    std::nullptr_t
 ) { return std::less_equal<T*>{}(left.get(), nullptr);
 }
 template<typename T>
 [[nodiscard]] constexpr bool operator<=(
-    nullptr_t,
+    std::nullptr_t,
     move_ptr<T> const& right
 ) { return std::less_equal{}(nullptr, right.get());
 };
 template<typename T>
 [[nodiscard]] constexpr bool operator>=(
     move_ptr<T> const& left,
-    nullptr_t
+    std::nullptr_t
 ) { return std::greater_equal<T*>{}(left.get(), nullptr);
 };
 template<typename T>
 [[nodiscard]] constexpr bool operator>=(
-    nullptr_t,
+    std::nullptr_t,
     move_ptr<T> const& right
 ) { return std::greater_equal{}(nullptr, right.get());
 }

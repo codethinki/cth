@@ -3,6 +3,7 @@
 #include "cth/data/string_joiner.hpp"
 #include "cth/meta/ranges.hpp"
 
+#include <cstddef>
 #include <array>
 #include <iostream>
 #include <stack>

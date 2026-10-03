@@ -3,6 +3,7 @@
 
 #include <boost/pfr.hpp>
 
+#include <cstddef>
 #include <functional>
 
 namespace cth::hash {

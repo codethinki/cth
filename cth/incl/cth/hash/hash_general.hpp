@@ -2,6 +2,7 @@
 #include "cth/macro.hpp"
 #include "cth/meta/ranges.hpp"
 
+#include <cstddef>
 #include <functional>
 
 namespace cth::hash {

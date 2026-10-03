@@ -5,6 +5,7 @@
 #include "cth/meta/variadic.hpp"
 #include "cth/string/format.hpp"
 
+#include <cstddef>
 #include <algorithm>
 #include <format>
 #include <optional>

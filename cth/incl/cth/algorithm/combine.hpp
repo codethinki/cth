@@ -2,6 +2,7 @@
 #include "cth/io/log.hpp"
 #include "cth/meta/ranges.hpp"
 
+#include <cstddef>
 #include <algorithm>
 #include <concepts>
 #include <numeric>

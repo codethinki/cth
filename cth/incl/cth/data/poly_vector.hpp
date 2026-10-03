@@ -5,6 +5,8 @@
 #include "cth/io/log.hpp"
 #include "cth/ptr/move_ptr.hpp"
 
+#include <cstddef>
+#include <cstring>
 #include <array>
 #include <span>
 #include <vector>
