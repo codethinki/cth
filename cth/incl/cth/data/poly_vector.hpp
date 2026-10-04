@@ -35,7 +35,7 @@ public:
     explicit constexpr raw_poly_vector(std::initializer_list<size_t> sizes) :
         raw_poly_vector(std::span{sizes}) {}
 
-    constexpr virtual ~raw_poly_vector() { free(); }
+    constexpr ~raw_poly_vector() { free(); }
 
     template<size_t I, class S>
     [[nodiscard]] constexpr auto data(this S& s) noexcept {
