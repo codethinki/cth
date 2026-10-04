@@ -106,13 +106,13 @@ public:
         auto& rootSize = size_ref(root);
 
         for(auto& node : group) {
-            auto& p = parent(node);
+            auto const nodeRoot = find(node);
 
-            if(p == root)
+            if(nodeRoot == root)
                 continue;
 
-            rootSize++;
-            p = root;
+            rootSize += size_ref(nodeRoot);
+            parent(nodeRoot) = root;
         }
     }
 
