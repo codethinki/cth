@@ -18,7 +18,7 @@ namespace cth::mta {
  * @param max optional max search depth
  */
 template<class Rng>
-cval size_t dimensions(size_t max = MAX_DEPTH);
+consteval size_t dimensions(size_t max = MAX_DEPTH);
 
 /**
  * @brief checks if @ref Rng is of at least @ref D dimensions
@@ -31,7 +31,7 @@ concept md_range = dimensions<Rng>(D) == D;
 
 namespace dev {
     template<class Rng, size_t D>
-    cval auto md_range_value();
+    consteval auto md_range_value();
 }
 
 

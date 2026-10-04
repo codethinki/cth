@@ -8,7 +8,7 @@ namespace cth::mta {
 
 namespace dev {
     template<class T, template<class> class Trait>
-    cval size_t trait_count_helper(size_t max, size_t n = 0) {
+    consteval size_t trait_count_helper(size_t max, size_t n = 0) {
         if constexpr(!simple_trait_applicable<T, Trait>)
             return n;
         else {
@@ -20,11 +20,11 @@ namespace dev {
 }
 
 template<class T, template<class> class Trait>
-[[nodiscard]] cval size_t trait_count(size_t max_depth) { return dev::trait_count_helper<T, Trait>(max_depth); }
+[[nodiscard]] consteval size_t trait_count(size_t max_depth) { return dev::trait_count_helper<T, Trait>(max_depth); }
 
 namespace dev {
     template<class T, auto TCpt, template<class> class Trait>
-    cval size_t cpt_count(size_t max_depth, size_t n = 0) {
+    consteval size_t cpt_count(size_t max_depth, size_t n = 0) {
         if(n >= max_depth)
             return n;
 
@@ -43,7 +43,7 @@ namespace dev {
 }
 
 template<class T, auto TCpt, template<class> class Trait>
-[[nodiscard]] cval size_t cpt_count(size_t max_depth) {
+[[nodiscard]] consteval size_t cpt_count(size_t max_depth) {
     return dev::cpt_count<T, TCpt, Trait>(max_depth);
 }
 

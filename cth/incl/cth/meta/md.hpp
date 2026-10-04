@@ -14,7 +14,7 @@ namespace cth::mta {
  * @return std::extents
  */
 template<size_t D, auto Extent>
-[[nodiscard]] cval auto mdextent() {
+[[nodiscard]] consteval auto mdextent() {
     return std::apply(
         [] < class... Args >(Args... args) {
             return std::extents<decltype(Extent), (mta::zero<Args>(), Extent)...>{args...};

@@ -80,7 +80,7 @@ namespace num {
 
     template<std::integral auto Size>
     requires(Size > 0)
-    cval bool power_2() { return Size == 0 || ((Size & (Size - 1)) == 0); }
+    consteval bool power_2() { return Size == 0 || ((Size & (Size - 1)) == 0); }
 
     template<std::integral auto Multiple>
     requires(Multiple > 0)
