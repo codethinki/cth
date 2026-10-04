@@ -126,21 +126,20 @@ public:
     [[nodiscard]] std::string trace_string() const noexcept {
         std::string str = "STACKTRACE:\n";
 
-        std::ranges::for_each(
-            _trace,
-            [&](auto const& entry) {
-                if(entry.description().empty())
-                    return;
+        for(auto const& entry : _trace) {
+            if(entry.description().empty())
+                continue;
 
-                std::filesystem::path const path{entry.source_file()};
-                str += std::format(
-                    "\t{2} : {0}({1})\n",
-                    path.filename().string(),
-                    entry.source_line(),
-                    entry.description()
-                );
-            }
-        );
+            std::filesystem::path const path{entry.source_file()};
+            
+            str += std::format(
+                "\t{2} : {0}({1})\n",
+                path.filename().string(),
+                entry.source_line(),
+                entry.description()
+            );
+        }
+
         return str;
     }
 
