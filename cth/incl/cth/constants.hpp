@@ -14,17 +14,18 @@
 #ifndef CTH_RELEASE_MODE
 #define CTH_RELEASE_MODE
 #endif
+
+#else
+#ifndef CTH_RELEASE_MODE
+#ifndef CTH_DEBUG_MODE
+#define CTH_DEBUG_MODE
+#endif
+#endif
 #endif
 
 #ifdef CTH_DEBUG_MODE
 #ifdef CTH_RELEASE_MODE
 #error "CTH_DEBUG_MODE and CTH_RELEASE_MODE must not be defined at the same time."
-#endif
-#endif
-
-#ifndef CTH_DEBUG_MODE
-#ifndef CTH_RELEASE_MODE
-#error "Neither CTH_DEBUG_MODE nor CTH_RELEASE_MODE is defined."
 #endif
 #endif
 
