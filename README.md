@@ -128,8 +128,8 @@ ctest --test-dir out/build/gcc_release
 ```
 
 ## presets
-- `gcc_release`, `clang_release`, `msvc_release`
-- windows only: `clang_debug`, `msvc_debug`
+- `gcc_debug`, `gcc_release`, `clang_debug`, `clang_release`
+- windows only: `msvc_debug`, `msvc_release`
 
 # using cth in another project
 building installs the package into `out/install/<preset>` (target `cth_package`), point `cth_ROOT` there:

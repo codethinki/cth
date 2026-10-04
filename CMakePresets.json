@@ -94,6 +94,13 @@
       ]
     },
     {
+      "name": "gcc_debug",
+      "inherits": [
+        "gcc-base",
+        "debug-base"
+      ]
+    },
+    {
       "name": "gcc_release",
       "inherits": [
         "gcc-base",
