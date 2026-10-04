@@ -39,8 +39,8 @@ inline std::vector<uint8_t> screenshot(HWND hwnd, glm::ivec2 size, glm::ivec2 of
 inline void screenshot_to(std::span<uint8_t> buffer, HWND hwnd, glm::ivec2 size, glm::ivec2 offset) {
     using bmp_swap_ptr = std::unique_ptr<std::remove_pointer_t<HGDIOBJ>, std::function<void(HGDIOBJ)>>;
 
-    static cxpr int PIXEL_BITS = 24;
-    static cxpr int PIXEL_BYTES = PIXEL_BITS / 8;
+    static constexpr int PIXEL_BITS = 24;
+    static constexpr int PIXEL_BYTES = PIXEL_BITS / 8;
 
     CTH_CRITICAL(buffer.size() < static_cast<size_t>(PIXEL_BYTES * size.x * size.y), "buffer too small") {}
 

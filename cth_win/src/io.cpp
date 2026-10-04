@@ -10,7 +10,7 @@
 
 namespace cth::win::io {
 void read_unbuffered(std::string_view path, std::vector<std::byte>& buffer) {
-    cxpr static size_t PAGE_SIZE = 4096;
+    constexpr static size_t PAGE_SIZE = 4096;
 
 
     auto const wPath = win::to_wstring(path);

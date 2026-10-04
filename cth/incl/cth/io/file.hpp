@@ -7,10 +7,10 @@
 #include <ios>
 
 namespace cth::io::file {
-cxpr uintmax_t BYTE = 1;
-cxpr uintmax_t KB = BYTE * 1024;
-cxpr uintmax_t MB = KB * 1024;
-cxpr uintmax_t GB = MB * 1024;
+constexpr uintmax_t BYTE = 1;
+constexpr uintmax_t KB = BYTE * 1024;
+constexpr uintmax_t MB = KB * 1024;
+constexpr uintmax_t GB = MB * 1024;
 
 template<uintmax_t Divisor>
 uintmax_t size_in(std::filesystem::path const& path) {
@@ -20,7 +20,7 @@ uintmax_t size_in(std::filesystem::path const& path) {
     return file_size(path) / Divisor;
 }
 
-cxpr size_t DEFAULT_CHOP_BUFFER_SIZE = 0xfff;
+constexpr size_t DEFAULT_CHOP_BUFFER_SIZE = 0xfff;
 
 template<class D, size_t Buffer = DEFAULT_CHOP_BUFFER_SIZE>
 std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {

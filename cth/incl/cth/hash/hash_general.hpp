@@ -8,14 +8,14 @@
 namespace cth::hash {
 namespace dev {
     template<class T>
-    cxpr size_t& combine(size_t& seed, T const& v) {
+    constexpr size_t& combine(size_t& seed, T const& v) {
         // from: https://stackoverflow.com/a/57595105
         return seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
 }
 
 template<class... Args>
-cxpr size_t combine(Args&&... args) {
+constexpr size_t combine(Args&&... args) {
     size_t seed = 0;
 
     (dev::combine(seed, std::forward<Args>(args)), ...);
@@ -23,7 +23,7 @@ cxpr size_t combine(Args&&... args) {
 }
 
 template<class Rng> requires(std::ranges::range<Rng>)
-cxpr size_t rng(Rng&& rng) {
+constexpr size_t rng(Rng&& rng) {
     size_t seed = 0;
     for(auto const& v : std::forward<Rng>(rng))
         dev::combine(seed, v);

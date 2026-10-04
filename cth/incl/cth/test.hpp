@@ -17,7 +17,7 @@
 namespace cth::test {
 
 template<std::ranges::range LRng, std::ranges::range RRng>
-[[nodiscard]] cxpr bool operator==(LRng&& l_rng, RRng&& r_rng) {
+[[nodiscard]] constexpr bool operator==(LRng&& l_rng, RRng&& r_rng) {
     if constexpr(cth::mta::all_satisfy<CPT(std::ranges::sized_range), LRng, RRng>)
         if(std::ranges::size(l_rng) != std::ranges::size(r_rng))
             return false;
@@ -31,7 +31,7 @@ template<std::ranges::range LRng, std::ranges::range RRng>
 
 
 template<class L, class R>
-[[nodiscard]] cxpr bool expect_range_eq(L&& l, R&& r) {
+[[nodiscard]] constexpr bool expect_range_eq(L&& l, R&& r) {
     if(std::forward<L>(l) == std::forward<R>(r))
         return true;
     std::println("ranges are not equal!");

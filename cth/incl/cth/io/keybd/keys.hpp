@@ -129,7 +129,7 @@ consteval auto keys_size() { return static_cast<size_t>(Key::ENUM_LAST_VALUE) + 
 /**
  * converts the Key to UTF-8 string symbol
  */
-cxpr std::string_view to_utf8_string(Key key) {
+constexpr std::string_view to_utf8_string(Key key) {
     switch(key) {
         // Alphabetical keys
         case Key::A: return "A";
