@@ -24,12 +24,12 @@ using type_of_t = decltype(TraitValue)::type;
 namespace cth::mta {
 
 template<class T = size_t>
-size_t consteval zero() { return 0; }
+consteval size_t zero() { return 0; }
 
 template<class T>
-size_t consteval zero(T) { return zero<T>(); }
+consteval size_t zero(T) { return zero<T>(); }
 template<auto Val>
-size_t consteval zero() { return mta::zero(Val); }
+consteval size_t zero() { return mta::zero(Val); }
 
 template<bool Copy, class T>
 decltype(auto) copy_if(T&& value) {

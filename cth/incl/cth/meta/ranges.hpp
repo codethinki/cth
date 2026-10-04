@@ -90,7 +90,7 @@ concept viewable_rng = std::ranges::viewable_range<Rng> ||
     (std::ranges::viewable_range<mta::rcvr_t<Rng>> && requires(Rng rng) { mta::rcvr_t<Rng>{rng}; });
 
 template<viewable_rng Rng>
-auto constexpr to_viewable(Rng&& rng) {
+constexpr auto to_viewable(Rng&& rng) {
     if constexpr(std::ranges::viewable_range<Rng>)
         return std::forward<Rng>(rng);
     else {
