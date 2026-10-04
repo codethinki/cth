@@ -126,43 +126,31 @@ public:
     [[nodiscard]] std::string trace_string() const noexcept {
         std::string str = "STACKTRACE:\n";
 
-        std::for_each(
-            _trace.begin(),
-            _trace.end() - 2,
-            [&](auto const& entry) {
-                std::filesystem::path const path{entry.source_file()};
-                str += std::format(
-                    "\t{2} : {0}({1})\n",
-                    path.filename().string(),
-                    entry.source_line(),
-                    entry.description()
-                );
-            }
-        );
-        std::for_each(
-            _trace.begin(),
-            _trace.end() - 2,
-            [&](auto const& entry) {
-                std::filesystem::path const path{entry.source_file()};
-                str += std::format(
-                    "\t{2} : {0}({1})\n",
-                    path.filename().string(),
-                    entry.source_line(),
-                    entry.description()
-                );
-            }
-        );
+        for(auto const& entry : _trace) {
+            if(entry.description().empty())
+                continue;
+
+            std::filesystem::path const path{entry.source_file()};
+            
+            str += std::format(
+                "\t{2} : {0}({1})\n",
+                path.filename().string(),
+                entry.source_line(),
+                entry.description()
+            );
+        }
+
         return str;
     }
 
 private:
     Severity _severity;
     std::string _msg;
-    std::string _details{};
+    std::string _details;
     std::source_location _sourceLocation;
     std::stacktrace _trace;
 
-    std::string _what{};
+    std::string _what;
 
 public:
     [[nodiscard]] cxpr Severity severity() const noexcept { return _severity; }

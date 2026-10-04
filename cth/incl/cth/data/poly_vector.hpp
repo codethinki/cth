@@ -69,6 +69,9 @@ public:
             offset += typeSizes[i] * sizes[i];
         }
 
+        free();
+        _begins = {};
+
         if(offset == 0)
             return;
 

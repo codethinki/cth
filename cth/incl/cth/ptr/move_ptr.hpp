@@ -31,7 +31,7 @@ public:
      */
     [[nodiscard]] constexpr T* release(this move_ptr& s) noexcept { return std::exchange(s._ptr, nullptr); }
     [[nodiscard]] constexpr auto operator->(this auto& s) noexcept { return s._ptr; }
-    [[nodiscard]] constexpr auto operator*(this auto& s) noexcept { return *s._ptr; }
+    [[nodiscard]] constexpr decltype(auto) operator*(this auto& s) noexcept { return *s._ptr; }
     [[nodiscard]] constexpr operator bool(this move_ptr const& s) { return static_cast<bool>(s._ptr); }
 
     constexpr move_ptr(move_ptr const& other) = default;

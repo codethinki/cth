@@ -98,5 +98,15 @@ DATA_TEST(union_find, all) {
     EXPECT_TRUE(std::ranges::equal(find.all(), expectedGroups));
 }
 
+DATA_TEST(union_find, merge_overlapping_groups) {
+    union_find find(4);
+
+    find.merge({0, 1});
+    find.merge({2, 3});
+    find.merge({1, 3});
+
+    EXPECT_EQ(find.all_of(0), (std::vector<size_t>{0, 1, 2, 3}));
+}
+
 
 }
