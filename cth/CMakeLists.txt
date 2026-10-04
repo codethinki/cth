@@ -11,9 +11,7 @@ cth_pkg_target_include_directories(
 
 target_compile_options(cth INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/Zc:preprocessor>)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND NOT CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
-    target_link_libraries(cth INTERFACE stdc++exp)
-endif()
+target_link_libraries(cth INTERFACE $<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<NOT:$<PLATFORM_ID:Windows>>>:stdc++exp>)
 
 # tests
 if(CTH_ENABLE_TESTS)
