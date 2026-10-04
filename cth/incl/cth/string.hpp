@@ -21,7 +21,7 @@ concept char_formattable = cth::mta::constructs_any_of<T, std::string_view, std:
 
 
 namespace cth::str {
-[[nodiscard]] cxpr std::vector<char const*> to_c_str_vector(std::span<std::string const> const& str_vec) {
+[[nodiscard]] constexpr std::vector<char const*> to_c_str_vector(std::span<std::string const> const& str_vec) {
     std::vector<char const*> charVec(str_vec.size());
     std::ranges::transform(str_vec, charVec.begin(), [](std::string const& str) { return str.c_str(); });
 
@@ -30,7 +30,7 @@ namespace cth::str {
 
 
 template<cth::mta::arithmetic T>
-[[nodiscard]] cxpr std::optional<T> to_num(std::string_view str) {
+[[nodiscard]] constexpr std::optional<T> to_num(std::string_view str) {
     T num = 0;
     size_t i = 0;
     for(; i < str.size(); i++) {
@@ -43,7 +43,7 @@ template<cth::mta::arithmetic T>
     if(i == str.size())
         return num;
 
-    if cxpr(std::is_floating_point_v<T>) {
+    if constexpr(std::is_floating_point_v<T>) {
         if(str[i++] != '.')
             goto failed;
 
@@ -71,10 +71,10 @@ template<cth::mta::arithmetic T>
  * @tparam Rng must satisfy rng::static_dim_rng<Rng>
  */
 template<rng::viewable_rng Rng> requires(rng::static_dim_rng<mta::rcvr_t<Rng>>)
-[[nodiscard]] cxpr std::string to_string(Rng&& range) {
-    static cxpr bool MD_RANGE = mta::md_range<Rng, 2>;
+[[nodiscard]] constexpr std::string to_string(Rng&& range) {
+    static constexpr bool MD_RANGE = mta::md_range<Rng, 2>;
 
-    declauto rng = rng::to_viewable(range);
+    decltype(auto) rng = rng::to_viewable(range);
     using rng_t = decltype(rng);
 
     if(std::ranges::empty(rng))
@@ -108,7 +108,7 @@ template<rng::viewable_rng Rng> requires(rng::static_dim_rng<mta::rcvr_t<Rng>>)
 template<
     mta::convertible_to_any<std::string_view, std::wstring_view> T,
     mta::convertible_to_any<std::string_view, std::wstring_view, char, wchar_t> U>
-[[nodiscard]] cxpr auto split(T const& str, U const& delimiter) {
+[[nodiscard]] constexpr auto split(T const& str, U const& delimiter) {
     auto const view = mta::to_constructible<std::string_view, std::wstring_view>(str);
     using char_t = decltype(view)::value_type;
     using ret_t = std::vector<std::basic_string<char_t>>;
@@ -143,7 +143,7 @@ CTH_FORMAT_CPT(cth::str::printable_rng, cth::str::to_string);
 namespace cth::expr::str {
 
 template<mta::arithmetic T>
-[[nodiscard]] cxpr std::optional<T> to_num(std::string_view str, int base) {
+[[nodiscard]] constexpr std::optional<T> to_num(std::string_view str, int base) {
     return cth::str::to_num<T>(str, base);
 }
 

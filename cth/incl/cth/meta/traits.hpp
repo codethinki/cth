@@ -31,10 +31,10 @@ template<size_t N, template<class> class Trait, class T>
 using repeat_trait_t = repeat_trait<N, Trait, T>::type;
 
 template<class T, template<class> class Trait>
-[[nodiscard]] cval size_t trait_count(size_t max_depth = MAX_DEPTH);
+[[nodiscard]] consteval size_t trait_count(size_t max_depth = MAX_DEPTH);
 
 template<class T, auto TCpt, template<class> class Trait>
-[[nodiscard]] cval size_t cpt_count(size_t max_depth = MAX_DEPTH);
+[[nodiscard]] consteval size_t cpt_count(size_t max_depth = MAX_DEPTH);
 
 /**
  * should not be used, use std::forward_like instead

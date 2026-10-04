@@ -179,7 +179,7 @@ template<std::ranges::viewable_range Rng>
 
 namespace cth::io::dev {
 
-inline cxpr size_t MAX_STACK_SIZE = 16;
+inline constexpr size_t MAX_STACK_SIZE = 16;
 
 enum Cursor_Ids {
     // cursor codes

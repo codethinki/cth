@@ -27,7 +27,7 @@ inline bool colored = true;
 inline io::col_stream logStream{std::cerr}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 inline std::mutex logMtx; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-cxpr io::TextColor text_color(cth::except::Severity severity) {
+constexpr io::TextColor text_color(cth::except::Severity severity) {
     switch(severity) {
         case cth::except::LOG: return io::TextColor::WHITE;
         case cth::except::Severity::INFO: return io::TextColor::DARK_CYAN;
@@ -39,7 +39,7 @@ cxpr io::TextColor text_color(cth::except::Severity severity) {
     }
 }
 
-[[nodiscard]] cxpr std::string_view label(cth::except::Severity severity) {
+[[nodiscard]] constexpr std::string_view label(cth::except::Severity severity) {
     switch(severity) {
         case cth::except::Severity::LOG: return "[LOG]";
         case cth::except::Severity::INFO: return "[INFO]";

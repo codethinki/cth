@@ -18,7 +18,7 @@ namespace cth::mta {
  * @param max optional max search depth
  */
 template<class Rng>
-cval size_t dimensions(size_t max = MAX_DEPTH);
+consteval size_t dimensions(size_t max = MAX_DEPTH);
 
 /**
  * @brief checks if @ref Rng is of at least @ref D dimensions
@@ -31,7 +31,7 @@ concept md_range = dimensions<Rng>(D) == D;
 
 namespace dev {
     template<class Rng, size_t D>
-    cval auto md_range_value();
+    consteval auto md_range_value();
 }
 
 
@@ -90,7 +90,7 @@ concept viewable_rng = std::ranges::viewable_range<Rng> ||
     (std::ranges::viewable_range<mta::rcvr_t<Rng>> && requires(Rng rng) { mta::rcvr_t<Rng>{rng}; });
 
 template<viewable_rng Rng>
-auto cxpr to_viewable(Rng&& rng) {
+constexpr auto to_viewable(Rng&& rng) {
     if constexpr(std::ranges::viewable_range<Rng>)
         return std::forward<Rng>(rng);
     else {

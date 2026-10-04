@@ -3,7 +3,7 @@
 #include "test.hpp"
 
 namespace cth::win::cmd {
-cxpr std::string_view PATH = "res\\";
+constexpr std::string_view PATH = "res\\";
 
 
 WIN_TEST(hidden_dir, basic) {

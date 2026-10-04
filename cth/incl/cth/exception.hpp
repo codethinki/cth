@@ -24,7 +24,7 @@ enum Severity {
     CRITICAL,
     SEVERITY_SIZE,
 };
-[[nodiscard]] cxpr std::string_view to_string(Severity sev) {
+[[nodiscard]] constexpr std::string_view to_string(Severity sev) {
     switch(sev) {
         // NOLINT(clang-diagnostic-switch-enum)
         case LOG: return "LOG";
@@ -59,7 +59,7 @@ struct std::formatter<cth::except::Severity> {
 namespace cth::except {
 class default_exception : public std::exception {
     template<class S>
-    cxpr S& addNoCpy(this S& s, std::string_view msg) noexcept {
+    constexpr S& addNoCpy(this S& s, std::string_view msg) noexcept {
         if(s._details.empty())
             s._details = "DETAILS:\n";
         s._details += std::format("\t{}\n", msg);
@@ -82,10 +82,10 @@ public:
     ~default_exception() override = default;
 
     template<class S>
-    cxpr declauto add(this S&& self, std::string_view msg) noexcept { return self.addNoCpy(msg); }
+    constexpr decltype(auto) add(this S&& self, std::string_view msg) noexcept { return self.addNoCpy(msg); }
 
     template<class S, typename... Args> requires(sizeof...(Args) > 0u)
-    cxpr declauto add(this S& self, std::format_string<Args...> f_str, Args&&... types) noexcept {
+    constexpr decltype(auto) add(this S& self, std::format_string<Args...> f_str, Args&&... types) noexcept {
         return self.addNoCpy(std::format(f_str, std::forward<Args>(types)...));
     }
 
@@ -153,14 +153,14 @@ private:
     std::string _what;
 
 public:
-    [[nodiscard]] cxpr Severity severity() const noexcept { return _severity; }
-    [[nodiscard]] cxpr std::string_view details() const noexcept { return _details; }
-    [[nodiscard]] cxpr std::string_view msg() const noexcept { return _msg; }
+    [[nodiscard]] constexpr Severity severity() const noexcept { return _severity; }
+    [[nodiscard]] constexpr std::string_view details() const noexcept { return _details; }
+    [[nodiscard]] constexpr std::string_view msg() const noexcept { return _msg; }
 
-    [[nodiscard]] cxpr std::stacktrace const& stacktrace() const noexcept { return _trace; }
-    [[nodiscard]] cxpr std::source_location const& location() const noexcept { return _sourceLocation; }
+    [[nodiscard]] constexpr std::stacktrace const& stacktrace() const noexcept { return _trace; }
+    [[nodiscard]] constexpr std::source_location const& location() const noexcept { return _sourceLocation; }
 
-    [[nodiscard]] cxpr char const* what() const noexcept override { return _what.c_str(); }
+    [[nodiscard]] constexpr char const* what() const noexcept override { return _what.c_str(); }
 
     default_exception(default_exception const& other) noexcept = default;
     default_exception(default_exception&& other) noexcept = default;

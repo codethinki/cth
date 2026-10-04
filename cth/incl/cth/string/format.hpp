@@ -17,7 +17,7 @@
     template<>                                                                      \
     struct std::formatter<type> : std::formatter<base_type> {                       \
         template<class FormatContext>                                               \
-        [[nodiscard]] cxpr auto format(type const& obj, FormatContext& ctx) const { \
+        [[nodiscard]] constexpr auto format(type const& obj, FormatContext& ctx) const { \
             /* Use the base formatter logic, but pass the member */                 \
             return std::formatter<base_type>::format(accessor(obj), ctx);           \
         }                                                                           \
@@ -72,11 +72,11 @@ struct std::formatter<type> {                                                   
 #define CTH_FORMAT_CPT(cpt, to_formattable)                                                                  \
     template<cpt T>                                                                                          \
     struct std::formatter<T> : std::formatter<int> {                                                         \
-        [[nodiscard]] cxpr auto parse(std::format_parse_context& ctx) {                                      \
+        [[nodiscard]] constexpr auto parse(std::format_parse_context& ctx) {                                 \
             return std::formatter<int>::parse(ctx);                                                          \
         }                                                                                                    \
         template<class FormatContext>                                                                        \
-        [[nodiscard]] cxpr auto format(T const& obj, FormatContext& ctx) const {                             \
+        [[nodiscard]] constexpr auto format(T const& obj, FormatContext& ctx) const {                        \
             auto value = to_formattable(obj);                                                                \
             static_assert(                                                                                   \
                 !std::same_as<std::decay_t<decltype(value)>, void>,                                          \

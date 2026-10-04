@@ -19,7 +19,7 @@ STR_TEST(to_string, range_decline_nonstatic_dim) {
 }
 
 STR_TEST(to_string, value_only_rng) {
-    static cxpr size_t COUNT = 10;
+    static constexpr size_t COUNT = 10;
 
     std::map<size_t, size_t> map{};
     for(size_t i = 0; i < COUNT; i++)
@@ -68,7 +68,7 @@ STR_TEST(split, main) {
 
     auto res = str::split("asdf  asdf asdf dht", " ");
 
-    cxpr std::array<std::string_view, 4> validRes = {{"asdf", "asdf", "asdf", "dht"}};
+    constexpr std::array<std::string_view, 4> validRes = {{"asdf", "asdf", "asdf", "dht"}};
 
     for(size_t i = 0; i < res.size(); ++i)
         EXPECT_EQ(res[i], validRes[i]);
