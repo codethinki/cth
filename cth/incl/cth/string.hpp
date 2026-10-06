@@ -66,39 +66,6 @@ template<cth::mta::arithmetic T>
 }
 
 
-/**
- * @brief formats ranges to string
- * @tparam Rng must satisfy rng::static_dim_rng<Rng>
- */
-template<rng::viewable_rng Rng> requires(rng::static_dim_rng<mta::rcvr_t<Rng>>)
-[[nodiscard]] constexpr std::string to_string(Rng&& range) {
-    static constexpr bool MD_RANGE = mta::md_range<Rng, 2>;
-
-    decltype(auto) rng = rng::to_viewable(range);
-    using rng_t = decltype(rng);
-
-    if(std::ranges::empty(rng))
-        return {};
-
-
-    std::string string = "[";
-    for(auto&& element : std::forward<rng_t>(rng)) {
-        using E = decltype(element);
-        if constexpr(MD_RANGE)
-            string.insert_range(
-                string.end(),
-                std::format("{}, ", cth::str::to_string(std::forward<E>(element)))
-            );
-        else {
-            static_assert(std::formattable<E, char>, "range value type is not formattable");
-            string.insert_range(string.end(), std::format("{}, ", std::forward<E>(element)));
-        }
-    }
-
-    string.pop_back();
-    string.back() = ']';
-    return string;
-}
 
 
 /**
@@ -128,16 +95,6 @@ template<
 
 
 } // namespace cth::str
-
-
-namespace cth::str {
-template<class T>
-concept printable_rng = rng::viewable_rng<T> && rng::static_dim_rng<mta::rcvr_t<T>> &&
-    !cth::mta::constructs_any_of<T, std::string_view, std::string>;
-}
-
-
-CTH_FORMAT_CPT(cth::str::printable_rng, cth::str::to_string);
 
 
 namespace cth::expr::str {
