@@ -2,7 +2,11 @@
 
 #define FMT_TEST(suite, test_name) CTH_EX_TEST(format, suite, test_name)
 
+#include "cth/cth.hpp"
 #include "cth/string/format.hpp"
+
+#include <string>
+#include <vector>
 
 
 namespace test {
@@ -60,5 +64,16 @@ FMT_TEST(CTH_FORMAT_CPT, main) {
     auto const expected = std::format("test::test_concept{{{}}}", x);
 
     ASSERT_EQ(str, expected);
+}
+
+FMT_TEST(range, main) {
+    std::vector<::test::Test1> const points{{1, 2}, {3, 4}};
+    std::vector<std::string> const words{"oaf", "farthest"};
+    std::vector<std::vector<int>> const nested{{1, 2}, {3}};
+
+    EXPECT_EQ(std::format("{}", points), "[test::Test1{x: 1, y: 2}, test::Test1{x: 3, y: 4}]");
+    EXPECT_EQ(std::format("{}", words), R"(["oaf", "farthest"])");
+    EXPECT_EQ(std::format("{::}", words), "[oaf, farthest]");
+    EXPECT_EQ(std::format("{}", nested), "[[1, 2], [3]]");
 }
 }

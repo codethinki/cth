@@ -18,39 +18,6 @@ STR_TEST(to_string, range_decline_nonstatic_dim) {
     EXPECT_FALSE(cth::rng::static_dim_rng<std::filesystem::path&>);
 }
 
-STR_TEST(to_string, value_only_rng) {
-    static constexpr size_t COUNT = 10;
-
-    std::map<size_t, size_t> map{};
-    for(size_t i = 0; i < COUNT; i++)
-        map[i] = i;
-
-    auto view = map | std::views::keys | std::views::filter([](auto const id) { return id % 2 == 0; });
-
-    auto const result = std::format("{}", view);
-    EXPECT_EQ("cth::str::printable_rng{[0, 2, 4, 6, 8]}", result);
-}
-
-STR_TEST(to_string, range) {
-    std::vector<int> const vec = {1, 2, 3, 4, 5};
-    std::string const str = cth::str::to_string(vec);
-    EXPECT_EQ(str, "[1, 2, 3, 4, 5]");
-}
-
-STR_TEST(to_string, 2drange) {
-    std::vector<std::vector<int>> const vec = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-    std::string const str = cth::str::to_string(vec);
-    EXPECT_EQ(str, "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]");
-}
-
-STR_TEST(to_string, view) {
-    std::vector<int> const vec = {1, 2, 3, 4, 5};
-
-    std::string const str = cth::str::to_string(std::views::all(vec));
-    EXPECT_EQ(str, "[1, 2, 3, 4, 5]");
-}
-
-
 STR_TEST(to_num, main) {
     EXPECT_EQ(cth::str::to_num<uint32_t>("1234"), 1234u);
     EXPECT_EQ(cth::str::to_num<float>("1234"), 1234.f);
