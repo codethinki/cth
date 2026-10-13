@@ -32,7 +32,7 @@ runs:
     # --- Local GitHub cache ---
     - name: Restore local cache
       id: local-cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v6
       with:
         path: ${{ inputs.path }}
         key: ${{ inputs.key }}
@@ -41,7 +41,7 @@ runs:
     # --- Setup ORAS (Only if local missed) ---
     - name: Set up ORAS
       if: steps.local-cache.outputs.cache-matched-key == ''
-      uses: oras-project/setup-oras@v1
+      uses: oras-project/setup-oras@v2
 
     # --- Login ---
     - name: Login to GHCR (Native ORAS)
