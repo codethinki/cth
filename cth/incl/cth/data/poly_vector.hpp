@@ -8,7 +8,10 @@
 #include <cstddef>
 #include <cstring>
 #include <array>
+#include <memory>
+#include <new>
 #include <span>
+#include <utility>
 #include <vector>
 
 namespace cth::dt {
@@ -43,8 +46,8 @@ public:
 
         using ptr_t = mta::fwd_const_t<S, value_type<I>>*;
 
-        // TEMP use std::start_lifetime_as_array
-        return std::assume_aligned<TYPE_ALIGNS[I]>(reinterpret_cast<ptr_t>(s._begins[I]));
+        // ::operator new implicitly created the array (implicit lifetime type), launder returns a pointer to it
+        return std::assume_aligned<TYPE_ALIGNS[I]>(std::launder(reinterpret_cast<ptr_t>(s._begins[I])));
     }
 
     constexpr void realloc(std::span<size_t const> sizes) {
