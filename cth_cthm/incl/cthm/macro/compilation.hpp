@@ -36,11 +36,13 @@
 #define CTH_DEBUG_INLINE_IMPL(code) {code}
 
 #define CTH_RELEASE_NOEXCEPT noexcept(false)
+#define CTH_RELEASE_CONSTEXPR
 #else
 #define CTH_DEBUG_IMPL = default;
 #define CTH_DEBUG_INLINE_IMPL(code)                                                                          \
     {}
 
 #define CTH_RELEASE_NOEXCEPT noexcept(true)
+#define CTH_RELEASE_CONSTEXPR constexpr
 #endif
 #include <cstdint>
