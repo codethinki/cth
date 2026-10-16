@@ -46,7 +46,7 @@ public:
 
         using ptr_t = mta::fwd_const_t<S, value_type<I>>*;
 
-        // realloc() started the lifetime of the array
+        // ::operator new implicitly created the array (implicit lifetime type), launder returns a pointer to it
         return std::assume_aligned<TYPE_ALIGNS[I]>(std::launder(reinterpret_cast<ptr_t>(s._begins[I])));
     }
 
@@ -82,21 +82,11 @@ public:
 
         for(size_t i = 0; i < N; ++i)
             _begins[i] = data_ref() + byteOffsets[i];
-
-        start_lifetimes(sizes, std::make_index_sequence<N>{});
     }
 
     void swap(this raw_poly_vector& s, raw_poly_vector& other) { std::swap(s._begins, other._begins); }
 
 private:
-    /**
-     * \brief starts the lifetime of the array of each type, data() launders the pointers
-     */
-    template<size_t... Is>
-    void start_lifetimes(std::span<size_t const> sizes, std::index_sequence<Is...>) {
-        (static_cast<void>(std::start_lifetime_as_array<value_type<Is>>(_begins[Is], sizes[Is])), ...);
-    }
-
     constexpr void free() {
         if(data_ref() == nullptr)
             return;
