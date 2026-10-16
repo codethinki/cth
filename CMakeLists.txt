@@ -25,7 +25,6 @@ add_subdirectory(cth_net)
 if(WIN32)
 	add_subdirectory(cth_win)
 endif()
-# add_subdirectory(cth_cthm) not up to date
 
 cth_create_package()
 
@@ -39,7 +38,6 @@ cth_glob_cpp(
   FORMAT_FILES
   "cth"
   "cth_coro"
-  "cth_cthm"
   "cth_net"
   "cth_os"
   "cth_win"
