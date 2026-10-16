@@ -10,4 +10,5 @@
 #include "cth/numeric.hpp"
 #include "cth/ptr.hpp"
 #include "cth/string.hpp"
+#include "cth/utility.hpp"
 #include "cth/utility/image.hpp"
