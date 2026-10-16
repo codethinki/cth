@@ -40,12 +40,12 @@ private:
     static constexpr bool NOEXCEPT_CHECK_VAL = COMPILATION_MODE != CompilationMode::DEBUG;
     static constexpr bool RELEASE_VAL_NOEXCEPT = NOEXCEPT_ASSIGN && NOEXCEPT_MOVE_CTOR;
 
-    static CTH_RELEASE_CONSTEXPR void checkVal(T const& obj) noexcept(NOEXCEPT_CHECK_VAL) {
+    static constexpr void checkVal(T const& obj) noexcept(NOEXCEPT_CHECK_VAL) {
         CTH_CRITICAL(obj == Null, "obj must not be Null") {}
     }
 
 public:
-    CTH_RELEASE_CONSTEXPR not_null(T obj) noexcept(NOEXCEPT_MOVE_CTOR && NOEXCEPT_CHECK_VAL) :
+    constexpr not_null(T obj) noexcept(NOEXCEPT_MOVE_CTOR && NOEXCEPT_CHECK_VAL) :
         _obj{std::move(obj)} { not_null::checkVal(_obj); }
 
     template<class U> requires(std::convertible_to<U, T> && !std::same_as<U, T>)

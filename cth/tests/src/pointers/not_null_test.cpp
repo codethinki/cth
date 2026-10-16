@@ -14,6 +14,14 @@ struct TestStruct {
 auto const data = std::make_unique<TestStruct>(EXAMPLE_NUMBER); // NOLINT(cert-err58-cpp)
 
 
+CTH_TEST(not_null, constexpr) {
+    static_assert([] {
+        not_null<int const*> const ptr{&EXAMPLE_NUMBER};
+        not_null<int const*> const copy{ptr};
+        return *copy;
+    }() == EXAMPLE_NUMBER);
+}
+
 CTH_TEST(not_null, comparison) {
     int a = EXAMPLE_NUMBER;
     int b = EXAMPLE_NUMBER;
