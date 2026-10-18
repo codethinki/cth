@@ -1,3 +1,5 @@
+cth_assert_target(cth::os REASON "cth_coro requires cth_os (CTH_BUILD_OS)")
+
 cth_glob_cpp(CTH_CORO_SRC "src")
 cth_glob_cpp(CTH_CORO_INCL "incl")
 

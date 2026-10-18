@@ -139,11 +139,23 @@ find_package(cth CONFIG REQUIRED COMPONENTS coro)
 target_link_libraries(app PRIVATE cth::coro)
 ```
 
+or add the source as a subdirectory, options turn components off:
+
+```cmake
+set(CTH_BUILD_NET OFF)
+add_subdirectory(lib/cth)
+target_link_libraries(app PRIVATE cth::os)
+```
+
 api not stable yet, no versioned releases
 
 ## components
-- `cth`, `os`, `coro`
+- `cth`, `os`, `coro`, `net`
 - windows only: `win`, `win_capture`
+
+## options
+- `CTH_BUILD_OS`, `CTH_BUILD_CORO`, `CTH_BUILD_NET`: default ON
+- `CTH_BUILD_WIN`: default ON on windows
 
 # license
 [MIT](LICENSE)

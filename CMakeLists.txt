@@ -17,14 +17,12 @@ if(CTH_ENABLE_TESTS)
 	enable_testing()
 endif()
 
-# exported
+# exported, a parent project turns components off with set(CTH_BUILD_<COMPONENT> OFF)
 add_subdirectory(cth)
-add_subdirectory(cth_os)
-add_subdirectory(cth_coro)
-add_subdirectory(cth_net)
-if(WIN32)
-	add_subdirectory(cth_win)
-endif()
+cth_add_subdirectory(cth_os CTH_BUILD_OS)
+cth_add_subdirectory(cth_coro CTH_BUILD_CORO)
+cth_add_subdirectory(cth_net CTH_BUILD_NET)
+cth_add_subdirectory(cth_win CTH_BUILD_WIN WIN32)
 
 cth_create_package()
 
