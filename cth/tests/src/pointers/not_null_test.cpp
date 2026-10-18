@@ -4,6 +4,9 @@
 
 #include "cth/ptr/not_null.hpp"
 
+#include <concepts>
+#include <functional>
+
 
 namespace cth {
 int constexpr EXAMPLE_NUMBER = 42;
@@ -65,6 +68,16 @@ CTH_TEST(not_null, swap) {
     ASSERT_EQ(ptr2.get(), &data1);
 }
 
+CTH_TEST(not_null, swap_with_custom_null) {
+    auto first = make_not_null<-1>(1);
+    auto second = make_not_null<-1>(2);
+
+    swap(first, second);
+
+    ASSERT_EQ(first.get(), 2);
+    ASSERT_EQ(second.get(), 1);
+}
+
 CTH_TEST(not_null, get) {
     not_null const ptr(data.get());
     ASSERT_EQ(ptr.get(), data.get());
@@ -80,6 +93,44 @@ CTH_TEST(not_null, operator_deref) {
     not_null const ptr(data.get());
     // ReSharper disable once CppRedundantDereferencingAndTakingAddress
     ASSERT_EQ((*ptr).value, EXAMPLE_NUMBER);
+}
+
+
+CTH_TEST(not_null, hash) {
+    int a = EXAMPLE_NUMBER;
+    not_null const ptr{&a};
+
+    EXPECT_EQ(std::hash<not_null<int*>>{}(ptr), std::hash<int*>{}(&a));
+}
+
+CTH_TEST(not_null, release) {
+    int a = EXAMPLE_NUMBER;
+    not_null ptr{&a};
+
+    EXPECT_EQ(ptr.release(), &a);
+}
+
+CTH_TEST(not_null, make_not_null) {
+    int a = EXAMPLE_NUMBER;
+
+    auto const ptr = make_not_null(&a);
+    static_assert(std::same_as<decltype(ptr), not_null<int*> const>);
+    EXPECT_EQ(ptr.get(), &a);
+
+    auto const value = make_not_null<-1>(EXAMPLE_NUMBER);
+    static_assert(std::same_as<decltype(value), not_null<int, -1> const>);
+    EXPECT_EQ(value.get(), EXAMPLE_NUMBER);
+}
+
+
+CTH_TEST(not_null_ptr, const_conversion) {
+    static_assert(std::same_as<not_null_ptr<int const>, not_null<int const*>>);
+
+    int a = EXAMPLE_NUMBER;
+    not_null_ptr<int> const ptr{&a};
+    not_null_ptr<int const> const constPtr = ptr;
+
+    EXPECT_EQ(constPtr.get(), &a);
 }
 
 
@@ -107,6 +158,22 @@ CTH_TEST(unique_not_null, comparison) {
     EXPECT_FALSE(px > py);
     EXPECT_TRUE(py >= px);
     EXPECT_FALSE(px >= py);
+}
+
+
+CTH_TEST(unique_not_null, hash) {
+    unique_not_null const ptr{std::make_unique<int>(EXAMPLE_NUMBER)};
+
+    EXPECT_EQ(std::hash<unique_not_null<int>>{}(ptr), std::hash<int*>{}(ptr.get()));
+}
+
+CTH_TEST(unique_not_null, release) {
+    unique_not_null ptr{std::make_unique<int>(EXAMPLE_NUMBER)};
+    auto const* raw = ptr.get();
+
+    std::unique_ptr<int> const owner{ptr.release()};
+
+    EXPECT_EQ(owner.get(), raw);
 }
 
 }
