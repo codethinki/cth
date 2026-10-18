@@ -40,6 +40,11 @@ private:
     static constexpr bool NOEXCEPT_CHECK_VAL = COMPILATION_MODE != CompilationMode::DEBUG;
     static constexpr bool RELEASE_VAL_NOEXCEPT = NOEXCEPT_ASSIGN && NOEXCEPT_MOVE_CTOR;
 
+    static consteval bool release_noexcept() {
+        if constexpr(ADAPT_RELEASE) return noexcept(std::declval<T&>().release());
+        else return RELEASE_VAL_NOEXCEPT;
+    }
+
     static constexpr void checkVal(T const& obj) noexcept(NOEXCEPT_CHECK_VAL) {
         CTH_CRITICAL(obj == Null, "obj must not be Null") {}
     }
@@ -58,13 +63,9 @@ public:
         _obj = Null;
         return obj;
     }
-    [[nodiscard]] constexpr auto release() noexcept(
-        (!ADAPT_RELEASE && RELEASE_VAL_NOEXCEPT) || (ADAPT_RELEASE && noexcept(std::declval<T>().release()))
-    ) {
-        if constexpr(!ADAPT_RELEASE)
-            return release_val();
-
-        return _obj.release();
+    [[nodiscard]] constexpr auto release() noexcept(release_noexcept()) {
+        if constexpr(ADAPT_RELEASE) return _obj.release();
+        else return release_val();
     }
 
 
@@ -111,12 +112,14 @@ public:
 };
 
 
-template<class T>
-constexpr void swap(not_null<T>& left, not_null<T>& right) noexcept { left.swap(right); }
+template<class T, auto Null, bool Adapt>
+constexpr void swap(not_null<T, Null, Adapt>& left, not_null<T, Null, Adapt>& right) noexcept { left.swap(right); }
 
-template<class T, auto Null = nullptr, bool Adapt>
-[[nodiscard]] auto make_not_null(T&& t) noexcept {
-    return not_null<std::remove_cv_t<std::remove_reference_t<T>>, Null, Adapt>{std::forward<T>(t)};
+template<auto Null = nullptr, bool Adapt = false, class T>
+[[nodiscard]] constexpr auto make_not_null(T&& t) noexcept(
+    std::is_nothrow_constructible_v<not_null<std::remove_cvref_t<T>, Null, Adapt>, T&&>
+) {
+    return not_null<std::remove_cvref_t<T>, Null, Adapt>{std::forward<T>(t)};
 }
 
 template<class T, class U, auto Null, bool Adapt>
@@ -189,14 +192,17 @@ template<class T, auto Null, bool Adapt>
 struct std::hash<
         cth::not_null<T, Null, Adapt>> /* NOLINT(cert-dcl58-cpp) this is a valid overload for std::hash */ {
     std::size_t operator()(cth::not_null<T, Null, Adapt> const& obj) const noexcept {
-        using ptr_t = class cth::not_null<T, Null, Adapt>::pointer;
-        return std::hash<ptr_t>{}(obj.get());
+        using value_t = std::remove_cvref_t<decltype(obj.get())>;
+        return std::hash<value_t>{}(obj.get());
     }
 };
 
 
 namespace cth {
 
+
+template<class T>
+using not_null_ptr = cth::not_null<T*>;
 
 template<class T>
 using unique_not_null = cth::not_null<std::unique_ptr<T>, nullptr, true>;

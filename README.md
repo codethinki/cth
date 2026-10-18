@@ -48,7 +48,7 @@ header only core
 - `hash_aggregate`: hashes aggregates member wise
 
 ### pointers
-- `not_null`, `move_ptr`
+- `not_null`, `not_null_ptr`, `unique_not_null`, `move_ptr`
 
 ### io (`cth::io`)
 - colored console output: `col_stream`
