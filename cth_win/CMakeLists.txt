@@ -1,3 +1,7 @@
+cth_assert_true(WIN32 REASON "cth_win targets windows")
+cth_assert_target(cth::os REASON "cth_win requires cth_os (CTH_BUILD_OS)")
+cth_assert_target(cth::coro REASON "cth_win requires cth_coro (CTH_BUILD_CORO)")
+
 cth_glob_cpp(CTH_WIN_SRC "src")
 cth_glob_cpp(CTH_WIN_INCL "incl")
 

@@ -1,3 +1,5 @@
+cth_assert_target(cth::os REASON "cth_net requires cth_os (CTH_BUILD_OS)")
+
 cth_glob_cpp(CTH_NET_SRC "src")
 cth_glob_cpp(CTH_NET_INCL "incl")
 
