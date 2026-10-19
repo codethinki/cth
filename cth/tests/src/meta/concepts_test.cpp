@@ -15,6 +15,17 @@ TYPE_TEST(all_satisfy, main) {
     ASSERT_FALSE((all_satisfy<CPT(arithmetic), int, float, std::string>) );
 }
 
+TYPE_TEST(trivially_copyable, main) {
+    struct Point {
+        float x, y;
+    };
+
+    ASSERT_TRUE((trivially_copyable<int>) );
+    ASSERT_TRUE((trivially_copyable<Point>) );
+    ASSERT_FALSE((trivially_copyable<std::string>) );
+    ASSERT_TRUE((satisfies<Point, CPT(trivially_copyable)>) );
+}
+
 TYPE_TEST(any_satisfy, main) {
     ASSERT_TRUE((any_satisfy<CPT(arithmetic), int, float, double>) );
     ASSERT_TRUE((any_satisfy<CPT(arithmetic), int, float, std::string>) );

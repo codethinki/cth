@@ -93,6 +93,9 @@ template<class T>
 concept trivial = std::is_trivial_v<T>;
 
 template<class T>
+concept trivially_copyable = std::is_trivially_copyable_v<T>;
+
+template<class T>
 concept reference = std::is_reference_v<T>;
 
 template<class Arg, class Constructed>
