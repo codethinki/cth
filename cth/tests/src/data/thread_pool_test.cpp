@@ -1,5 +1,6 @@
 #include "cth/data/thread_pool.hpp"
 #include "cth/constants.hpp"
+#include "cth/data/hash_map.hpp"
 #include "test.hpp"
 
 #include <atomic>
@@ -7,7 +8,6 @@
 #include <latch>
 #include <string>
 #include <thread>
-#include <unordered_set>
 #include <vector>
 
 
@@ -157,7 +157,7 @@ DATA_TEST(thread_pool, distinct_ids_get_distinct_resources) {
     EXPECT_TRUE(tp.exhausted());
 
     // three owners hold three distinct resources
-    std::unordered_set<int*> refs{&a, &b, &c};
+    cth::dt::flat_hash_set<int*> refs{&a, &b, &c};
     EXPECT_EQ(refs.size(), 3);
 }
 
@@ -292,7 +292,7 @@ DATA_TEST(thread_pool, concurrent_acquire_gives_each_thread_a_distinct_resource)
     EXPECT_TRUE(tp.exhausted());
 
     // every thread received a distinct resource, none null
-    std::unordered_set<int*> unique{acquired.begin(), acquired.end()};
+    cth::dt::flat_hash_set<int*> unique{acquired.begin(), acquired.end()};
     EXPECT_EQ(unique.size(), THREADS);
     EXPECT_FALSE(unique.contains(nullptr));
 }

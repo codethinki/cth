@@ -1,10 +1,10 @@
 #pragma once
+#include "cth/data/hash_map.hpp"
 #include "cth/data/pool.hpp"
 
 #include <cstddef>
 #include <mutex>
 #include <thread>
-#include <unordered_map>
 
 namespace cth::dt {
 
@@ -91,7 +91,7 @@ public:
 private:
     mutable std::mutex _mtx;
     pool_t _pool;
-    std::unordered_map<std::thread::id, T*> _bound{};
+    flat_hash_map<std::thread::id, T*> _bound{};
 
 public:
     /** total number of instances in the pool */

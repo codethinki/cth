@@ -1,4 +1,5 @@
 #pragma once
+#include "cth/data/hash_map.hpp"
 #include "cth/io/log.hpp"
 #include "cth/meta/concepts.hpp"
 
@@ -7,7 +8,6 @@
 #include <functional>
 #include <memory>
 #include <ranges>
-#include <unordered_set>
 #include <vector>
 
 namespace cth::dt {
@@ -113,7 +113,7 @@ public:
 private:
     void resetActive() {
         if constexpr(HAS_RESET) {
-            std::unordered_set inactiveSet{std::from_range, _inactive};
+            flat_hash_set<T*> const inactiveSet{_inactive.begin(), _inactive.end()};
 
             for(auto& stored : _storage)
                 if(!inactiveSet.contains(&stored))

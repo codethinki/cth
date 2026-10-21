@@ -3,13 +3,14 @@
 #include "cth/net/exception.hpp"
 #include "websocket_connection_state.hpp"
 
+#include "cth/data/hash_map.hpp"
+
 #include <hv/WebSocketServer.h>
 #include <hv/hsocket.h>
 
 #include <atomic>
 #include <deque>
 #include <mutex>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -22,7 +23,7 @@ struct websocket_server::impl {
     std::uint16_t boundPort{};
 
     mutable std::mutex mutex;
-    std::unordered_map<hv::WebSocketChannel*, std::shared_ptr<dev::websocket_connection_state>>
+    dt::flat_hash_map<hv::WebSocketChannel*, std::shared_ptr<dev::websocket_connection_state>>
     connections;
     std::deque<std::shared_ptr<dev::websocket_connection_state>> accepted;
     os::fence readyFence;
