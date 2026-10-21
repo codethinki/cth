@@ -1,15 +1,17 @@
 #pragma once
 #include "cth/coro/utility.hpp"
 
+#include <atomic>
 #include <cstddef>
 #include <functional>
-#include <atomic>
+#include <mutex>
 
 namespace cth::co {
 /**
  * switches global state on/off based on acquire/release calls
- * @details this is designed to be thread safe
+ * @details thread safe: on and off run under a mutex, an acquire returns after on finished
  * @note by default has RAII switch off on destruction
+ * @attention on and off must not call the switch, the mutex is not recursive
  */
 class global_switch {
 
@@ -29,14 +31,17 @@ public:
 
     /**
      * acquires the switch, only calls on if count was 0
+     * @details a throw of on leaves the count unchanged, the next acquire calls on again
      * @return true if on was called
      */
     bool acquire() {
-        if(_count.fetch_add(1) == 0) {
-            _on();
-            return true;
-        }
-        return false;
+        std::scoped_lock const lock{_mutex};
+
+        bool const first = _count.load() == 0;
+        if(first) _on();
+
+        _count.fetch_add(1);
+        return first;
     }
 
     /**
@@ -45,6 +50,8 @@ public:
      * @return true if off was called
      */
     bool release() {
+        std::scoped_lock const lock{_mutex};
+
         auto const count = _count.fetch_sub(1);
 
         if(count == 1) {
@@ -59,6 +66,8 @@ public:
      * @attention all previous acquires are discarded, calling release for a previous acquire is UB.
      */
     void force_off() {
+        std::scoped_lock const lock{_mutex};
+
         if(_count.load() == 0)
             return;
 
@@ -67,6 +76,7 @@ public:
     }
 
 private:
+    std::mutex _mutex;
     std::atomic<size_t> _count{};
 
     void_func _on;
