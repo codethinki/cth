@@ -2,8 +2,8 @@
 #include "cth/data/poly_vector.hpp"
 
 #include <cstddef>
-#include <unordered_map>
-#include <unordered_set>
+#include <limits>
+#include <vector>
 
 namespace cth::dt {
 /**
@@ -162,14 +162,16 @@ public:
     [[nodiscard]] constexpr std::vector<group_t> all() {
         std::vector<group_t> result{};
 
-        std::unordered_map<index_type, size_t> groups{};
+        // group of each root, the roots are indices
+        constexpr size_t NO_GROUP = std::numeric_limits<size_t>::max();
+        std::vector<size_t> groups(size(), NO_GROUP);
 
         for(index_type idx = 0; idx < size(); idx++) {
-            auto const parent = find(idx);
-            if(auto groupIt = groups.find(parent); groupIt != groups.end())
-                result[groupIt->second].emplace_back(idx);
+            auto& group = groups[find(idx)];
+            if(group != NO_GROUP)
+                result[group].emplace_back(idx);
             else {
-                groups[parent] = result.size();
+                group = result.size();
                 result.emplace_back(1)[0] = idx;
             }
         }

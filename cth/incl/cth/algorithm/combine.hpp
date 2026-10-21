@@ -1,4 +1,5 @@
 #pragma once
+#include "cth/data/hash_map.hpp"
 #include "cth/io/log.hpp"
 #include "cth/meta/ranges.hpp"
 
@@ -9,7 +10,6 @@
 #include <queue>
 #include <ranges>
 #include <span>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -26,7 +26,7 @@ template<mta::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
 [[nodiscard]] auto unique_combine(Rng const& selections) {
     using T = std::remove_cvref_t<mta::range2d_value_t<Rng>>;
     using node_t = T const*;
-    using node_selection_map_t = std::unordered_map<node_t, size_t>;
+    using node_selection_map_t = dt::flat_hash_map<node_t, size_t>;
     static constexpr node_t EMPTY_NODE = nullptr;
 
     auto const selectionCount = std::ranges::size(selections);

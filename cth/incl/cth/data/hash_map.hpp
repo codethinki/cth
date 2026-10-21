@@ -1,0 +1,16 @@
+#pragma once
+#include <gtl/phmap.hpp>
+
+namespace cth::dt {
+/**
+ * @brief hash map without pointer stability, a rehash moves the elements
+ */
+template<class Key, class T, class... Args>
+using flat_hash_map = gtl::flat_hash_map<Key, T, Args...>;
+
+/**
+ * @brief hash set without pointer stability, a rehash moves the elements
+ */
+template<class Key, class... Args>
+using flat_hash_set = gtl::flat_hash_set<Key, Args...>;
+}
