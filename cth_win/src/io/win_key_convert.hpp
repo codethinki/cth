@@ -284,7 +284,9 @@ struct win_key_params {
             break;
 
         default:
-            if(p.vkCode >= 'A' && p.vkCode <= 'Z')
+            if(p.vkCode >= VK_F1 && p.vkCode <= VK_F12)
+                key = static_cast<Key>(static_cast<uint16_t>(Key::F1) + (p.vkCode - VK_F1));
+            else if(p.vkCode >= 'A' && p.vkCode <= 'Z')
                 key = static_cast<Key>(static_cast<uint16_t>(Key::A) + (p.vkCode - 'A'));
             else if(p.vkCode >= '0' && p.vkCode <= '9')
                 key = static_cast<Key>(static_cast<uint16_t>(Key::DIGIT_0) + (p.vkCode - '0'));
