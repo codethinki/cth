@@ -9,7 +9,13 @@ cth_pkg_target_include_directories(
         INTERFACE incl
 )
 
-target_compile_options(cth INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/Zc:preprocessor>)
+# nvcc rejects cl flags, it forwards them to its MSVC host compiler with -Xcompiler
+target_compile_options(
+        cth
+        INTERFACE
+        $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/Zc:preprocessor>
+        $<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CXX_COMPILER_ID:MSVC>>:-Xcompiler=/Zc:preprocessor>
+)
 
 # cth/hash/hash_aggregates.hpp includes boost/pfr.hpp
 cth_pkg_target_find_package(cth boost_pfr CONFIG REQUIRED)
