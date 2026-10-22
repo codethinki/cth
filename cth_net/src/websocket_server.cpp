@@ -4,17 +4,44 @@
 #include "websocket_connection_state.hpp"
 
 #include "cth/data/hash_map.hpp"
+#include "cth/io/log.hpp"
 
 #include <hv/WebSocketServer.h>
+#include <hv/hlog.h>
 #include <hv/hsocket.h>
 
 #include <atomic>
 #include <deque>
+#include <format>
 #include <mutex>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 namespace cth::net {
+namespace {
+    void forward_libhv_log(int level, char const* message, int length) {
+        std::string_view text{message, static_cast<std::size_t>(length)};
+        while(text.ends_with('\n') || text.ends_with('\r'))
+            text.remove_suffix(1);
+
+        auto const severity = level >= LOG_LEVEL_ERROR ? except::ERR : except::WARNING;
+        log::msg(severity, std::format("libhv: {}", text));
+    }
+
+    /**
+     * libhv's default logger writes libhv.<date>.log into the working directory,
+     * its warnings and errors go to cth::log instead
+     */
+    void route_libhv_log() {
+        static std::once_flag once;
+        std::call_once(once, [] {
+            hlog_set_format("%s");
+            hlog_set_level(LOG_LEVEL_WARN);
+            hlog_set_handler(forward_libhv_log);
+        });
+    }
+}
 
 struct websocket_server::impl {
     hv::WebSocketService service;
@@ -48,6 +75,7 @@ websocket_server::impl::impl(std::uint16_t port, std::size_t maxMessageSize) :
     maxMessageSize{maxMessageSize} {
     CTH_CRITICAL(maxMessageSize == 0, "WebSocket maximum message size must be positive") {}
 
+    route_libhv_log();
     configure_callbacks();
 
     auto const listenFd = Listen(port, "127.0.0.1");
