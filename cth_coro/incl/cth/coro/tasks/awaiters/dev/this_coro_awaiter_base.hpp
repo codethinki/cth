@@ -44,8 +44,8 @@ struct this_coro_awaiter_base : this_coro_base<Pyld> {
     }
 
 protected:
-    Pyld& payload() { return *_payload; }
-    Pyld const& payload() const { return *_payload; }
+    constexpr Pyld& payload() { return *_payload; }
+    constexpr Pyld const& payload() const { return *_payload; }
 
 private:
     cth::dt::optional<Pyld> _payload{};

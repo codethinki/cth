@@ -100,8 +100,8 @@ class sync_task;
 template<class T, payload Pyld = this_coro::default_payload>
 class executor_task;
 
-template<class T, payload Pyld = this_coro::default_payload>
-class scheduled_task;
+template<class T>
+class spawn_task;
 
 template<class T, payload Pyld = this_coro::default_payload>
 class sync_executor_task;
@@ -123,7 +123,12 @@ struct this_coro_promise_awaiter_base;
 template<payload Pyld = this_coro::default_payload>
 struct this_coro_promise_base;
 
-struct capture_awaiter_base;
+/**
+ * opt-in tag for awaiters that return to the right context themselves
+ * @details @ref this_coro_promise_base awaits them as they are, without a steal back to its payload context
+ */
+struct capture_awaiter_base {};
+
 struct sync_promise_base;
 
 }

@@ -24,13 +24,14 @@ private:
 public:
     [[nodiscard]] constexpr auto handle(this auto&& self) { return self._handle.get(); }
 
+    /**
+     * awaits the task, the task stays the owner of the coroutine
+     * @details a temporary task lives until the end of the full expression, after await_resume()
+     */
     [[nodiscard]] constexpr auto operator co_await() const& noexcept { return awaiter_type{handle()}; }
-    [[nodiscard]] constexpr auto operator co_await() && noexcept {
-        return awaiter_type{this->_handle.extract()};
-    }
 
     task_base(task_base const&) = delete;
-    task_base operator=(task_base const&) = delete;
+    task_base& operator=(task_base const&) = delete;
     constexpr task_base(task_base&&) noexcept = default;
     constexpr task_base& operator=(task_base&&) noexcept = default;
 };

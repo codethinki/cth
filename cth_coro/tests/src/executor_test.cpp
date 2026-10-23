@@ -11,6 +11,7 @@
 #include <memory>
 #include <stdexcept>
 #include <thread>
+#include <tuple>
 #include <vector>
 
 
@@ -251,6 +252,172 @@ CORO_TEST(executor, context_scheduler_reflects_schedule_hop) {
     EXPECT_EQ(actual, &other);
 }
 
+// spawn() runs the child on its scheduler, the caller continues on its own scheduler afterwards
+CORO_TEST(executor, interop_spawn_caller_continues_on_own_scheduler) {
+    scheduler home{autostart, 1};
+    scheduler other{autostart, 1};
+    executor homeExec{home};
+
+    auto child = [](scheduler const& target) -> executor_task<bool> { co_return target.owns_thread(); };
+
+    auto task = [](scheduler const& h, scheduler const& o, auto c)
+        -> executor_task<std::tuple<bool, bool, scheduler const*>> {
+        bool const childOnOther = co_await executor{o}.spawn(c(o));
+        scheduler const& current = co_await this_coro::scheduler;
+        co_return std::tuple{childOnOther, h.owns_thread(), &current};
+    };
+
+    auto const [childOnOther, onHome, current] = sync_wait(homeExec, task(home, other, child));
+    EXPECT_TRUE(childOnOther);
+    EXPECT_TRUE(onHome);
+    EXPECT_EQ(current, &home);
+}
+
+CORO_TEST(executor, interop_spawn_on_own_scheduler) {
+    scheduler home{autostart, 1};
+    executor homeExec{home};
+
+    auto child = [](scheduler const& target) -> executor_task<bool> { co_return target.owns_thread(); };
+
+    auto task = [](executor e, scheduler const& h, auto c) -> executor_task<std::pair<bool, bool>> {
+        bool const childOnHome = co_await e.spawn(c(h));
+        co_return std::pair{childOnHome, h.owns_thread()};
+    };
+
+    auto const [childOnHome, onHome] = sync_wait(homeExec, task(homeExec, home, child));
+    EXPECT_TRUE(childOnHome);
+    EXPECT_TRUE(onHome);
+}
+
+CORO_TEST(executor, interop_spawn_void_caller_continues_on_own_scheduler) {
+    scheduler home{autostart, 1};
+    scheduler other{autostart, 1};
+    executor homeExec{home};
+    std::atomic<bool> childOnOther{false};
+
+    auto child = [](scheduler const& target, std::atomic<bool>& flag) -> executor_task<void> {
+        flag = target.owns_thread();
+        co_return;
+    };
+
+    auto task = [](scheduler const& h, scheduler const& o, std::atomic<bool>& flag, auto c) -> executor_task<bool> {
+        co_await executor{o}.spawn(c(o, flag));
+        co_return h.owns_thread();
+    };
+
+    EXPECT_TRUE(sync_wait(homeExec, task(home, other, childOnOther, child)));
+    EXPECT_TRUE(childOnOther);
+}
+
+// the child may end on another scheduler than the one it was spawned on
+CORO_TEST(executor, interop_spawn_child_ends_elsewhere) {
+    scheduler home{autostart, 1};
+    scheduler other{autostart, 1};
+    scheduler third{autostart, 1};
+    executor homeExec{home};
+
+    auto child = [](executor end) -> executor_task<void> { co_await end.schedule(); };
+
+    auto task = [](scheduler const& h, executor o, executor t, auto c) -> executor_task<std::pair<bool, bool>> {
+        co_await o.spawn(c(t));
+        bool const afterThird = h.owns_thread();
+
+        co_await o.spawn(c(executor{h}));
+        co_return std::pair{afterThird, h.owns_thread()};
+    };
+
+    auto const [afterThird, afterHome] = sync_wait(homeExec, task(home, executor{other}, executor{third}, child));
+    EXPECT_TRUE(afterThird);
+    EXPECT_TRUE(afterHome);
+}
+
+CORO_TEST(executor, interop_spawn_exception_reaches_caller_on_own_scheduler) {
+    scheduler home{autostart, 1};
+    scheduler other{autostart, 1};
+    executor homeExec{home};
+
+    auto child = []() -> executor_task<void> {
+        throw std::runtime_error("spawned boom");
+        co_return;
+    };
+
+    auto task = [](scheduler const& h, executor o, auto c) -> executor_task<std::pair<bool, bool>> {
+        bool caught = false;
+        try {
+            co_await o.spawn(c());
+        } catch(std::runtime_error const&) {
+            caught = true;
+        }
+        co_return std::pair{caught, h.owns_thread()};
+    };
+
+    auto const [caught, onHome] = sync_wait(homeExec, task(home, executor{other}, child));
+    EXPECT_TRUE(caught);
+    EXPECT_TRUE(onHome);
+}
+
+CORO_TEST(executor, interop_spawn_nested_each_level_on_own_scheduler) {
+    scheduler home{autostart, 1};
+    scheduler middle{autostart, 1};
+    scheduler inner{autostart, 1};
+    executor homeExec{home};
+
+    auto grandchild = [](scheduler const& i) -> executor_task<bool> { co_return i.owns_thread(); };
+
+    auto child = [](scheduler const& m, scheduler const& i, auto g) -> executor_task<std::pair<bool, bool>> {
+        bool const grandchildOnInner = co_await executor{i}.spawn(g(i));
+        co_return std::pair{grandchildOnInner, m.owns_thread()};
+    };
+
+    auto task = [](scheduler const& h, scheduler const& m, scheduler const& i, auto c, auto g)
+        -> executor_task<std::tuple<bool, bool, bool>> {
+        auto const [grandchildOnInner, childOnMiddle] = co_await executor{m}.spawn(c(m, i, g));
+        co_return std::tuple{grandchildOnInner, childOnMiddle, h.owns_thread()};
+    };
+
+    auto const [grandchildOnInner, childOnMiddle, onHome] =
+        sync_wait(homeExec, task(home, middle, inner, child, grandchild));
+    EXPECT_TRUE(grandchildOnInner);
+    EXPECT_TRUE(childOnMiddle);
+    EXPECT_TRUE(onHome);
+}
+
+// a caller without this_coro support has no scheduler to return to: it continues where the child ended
+CORO_TEST(executor, interop_spawn_caller_without_payload_continues_where_child_ended) {
+    scheduler other{autostart, 1};
+
+    auto child = []() -> executor_task<void> { co_return; };
+
+    auto task = [](scheduler const& o, auto c) -> sync_task<bool> {
+        co_await executor{o}.spawn(c());
+        co_return o.owns_thread();
+    };
+
+    auto waiter = task(other, child);
+    waiter.start();
+    EXPECT_TRUE(waiter.await());
+}
+
+// the capture_task of steal() owns its payload: the payload of steal(foreign, scheduler) is a temporary
+CORO_TEST(executor, interop_captured_steal_continues_on_steal_context) {
+    scheduler home{autostart, 1};
+    scheduler other{autostart, 1};
+    executor homeExec{home};
+
+    auto task = [](scheduler const& o) -> executor_task<std::tuple<bool, int, bool>> {
+        co_await co::steal(foreign_task{}, o);
+        bool const voidOnOther = o.owns_thread();
+
+        int const value = co_await co::steal(foreign_value_task{7}, o);
+        co_return std::tuple{voidOnOther, value, o.owns_thread()};
+    };
+
+    auto const [voidOnOther, value, valueOnOther] = sync_wait(homeExec, task(other));
+    EXPECT_TRUE(voidOnOther);
+    EXPECT_EQ(value, 7);
+    EXPECT_TRUE(valueOnOther);
+}
+
 CORO_TEST(executor, errors_exception_in_spawned_task) {
     scheduler sched{autostart, 1};
     executor exec{sched};
@@ -304,7 +471,7 @@ CORO_TEST(executor, stress_concurrent_spawns) {
     executor exec{sched};
 
     constexpr int count = 100;
-    std::vector<scheduled_task<void>> tasks;
+    std::vector<spawn_task<void>> tasks;
     tasks.reserve(count);
 
     std::atomic<int> completed{0};
@@ -317,7 +484,7 @@ CORO_TEST(executor, stress_concurrent_spawns) {
         co_return;
     };
 
-    auto spawner = [&](std::vector<scheduled_task<void>>& t) -> executor_task<void> {
+    auto spawner = [&](std::vector<spawn_task<void>>& t) -> executor_task<void> {
         // ref capture fine bc no co_await
         for(int i = 0; i < count; ++i) {
             auto h = exec.spawn(increment_task(completed));

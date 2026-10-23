@@ -57,7 +57,7 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
     [[nodiscard]] constexpr auto await_transform(Awaitable&& captured) { return cth::co::extract_awaiter(captured); }
 
     template<native_handle_waitable Waitable> requires (this_coro::scheduler_payload<Pyld>)
-    [[nodiscard]] auto await_transform(Waitable const& waitable) {
+    [[nodiscard]] constexpr auto await_transform(Waitable const& waitable) {
         return raw_native_handle_awaiter{_payload->scheduler(), waitable.native_handle()};
     }
 
@@ -85,8 +85,8 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
         _payload->rebind_scheduler(scheduler);
     }
 
-    this_coro_promise_base(Pyld const& payload) noexcept : _payload{payload} {}
-    this_coro_promise_base() noexcept = default;
+    constexpr this_coro_promise_base(Pyld const& payload) noexcept : _payload{payload} {}
+    constexpr this_coro_promise_base() noexcept = default;
 
 private:
     cth::dt::optional<Pyld> _payload{};
