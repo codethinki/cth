@@ -9,8 +9,8 @@
 namespace cth::co::this_coro {
 struct [[nodiscard]] native_handle_tag : tag_base {
     constexpr explicit native_handle_tag(os::native_handle_t h) : handle{h} {}
-    constexpr auto operator()(scheduler_payload auto const& p) const {
-        return raw_native_handle_awaiter{p.scheduler(), handle};
+    constexpr auto operator()(context_payload auto const& p) const {
+        return raw_native_handle_awaiter{p.context(), handle};
     }
     os::native_handle_t handle;
 };

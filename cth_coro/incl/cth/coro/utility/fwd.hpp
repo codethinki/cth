@@ -3,7 +3,9 @@
 #include <type_traits>
 
 namespace cth::co {
+class context;
 class scheduler;
+class strand;
 class executor;
 }
 
@@ -17,7 +19,7 @@ template<class Tag>
 concept tag = std::is_base_of_v<tag_base, std::remove_cvref_t<Tag>>;
 
 struct executor_tag;
-struct scheduler_tag;
+struct context_tag;
 
 struct wait_tag;
 
@@ -26,11 +28,11 @@ struct wait_tag;
 namespace cth::co::this_coro {
 
 
-struct scheduler_payload_base;
+struct context_payload_base;
 template<class Pyld>
-concept scheduler_payload = std::is_base_of_v<scheduler_payload_base, std::remove_cvref_t<Pyld>>;
+concept context_payload = std::is_base_of_v<context_payload_base, std::remove_cvref_t<Pyld>>;
 
-using default_payload = scheduler_payload_base;
+using default_payload = context_payload_base;
 
 }
 
@@ -114,7 +116,7 @@ class coro_exception;
 }
 
 namespace cth::co {
-template<this_coro::scheduler_payload Pyld = this_coro::default_payload>
+template<this_coro::context_payload Pyld = this_coro::default_payload>
 struct schedule_awaiter;
 struct wait_awaiter;
 

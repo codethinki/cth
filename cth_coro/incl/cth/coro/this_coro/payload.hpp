@@ -4,23 +4,23 @@
 
 namespace cth::co::this_coro {
 /**
- * class base for payloads carrying a scheduler
- * @details this coro machinery will auto-inject the scheduler for types inheriting this base
+ * class base for payloads carrying a context
+ * @details this coro machinery will auto-inject the context for types inheriting this base
  */
-struct scheduler_payload_base {
-    constexpr scheduler_payload_base(co::scheduler const& scheduler) : _scheduler{&scheduler} {}
+struct context_payload_base {
+    constexpr context_payload_base(co::context const& context) : _context{&context} {}
 
-    constexpr co::scheduler const& scheduler() const { return *_scheduler; }
+    constexpr co::context const& context() const { return *_context; }
 
     /**
-     * framework use: repoint the payload at the scheduler the coroutine has migrated onto
-     * @details keeps every derived field intact, only the scheduler is swapped
-     * @param scheduler the coroutine is now running on
+     * framework use: repoint the payload at the context the coroutine has migrated onto
+     * @details keeps every derived field intact, only the context is swapped
+     * @param context the coroutine is now running on
      */
-    constexpr void rebind_scheduler(co::scheduler const& scheduler) noexcept { _scheduler = &scheduler; }
+    constexpr void rebind_context(co::context const& context) noexcept { _context = &context; }
 
 private:
-    co::scheduler const* _scheduler;
+    co::context const* _context;
 };
 
 }

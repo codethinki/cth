@@ -11,19 +11,19 @@ namespace cth::co {
 
 
 
-template<this_coro::scheduler_payload Pyld, non_this_coro_awaitable Awaitable>
+template<this_coro::context_payload Pyld, non_this_coro_awaitable Awaitable>
 [[nodiscard]] auto steal(Awaitable awaitable, Pyld payload) -> capture_task<awaited_t<Awaitable>> {
-    static_assert(has_scheduler<Pyld>, "foreign awaitables can only be stolen with a scheduler in the payload");
+    static_assert(has_context<Pyld>, "foreign awaitables can only be stolen with a context in the payload");
 
     using result_t = awaited_t<Awaitable>;
 
     if constexpr(std::same_as<void, result_t>) {
         co_await std::move(awaitable);
-        co_await schedule_awaiter<Pyld>{payload.scheduler()};
+        co_await schedule_awaiter<Pyld>{payload.context()};
         co_return;
     } else {
         decltype(auto) result = co_await std::move(awaitable);
-        co_await schedule_awaiter<Pyld>{payload.scheduler()};
+        co_await schedule_awaiter<Pyld>{payload.context()};
         co_return result;
     }
 }
@@ -66,18 +66,18 @@ template<payload Pyld, non_this_coro_awaitable Awaitable, class... Args>
 template<non_this_coro_awaitable Awaitable>
 [[nodiscard]] auto steal(
     Awaitable awaitable,
-    scheduler const& scheduler
+    context const& context
 ) -> capture_task<awaited_t<Awaitable>> {
-    return co::steal(std::move(awaitable), this_coro::default_payload{scheduler});
+    return co::steal(std::move(awaitable), this_coro::default_payload{context});
 }
 
 /**
- * injects the default payload of the scheduler into the awaiter of the awaitable
+ * injects the default payload of the context into the awaiter of the awaitable
  * @attention the awaiter does not own the task, co_await it in the same expression, do not store it
  */
 template<this_coro_awaitable Awaitable>
-constexpr auto steal(Awaitable&& awaitable, scheduler const& scheduler) -> awaiter_t<Awaitable> {
-    return co::steal(std::forward<Awaitable>(awaitable), this_coro::default_payload{scheduler});
+constexpr auto steal(Awaitable&& awaitable, context const& context) -> awaiter_t<Awaitable> {
+    return co::steal(std::forward<Awaitable>(awaitable), this_coro::default_payload{context});
 }
 
 

@@ -12,7 +12,7 @@
 
 namespace cth::co::dev {
 /**
- * awaiter of @ref spawn_task, takes the scheduler of the caller from the injected payload
+ * awaiter of @ref spawn_task, takes the context of the caller from the injected payload
  * @details the payload of the caller is not stored and not rebound,
  *  a caller without this_coro support injects nothing
  * @tparam Promise of the spawned coroutine, needs a `caller` member
@@ -30,11 +30,11 @@ public:
     using base_t::base_t;
 
     /**
-     * stores the scheduler of the caller
+     * stores the context of the caller
      * @param payload of the caller
      */
-    template<this_coro::scheduler_payload Pyld>
-    constexpr void inject(Pyld const& payload) noexcept { _caller = &payload.scheduler(); }
+    template<this_coro::context_payload Pyld>
+    constexpr void inject(Pyld const& payload) noexcept { _caller = &payload.context(); }
 
     [[nodiscard]] auto await_suspend(std::coroutine_handle<> caller) noexcept -> std::coroutine_handle<promise_type> {
         base_t::handle.promise().caller = _caller;
@@ -42,6 +42,6 @@ public:
     }
 
 private:
-    co::scheduler const* _caller = nullptr;
+    co::context const* _caller = nullptr;
 };
 }

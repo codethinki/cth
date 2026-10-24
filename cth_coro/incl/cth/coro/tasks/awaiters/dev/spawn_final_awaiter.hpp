@@ -1,14 +1,14 @@
 #pragma once
-#include "cth/coro/scheduler.hpp"
+#include "cth/coro/context.hpp"
 
 #include <coroutine>
 
 
 namespace cth::co::dev {
 /**
- * final awaiter of @ref spawn_promise, resumes the awaiting coroutine on its own scheduler
- * @details transfers directly if the scheduler of the caller owns the thread, else posts the resume onto it,
- *  a caller without a known scheduler continues where the spawned coroutine ended
+ * final awaiter of @ref spawn_promise, resumes the awaiting coroutine on its own context
+ * @details transfers directly if @ref context::current() is the context of the caller, else posts the resume onto it,
+ *  a caller without a known context continues where the spawned coroutine ended
  * @attention terminates if the post throws, the final awaiter is noexcept
  */
 struct spawn_final_awaiter {
@@ -21,7 +21,7 @@ struct spawn_final_awaiter {
             return std::noop_coroutine();
 
         auto const* caller = h.promise().caller;
-        if(caller == nullptr || caller->owns_thread())
+        if(caller == nullptr || context::current() == caller)
             return continuation;
 
         // the caller may destroy this coroutine as soon as it resumes, nothing touches the frame after the post
