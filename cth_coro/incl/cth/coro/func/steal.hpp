@@ -12,7 +12,7 @@ namespace cth::co {
 
 
 template<this_coro::scheduler_payload Pyld, non_this_coro_awaitable Awaitable>
-[[nodiscard]] auto steal(Awaitable awaitable, Pyld payload) -> capture_task<awaited_t<Awaitable>> {
+[[nodiscard]] auto steal(Awaitable awaitable, Pyld const& payload) -> capture_task<awaited_t<Awaitable>> {
     static_assert(has_scheduler<Pyld>, "foreign awaitables can only be stolen with a scheduler in the payload");
 
     using result_t = awaited_t<Awaitable>;
@@ -29,10 +29,6 @@ template<this_coro::scheduler_payload Pyld, non_this_coro_awaitable Awaitable>
 }
 
 
-/**
- * injects the payload into the awaiter of the awaitable
- * @attention the awaiter does not own the task, co_await it in the same expression, do not store it
- */
 template<payload Pyld, this_coro_awaitable Awaitable>
 constexpr auto steal(Awaitable&& awaitable, Pyld const& payload) -> awaiter_t<Awaitable> {
     static_assert(
@@ -47,10 +43,6 @@ constexpr auto steal(Awaitable&& awaitable, Pyld const& payload) -> awaiter_t<Aw
 }
 
 
-/**
- * injects a payload constructed from the arguments into the awaiter of the awaitable
- * @attention the awaiter does not own the task, co_await it in the same expression, do not store it
- */
 template<payload Pyld, this_coro_awaitable Awaitable, class... Args>
 constexpr auto steal(Awaitable&& awaitable, Args&&... args) -> awaiter_t<Awaitable> {
     return co::steal(std::forward<Awaitable>(awaitable), Pyld{std::forward<Args>(args)...});
@@ -71,10 +63,6 @@ template<non_this_coro_awaitable Awaitable>
     return co::steal(std::move(awaitable), this_coro::default_payload{scheduler});
 }
 
-/**
- * injects the default payload of the scheduler into the awaiter of the awaitable
- * @attention the awaiter does not own the task, co_await it in the same expression, do not store it
- */
 template<this_coro_awaitable Awaitable>
 constexpr auto steal(Awaitable&& awaitable, scheduler const& scheduler) -> awaiter_t<Awaitable> {
     return co::steal(std::forward<Awaitable>(awaitable), this_coro::default_payload{scheduler});

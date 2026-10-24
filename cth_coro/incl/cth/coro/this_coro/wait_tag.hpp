@@ -28,7 +28,7 @@ constexpr auto wait_until(chrono::time_point_t time_point) { return wait_tag{tim
  * @return wait tag
  */
 template<class Rep, class Period>
-auto wait(std::chrono::duration<Rep, Period> const& duration) {
+constexpr auto wait(std::chrono::duration<Rep, Period> const& duration) {
     return wait_tag{chrono::clock_t::now() + duration};
 }
 

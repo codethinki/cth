@@ -15,10 +15,10 @@ struct raw_promise : dev::raw_promise_base {
     std::exception_ptr exception;
     std::coroutine_handle<> continuation = nullptr;
 
-    constexpr void unhandled_exception() { exception = std::current_exception(); }
+    void unhandled_exception() { exception = std::current_exception(); }
 
     template<class U>
-    constexpr void return_value(U&& value) noexcept {
+    void return_value(U&& value) noexcept {
         result.emplace(std::forward<U>(value));
     }
 };
@@ -31,8 +31,8 @@ struct raw_promise<void> : dev::raw_promise_base {
     std::exception_ptr exception;
     std::coroutine_handle<> continuation = nullptr;
 
-    constexpr void unhandled_exception() { exception = std::current_exception(); }
+    void unhandled_exception() { exception = std::current_exception(); }
 
-    constexpr void return_void() noexcept { result.emplace(); }
+    void return_void() noexcept { result.emplace(); }
 };
 }
