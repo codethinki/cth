@@ -14,9 +14,9 @@ namespace cth::co::dev {
 template<class T>
 struct spawn_promise : basic_promise<T, std::suspend_always{}, spawn_final_awaiter{}> {
     /**
-     * scheduler of the awaiting coroutine, nullptr -> unknown
+     * context of the awaiting coroutine, nullptr -> unknown
      */
-    co::scheduler const* caller = nullptr;
+    co::context const* caller = nullptr;
 
     spawn_task<T> get_return_object() noexcept;
 };
@@ -27,7 +27,7 @@ namespace cth::co {
 
 /**
  * task of @ref executor::spawn()
- * @details this_coro awaitable: the caller continues on its own scheduler after the spawned coroutine ended,
+ * @details this_coro awaitable: the caller continues on its own context after the spawned coroutine ended,
  *  a caller without this_coro support continues where the spawned coroutine ended
  * @tparam T result type
  */

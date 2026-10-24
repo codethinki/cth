@@ -4,6 +4,7 @@
 #include "cth/net/websocket_server.hpp"
 
 #include <cth/coro/executor.hpp>
+#include <cth/coro/scheduler.hpp>
 #include <cth/coro/sync.hpp>
 #include <cth/coro/tasks/executor_task.hpp>
 

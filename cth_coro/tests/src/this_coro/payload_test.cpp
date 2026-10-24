@@ -12,10 +12,10 @@ namespace cth::co {
 
 namespace {
 
-    // a custom payload: the scheduler context (so the built-in tags keep working) plus a marker value
-    struct tagged_payload : this_coro::scheduler_payload_base {
-        constexpr tagged_payload(co::scheduler const& s, int marker)
-            : this_coro::scheduler_payload_base{s}, _marker{marker} {}
+    // a custom payload: the context (so the built-in tags keep working) plus a marker value
+    struct tagged_payload : this_coro::context_payload_base {
+        constexpr tagged_payload(co::context const& c, int marker)
+            : this_coro::context_payload_base{c}, _marker{marker} {}
 
         [[nodiscard]] constexpr int marker() const { return _marker; }
 
@@ -84,7 +84,7 @@ THIS_CORO_TEST(custom_payload, builtin_executor_tag_coexists) {
     scheduler sched{autostart, 1};
     executor exec{sched};
 
-    // tagged_payload derives scheduler_payload_base, so the built-in tags still resolve against it
+    // tagged_payload derives context_payload_base, so the built-in tags still resolve against it
     auto task = []() -> executor_task<executor, tagged_payload> { co_return co_await this_coro::executor; };
 
     auto const actual = sync(exec.spawn<tagged_payload>(task(), 1));

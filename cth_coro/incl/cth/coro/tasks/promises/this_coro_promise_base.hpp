@@ -56,13 +56,13 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
     template<captured_awaitable Awaitable>
     [[nodiscard]] constexpr auto await_transform(Awaitable&& captured) { return cth::co::extract_awaiter(captured); }
 
-    template<native_handle_waitable Waitable> requires (this_coro::scheduler_payload<Pyld>)
+    template<native_handle_waitable Waitable> requires (this_coro::context_payload<Pyld>)
     [[nodiscard]] constexpr auto await_transform(Waitable const& waitable) {
-        return raw_native_handle_awaiter{_payload->scheduler(), waitable.native_handle()};
+        return raw_native_handle_awaiter{_payload->context(), waitable.native_handle()};
     }
 
     template<foreign_awaitable Awaitable>
-        requires (this_coro::scheduler_payload<Pyld> && !native_handle_waitable<Awaitable>)
+        requires (this_coro::context_payload<Pyld> && !native_handle_waitable<Awaitable>)
     [[nodiscard]] auto await_transform(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
         return co::steal(std::move(awaitable), *_payload);
     }
@@ -74,15 +74,25 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
     constexpr void inject(Pyld const& payload) { _payload = payload; }
 
     /**
-     * repoints the promise's payload at a new scheduler, preserving every other payload field
-     * @details only available for scheduler payloads; the payload is engaged on every path that reaches
-     *  this (a this_coro co_await goes through await_transform, which derefs the payload first)
-     * @param scheduler the coroutine has migrated onto
+     * gets the context of the payload
+     * @details only available for context payloads, the payload must be engaged
      */
-    constexpr void rebind_scheduler(co::scheduler const& scheduler)
-        requires this_coro::scheduler_payload<Pyld>
+    [[nodiscard]] constexpr co::context const& context() const
+        requires this_coro::context_payload<Pyld>
     {
-        _payload->rebind_scheduler(scheduler);
+        return _payload->context();
+    }
+
+    /**
+     * repoints the promise's payload at a new context, preserving every other payload field
+     * @details only available for context payloads; the payload is engaged on every path that reaches
+     *  this (a this_coro co_await goes through await_transform, which derefs the payload first)
+     * @param context the coroutine has migrated onto
+     */
+    constexpr void rebind_context(co::context const& context)
+        requires this_coro::context_payload<Pyld>
+    {
+        _payload->rebind_context(context);
     }
 
     constexpr this_coro_promise_base(Pyld const& payload) noexcept : _payload{payload} {}

@@ -13,8 +13,8 @@ namespace cth::co {
 
 
 template<class T>
-concept has_scheduler = requires(T const& t) {
-    { t.scheduler() } -> std::convertible_to<co::scheduler const&>;
+concept has_context = requires(T const& t) {
+    { t.context() } -> std::convertible_to<co::context const&>;
 };
 
 

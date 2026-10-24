@@ -2,6 +2,7 @@
 
 #include "../test.hpp"
 
+#include "cth/coro/scheduler.hpp"
 #include "cth/meta/coro.hpp"
 
 #define AWAITER_TEST(suite, name) CORO_EX_TEST(_awaiters, suite, name)

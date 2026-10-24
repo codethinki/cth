@@ -234,17 +234,17 @@ CORO_TEST(executor, context_reflects_schedule_hop) {
     EXPECT_EQ(actual, otherExec);
 }
 
-// Same defect observed through the scheduler tag: after the hop this_coro::scheduler must name the
-// scheduler the coroutine is now running on, not the one baked into the payload at spawn.
-CORO_TEST(executor, context_scheduler_reflects_schedule_hop) {
+// Same defect observed through the context tag: after the hop this_coro::context must name the
+// context the coroutine is now running on, not the one baked into the payload at spawn.
+CORO_TEST(executor, context_tag_reflects_schedule_hop) {
     scheduler home{autostart, 1};
     scheduler other{autostart, 1};
     executor homeExec{home};
     executor otherExec{other};
 
-    auto task = [](executor target) -> executor_task<scheduler const*> {
+    auto task = [](executor target) -> executor_task<context const*> {
         co_await target.schedule();
-        scheduler const& current = co_await this_coro::scheduler;
+        context const& current = co_await this_coro::context;
         co_return &current;
     };
 
@@ -252,7 +252,7 @@ CORO_TEST(executor, context_scheduler_reflects_schedule_hop) {
     EXPECT_EQ(actual, &other);
 }
 
-// spawn() runs the child on its scheduler, the caller continues on its own scheduler afterwards
+// spawn() runs the child on its context, the caller continues on its own context afterwards
 CORO_TEST(executor, interop_spawn_caller_continues_on_own_scheduler) {
     scheduler home{autostart, 1};
     scheduler other{autostart, 1};
@@ -261,9 +261,9 @@ CORO_TEST(executor, interop_spawn_caller_continues_on_own_scheduler) {
     auto child = [](scheduler const& target) -> executor_task<bool> { co_return target.owns_thread(); };
 
     auto task = [](scheduler const& h, scheduler const& o, auto c)
-        -> executor_task<std::tuple<bool, bool, scheduler const*>> {
+        -> executor_task<std::tuple<bool, bool, context const*>> {
         bool const childOnOther = co_await executor{o}.spawn(c(o));
-        scheduler const& current = co_await this_coro::scheduler;
+        context const& current = co_await this_coro::context;
         co_return std::tuple{childOnOther, h.owns_thread(), &current};
     };
 
