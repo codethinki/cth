@@ -15,7 +15,17 @@ namespace cth::co::dev {
 template<class T>
 struct affine_promise : basic_promise<T, std::suspend_always{}, affine_final_promise_awaiter{}> {
     /**
-     * context the parent continues on, the awaiter of the task sets it before the task runs
+     * stores the context of the caller, the task continues the caller on it
+     * @param caller promise of the awaiting coroutine
+     */
+    template<class CallerPromise>
+    constexpr void attach(CallerPromise const& caller) noexcept {
+        static_assert(this_coro_compatible<CallerPromise>, "the caller must be a this_coro coroutine");
+        parentContext = &caller.context();
+    }
+
+    /**
+     * context the parent continues on, @ref attach() sets it before the task runs
      */
     co::context const* parentContext = nullptr;
 };

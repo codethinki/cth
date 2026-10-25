@@ -28,4 +28,12 @@ concept foreign_awaitable = co::awaitable<T> && !this_coro_awaitable<T> && !co::
 template<class T>
 concept sync_promise_type = std::is_base_of_v<sync_promise_base, T>;
 
+namespace dev {
+    /**
+     * true if @ref Promise attaches to @ref CallerPromise without throwing
+     */
+    template<class Promise, class CallerPromise>
+    concept nothrow_attachable = requires(Promise& p, CallerPromise const& c) { { p.attach(c) } noexcept; };
+}
+
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "cth/coro/tasks/task_base.hpp"
 
-#include "cth/coro/tasks/awaiters/dev/capture_promise_awaiter.hpp"
+#include "cth/coro/tasks/awaiters/this_coro_promise_awaiter.hpp"
 #include "cth/coro/tasks/promises/affine_promise.hpp"
 
 #include <coroutine>
@@ -20,8 +20,8 @@ namespace dev {
 
 
 template<class T>
-class [[nodiscard]] capture_task : public task_base<dev::capture_promise<T>, dev::capture_promise_awaiter> {
-    using base_t = task_base<dev::capture_promise<T>, dev::capture_promise_awaiter>;
+class [[nodiscard]] capture_task : public task_base<dev::capture_promise<T>, this_coro_promise_awaiter> {
+    using base_t = task_base<dev::capture_promise<T>, this_coro_promise_awaiter>;
 
     using base_t::base_t;
     friend base_t::promise_type;

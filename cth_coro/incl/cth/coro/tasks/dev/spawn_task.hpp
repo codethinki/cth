@@ -1,7 +1,7 @@
 #pragma once
 #include "cth/coro/tasks/task_base.hpp"
 
-#include "cth/coro/tasks/awaiters/dev/spawn_promise_awaiter.hpp"
+#include "cth/coro/tasks/awaiters/this_coro_promise_awaiter.hpp"
 #include "cth/coro/tasks/promises/affine_promise.hpp"
 #include "cth/coro/tasks/promises/this_coro_promise_base.hpp"
 #include "cth/coro/utility/fwd.hpp"
@@ -24,6 +24,19 @@ struct spawn_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
 
 
     spawn_task<T, Pyld> get_return_object() noexcept;
+
+    /**
+     * stores the context the caller continues on, copies no payload
+     * @details a caller without a context continues on the context of the executor
+     * @param caller promise of the awaiting coroutine
+     */
+    template<class CallerPromise>
+    constexpr void attach(CallerPromise const& caller) noexcept {
+        if constexpr(this_coro_compatible<CallerPromise>)
+            this->parentContext = &caller.context();
+        else
+            this->parentContext = &this->context();
+    }
 };
 
 }
@@ -39,8 +52,8 @@ namespace cth::co {
  */
 template<class T, payload Pyld>
 class [[nodiscard]] spawn_task
-    : public task_base<dev::spawn_promise<T, Pyld>, dev::spawn_promise_awaiter> {
-    using base_t = task_base<dev::spawn_promise<T, Pyld>, dev::spawn_promise_awaiter>;
+    : public task_base<dev::spawn_promise<T, Pyld>, this_coro_promise_awaiter> {
+    using base_t = task_base<dev::spawn_promise<T, Pyld>, this_coro_promise_awaiter>;
 
     using base_t::base_t;
     friend base_t::promise_type;
