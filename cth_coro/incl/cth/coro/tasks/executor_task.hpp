@@ -8,8 +8,10 @@
 #include "cth/coro/utility/fwd.hpp"
 
 #include <cth/meta/concepts.hpp>
+#include <cth/meta/traits.hpp>
 
 #include <coroutine>
+#include <type_traits>
 
 
 namespace cth::co::dev {
@@ -22,7 +24,8 @@ struct executor_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
      * @param caller promise of the awaiting coroutine
      */
     template<class CallerPromise>
-    constexpr void attach(CallerPromise const& caller) noexcept(NOTHROW_INHERIT<CallerPromise>) {
+    constexpr void attach(CallerPromise const& caller)
+        noexcept(mta::nothrow_constructible<Pyld, caller_payload_t<CallerPromise> const&>) {
         static_assert(
             this_coro_compatible<CallerPromise>,
             "this_coro tasks need a this_coro caller, use spawn() or sync_wait()"
@@ -33,13 +36,14 @@ struct executor_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
     }
 
 private:
+    /**
+     * payload of the caller, the own payload for a caller without one (the static_assert in attach reports it)
+     */
     template<class CallerPromise>
-    static constexpr bool NOTHROW_INHERIT = [] {
-        if constexpr(this_coro_compatible<CallerPromise>)
-            return mta::nothrow_constructible<Pyld, payload_t<CallerPromise> const&>;
-        else
-            return true; // the static_assert in attach reports the caller
-    }();
+    using caller_payload_t = mta::conditional_pack_t<
+        this_coro_compatible<CallerPromise>,
+        mta::trait_pack<payload_t, CallerPromise>,
+        mta::trait_pack<std::type_identity_t, Pyld>>;
 };
 }
 
