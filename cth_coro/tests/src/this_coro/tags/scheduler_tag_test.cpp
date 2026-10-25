@@ -16,10 +16,10 @@ TAG_TEST(scheduler_tag, returns_correct_scheduler) {
 
     auto task = []() -> executor_task<r_t> { co_return co_await this_coro::scheduler; };
 
-    static_assert(std::same_as<decltype(sync_wait(exec, task())), r_t>);
+    static_assert(std::same_as<decltype(exec.sync_wait(task())), r_t>);
 
 
-    auto& actual = sync_wait(exec, task());
+    auto& actual = exec.sync_wait(task());
     EXPECT_EQ(&actual, &sched);
 }
 

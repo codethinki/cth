@@ -62,7 +62,7 @@ TAG_TEST(native_handle_tag, ready_when_already_signaled) {
     std::atomic<bool> const unused{true};
 
     auto const start = chrono::clock_t::now();
-    EXPECT_TRUE(sync_wait(exec, await_tag_task(event.handle, unused)));
+    EXPECT_TRUE(exec.sync_wait(await_tag_task(event.handle, unused)));
     auto const end = chrono::clock_t::now();
 
     EXPECT_LT(end, start + std::chrono::milliseconds{100});
@@ -86,7 +86,7 @@ TAG_TEST(native_handle_tag, suspends_until_signaled) {
         }
     };
 
-    EXPECT_TRUE(sync_wait(exec, await_tag_task(event.handle, signaled)));
+    EXPECT_TRUE(exec.sync_wait(await_tag_task(event.handle, signaled)));
 }
 
 // same contract through the free function spelling, which is how callers actually use it
@@ -105,7 +105,7 @@ TAG_TEST(await_handle, resumes_after_signal) {
         }
     };
 
-    EXPECT_TRUE(sync_wait(exec, await_handle_task(event.handle, signaled)));
+    EXPECT_TRUE(exec.sync_wait(await_handle_task(event.handle, signaled)));
 }
 
 // the executor contract must survive the suspension: resumption is driven by the scheduler's completion
@@ -132,7 +132,7 @@ TAG_TEST(await_handle, resumes_on_scheduler_thread) {
         }
     };
 
-    auto const resumed = sync_wait(exec, task(event.handle));
+    auto const resumed = exec.sync_wait(task(event.handle));
 
     EXPECT_NE(resumed, caller);
     EXPECT_NE(resumed, signaller.load());

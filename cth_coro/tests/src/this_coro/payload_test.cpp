@@ -52,7 +52,7 @@ THIS_CORO_TEST(custom_payload, marker_injected) {
 
     auto task = []() -> executor_task<int, tagged_payload> { co_return co_await marker; };
 
-    auto const actual = sync(exec.spawn<tagged_payload>(task(), 42));
+    auto const actual = exec.sync_wait<tagged_payload>(task(), 42);
     EXPECT_EQ(actual, 42);
 }
 
@@ -63,7 +63,7 @@ THIS_CORO_TEST(custom_payload, propagates_through_nested) {
     auto child = []() -> executor_task<int, tagged_payload> { co_return co_await marker; };
     auto root = [](auto c) -> executor_task<int, tagged_payload> { co_return co_await c(); };
 
-    auto const actual = sync(exec.spawn<tagged_payload>(root(child), 7));
+    auto const actual = exec.sync_wait<tagged_payload>(root(child), 7);
     EXPECT_EQ(actual, 7);
 }
 
@@ -79,7 +79,7 @@ THIS_CORO_TEST(custom_payload, deep_recursion_propagation) {
         }
     };
 
-    auto const actual = sync(exec.spawn<tagged_payload>(Recursive{}(8), 99));
+    auto const actual = exec.sync_wait<tagged_payload>(Recursive{}(8), 99);
     EXPECT_EQ(actual, 99);
 }
 
@@ -90,7 +90,7 @@ THIS_CORO_TEST(custom_payload, builtin_executor_tag_coexists) {
     // the built-in tags take the scheduler from the promise, they work with every payload
     auto task = []() -> executor_task<executor, tagged_payload> { co_return co_await this_coro::executor; };
 
-    auto const actual = sync(exec.spawn<tagged_payload>(task(), 1));
+    auto const actual = exec.sync_wait<tagged_payload>(task(), 1);
     EXPECT_EQ(actual, exec);
 }
 
@@ -103,7 +103,7 @@ THIS_CORO_TEST(custom_payload, custom_and_builtin_tags_in_one_task) {
         co_return co_await marker;          // custom tag reads the marker of the payload
     };
 
-    auto const actual = sync(exec.spawn<tagged_payload>(task(), 5));
+    auto const actual = exec.sync_wait<tagged_payload>(task(), 5);
     EXPECT_EQ(actual, 5);
 }
 
@@ -118,7 +118,7 @@ THIS_CORO_TEST(custom_payload, awaits_default_payload_task) {
         co_return std::pair{e, co_await marker};
     };
 
-    auto const [actual, m] = sync(exec.spawn<tagged_payload>(root(child), 4));
+    auto const [actual, m] = exec.sync_wait<tagged_payload>(root(child), 4);
     EXPECT_EQ(actual, exec);
     EXPECT_EQ(m, 4);
 }
@@ -136,7 +136,7 @@ THIS_CORO_TEST(custom_payload, schedule_keeps_payload) {
         co_return std::tuple{m, &current, target.scheduler().owns_thread()};
     };
 
-    auto const [m, current, onOther] = sync(homeExec.spawn<tagged_payload>(task(executor{other}), 3));
+    auto const [m, current, onOther] = homeExec.sync_wait<tagged_payload>(task(executor{other}), 3);
     EXPECT_EQ(m, 3);
     EXPECT_EQ(current, &other);
     EXPECT_TRUE(onOther);

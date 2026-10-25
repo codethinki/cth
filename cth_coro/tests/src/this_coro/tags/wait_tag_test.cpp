@@ -20,14 +20,14 @@ TAG_TEST(wait_tag, sub_1ms) {
 
 
     auto start = chrono::clock_t::now();
-    sync_wait(exec, task());
+    exec.sync_wait(task());
     auto end = chrono::clock_t::now();
     EXPECT_LT(end, start + std::chrono::milliseconds{3});
 
 
     /* for(size_t i = 0; i < 10; i++) {
          auto start2 = clock_t::now();
-         sync_wait(exec, task());
+         exec.sync_wait(task());
          auto end2 = clock_t::now();
 
          std::println("waited for: {}", std::chrono::duration_cast<std::chrono::microseconds>(end2 - start2));
@@ -40,7 +40,7 @@ TAG_TEST(wait, main) {
         co_return;
     };
 
-    sync_wait(exec, task());
+    exec.sync_wait(task());
 }
 
 TAG_TEST(wait_until, main) {
@@ -49,7 +49,7 @@ TAG_TEST(wait_until, main) {
         co_return;
     };
 
-    sync_wait(exec, task());
+    exec.sync_wait(task());
 }
 
 

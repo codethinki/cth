@@ -1,4 +1,5 @@
 #pragma once
+#include "cth/coro/sync.hpp"
 #include "cth/coro/awaiters/data_awaiter.hpp"
 #include "cth/coro/awaiters/schedule_awaiter.hpp"
 #include "cth/coro/tasks/dev/spawn_task.hpp"
@@ -6,6 +7,7 @@
 #include "cth/coro/utility/concepts.hpp"
 
 
+#include <cth/io/log.hpp>
 #include <cth/meta/coro.hpp>
 
 #include <utility>
@@ -37,6 +39,21 @@ public:
     template<payload Pyld = this_coro::default_payload, awaitable Awaitable, class... Args>
     [[nodiscard]] auto spawn(Awaitable task, Args&&... args) const -> spawn_task<awaited_t<Awaitable>, Pyld> {
         return spawn_impl(Pyld{std::forward<Args>(args)...}, *this, std::move(task));
+    }
+
+    /**
+     * spawns the task and blocks until it ends
+     * @tparam Pyld payload of the task, constructed from the arguments
+     * @param task to run on this scheduler
+     * @param args to construct the payload with
+     * @return result of the task
+     * @pre @ref scheduler() does not own the calling thread
+     * @attention blocks the calling thread
+     */
+    template<payload Pyld = this_coro::default_payload, awaitable Awaitable, class... Args>
+    auto sync_wait(Awaitable task, Args&&... args) const -> awaited_t<Awaitable> {
+        CTH_CRITICAL(scheduler().owns_thread(), "sync_wait blocks a worker of its own scheduler") {}
+        return co::sync(spawn<Pyld>(std::move(task), std::forward<Args>(args)...));
     }
 
 private:

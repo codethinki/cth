@@ -7,6 +7,7 @@
 #include <cth/coro/this_coro.hpp>
 
 #include <atomic>
+#include <chrono>
 #include <memory>
 #include <stdexcept>
 #include <thread>
@@ -16,26 +17,6 @@
 
 
 namespace cth::co {
-
-template<class Task>
-auto sync_wait(executor& exec, Task task) {
-    using value_type = Task::promise_type::value_type;
-
-    auto wrapper = [](executor& exec, Task t) -> sync_task<value_type> {
-        if constexpr(mta::is_void<value_type>)
-            co_await exec.spawn(std::move(t));
-        else
-            co_return co_await exec.spawn(std::move(t));
-    };
-
-    auto wrapped = wrapper(exec, std::move(task));
-    wrapped.handle().resume();
-
-    wrapped.wait();
-
-    if constexpr(!mta::is_void<value_type>)
-        return std::move(*wrapped.handle().promise().result);
-}
 
 CORO_TEST(executor, spawn_void_task) {
     scheduler sched{autostart, 1};
@@ -47,7 +28,7 @@ CORO_TEST(executor, spawn_void_task) {
         co_return;
     };
 
-    sync_wait(exec, task(ran));
+    exec.sync_wait(task(ran));
     EXPECT_TRUE(ran);
 }
 
@@ -57,7 +38,7 @@ CORO_TEST(executor, spawn_value_task) {
 
     auto task = []() -> executor_task<int> { co_return 42; };
 
-    int const result = sync_wait(exec, task());
+    int const result = exec.sync_wait(task());
     EXPECT_EQ(result, 42);
 }
 
@@ -71,7 +52,7 @@ CORO_TEST(executor, spawn_move_only_type) {
         co_return std::make_unique<int>(123);
     };
 
-    auto const result = sync_wait(exec, task());
+    auto const result = exec.sync_wait(task());
     ASSERT_TRUE(result != nullptr);
     EXPECT_EQ(*result, 123);
 }
@@ -84,9 +65,54 @@ CORO_TEST(executor, spawn_execution_context) {
 
     auto task = []() -> executor_task<std::thread::id> { co_return std::this_thread::get_id(); };
 
-    auto const workerThread = sync_wait(exec, task());
+    auto const workerThread = exec.sync_wait(task());
 
     EXPECT_NE(mainThread, workerThread);
+}
+
+CORO_TEST(executor, sync_wait_value) {
+    scheduler sched{autostart, 1};
+    executor exec{sched};
+
+    auto task = [](scheduler const& s) -> executor_task<std::pair<int, bool>> {
+        co_return std::pair{7, s.owns_thread()};
+    };
+
+    auto const [value, onSched] = exec.sync_wait(task(sched));
+    EXPECT_EQ(value, 7);
+    EXPECT_TRUE(onSched);
+}
+
+// the flag is set after a suspension: sync_wait returns only after the end of the task
+CORO_TEST(executor, sync_wait_void) {
+    scheduler sched{autostart, 1};
+    executor exec{sched};
+    std::atomic<bool> endedOnSched{false};
+
+    auto task = [](scheduler const& s, std::atomic<bool>& flag) -> executor_task<void> {
+        co_await this_coro::wait(std::chrono::microseconds{200});
+        flag = s.owns_thread();
+    };
+
+    exec.sync_wait(task(sched, endedOnSched));
+    EXPECT_TRUE(endedOnSched);
+}
+
+CORO_TEST(executor, sync_wait_exception) {
+    scheduler sched{autostart, 1};
+    executor exec{sched};
+
+    auto voidTask = []() -> executor_task<void> {
+        throw std::runtime_error("void boom");
+        co_return;
+    };
+    auto valueTask = []() -> executor_task<int> {
+        throw std::logic_error("value boom");
+        co_return 0;
+    };
+
+    EXPECT_THROW(exec.sync_wait(voidTask()), std::runtime_error);
+    EXPECT_THROW(exec.sync_wait(valueTask()), std::logic_error);
 }
 
 CORO_TEST(executor, context_this_coro_executor) {
@@ -95,7 +121,7 @@ CORO_TEST(executor, context_this_coro_executor) {
 
     auto task = []() -> executor_task<executor> { co_return co_await this_coro::executor; };
 
-    auto const actual = sync_wait(expected, task());
+    auto const actual = expected.sync_wait(task());
     EXPECT_EQ(actual, expected);
 }
 
@@ -107,7 +133,7 @@ CORO_TEST(executor, context_nested_task_propagation) {
 
     auto root = [](auto c) -> executor_task<executor> { co_return co_await c(); };
 
-    auto const actual = sync_wait(expected, root(child));
+    auto const actual = expected.sync_wait(root(child));
     EXPECT_EQ(actual, expected);
 }
 
@@ -124,7 +150,7 @@ CORO_TEST(executor, context_deep_recursion) {
         }
     };
 
-    auto const actual = sync_wait(expected, Recursive{}(10));
+    auto const actual = expected.sync_wait(Recursive{}(10));
     EXPECT_EQ(actual, expected);
 }
 
@@ -180,7 +206,7 @@ CORO_TEST(executor, interop_steal_foreign_void) {
             throw std::runtime_error("Did not return to executor thread");
     };
 
-    sync_wait(exec, task(mainID));
+    exec.sync_wait(task(mainID));
 }
 
 CORO_TEST(executor, interop_steal_foreign_value) {
@@ -189,7 +215,7 @@ CORO_TEST(executor, interop_steal_foreign_value) {
 
     auto task = []() -> executor_task<int> { co_return co_await foreign_value_task{99}; };
 
-    int const res = sync_wait(exec, task());
+    int const res = exec.sync_wait(task());
     EXPECT_EQ(res, 99);
 }
 
@@ -206,7 +232,7 @@ CORO_TEST(executor, context_reflects_schedule_hop) {
         co_return co_await this_coro::executor; // ask "which executor am I on?"
     };
 
-    auto const actual = sync_wait(homeExec, task(otherExec));
+    auto const actual = homeExec.sync_wait(task(otherExec));
     EXPECT_EQ(actual, otherExec);
 }
 
@@ -224,7 +250,7 @@ CORO_TEST(executor, context_scheduler_reflects_schedule_hop) {
         co_return &current;
     };
 
-    auto const* actual = sync_wait(homeExec, task(otherExec));
+    auto const* actual = homeExec.sync_wait(task(otherExec));
     EXPECT_EQ(actual, &other);
 }
 
@@ -246,7 +272,7 @@ CORO_TEST(executor, context_parent_continues_on_own_scheduler_after_child_schedu
         co_return std::tuple{childOnOther, h.owns_thread(), &current};
     };
 
-    auto const [childOnOther, onHome, current] = sync_wait(homeExec, task(home, executor{other}, child));
+    auto const [childOnOther, onHome, current] = homeExec.sync_wait(task(home, executor{other}, child));
     EXPECT_TRUE(childOnOther);
     EXPECT_TRUE(onHome);
     EXPECT_EQ(current, &home);
@@ -267,7 +293,7 @@ CORO_TEST(executor, interop_spawn_caller_continues_on_own_scheduler) {
         co_return std::tuple{childOnOther, h.owns_thread(), &current};
     };
 
-    auto const [childOnOther, onHome, current] = sync_wait(homeExec, task(home, other, child));
+    auto const [childOnOther, onHome, current] = homeExec.sync_wait(task(home, other, child));
     EXPECT_TRUE(childOnOther);
     EXPECT_TRUE(onHome);
     EXPECT_EQ(current, &home);
@@ -284,7 +310,7 @@ CORO_TEST(executor, interop_spawn_on_own_scheduler) {
         co_return std::pair{childOnHome, h.owns_thread()};
     };
 
-    auto const [childOnHome, onHome] = sync_wait(homeExec, task(homeExec, home, child));
+    auto const [childOnHome, onHome] = homeExec.sync_wait(task(homeExec, home, child));
     EXPECT_TRUE(childOnHome);
     EXPECT_TRUE(onHome);
 }
@@ -305,7 +331,7 @@ CORO_TEST(executor, interop_spawn_void_caller_continues_on_own_scheduler) {
         co_return h.owns_thread();
     };
 
-    EXPECT_TRUE(sync_wait(homeExec, task(home, other, childOnOther, child)));
+    EXPECT_TRUE(homeExec.sync_wait(task(home, other, childOnOther, child)));
     EXPECT_TRUE(childOnOther);
 }
 
@@ -326,7 +352,7 @@ CORO_TEST(executor, interop_spawn_child_ends_elsewhere) {
         co_return std::pair{afterThird, h.owns_thread()};
     };
 
-    auto const [afterThird, afterHome] = sync_wait(homeExec, task(home, executor{other}, executor{third}, child));
+    auto const [afterThird, afterHome] = homeExec.sync_wait(task(home, executor{other}, executor{third}, child));
     EXPECT_TRUE(afterThird);
     EXPECT_TRUE(afterHome);
 }
@@ -351,7 +377,7 @@ CORO_TEST(executor, interop_spawn_exception_reaches_caller_on_own_scheduler) {
         co_return std::pair{caught, h.owns_thread()};
     };
 
-    auto const [caught, onHome] = sync_wait(homeExec, task(home, executor{other}, child));
+    auto const [caught, onHome] = homeExec.sync_wait(task(home, executor{other}, child));
     EXPECT_TRUE(caught);
     EXPECT_TRUE(onHome);
 }
@@ -376,7 +402,7 @@ CORO_TEST(executor, interop_spawn_nested_each_level_on_own_scheduler) {
     };
 
     auto const [grandchildOnInner, childOnMiddle, onHome] =
-        sync_wait(homeExec, task(home, middle, inner, child, grandchild));
+        homeExec.sync_wait(task(home, middle, inner, child, grandchild));
     EXPECT_TRUE(grandchildOnInner);
     EXPECT_TRUE(childOnMiddle);
     EXPECT_TRUE(onHome);
@@ -423,7 +449,7 @@ CORO_TEST(executor, errors_exception_in_spawned_task) {
         co_return caught;
     };
 
-    bool const caught = sync_wait(exec, wrapper(task));
+    bool const caught = exec.sync_wait(wrapper(task));
     EXPECT_TRUE(caught);
 }
 
@@ -448,7 +474,7 @@ CORO_TEST(executor, errors_exception_in_nested_task) {
         co_return caught;
     };
 
-    bool const caught = sync_wait(exec, wrapper(root, child));
+    bool const caught = exec.sync_wait(wrapper(root, child));
     EXPECT_TRUE(caught);
 }
 
@@ -475,7 +501,7 @@ CORO_TEST(executor, errors_parent_catches_on_own_scheduler_after_child_schedule)
         co_return std::tuple{caughtOnHome, h.owns_thread(), &current};
     };
 
-    auto const [caughtOnHome, onHome, current] = sync_wait(homeExec, task(home, executor{other}, child));
+    auto const [caughtOnHome, onHome, current] = homeExec.sync_wait(task(home, executor{other}, child));
     EXPECT_TRUE(caughtOnHome);
     EXPECT_TRUE(onHome);
     EXPECT_EQ(current, &home);
@@ -497,7 +523,7 @@ CORO_TEST(executor, errors_foreign_exception_reaches_caller_on_own_scheduler) {
         co_return caughtOnHome;
     };
 
-    EXPECT_TRUE(sync_wait(homeExec, task(home, other)));
+    EXPECT_TRUE(homeExec.sync_wait(task(home, other)));
 }
 
 CORO_TEST(executor, stress_concurrent_spawns) {
