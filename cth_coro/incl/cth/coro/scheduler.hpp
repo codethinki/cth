@@ -23,6 +23,7 @@ namespace cth::co {
  */
 class scheduler final : public context {
     struct Impl;
+    friend class strand;
 
     static inline thread_local Impl* _threadScheduler = nullptr;
 

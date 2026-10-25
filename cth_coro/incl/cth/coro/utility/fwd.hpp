@@ -5,6 +5,7 @@
 namespace cth::co {
 class context;
 class scheduler;
+class strand;
 class executor;
 }
 

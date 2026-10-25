@@ -17,11 +17,13 @@ scheduler::~scheduler() {
     if(_impl != nullptr)
         await_stop();
 }
-void scheduler::post(void_func work) const { impl().post(std::move(work)); }
+void scheduler::post(void_func work) const { dev::post_on(impl().ctx.get_executor(), std::move(work)); }
 
-void scheduler::await(native_handle handle, void_func cb) const { impl().await(handle, std::move(cb)); }
-void scheduler::await(std::chrono::steady_clock::time_point time_point, void_func cb) const {
-    impl().await(time_point, std::move(cb));
+void scheduler::await(native_handle handle, void_func cb) const {
+    dev::await_on(impl().ctx.get_executor(), impl().ctx, handle, std::move(cb));
+}
+void scheduler::await(chrono::time_point_t time_point, void_func cb) const {
+    dev::await_on(impl().ctx.get_executor(), impl().timerPool, time_point, std::move(cb));
 }
 
 void scheduler::start() {

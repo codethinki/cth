@@ -16,7 +16,7 @@ class context;
 
 /**
  * where coroutines run and wait
- * @details implemented by @ref scheduler, @ref executor and the awaiters only use this interface
+ * @details implemented by @ref scheduler and @ref strand, @ref executor and the awaiters only use this interface
  */
 class context {
 public:
