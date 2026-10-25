@@ -111,7 +111,7 @@ class coro_exception;
 
 namespace cth::co {
 struct schedule_awaiter;
-struct wait_awaiter;
+struct time_point_awaiter;
 
 template<payload Pyld = this_coro::default_payload>
 struct this_coro_promise_base;

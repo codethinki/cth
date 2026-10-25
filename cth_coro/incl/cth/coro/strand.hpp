@@ -25,8 +25,8 @@ public:
 
     void post(void_func work) const override;
 
-    void await(native_handle, void_func cb) const override;
-    void await(chrono::time_point_t time_point, void_func cb) const override;
+    void await(native_handle, await_func cb) const override;
+    void await(chrono::time_point_t time_point, await_func cb) const override;
 
 private:
     [[nodiscard]] Impl& impl() const { return *_impl; }

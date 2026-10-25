@@ -46,7 +46,10 @@ class message_awaiter : public message_awaiter_base {
 public:
     using message_awaiter_base::message_awaiter_base;
 
-    [[nodiscard]] bool await_resume() { return _connection.wait(); }
+    [[nodiscard]] bool await_resume() {
+        osfence_awaiter_base::await_resume();
+        return _connection.wait();
+    }
 };
 
 class text_awaiter : public message_awaiter_base {
@@ -54,6 +57,7 @@ public:
     using message_awaiter_base::message_awaiter_base;
 
     [[nodiscard]] std::string await_resume() {
+        osfence_awaiter_base::await_resume();
         auto const connected = _connection.wait();
         CTH_NET_STABLE_THROW(!connected, "WebSocket closed while awaiting text") {}
         auto const text = _connection.got_text();
@@ -67,6 +71,7 @@ public:
     using message_awaiter_base::message_awaiter_base;
 
     [[nodiscard]] std::vector<std::byte> await_resume() {
+        osfence_awaiter_base::await_resume();
         auto const connected = _connection.wait();
         CTH_NET_STABLE_THROW(!connected, "WebSocket closed while awaiting bytes") {}
         auto const text = _connection.got_text();
@@ -118,6 +123,7 @@ public:
 };
 
 inline std::optional<websocket_connection> accept_awaiter::await_resume() const {
+    osfence_awaiter_base::await_resume();
     auto connection = _server.accept();
     if(!connection)
         return std::nullopt;

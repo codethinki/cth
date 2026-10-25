@@ -17,7 +17,7 @@ namespace {
 struct test_native_handle_awaiter : native_handle_awaiter_base {
     using native_handle_awaiter_base::native_handle_awaiter_base;
 
-    static constexpr void await_resume() noexcept {}
+    void await_resume() const { native_handle_awaiter_base::await_resume(); }
 };
 
 auto await_handle(os::native_handle_t handle, std::atomic_bool const& signaled) ->

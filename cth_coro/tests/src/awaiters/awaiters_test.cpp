@@ -1,4 +1,4 @@
-#include "cth/coro/awaiters/wait_awaiter.hpp"
+#include "cth/coro/awaiters/time_point_awaiter.hpp"
 
 #include "../test.hpp"
 
@@ -17,10 +17,10 @@ auto const now() { return std::chrono::steady_clock::now(); }
 
 scheduler scheduler{};
 
-AWAITER_TEST(wait_awaiter, main) {
-    wait_awaiter awaiter{now(), scheduler};
+AWAITER_TEST(time_point_awaiter, main) {
+    time_point_awaiter awaiter{now(), scheduler};
 
-    static_assert(awaitable<wait_awaiter>, "must be awaitable");
+    static_assert(awaitable<time_point_awaiter>, "must be awaitable");
 
     EXPECT_TRUE(awaiter.await_ready());
 

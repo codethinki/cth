@@ -16,7 +16,7 @@ namespace {
 struct test_osfence_awaiter : osfence_awaiter_base {
     using osfence_awaiter_base::osfence_awaiter_base;
 
-    static constexpr void await_resume() noexcept {}
+    void await_resume() const { osfence_awaiter_base::await_resume(); }
 };
 
 auto await_fence(os::fence const& fence, std::atomic_bool const& signaled) ->

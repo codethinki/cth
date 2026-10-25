@@ -3,6 +3,7 @@
 #include <cth/os/native_handle.hpp>
 
 #include <functional>
+#include <system_error>
 #include <utility>
 
 
@@ -21,6 +22,7 @@ class context;
 class context {
 public:
     using void_func = std::move_only_function<void()>;
+    using await_func = std::move_only_function<void(std::error_code)>;
     using native_handle = os::native_handle_t;
 
     /**
@@ -30,15 +32,17 @@ public:
 
     /**
      * calls the callback on this context once the handle is signaled
+     * @details the callback gets the result of the wait, an empty error_code -> signaled
      * @param cb to call
      */
-    virtual void await(native_handle, void_func cb) const = 0;
+    virtual void await(native_handle, await_func cb) const = 0;
     /**
      * calls the callback on this context once the time point is reached
+     * @details the callback gets the result of the wait, an empty error_code -> reached
      * @param time_point to wait for
      * @param cb to call
      */
-    virtual void await(chrono::time_point_t time_point, void_func cb) const = 0;
+    virtual void await(chrono::time_point_t time_point, await_func cb) const = 0;
 
     /**
      * true if the calling thread runs a job of this context
@@ -58,11 +62,15 @@ protected:
     /**
      * wraps the work: @ref current_context() is this context while the work runs
      * @details restores the previous context after the work, also if the work throws
+     * @details forwards the arguments of the call to the work
+     * @param work to wrap
+     * @return wrapped work
      */
-    [[nodiscard]] auto scoped(void_func work) const {
-        return [self = this, work = std::move(work)]() mutable {
+    template<class Work>
+    [[nodiscard]] auto scoped(Work work) const {
+        return [self = this, work = std::move(work)]<class... Args>(Args&&... args) mutable {
             current_guard const guard{self};
-            work();
+            work(std::forward<Args>(args)...);
         };
     }
 

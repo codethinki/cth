@@ -14,6 +14,7 @@
 #include <latch>
 #include <ranges>
 #include <semaphore>
+#include <system_error>
 #include <thread>
 #include <tuple>
 #include <type_traits>
@@ -63,6 +64,7 @@ CORO_TEST(strand, jobs_run_one_at_a_time_in_post_order) {
 CORO_TEST(strand, await_handle_calls_inside_strand) {
     os::fence fence{};
     std::atomic<bool> inStrand{false};
+    std::atomic<bool> failed{true};
     atomic_fence done{};
 
     scheduler sched{autostart, 4};
@@ -70,8 +72,9 @@ CORO_TEST(strand, await_handle_calls_inside_strand) {
 
     serial.await(
         fence.native_handle(),
-        [&] {
+        [&](std::error_code ec) {
             inStrand = serial.owns_thread();
+            failed = static_cast<bool>(ec);
             done.signal();
         }
     );
@@ -79,10 +82,12 @@ CORO_TEST(strand, await_handle_calls_inside_strand) {
 
     done.wait();
     EXPECT_TRUE(inStrand);
+    EXPECT_FALSE(failed);
 }
 
 CORO_TEST(strand, await_time_point_calls_inside_strand) {
     std::atomic<bool> inStrand{false};
+    std::atomic<bool> failed{true};
     atomic_fence done{};
 
     scheduler sched{autostart, 4};
@@ -90,14 +95,16 @@ CORO_TEST(strand, await_time_point_calls_inside_strand) {
 
     serial.await(
         chrono::clock_t::now() + std::chrono::milliseconds{1},
-        [&] {
+        [&](std::error_code ec) {
             inStrand = serial.owns_thread();
+            failed = static_cast<bool>(ec);
             done.signal();
         }
     );
 
     done.wait();
     EXPECT_TRUE(inStrand);
+    EXPECT_FALSE(failed);
 }
 
 CORO_TEST(strand, schedule_continues_inside_strand) {

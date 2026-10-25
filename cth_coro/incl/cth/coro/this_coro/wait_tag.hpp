@@ -1,5 +1,5 @@
 #pragma once
-#include "cth/coro/awaiters/wait_awaiter.hpp"
+#include "cth/coro/awaiters/time_point_awaiter.hpp"
 #include "cth/coro/utility/fwd.hpp"
 
 #include <chrono>
@@ -8,7 +8,7 @@
 namespace cth::co::this_coro {
 struct [[nodiscard]] wait_tag : tag_base {
     constexpr explicit wait_tag(chrono::time_point_t t) : timePoint{t} {}
-    constexpr auto operator()(co::context const& c, auto const&) const { return wait_awaiter{timePoint, c}; }
+    constexpr auto operator()(co::context const& c, auto const&) const { return time_point_awaiter{timePoint, c}; }
 
     chrono::time_point_t timePoint;
 };

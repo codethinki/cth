@@ -23,10 +23,10 @@ strand::~strand() = default;
 
 void strand::post(void_func work) const { dev::post_on(impl().executor, scoped(std::move(work))); }
 
-void strand::await(native_handle handle, void_func cb) const {
+void strand::await(native_handle handle, await_func cb) const {
     dev::await_on(impl().executor, impl().parent.ctx, handle, scoped(std::move(cb)));
 }
-void strand::await(chrono::time_point_t time_point, void_func cb) const {
+void strand::await(chrono::time_point_t time_point, await_func cb) const {
     dev::await_on(impl().executor, impl().parent.timerPool, time_point, scoped(std::move(cb)));
 }
 
