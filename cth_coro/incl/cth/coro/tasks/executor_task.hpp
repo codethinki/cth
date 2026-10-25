@@ -11,7 +11,6 @@
 #include <cth/meta/traits.hpp>
 
 #include <coroutine>
-#include <type_traits>
 
 
 namespace cth::co::dev {
@@ -43,7 +42,7 @@ private:
     using caller_payload_t = mta::conditional_pack_t<
         this_coro_compatible<CallerPromise>,
         mta::trait_pack<payload_t, CallerPromise>,
-        mta::trait_pack<std::type_identity_t, Pyld>>;
+        mta::type_pack<Pyld>>;
 };
 }
 
