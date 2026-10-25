@@ -25,7 +25,7 @@ struct spawn_promise
      * @param self executor that spawns the task
      */
     template<class... Args>
-    explicit spawn_promise(Pyld const& payload, executor const& self, Args&&...);
+    constexpr explicit spawn_promise(Pyld const& payload, executor const& self, Args&&...);
 
 
     spawn_task<T, Pyld> get_return_object() noexcept;
@@ -54,8 +54,8 @@ public:
     spawn_task(spawn_task const& other) = delete;
     spawn_task& operator=(spawn_task const& other) = delete;
 
-    spawn_task(spawn_task&& other) noexcept = default;
-    spawn_task& operator=(spawn_task&& other) noexcept = default;
+    constexpr spawn_task(spawn_task&& other) noexcept = default;
+    constexpr spawn_task& operator=(spawn_task&& other) noexcept = default;
 };
 
 template<class T, payload Pyld>

@@ -1,4 +1,6 @@
 #pragma once
+#include <cth/meta/concepts.hpp>
+
 #include <coroutine>
 
 
@@ -12,7 +14,7 @@ public:
 
     constexpr void await_suspend(std::coroutine_handle<>) const noexcept {}
 
-    [[nodiscard]] constexpr T await_resume() const noexcept { return _type; }
+    [[nodiscard]] constexpr T await_resume() const noexcept(mta::nothrow_copy_constructible<T>) { return _type; }
 
 private:
     T _type;

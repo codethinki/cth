@@ -2,6 +2,7 @@
 #include "cth/coro/utility/fwd.hpp"
 
 #include <cth/data/optional.hpp>
+#include <cth/meta/concepts.hpp>
 
 #include <coroutine>
 
@@ -15,10 +16,10 @@ struct raw_promise : dev::raw_promise_base {
     std::exception_ptr exception;
     std::coroutine_handle<> continuation = nullptr;
 
-    void unhandled_exception() { exception = std::current_exception(); }
+    constexpr void unhandled_exception() { exception = std::current_exception(); }
 
     template<class U>
-    void return_value(U&& value) noexcept {
+    constexpr void return_value(U&& value) noexcept(mta::nothrow_constructible<T, U&&>) {
         result.emplace(std::forward<U>(value));
     }
 };
@@ -31,8 +32,8 @@ struct raw_promise<void> : dev::raw_promise_base {
     std::exception_ptr exception;
     std::coroutine_handle<> continuation = nullptr;
 
-    void unhandled_exception() { exception = std::current_exception(); }
+    constexpr void unhandled_exception() { exception = std::current_exception(); }
 
-    void return_void() noexcept { result.emplace(); }
+    constexpr void return_void() noexcept { result.emplace(); }
 };
 }

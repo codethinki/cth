@@ -189,6 +189,11 @@ struct foreign_throwing_awaiter {
     [[noreturn]] void await_resume() const { throw std::runtime_error("foreign boom"); }
 };
 
+// the construction of the co_return value throws
+struct throwing_value {
+    explicit throwing_value(int) { throw std::runtime_error("value construction"); }
+};
+
 CORO_TEST(executor, interop_steal_foreign_void) {
     scheduler sched{autostart, 1};
     executor exec{sched};
@@ -524,6 +529,26 @@ CORO_TEST(executor, errors_foreign_exception_reaches_caller_on_own_scheduler) {
     };
 
     EXPECT_TRUE(homeExec.sync_wait(task(home, other)));
+}
+
+// a co_return value whose construction throws: the caller catches the exception
+CORO_TEST(executor, errors_throwing_return_value_reaches_caller) {
+    scheduler sched{autostart, 1};
+    executor exec{sched};
+
+    auto child = []() -> executor_task<throwing_value> { co_return 1; };
+
+    auto task = [](auto c) -> executor_task<bool> {
+        bool caught = false;
+        try {
+            (void) co_await c();
+        } catch(std::runtime_error const&) {
+            caught = true;
+        }
+        co_return caught;
+    };
+
+    EXPECT_TRUE(exec.sync_wait(task(child)));
 }
 
 CORO_TEST(executor, stress_concurrent_spawns) {

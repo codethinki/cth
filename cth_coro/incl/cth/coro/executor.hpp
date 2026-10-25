@@ -94,7 +94,7 @@ public:
 namespace cth::co::dev {
 template<class T, payload Pyld>
 template<class... Args>
-spawn_promise<T, Pyld>::spawn_promise(Pyld const& payload, executor const& self, Args&&...) :
+constexpr spawn_promise<T, Pyld>::spawn_promise(Pyld const& payload, executor const& self, Args&&...) :
     this_coro_promise_base<Pyld>{self.scheduler(), payload} {}
 }
 

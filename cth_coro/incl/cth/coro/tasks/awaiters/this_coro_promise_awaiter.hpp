@@ -1,7 +1,9 @@
 #pragma once
 #include "cth/coro/tasks/awaiters/dev/basic_promise_awaiter.hpp"
+#include "cth/coro/this_coro/this_coro_base.hpp"
 #include "cth/coro/utility/fwd.hpp"
 
+#include <cth/meta/concepts.hpp>
 #include <cth/meta/coro.hpp>
 
 #include <coroutine>
@@ -31,11 +33,13 @@ public:
 
     /**
      * passes the scheduler and the payload of the caller to the task and starts it
+     * @details a throwing payload copy resumes the caller with the exception, the task does not start
      * @param caller this_coro coroutine that awaits the task
      * @return handle of the task
      */
     template<class Caller>
-    auto await_suspend(std::coroutine_handle<Caller> caller) noexcept -> std::coroutine_handle<promise_type> {
+    auto await_suspend(std::coroutine_handle<Caller> caller) noexcept(NOTHROW_INHERIT<Caller>)
+        -> std::coroutine_handle<promise_type> {
         static_assert(
             this_coro_compatible<Caller>,
             "this_coro tasks need a this_coro caller, use spawn() or sync_wait()"
@@ -47,5 +51,14 @@ public:
         child.continuation = caller;
         return base_t::handle;
     }
+
+private:
+    template<class Caller>
+    static constexpr bool NOTHROW_INHERIT = [] {
+        if constexpr(this_coro_compatible<Caller>)
+            return mta::nothrow_constructible<payload_t<promise_type>, payload_t<Caller> const&>;
+        else
+            return true; // the static_assert in await_suspend reports the caller
+    }();
 };
 }

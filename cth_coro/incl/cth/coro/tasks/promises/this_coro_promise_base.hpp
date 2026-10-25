@@ -8,6 +8,7 @@
 #include "cth/coro/utility/concepts.hpp"
 
 #include <cth/data/optional.hpp>
+#include <cth/meta/concepts.hpp>
 #include <cth/meta/coro.hpp>
 
 #include <utility>
@@ -34,10 +35,11 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
      * @param scheduler the coroutine runs on
      * @param payload of the coroutine
      */
-    this_coro_promise_base(co::scheduler const& scheduler, Pyld const& payload) :
+    constexpr this_coro_promise_base(co::scheduler const& scheduler, Pyld const& payload)
+        noexcept(mta::nothrow_copy_constructible<Pyld>) :
         _scheduler{&scheduler},
         _payload{payload} {}
-    this_coro_promise_base() noexcept = default;
+    constexpr this_coro_promise_base() noexcept = default;
 
     /**
      * calls the tag with the scheduler and the payload
@@ -65,7 +67,7 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
      * waits on the native handle of the waitable, resumes this coroutine on its scheduler
      */
     template<native_handle_waitable Waitable>
-    [[nodiscard]] auto await_transform(Waitable const& waitable) {
+    [[nodiscard]] constexpr auto await_transform(Waitable const& waitable) {
         return raw_native_handle_awaiter{*_scheduler, waitable.native_handle()};
     }
 
@@ -82,7 +84,8 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
      * @param caller promise of the awaiting coroutine
      */
     template<class CallerPromise>
-    constexpr void inherit(CallerPromise const& caller) {
+    constexpr void inherit(CallerPromise const& caller)
+        noexcept(mta::nothrow_constructible<Pyld, payload_t<CallerPromise> const&>) {
         static_assert(
             this_coro::promise_injectable_with<this_coro_promise_base, payload_t<CallerPromise>>,
             "the payload of the caller must convert to the payload of the task"

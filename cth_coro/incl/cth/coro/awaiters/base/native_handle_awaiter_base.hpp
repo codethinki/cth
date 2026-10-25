@@ -13,7 +13,7 @@ namespace cth::co {
  * @details resumes the caller on its scheduler, derived awaiters add await_resume()
  */
 struct native_handle_awaiter_base : this_coro_awaiter_base {
-    explicit native_handle_awaiter_base(os::native_handle_t handle) : _handle{handle} {}
+    constexpr explicit native_handle_awaiter_base(os::native_handle_t handle) : _handle{handle} {}
 
     [[nodiscard]] bool await_ready() const { return os::check_ready(_handle); }
 

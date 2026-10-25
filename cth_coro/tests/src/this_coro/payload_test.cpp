@@ -6,7 +6,11 @@
 #include "cth/coro/tasks/executor_task.hpp"
 #include "cth/coro/this_coro.hpp"
 
+#include <cth/meta/concepts.hpp>
+
+#include <atomic>
 #include <concepts>
+#include <stdexcept>
 #include <tuple>
 #include <utility>
 
@@ -37,6 +41,15 @@ namespace {
     };
 
     inline constexpr marker_tag marker{};
+
+    struct parent_payload : this_coro::payload_base {};
+
+    // the conversion from the payload of the parent throws
+    struct throwing_payload : this_coro::payload_base {
+        throwing_payload(parent_payload const&) { throw std::runtime_error("payload conversion"); }
+    };
+
+    static_assert(!mta::nothrow_constructible<throwing_payload, parent_payload const&>);
 
     // invariant guard: the awaiter of a this_coro task must derive this_coro_awaiter_base, else the caller
     // captures the task as a foreign awaitable and the task never gets the scheduler and the payload.
@@ -121,6 +134,31 @@ THIS_CORO_TEST(custom_payload, awaits_default_payload_task) {
     auto const [actual, m] = exec.sync_wait<tagged_payload>(root(child), 4);
     EXPECT_EQ(actual, exec);
     EXPECT_EQ(m, 4);
+}
+
+// a throwing payload copy reaches the caller, the child does not start
+THIS_CORO_TEST(custom_payload, throwing_copy_reaches_caller) {
+    scheduler sched{autostart, 1};
+    executor exec{sched};
+    std::atomic<bool> childStarted{false};
+
+    auto child = [](std::atomic<bool>& started) -> executor_task<void, throwing_payload> {
+        started = true;
+        co_return;
+    };
+    auto root = [](scheduler const& s, std::atomic<bool>& started, auto c)
+        -> executor_task<bool, parent_payload> {
+        bool caughtOnSched = false;
+        try {
+            co_await c(started);
+        } catch(std::runtime_error const&) {
+            caughtOnSched = s.owns_thread();
+        }
+        co_return caughtOnSched;
+    };
+
+    EXPECT_TRUE(exec.sync_wait<parent_payload>(root(sched, childStarted, child)));
+    EXPECT_FALSE(childStarted);
 }
 
 // schedule() changes the scheduler, the payload stays
