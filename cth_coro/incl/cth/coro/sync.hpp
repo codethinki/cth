@@ -5,6 +5,15 @@
 
 namespace cth::co {
 
+/**
+ * awaits the awaitable on the calling thread and blocks until it ends
+ * @details the caller has no context: spawn this_coro tasks with @ref executor::spawn()
+ * @details @ref executor::sync_wait() spawns and waits in one call
+ * @param awaitable to await
+ * @return result of the awaitable
+ * @throws what the awaitable throws
+ * @attention blocks the calling thread
+ */
 template<awaitable Awaitable>
 auto sync(Awaitable awaitable) -> awaited_t<Awaitable> {
     using awaited_type = awaited_t<Awaitable>;
