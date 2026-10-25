@@ -1,8 +1,6 @@
 #pragma once
 #include "cth/coro/exception.hpp"
 
-#include <cth/io/log.hpp>
-
 #include <coroutine>
 #include <system_error>
 
@@ -19,7 +17,7 @@ public:
      * @throws cth::except::coro_exception reason: the wait failed
      */
     void await_resume() const {
-        CTH_STABLE_THROW_T(cth::except::coro_exception, _error, "wait failed, got {}", _error.message()) {}
+        CTH_CORO_STABLE_THROW(_error, "wait failed, got {}", _error.message()) {}
     }
 
 protected:
