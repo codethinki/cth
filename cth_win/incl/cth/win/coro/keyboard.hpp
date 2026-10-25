@@ -11,7 +11,7 @@ class keybd_event_queue;
  * suspends until the queue holds an event, resumes with it
  * @attention one awaiter per queue at a time
  */
-class keybd_event_awaiter : public cth::co::osfence_awaiter_base<> {
+class keybd_event_awaiter : public cth::co::osfence_awaiter_base {
 public:
     using queue_t = win::keybd_event_queue;
     using event_t = ::cth::io::key_update;
