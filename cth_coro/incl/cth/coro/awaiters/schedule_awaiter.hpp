@@ -24,14 +24,14 @@ public:
     /**
      * rebinds a this_coro caller to the target and posts the caller onto the target
      * @details owns_thread() is not enough: a scheduler also owns the threads that run the jobs of its strands
-     * @return false if @ref current_context() is the target, the caller continues without a post
+     * @return false if @ref context::current() is the target, the caller continues without a post
      */
     template<promise Promise>
     bool await_suspend(std::coroutine_handle<Promise> h) {
         if constexpr(this_coro_compatible<Promise>)
             h.promise().rebind_context(_target);
 
-        if(co::current_context() == &_target)
+        if(context::current() == &_target)
             return false;
 
         _target.post([h]() { h.resume(); });

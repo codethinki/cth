@@ -8,13 +8,6 @@
 
 
 namespace cth::co {
-class context;
-
-/**
- * @return context whose job runs on the calling thread, nullptr -> no job of a context
- */
-[[nodiscard]] context const* current_context() noexcept;
-
 /**
  * where coroutines run and wait
  * @details implemented by @ref scheduler and @ref strand, @ref executor and the awaiters only use this interface
@@ -50,6 +43,12 @@ public:
      */
     [[nodiscard]] virtual bool owns_thread() const = 0;
 
+    /**
+     * gets the context whose job runs on the calling thread
+     * @return context of the job, nullptr -> no job of a context
+     */
+    [[nodiscard]] static context const* current() noexcept { return _current; }
+
 protected:
     context() = default;
     ~context() = default;
@@ -60,7 +59,7 @@ protected:
     context& operator=(context&& other) noexcept = default;
 
     /**
-     * wraps the work: @ref current_context() is this context while the work runs
+     * wraps the work: @ref context::current() is this context while the work runs
      * @details restores the previous context after the work, also if the work throws
      * @details forwards the arguments of the call to the work
      * @param work to wrap
@@ -75,7 +74,7 @@ protected:
     }
 
     /**
-     * context of the job that runs on this thread, see @ref current_context()
+     * context of the job that runs on this thread, see @ref context::current()
      */
     static inline thread_local context const* _current = nullptr;
 
@@ -89,9 +88,5 @@ private:
         current_guard(current_guard const&) = delete;
         current_guard& operator=(current_guard const&) = delete;
     };
-
-    friend context const* current_context() noexcept;
 };
-
-inline context const* current_context() noexcept { return context::_current; }
 }

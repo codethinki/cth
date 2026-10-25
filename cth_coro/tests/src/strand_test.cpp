@@ -193,16 +193,16 @@ CORO_TEST(strand, current_is_the_context_of_the_job) {
     strand serial{sched};
 
     serial.post([&] {
-        inStrand = current_context();
+        inStrand = context::current();
         done.count_down();
     });
     sched.post([&] {
-        inScheduler = current_context();
+        inScheduler = context::current();
         done.count_down();
     });
     done.wait();
 
-    EXPECT_EQ(current_context(), nullptr);
+    EXPECT_EQ(context::current(), nullptr);
     EXPECT_EQ(inStrand.load(), &serial);
     EXPECT_EQ(inScheduler.load(), &sched);
 }

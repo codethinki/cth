@@ -158,7 +158,7 @@ CORO_TEST(scheduler, owns_thread_in_task) {
     EXPECT_EQ(successCount.load(), taskCount);
 }
 
-CORO_TEST(scheduler, current_context_in_job) {
+CORO_TEST(scheduler, current_is_the_scheduler_of_the_job) {
     scheduler sched{autostart, 2};
     scheduler other{autostart, 1};
 
@@ -167,18 +167,18 @@ CORO_TEST(scheduler, current_context_in_job) {
     std::latch allDone{2};
 
     sched.post([&] {
-        seenOnSched = current_context();
+        seenOnSched = context::current();
         allDone.count_down();
     });
     other.post([&] {
-        seenOnOther = current_context();
+        seenOnOther = context::current();
         allDone.count_down();
     });
 
     allDone.wait();
     EXPECT_EQ(seenOnSched.load(), &sched);
     EXPECT_EQ(seenOnOther.load(), &other);
-    EXPECT_EQ(current_context(), nullptr);
+    EXPECT_EQ(context::current(), nullptr);
 }
 
 CORO_TEST(scheduler, task_ordering_single_worker) {
