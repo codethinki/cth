@@ -49,9 +49,9 @@ namespace dev {
 
     /**
      * dev only, use @ref raw_promise
-     * @details token marking the raw_promise
+     * @details base of every raw_promise, defined in raw_promise.hpp
      */
-    struct raw_promise_base {};
+    struct raw_promise_base;
 }
 
 template<payload Pyld = this_coro::default_payload>

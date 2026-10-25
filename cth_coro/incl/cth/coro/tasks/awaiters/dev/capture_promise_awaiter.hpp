@@ -25,10 +25,8 @@ struct capture_promise_awaiter
     auto await_suspend(std::coroutine_handle<Caller> caller) noexcept -> std::coroutine_handle<Promise> {
         static_assert(this_coro_compatible<Caller>, "captures need a this_coro caller");
 
-        auto& capture = this->handle.promise();
-        capture.parentContext = &caller.promise().context();
-        capture.continuation = caller;
-        return this->handle;
+        this->handle.promise().parentContext = &caller.promise().context();
+        return basic_promise_awaiter<Promise>::await_suspend(caller);
     }
 };
 }

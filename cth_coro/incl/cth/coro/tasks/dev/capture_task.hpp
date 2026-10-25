@@ -1,10 +1,8 @@
 #pragma once
 #include "cth/coro/tasks/task_base.hpp"
 
-#include "cth/coro/tasks/awaiters/dev/affine_final_promise_awaiter.hpp"
 #include "cth/coro/tasks/awaiters/dev/capture_promise_awaiter.hpp"
-#include "cth/coro/tasks/promises/affine_promise_base.hpp"
-#include "cth/coro/tasks/promises/basic_promise.hpp"
+#include "cth/coro/tasks/promises/affine_promise.hpp"
 
 #include <coroutine>
 
@@ -15,9 +13,7 @@ namespace dev {
      * promise of @ref capture_task, not a this_coro promise: its body awaits the foreign awaitable as it is
      */
     template<class T>
-    struct capture_promise
-        : basic_promise<T, std::suspend_always{}, dev::affine_final_promise_awaiter{}>
-        , dev::affine_promise_base {
+    struct capture_promise : dev::affine_promise<T> {
         capture_task<T> get_return_object() noexcept;
     };
 }

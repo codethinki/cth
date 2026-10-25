@@ -1,10 +1,8 @@
 #pragma once
 #include "cth/coro/tasks/task_base.hpp"
 
-#include "cth/coro/tasks/awaiters/dev/affine_final_promise_awaiter.hpp"
 #include "cth/coro/tasks/awaiters/dev/spawn_promise_awaiter.hpp"
-#include "cth/coro/tasks/promises/affine_promise_base.hpp"
-#include "cth/coro/tasks/promises/basic_promise.hpp"
+#include "cth/coro/tasks/promises/affine_promise.hpp"
 #include "cth/coro/tasks/promises/this_coro_promise_base.hpp"
 #include "cth/coro/utility/fwd.hpp"
 
@@ -14,10 +12,7 @@
 namespace cth::co::dev {
 
 template<class T, payload Pyld = this_coro::default_payload>
-struct spawn_promise
-    : basic_promise<T, std::suspend_always{}, dev::affine_final_promise_awaiter{}>
-    , dev::affine_promise_base
-    , this_coro_promise_base<Pyld> {
+struct spawn_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
     /**
      * constructs from the coroutine parameters, runs on the context of the executor
      * @details defined in executor.hpp, the executor is incomplete here

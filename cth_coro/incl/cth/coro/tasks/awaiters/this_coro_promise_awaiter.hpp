@@ -48,8 +48,7 @@ public:
         auto& child = base_t::handle.promise();
         child.inherit(caller.promise());
         child.parentContext = &caller.promise().context();
-        child.continuation = caller;
-        return base_t::handle;
+        return base_t::await_suspend(caller);
     }
 
 private:

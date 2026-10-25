@@ -15,7 +15,7 @@ struct affine_final_promise_awaiter {
     [[nodiscard]] constexpr bool await_ready() noexcept { return false; }
 
     /**
-     * @param h of the ending task, its promise derives @ref affine_promise_base
+     * @param h of the ending task, its promise derives @ref affine_promise
      * @return parent if @ref current_context() is the context of the parent, else std::noop_coroutine()
      */
     template<class Promise>

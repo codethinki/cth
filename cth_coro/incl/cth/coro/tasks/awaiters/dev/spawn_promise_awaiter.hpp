@@ -39,8 +39,7 @@ public:
         else
             child.parentContext = &child.context();
 
-        child.continuation = caller;
-        return base_t::handle;
+        return base_t::await_suspend(caller);
     }
 };
 }
