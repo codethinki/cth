@@ -33,9 +33,9 @@ struct spawn_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
     template<class CallerPromise>
     constexpr void attach(CallerPromise const& caller) noexcept {
         if constexpr(this_coro_compatible<CallerPromise>)
-            this->parentContext = &caller.context();
+            this->callerContext = &caller.context();
         else
-            this->parentContext = &this->context();
+            this->callerContext = &this->context();
     }
 };
 

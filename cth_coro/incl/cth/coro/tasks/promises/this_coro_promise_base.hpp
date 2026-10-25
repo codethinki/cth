@@ -15,8 +15,6 @@
 
 
 namespace cth::co {
-class executor;
-
 template<class T>
 concept native_handle_waitable = requires(T const& value) {
     { value.native_handle() } -> std::same_as<os::native_handle_t>;

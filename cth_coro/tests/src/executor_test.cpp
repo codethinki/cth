@@ -274,8 +274,8 @@ CORO_TEST(executor, context_schedule_onto_own_context_continues_without_post) {
     EXPECT_TRUE(exec.sync_wait(task(exec, posted)));
 }
 
-// a child that moves to another scheduler continues the parent on the scheduler of the parent
-CORO_TEST(executor, context_parent_continues_on_own_scheduler_after_child_schedule) {
+// a child that moves to another scheduler continues the caller on the scheduler of the caller
+CORO_TEST(executor, context_caller_continues_on_own_scheduler_after_child_schedule) {
     scheduler home{autostart, 1};
     scheduler other{autostart, 1};
     executor homeExec{home};

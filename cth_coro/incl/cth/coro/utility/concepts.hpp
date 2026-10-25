@@ -6,9 +6,6 @@
 #include <type_traits>
 
 
-namespace cth::co::this_coro {}
-
-
 namespace cth::co {
 
 /**

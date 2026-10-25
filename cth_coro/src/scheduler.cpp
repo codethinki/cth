@@ -27,6 +27,8 @@ void scheduler::await(chrono::time_point_t time_point, void_func cb) const {
 }
 
 void scheduler::start() {
+    CTH_CRITICAL(active(), "start() on an active scheduler, the workers are still running") {}
+
     impl().start();
     for(auto& worker : _workers)
         worker = std::jthread(

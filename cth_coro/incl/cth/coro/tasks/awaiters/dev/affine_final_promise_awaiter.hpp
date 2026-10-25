@@ -21,7 +21,7 @@ struct affine_final_promise_awaiter {
     template<class Promise>
     std::coroutine_handle<> await_suspend(std::coroutine_handle<Promise> h) noexcept {
         auto const continuation = h.promise().continuation;
-        auto const* target = h.promise().parentContext;
+        auto const* target = h.promise().callerContext;
         if(co::current_context() == target)
             return continuation;
         target->post([continuation] { continuation.resume(); }); // nothing touches the frame after the post
