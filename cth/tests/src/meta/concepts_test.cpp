@@ -26,6 +26,37 @@ TYPE_TEST(trivially_copyable, main) {
     ASSERT_TRUE((satisfies<Point, CPT(trivially_copyable)>) );
 }
 
+TYPE_TEST(nothrow_constructible, main) {
+    struct Point {
+        float x, y;
+    };
+    struct throwing {
+        explicit throwing(int) noexcept(false) {}
+    };
+
+    ASSERT_TRUE((nothrow_constructible<int>) );
+    ASSERT_TRUE((nothrow_constructible<int, int>) );
+    ASSERT_TRUE((nothrow_constructible<Point>) );
+    ASSERT_FALSE((nothrow_constructible<throwing, int>) );
+    ASSERT_FALSE((nothrow_constructible<Point, std::string>) );
+    ASSERT_TRUE((satisfies<Point, CPT(nothrow_constructible)>) );
+}
+
+TYPE_TEST(nothrow_copy_constructible, main) {
+    struct Point {
+        float x, y;
+    };
+    struct throwing_copy {
+        throwing_copy() = default;
+        throwing_copy(throwing_copy const&) noexcept(false) {}
+    };
+
+    ASSERT_TRUE((nothrow_copy_constructible<int>) );
+    ASSERT_TRUE((nothrow_copy_constructible<Point>) );
+    ASSERT_FALSE((nothrow_copy_constructible<throwing_copy>) );
+    ASSERT_TRUE((satisfies<Point, CPT(nothrow_copy_constructible)>) );
+}
+
 TYPE_TEST(any_satisfy, main) {
     ASSERT_TRUE((any_satisfy<CPT(arithmetic), int, float, double>) );
     ASSERT_TRUE((any_satisfy<CPT(arithmetic), int, float, std::string>) );

@@ -13,7 +13,7 @@ THIS_CORO_TEST(promise_base, tag_injection) {
 
     auto task = []() -> executor_task<executor> { co_return co_await this_coro::executor; };
 
-    auto const actual = sync_wait(exec, task());
+    auto const actual = exec.sync_wait(task());
     EXPECT_EQ(actual, exec);
 }
 
@@ -25,7 +25,7 @@ THIS_CORO_TEST(promise_base, nested_task_propagation) {
 
     auto root = [](auto c) -> executor_task<executor> { co_return co_await c(); };
 
-    auto const actual = sync_wait(exec, root(child));
+    auto const actual = exec.sync_wait(root(child));
     EXPECT_EQ(actual, exec);
 }
 
@@ -42,7 +42,7 @@ THIS_CORO_TEST(promise_base, deep_recursion_propagation) {
         }
     };
 
-    auto const actual = sync_wait(exec, Recursive{}(10));
+    auto const actual = exec.sync_wait(Recursive{}(10));
     EXPECT_EQ(actual, exec);
 }
 

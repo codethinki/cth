@@ -57,8 +57,10 @@ header only core
 ## cth::coro
 coroutine runtime on asio
 
+- `co::context`: interface of where coroutines run and wait, implemented by `scheduler` and `strand`
 - `co::scheduler`: `asio::io_context` on its own threads
-- `co::executor`: spawns tasks, moves execution back onto the scheduler after foreign awaitables
+- `co::strand`: serial queue on a scheduler, its jobs run one at a time and in post order
+- `co::executor`: spawns tasks, every `co_await` returns the caller to its context, except `schedule()`
 - `this_coro::executor`, `this_coro::wait(duration)`, native handle waits
 
 ## cth::os
@@ -99,7 +101,7 @@ auto task = []() -> cth::co::executor_task<int> {
     co_return 42;
 };
 
-int const result = cth::co::sync(executor.spawn(task()));
+int const result = executor.sync_wait(task());
 ```
 
 ## logging

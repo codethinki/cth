@@ -3,12 +3,10 @@
 #include <cth/io/log.hpp>
 #include <cth/chrono.hpp>
 
+#include "context.hpp"
 #include "utility/fwd.hpp"
 
-#include <cth/os/native_handle.hpp>
 
-
-#include <functional>
 #include <thread>
 #include <vector>
 
@@ -19,15 +17,17 @@ using autostart_t = decltype(autostart);
 }
 
 namespace cth::co {
-class scheduler {
+/**
+ * runs its jobs on its own worker threads
+ * @details @ref context on an asio::io_context
+ */
+class scheduler final : public context {
     struct Impl;
+    friend class strand;
 
     static inline thread_local Impl* _threadScheduler = nullptr;
 
 public:
-    using native_handle = cth::os::native_handle_t;
-    using void_func = std::move_only_function<void()>;
-
     // ReSharper disable once CppNonExplicitConvertingConstructor
     /**
      * constructs the scheduler with workers
@@ -48,10 +48,10 @@ public:
      */
     ~scheduler();
 
-    void post(void_func work) const;
+    void post(void_func work) const override;
 
-    void await(native_handle, void_func cb) const;
-    void await(chrono::time_point_t time_point, void_func cb) const;
+    void await(native_handle, await_func cb) const override;
+    void await(chrono::time_point_t time_point, await_func cb) const override;
 
 
     void start();
@@ -73,7 +73,7 @@ private:
     std::vector<std::jthread> _workers{};
 
 public:
-    [[nodiscard]] bool owns_thread() const { return _threadScheduler == _impl.get(); }
+    [[nodiscard]] bool owns_thread() const override { return _threadScheduler == _impl.get(); }
 
     [[nodiscard]] size_t workers() const { return _workers.size(); }
     [[nodiscard]] size_t active_workers() const {

@@ -1,5 +1,4 @@
 #pragma once
-#include "asio.hpp"
 #include "native_handle_helpers.hpp"
 
 #include "cth/coro/utility/fwd.hpp"
@@ -8,6 +7,10 @@
 #include <cth/os/timer.hpp>
 
 #include <asio/io_context.hpp>
+
+#include <functional>
+#include <mutex>
+#include <system_error>
 
 
 namespace cth::co {
@@ -38,23 +41,26 @@ namespace dev {
 class timer_pool {
 
 public:
-    using void_func = std::move_only_function<void()>;
+    using await_func = std::move_only_function<void(std::error_code)>;
     using timer_t = dev::adapted_timer;
 
     timer_pool(bas::io_context& ctx) : _ctx{ctx} {}
 
-    void set(chrono::time_point_t time_point, void_func callback) {
+    /**
+     * calls the callback once the time point is reached
+     * @details releases the timer before the callback, the callback gets the error code of the wait
+     * @param time_point to wait for
+     * @param callback to call with the error code
+     */
+    void set(chrono::time_point_t time_point, await_func callback) {
         auto& timer = new_timer();
         auto& handler = timer.set(time_point);
 
         async_wait_signaled(
             handler,
-            [&handler, &timer, this, cb = std::move(callback)](asio::error_code const& ec) mutable {
-                ASIO_EC_STABLE_THROW(ec, "async wait for handle [{}] failed", handler.native_handle())
-
+            [&timer, this, cb = std::move(callback)](std::error_code const& ec) mutable {
                 release(timer);
-
-                cb();
+                cb(ec);
             }
         );
     }

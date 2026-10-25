@@ -1,20 +1,20 @@
 #pragma once
 #include "cth/coro/utility.hpp"
 #include "cth/coro/awaiters/raw_native_handle_awaiter.hpp"
-#include "cth/coro/func/steal.hpp"
+#include "cth/coro/func/dev/steal.hpp"
 #include "cth/coro/tasks/dev/capture_task.hpp"
 #include "cth/coro/this_coro/payload.hpp"
+#include "cth/coro/this_coro/this_coro_base.hpp"
 #include "cth/coro/utility/concepts.hpp"
 
 #include <cth/data/optional.hpp>
+#include <cth/meta/concepts.hpp>
 #include <cth/meta/coro.hpp>
 
 #include <utility>
 
 
 namespace cth::co {
-class executor;
-
 template<class T>
 concept native_handle_waitable = requires(T const& value) {
     { value.native_handle() } -> std::same_as<os::native_handle_t>;
@@ -22,74 +22,90 @@ concept native_handle_waitable = requires(T const& value) {
 
 
 /**
- * promises supporting the libs this_coro namespace must publicly inherit from this
+ * base of this_coro promises, holds the context the coroutine runs on and the payload
  * @details
- * - children must forward the payload on construction
+ * - promises supporting the libs this_coro namespace must publicly inherit from this
+ * - the awaiter of a task calls @ref inherit() before the task runs, a spawned task gets both on construction
  */
 template<payload Pyld>
 struct this_coro_promise_base : this_coro_base<Pyld> {
+    /**
+     * @param context the coroutine runs on
+     * @param payload of the coroutine
+     */
+    constexpr this_coro_promise_base(co::context const& context, Pyld const& payload)
+        noexcept(mta::nothrow_copy_constructible<Pyld>) :
+        _context{&context},
+        _payload{payload} {}
+    constexpr this_coro_promise_base() noexcept = default;
+
+    /**
+     * calls the tag with the context and the payload
+     * @return awaitable of the tag
+     */
     template<this_coro::tag Tag>
     [[nodiscard]] constexpr decltype(auto) await_transform(Tag&& t) {
         static_assert(
-            requires(Tag t) { { t.operator()(std::declval<Pyld>()) } -> awaitable; },
-            "Pyld must satisfy the tags call operator"
+            requires(Tag tag, co::context const& c, Pyld& p) { { std::forward<Tag>(tag)(c, p) } -> awaitable; },
+            "the tag must be callable with the context and the payload"
         );
 
-        return std::forward<Tag>(t).operator()(*_payload);
+        return std::forward<Tag>(t)(*_context, *_payload);
     }
 
-
+    /**
+     * awaits the awaitable as it is, its awaiter resumes this coroutine on its context
+     */
     template<this_coro_awaitable Awaitable>
     [[nodiscard]] constexpr auto await_transform(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
+        return co::extract_awaiter(std::forward<Awaitable>(awaitable));
+    }
+
+    /**
+     * waits on the native handle of the waitable, resumes this coroutine on its context
+     */
+    template<native_handle_waitable Waitable>
+    [[nodiscard]] constexpr auto await_transform(Waitable const& waitable) {
+        return raw_native_handle_awaiter{*_context, waitable.native_handle()};
+    }
+
+    /**
+     * captures the foreign awaitable, the capture resumes this coroutine on its context
+     */
+    template<foreign_awaitable Awaitable> requires (!native_handle_waitable<Awaitable>)
+    [[nodiscard]] auto await_transform(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
+        return dev::steal(std::move(awaitable));
+    }
+
+    /**
+     * copies the context and the payload of the caller
+     * @param caller promise of the awaiting coroutine
+     */
+    template<class CallerPromise>
+    constexpr void inherit(CallerPromise const& caller)
+        noexcept(mta::nothrow_constructible<Pyld, payload_t<CallerPromise> const&>) {
         static_assert(
-            this_coro::awaitable_injectable_with<Awaitable, Pyld>,
-            "awaited task carries a payload incompatible with this coroutine's payload"
+            this_coro::promise_injectable_with<this_coro_promise_base, payload_t<CallerPromise>>,
+            "the payload of the caller must convert to the payload of the task"
         );
 
-        auto awaiter = co::extract_awaiter(std::forward<Awaitable>(awaitable));
-
-        awaiter.inject(*_payload);
-
-        return awaiter;
-    }
-
-    template<captured_awaitable Awaitable>
-    [[nodiscard]] constexpr auto await_transform(Awaitable&& captured) { return cth::co::extract_awaiter(captured); }
-
-    template<native_handle_waitable Waitable> requires (this_coro::scheduler_payload<Pyld>)
-    [[nodiscard]] constexpr auto await_transform(Waitable const& waitable) {
-        return raw_native_handle_awaiter{_payload->scheduler(), waitable.native_handle()};
-    }
-
-    template<foreign_awaitable Awaitable>
-        requires (this_coro::scheduler_payload<Pyld> && !native_handle_waitable<Awaitable>)
-    [[nodiscard]] auto await_transform(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
-        return co::steal(std::move(awaitable), *_payload);
+        _context = &caller.context();
+        _payload.emplace(caller.payload());
     }
 
     /**
-     * injects the this_coro default_payload into the promise
-     * @param payload to inject
+     * sets the context the coroutine runs on, keeps the payload
+     * @param context the coroutine moves to
      */
-    constexpr void inject(Pyld const& payload) { _payload = payload; }
-
-    /**
-     * repoints the promise's payload at a new scheduler, preserving every other payload field
-     * @details only available for scheduler payloads; the payload is engaged on every path that reaches
-     *  this (a this_coro co_await goes through await_transform, which derefs the payload first)
-     * @param scheduler the coroutine has migrated onto
-     */
-    constexpr void rebind_scheduler(co::scheduler const& scheduler)
-        requires this_coro::scheduler_payload<Pyld>
-    {
-        _payload->rebind_scheduler(scheduler);
-    }
-
-    constexpr this_coro_promise_base(Pyld const& payload) noexcept : _payload{payload} {}
-    constexpr this_coro_promise_base() noexcept = default;
+    constexpr void rebind_context(co::context const& context) noexcept { _context = &context; }
 
 private:
+    co::context const* _context = nullptr;
     cth::dt::optional<Pyld> _payload{};
+
+public:
+    [[nodiscard]] constexpr co::context const& context() const noexcept { return *_context; }
+    [[nodiscard]] constexpr Pyld const& payload() const noexcept { return *_payload; }
 };
 
 }

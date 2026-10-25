@@ -158,6 +158,29 @@ CORO_TEST(scheduler, owns_thread_in_task) {
     EXPECT_EQ(successCount.load(), taskCount);
 }
 
+CORO_TEST(scheduler, current_is_the_scheduler_of_the_job) {
+    scheduler sched{autostart, 2};
+    scheduler other{autostart, 1};
+
+    std::atomic<context const*> seenOnSched{nullptr};
+    std::atomic<context const*> seenOnOther{nullptr};
+    std::latch allDone{2};
+
+    sched.post([&] {
+        seenOnSched = context::current();
+        allDone.count_down();
+    });
+    other.post([&] {
+        seenOnOther = context::current();
+        allDone.count_down();
+    });
+
+    allDone.wait();
+    EXPECT_EQ(seenOnSched.load(), &sched);
+    EXPECT_EQ(seenOnOther.load(), &other);
+    EXPECT_EQ(context::current(), nullptr);
+}
+
 CORO_TEST(scheduler, task_ordering_single_worker) {
     scheduler sched(1);
     int val = 0;

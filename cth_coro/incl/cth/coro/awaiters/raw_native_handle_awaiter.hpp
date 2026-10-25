@@ -1,6 +1,6 @@
 #pragma once
-
-#include "cth/coro/scheduler.hpp"
+#include "cth/coro/context.hpp"
+#include "cth/coro/awaiters/base/wait_awaiter_base.hpp"
 
 #include <cth/os/wait.hpp>
 
@@ -8,14 +8,17 @@
 
 
 namespace cth::co {
-struct raw_native_handle_awaiter {
-    co::scheduler const& scheduler;
+/**
+ * waits until the handle is signaled, resumes the caller on the context
+ * @details a failed wait throws in the caller
+ */
+struct raw_native_handle_awaiter : wait_awaiter_base {
+    constexpr raw_native_handle_awaiter(co::context const& ctx, os::native_handle_t h) : context{ctx}, handle{h} {}
+
+    co::context const& context;
     os::native_handle_t handle;
 
     [[nodiscard]] bool await_ready() const { return os::check_ready(handle); }
-    void await_suspend(std::coroutine_handle<> h) const {
-        scheduler.await(handle, [h] { h.resume(); });
-    }
-    static constexpr void await_resume() {}
+    void await_suspend(std::coroutine_handle<> h) { context.await(handle, resume(h)); }
 };
 }

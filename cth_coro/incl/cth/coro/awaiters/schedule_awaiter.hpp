@@ -1,41 +1,46 @@
 #pragma once
-#include "cth/coro/scheduler.hpp"
-#include "cth/coro/this_coro/this_coro_base.hpp"
+#include "cth/coro/context.hpp"
 #include "cth/coro/utility/fwd.hpp"
+
+#include <cth/meta/coro.hpp>
 
 #include <coroutine>
 
 
 namespace cth::co {
 /**
- * switches execution onto a target @ref scheduler and stays there
- * @details 
- * @tparam Pyld payload of the migrating coroutine, defaulted to @ref this_coro::default_payload
+ * switches execution onto a target @ref context and stays there
+ * @details a this_coro caller runs on the target afterwards, its payload stays
  */
-template<this_coro::scheduler_payload Pyld>
-struct schedule_awaiter : this_coro_base<Pyld> {
+struct schedule_awaiter : this_coro_awaiter_base {
 public:
-    constexpr schedule_awaiter(co::scheduler const& target) : _target{target} {}
+    constexpr schedule_awaiter(co::context const& target) : _target{target} {}
 
-    [[nodiscard]] bool await_ready() const noexcept { return _target.owns_thread(); }
+    /**
+     * @return false, @ref await_suspend() decides
+     */
+    [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
 
-    template<promise Promise> requires this_coro::scheduler_payload<Pyld>
-    void await_suspend(std::coroutine_handle<Promise> h) {
-        // even though we don't inject it, payload compatibility should be enforced
-        static_assert(!this_coro_compatible<Promise> || this_coro::promise_injectable_with<Promise, Pyld>);
+    /**
+     * rebinds a this_coro caller to the target and posts the caller onto the target
+     * @details owns_thread() is not enough: a scheduler also owns the threads that run the jobs of its strands
+     * @return false if @ref context::current() is the target, the caller continues without a post
+     */
+    template<promise Promise>
+    bool await_suspend(std::coroutine_handle<Promise> h) {
+        if constexpr(this_coro_compatible<Promise>)
+            h.promise().rebind_context(_target);
 
-        if constexpr(this_coro::scheduler_payload<Pyld> && this_coro_compatible<Promise>)
-            h.promise().rebind_scheduler(_target);
+        if(context::current() == &_target)
+            return false;
 
         _target.post([h]() { h.resume(); });
+        return true;
     }
-
-    template<pyld_injectable_to<Pyld> P>
-    constexpr void inject(P const&) const noexcept {}
 
     constexpr void await_resume() const noexcept {}
 
 private:
-    co::scheduler const& _target;
+    co::context const& _target;
 };
 }

@@ -95,6 +95,12 @@ concept trivial = std::is_trivial_v<T>;
 template<class T>
 concept trivially_copyable = std::is_trivially_copyable_v<T>;
 
+template<class T, class... Args>
+concept nothrow_constructible = std::constructible_from<T, Args...> && std::is_nothrow_constructible_v<T, Args...>;
+
+template<class T>
+concept nothrow_copy_constructible = std::copy_constructible<T> && std::is_nothrow_copy_constructible_v<T>;
+
 template<class T>
 concept reference = std::is_reference_v<T>;
 

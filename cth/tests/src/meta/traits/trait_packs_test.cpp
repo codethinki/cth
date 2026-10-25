@@ -25,6 +25,13 @@ PACK_TEST(first_trait_pack, main) {
     static_assert(std::same_as<first_pack_t<illegal_pack, illegal_pack, pack1>, pack1_t>);
 }
 
+PACK_TEST(type_pack, main) {
+    static_assert(type_pack<int>::can_unpack);
+    static_assert(std::same_as<unpack_trait_t<type_pack<int const&>>, int const&>);
+    static_assert(std::same_as<first_pack_t<illegal_pack, type_pack<void>>, void>);
+    static_assert(std::same_as<conditional_pack_t<false, illegal_pack, type_pack<float>>, float>);
+}
+
 PACK_TEST(conditional_trait_pack, main) {
     static_assert(std::same_as<conditional_pack_t<true, pack1, pack2>, pack1_t>);
     static_assert(std::same_as<conditional_pack_t<false, pack1, pack2>, pack2_t>);

@@ -14,7 +14,7 @@ TAG_TEST(executor_tag, returns_correct_executor) {
 
     auto task = []() -> executor_task<co::executor> { co_return co_await this_coro::executor; };
 
-    auto const actual = sync_wait(exec, task());
+    auto const actual = exec.sync_wait(task());
     EXPECT_EQ(actual, exec);
 }
 

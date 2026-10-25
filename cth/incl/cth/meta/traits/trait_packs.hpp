@@ -1,58 +1,86 @@
 #pragma once
-#include "cth/meta/utility.hpp"
-
+#include <type_traits>
 #include <utility>
 
-namespace cth::mta {
+namespace cth::mta::dev {
+template<bool CanUnpack, template<class...> class Trait, class... Args>
+struct unpacked {
+    using type = void;
+};
+template<template<class...> class Trait, class... Args>
+struct unpacked<true, Trait, Args...> {
+    using type = Trait<Args...>;
+};
+}
 
+namespace cth::mta {
+/**
+ * a trait with its arguments, instantiated only when unpacked
+ * @details @ref type is Trait<Args...>, void if Trait<Args...> is ill-formed
+ */
 template<template<class...> class Trait, class... Args>
 struct trait_pack {
     static constexpr bool can_unpack = requires { typename Trait<Args...>; };
 
-    static constexpr auto unpack() {
-        if constexpr(can_unpack)
-            return std::type_identity<Trait<Args...>>{};
-        else
-            return std::type_identity<void>{};
-    }
-
-    using unpacked_type = type_of_t<unpack()>;
+    using unpacked_type = dev::unpacked<can_unpack, Trait, Args...>::type;
     using type = unpacked_type;
+
+    static constexpr auto unpack() { return std::type_identity<unpacked_type>{}; }
 };
 
-template<class Pack, class... Rest>
-consteval auto first_pack() {
-    if constexpr(Pack::can_unpack)
-        return Pack::unpack();
-    else if constexpr(!Pack::can_unpack && sizeof...(Rest) > 0)
-        return first_pack<Rest...>();
-    else
-        static_assert(false, "no unpackable trait found");
+/**
+ * a pack that always unpacks to T
+ */
+template<class T>
+using type_pack = trait_pack<std::type_identity_t, T>;
 }
 
-template<class... TraitPacks>
-using first_pack_t = type_of_t<first_pack<TraitPacks...>()>;
-
+namespace cth::mta::dev {
 template<class Pack>
-consteval auto unpack_trait() {
-    if constexpr(Pack::can_unpack)
-        return Pack::unpack();
-    else
-        static_assert(false, "Unable to unpack trait");
+struct unpack_trait;
+
+template<template<class...> class Trait, class... Args>
+struct unpack_trait<trait_pack<Trait, Args...>> {
+    static_assert(requires { typename Trait<Args...>; }, "Unable to unpack trait");
+    using type = Trait<Args...>;
+};
+
+template<class... Packs>
+struct first_pack {
+    static_assert(false, "no unpackable trait found");
+    using type = void;
+};
+
+template<template<class...> class Trait, class... Args, class... Rest>
+struct first_pack<trait_pack<Trait, Args...>, Rest...> : first_pack<Rest...> {};
+
+template<template<class...> class Trait, class... Args, class... Rest>
+    requires requires { typename Trait<Args...>; }
+struct first_pack<trait_pack<Trait, Args...>, Rest...> {
+    using type = Trait<Args...>;
+};
 }
 
+namespace cth::mta {
+/**
+ * unpacks the pack
+ * @pre the pack can unpack
+ */
 template<class TraitPack>
-using unpack_trait_t = decltype(unpack_trait<TraitPack>())::type;
+using unpack_trait_t = dev::unpack_trait<TraitPack>::type;
 
-template<bool Condition, class LeftPack, class RightPack>
-consteval auto conditional_pack() {
-    if constexpr(Condition)
-        return unpack_trait<LeftPack>();
-    else
-        return unpack_trait<RightPack>();
-}
+/**
+ * unpacks the first pack that can unpack
+ */
+template<class... TraitPacks>
+using first_pack_t = dev::first_pack<TraitPacks...>::type;
 
+/**
+ * unpacks only the chosen pack
+ * @pre the chosen pack can unpack
+ */
 template<bool Condition, class LeftPack, class RightPack>
-using conditional_pack_t = type_of_t<conditional_pack<Condition, LeftPack, RightPack>()>;
+using conditional_pack_t =
+    std::conditional_t<Condition, dev::unpack_trait<LeftPack>, dev::unpack_trait<RightPack>>::type;
 
 }

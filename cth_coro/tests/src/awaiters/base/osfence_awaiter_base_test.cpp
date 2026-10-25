@@ -3,6 +3,7 @@
 #include "../../test.hpp"
 
 #include <cth/coro/executor.hpp>
+#include <cth/coro/scheduler.hpp>
 #include <cth/coro/sync.hpp>
 #include <cth/coro/tasks/executor_task.hpp>
 
@@ -12,10 +13,10 @@
 
 namespace cth::co {
 namespace {
-struct test_osfence_awaiter : osfence_awaiter_base<> {
-    using osfence_awaiter_base<>::osfence_awaiter_base;
+struct test_osfence_awaiter : osfence_awaiter_base {
+    using osfence_awaiter_base::osfence_awaiter_base;
 
-    static constexpr void await_resume() noexcept {}
+    void await_resume() const { osfence_awaiter_base::await_resume(); }
 };
 
 auto await_fence(os::fence const& fence, std::atomic_bool const& signaled) ->
