@@ -13,7 +13,7 @@ namespace cth::co {
 
 /**
  * true if the awaiter of @ref T derives @ref this_coro_awaiter_base
- * @details the awaiter resumes the caller on its scheduler itself
+ * @details the awaiter resumes the caller on its context itself
  */
 template<class T>
 concept this_coro_awaitable =

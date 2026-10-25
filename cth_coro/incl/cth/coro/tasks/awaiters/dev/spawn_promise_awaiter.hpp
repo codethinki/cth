@@ -10,9 +10,9 @@
 
 namespace cth::co::dev {
 /**
- * awaiter of @ref spawn_task, the spawned task keeps its own scheduler and payload
- * @details the spawned task continues the caller on its scheduler,
- *  a caller without a scheduler continues on the scheduler of the executor
+ * awaiter of @ref spawn_task, the spawned task keeps its own context and payload
+ * @details the spawned task continues the caller on its context,
+ *  a caller without a context continues on the context of the executor
  */
 template<cth_promise Promise>
 struct spawn_promise_awaiter : this_coro_awaiter_base, private basic_promise_awaiter<Promise> {
@@ -27,7 +27,7 @@ public:
     using base_t::base_t;
 
     /**
-     * stores the scheduler the caller continues on and starts the spawned task
+     * stores the context the caller continues on and starts the spawned task
      * @param caller coroutine that awaits the spawned task
      * @return handle of the spawned task
      */
@@ -35,9 +35,9 @@ public:
     auto await_suspend(std::coroutine_handle<Caller> caller) noexcept -> std::coroutine_handle<promise_type> {
         auto& child = base_t::handle.promise();
         if constexpr(this_coro_compatible<Caller>)
-            child.parentScheduler = &caller.promise().scheduler();
+            child.parentContext = &caller.promise().context();
         else
-            child.parentScheduler = &child.scheduler();
+            child.parentContext = &child.context();
 
         child.continuation = caller;
         return base_t::handle;

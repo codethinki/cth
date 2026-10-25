@@ -25,7 +25,7 @@ struct executor_promise
 namespace cth::co {
 /**
  * Task to be spawned on the @ref executor
- * @details runs on the scheduler of the caller, the caller continues on its scheduler afterwards
+ * @details runs on the context of the caller, the caller continues on its context afterwards
  * @tparam T task return type
  * @tparam Pyld payload of the task, the payload of the caller must convert to it
  */

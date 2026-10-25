@@ -19,7 +19,7 @@ struct spawn_promise
     , dev::affine_promise_base
     , this_coro_promise_base<Pyld> {
     /**
-     * constructs from the coroutine parameters, runs on the scheduler of the executor
+     * constructs from the coroutine parameters, runs on the context of the executor
      * @details defined in executor.hpp, the executor is incomplete here
      * @param payload of the spawned task
      * @param self executor that spawns the task
@@ -37,8 +37,8 @@ namespace cth::co {
 
 /**
  * task of @ref executor::spawn()
- * @details runs on the scheduler of the executor with its own payload,
- *  the caller continues on its scheduler, a caller without a scheduler continues on the scheduler of the executor
+ * @details runs on the context of the executor with its own payload,
+ *  the caller continues on its context, a caller without a context continues on the context of the executor
  * @tparam T result type
  * @tparam Pyld payload of the spawned task
  */

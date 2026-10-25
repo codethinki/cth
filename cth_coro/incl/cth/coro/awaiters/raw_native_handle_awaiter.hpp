@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cth/coro/scheduler.hpp"
+#include "cth/coro/context.hpp"
 
 #include <cth/os/wait.hpp>
 
@@ -9,12 +9,12 @@
 
 namespace cth::co {
 struct raw_native_handle_awaiter {
-    co::scheduler const& scheduler;
+    co::context const& context;
     os::native_handle_t handle;
 
     [[nodiscard]] bool await_ready() const { return os::check_ready(handle); }
     void await_suspend(std::coroutine_handle<> h) const {
-        scheduler.await(handle, [h] { h.resume(); });
+        context.await(handle, [h] { h.resume(); });
     }
     static constexpr void await_resume() {}
 };

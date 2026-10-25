@@ -18,7 +18,7 @@ namespace cth::co {
 
 namespace {
 
-    // a custom payload: a marker value, the built-in tags take the scheduler from the promise
+    // a custom payload: a marker value, the built-in tags take the context from the promise
     struct tagged_payload : this_coro::payload_base {
         constexpr explicit tagged_payload(int marker) : _marker{marker} {}
 
@@ -35,7 +35,7 @@ namespace {
 
     // a custom this_coro tag that reads the marker off whatever payload the coroutine carries
     struct marker_tag : this_coro::tag_base {
-        static constexpr auto operator()(co::scheduler const&, marked_payload auto const& p) {
+        static constexpr auto operator()(co::context const&, marked_payload auto const& p) {
             return data_awaiter{p.marker()};
         }
     };
@@ -52,7 +52,7 @@ namespace {
     static_assert(!mta::nothrow_constructible<throwing_payload, parent_payload const&>);
 
     // invariant guard: the awaiter of a this_coro task must derive this_coro_awaiter_base, else the caller
-    // captures the task as a foreign awaitable and the task never gets the scheduler and the payload.
+    // captures the task as a foreign awaitable and the task never gets the context and the payload.
     // a compile error here beats a runtime deref of an empty payload.
     static_assert(this_coro_awaitable<executor_task<int>>, "executor_task lost its this_coro classification");
     static_assert(this_coro_awaitable<executor_task<int, tagged_payload>>);
@@ -100,7 +100,7 @@ THIS_CORO_TEST(custom_payload, builtin_executor_tag_coexists) {
     scheduler sched{autostart, 1};
     executor exec{sched};
 
-    // the built-in tags take the scheduler from the promise, they work with every payload
+    // the built-in tags take the context from the promise, they work with every payload
     auto task = []() -> executor_task<executor, tagged_payload> { co_return co_await this_coro::executor; };
 
     auto const actual = exec.sync_wait<tagged_payload>(task(), 1);
@@ -167,11 +167,11 @@ THIS_CORO_TEST(custom_payload, schedule_keeps_payload) {
     scheduler other{autostart, 1};
     executor homeExec{home};
 
-    auto task = [](executor target) -> executor_task<std::tuple<int, scheduler const*, bool>, tagged_payload> {
+    auto task = [](executor target) -> executor_task<std::tuple<int, context const*, bool>, tagged_payload> {
         co_await target.schedule();
         int const m = co_await marker;
-        scheduler const& current = co_await this_coro::scheduler;
-        co_return std::tuple{m, &current, target.scheduler().owns_thread()};
+        context const& current = co_await this_coro::context;
+        co_return std::tuple{m, &current, target.context().owns_thread()};
     };
 
     auto const [m, current, onOther] = homeExec.sync_wait<tagged_payload>(task(executor{other}), 3);

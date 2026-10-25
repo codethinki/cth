@@ -3,6 +3,7 @@
 #include "../../test.hpp"
 
 #include <cth/coro/executor.hpp>
+#include <cth/coro/scheduler.hpp>
 #include <cth/coro/sync.hpp>
 #include <cth/coro/tasks/executor_task.hpp>
 

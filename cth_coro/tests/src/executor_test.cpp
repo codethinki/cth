@@ -241,22 +241,37 @@ CORO_TEST(executor, context_reflects_schedule_hop) {
     EXPECT_EQ(actual, otherExec);
 }
 
-// the same through the scheduler tag: after schedule() this_coro::scheduler names the target, not the
-// scheduler of the spawn.
-CORO_TEST(executor, context_scheduler_reflects_schedule_hop) {
+// the same through the context tag: after schedule() this_coro::context names the target, not the
+// context of the spawn.
+CORO_TEST(executor, context_tag_reflects_schedule_hop) {
     scheduler home{autostart, 1};
     scheduler other{autostart, 1};
     executor homeExec{home};
     executor otherExec{other};
 
-    auto task = [](executor target) -> executor_task<scheduler const*> {
+    auto task = [](executor target) -> executor_task<context const*> {
         co_await target.schedule();
-        scheduler const& current = co_await this_coro::scheduler;
+        context const& current = co_await this_coro::context;
         co_return &current;
     };
 
     auto const* actual = homeExec.sync_wait(task(otherExec));
     EXPECT_EQ(actual, &other);
+}
+
+// schedule() onto the context of the caller continues without a post: the job posted before runs later
+CORO_TEST(executor, context_schedule_onto_own_context_continues_without_post) {
+    std::atomic<bool> posted{false};
+    scheduler sched{autostart, 1};
+    executor exec{sched};
+
+    auto task = [](executor e, std::atomic<bool>& flag) -> executor_task<bool> {
+        e.context().post([&flag] { flag = true; });
+        co_await e.schedule();
+        co_return !flag;
+    };
+
+    EXPECT_TRUE(exec.sync_wait(task(exec, posted)));
 }
 
 // a child that moves to another scheduler continues the parent on the scheduler of the parent
@@ -267,13 +282,13 @@ CORO_TEST(executor, context_parent_continues_on_own_scheduler_after_child_schedu
 
     auto child = [](executor target) -> executor_task<bool> {
         co_await target.schedule();
-        co_return target.scheduler().owns_thread();
+        co_return target.context().owns_thread();
     };
 
     auto task = [](scheduler const& h, executor o, auto c)
-        -> executor_task<std::tuple<bool, bool, scheduler const*>> {
+        -> executor_task<std::tuple<bool, bool, context const*>> {
         bool const childOnOther = co_await c(o);
-        scheduler const& current = co_await this_coro::scheduler;
+        context const& current = co_await this_coro::context;
         co_return std::tuple{childOnOther, h.owns_thread(), &current};
     };
 
@@ -292,9 +307,9 @@ CORO_TEST(executor, interop_spawn_caller_continues_on_own_scheduler) {
     auto child = [](scheduler const& target) -> executor_task<bool> { co_return target.owns_thread(); };
 
     auto task = [](scheduler const& h, scheduler const& o, auto c)
-        -> executor_task<std::tuple<bool, bool, scheduler const*>> {
+        -> executor_task<std::tuple<bool, bool, context const*>> {
         bool const childOnOther = co_await executor{o}.spawn(c(o));
-        scheduler const& current = co_await this_coro::scheduler;
+        context const& current = co_await this_coro::context;
         co_return std::tuple{childOnOther, h.owns_thread(), &current};
     };
 
@@ -420,7 +435,7 @@ CORO_TEST(executor, interop_spawn_caller_without_scheduler_continues_on_executor
 
     auto child = [](executor end) -> executor_task<bool> {
         co_await end.schedule();
-        co_return end.scheduler().owns_thread();
+        co_return end.context().owns_thread();
     };
 
     auto task = [](scheduler const& o, executor t, auto c) -> sync_task<std::pair<bool, bool>> {
@@ -495,14 +510,14 @@ CORO_TEST(executor, errors_parent_catches_on_own_scheduler_after_child_schedule)
     };
 
     auto task = [](scheduler const& h, executor o, auto c)
-        -> executor_task<std::tuple<bool, bool, scheduler const*>> {
+        -> executor_task<std::tuple<bool, bool, context const*>> {
         bool caughtOnHome = false;
         try {
             co_await c(o);
         } catch(std::runtime_error const&) {
             caughtOnHome = h.owns_thread();
         }
-        scheduler const& current = co_await this_coro::scheduler;
+        context const& current = co_await this_coro::context;
         co_return std::tuple{caughtOnHome, h.owns_thread(), &current};
     };
 

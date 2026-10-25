@@ -3,6 +3,7 @@
 #include <type_traits>
 
 namespace cth::co {
+class context;
 class scheduler;
 class executor;
 }
@@ -17,7 +18,7 @@ template<class Tag>
 concept tag = std::is_base_of_v<tag_base, std::remove_cvref_t<Tag>>;
 
 struct executor_tag;
-struct scheduler_tag;
+struct context_tag;
 
 struct wait_tag;
 
@@ -115,7 +116,7 @@ template<payload Pyld = this_coro::default_payload>
 struct this_coro_promise_base;
 
 /**
- * base of awaiters that resume the caller on its scheduler themselves
+ * base of awaiters that resume the caller on its context themselves
  * @details @ref this_coro_promise_base awaits them as they are
  */
 struct this_coro_awaiter_base {};

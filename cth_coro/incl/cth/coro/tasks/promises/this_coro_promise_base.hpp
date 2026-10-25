@@ -24,7 +24,7 @@ concept native_handle_waitable = requires(T const& value) {
 
 
 /**
- * base of this_coro promises, holds the scheduler the coroutine runs on and the payload
+ * base of this_coro promises, holds the context the coroutine runs on and the payload
  * @details
  * - promises supporting the libs this_coro namespace must publicly inherit from this
  * - the awaiter of a task calls @ref inherit() before the task runs, a spawned task gets both on construction
@@ -32,31 +32,31 @@ concept native_handle_waitable = requires(T const& value) {
 template<payload Pyld>
 struct this_coro_promise_base : this_coro_base<Pyld> {
     /**
-     * @param scheduler the coroutine runs on
+     * @param context the coroutine runs on
      * @param payload of the coroutine
      */
-    constexpr this_coro_promise_base(co::scheduler const& scheduler, Pyld const& payload)
+    constexpr this_coro_promise_base(co::context const& context, Pyld const& payload)
         noexcept(mta::nothrow_copy_constructible<Pyld>) :
-        _scheduler{&scheduler},
+        _context{&context},
         _payload{payload} {}
     constexpr this_coro_promise_base() noexcept = default;
 
     /**
-     * calls the tag with the scheduler and the payload
+     * calls the tag with the context and the payload
      * @return awaitable of the tag
      */
     template<this_coro::tag Tag>
     [[nodiscard]] constexpr decltype(auto) await_transform(Tag&& t) {
         static_assert(
-            requires(Tag tag, co::scheduler const& s, Pyld& p) { { std::forward<Tag>(tag)(s, p) } -> awaitable; },
-            "the tag must be callable with the scheduler and the payload"
+            requires(Tag tag, co::context const& c, Pyld& p) { { std::forward<Tag>(tag)(c, p) } -> awaitable; },
+            "the tag must be callable with the context and the payload"
         );
 
-        return std::forward<Tag>(t)(*_scheduler, *_payload);
+        return std::forward<Tag>(t)(*_context, *_payload);
     }
 
     /**
-     * awaits the awaitable as it is, its awaiter resumes this coroutine on its scheduler
+     * awaits the awaitable as it is, its awaiter resumes this coroutine on its context
      */
     template<this_coro_awaitable Awaitable>
     [[nodiscard]] constexpr auto await_transform(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
@@ -64,15 +64,15 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
     }
 
     /**
-     * waits on the native handle of the waitable, resumes this coroutine on its scheduler
+     * waits on the native handle of the waitable, resumes this coroutine on its context
      */
     template<native_handle_waitable Waitable>
     [[nodiscard]] constexpr auto await_transform(Waitable const& waitable) {
-        return raw_native_handle_awaiter{*_scheduler, waitable.native_handle()};
+        return raw_native_handle_awaiter{*_context, waitable.native_handle()};
     }
 
     /**
-     * captures the foreign awaitable, the capture resumes this coroutine on its scheduler
+     * captures the foreign awaitable, the capture resumes this coroutine on its context
      */
     template<foreign_awaitable Awaitable> requires (!native_handle_waitable<Awaitable>)
     [[nodiscard]] auto await_transform(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
@@ -80,7 +80,7 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
     }
 
     /**
-     * copies the scheduler and the payload of the caller
+     * copies the context and the payload of the caller
      * @param caller promise of the awaiting coroutine
      */
     template<class CallerPromise>
@@ -91,22 +91,22 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
             "the payload of the caller must convert to the payload of the task"
         );
 
-        _scheduler = &caller.scheduler();
+        _context = &caller.context();
         _payload.emplace(caller.payload());
     }
 
     /**
-     * sets the scheduler the coroutine runs on, keeps the payload
-     * @param scheduler the coroutine moves to
+     * sets the context the coroutine runs on, keeps the payload
+     * @param context the coroutine moves to
      */
-    constexpr void rebind_scheduler(co::scheduler const& scheduler) noexcept { _scheduler = &scheduler; }
+    constexpr void rebind_context(co::context const& context) noexcept { _context = &context; }
 
 private:
-    co::scheduler const* _scheduler = nullptr;
+    co::context const* _context = nullptr;
     cth::dt::optional<Pyld> _payload{};
 
 public:
-    [[nodiscard]] constexpr co::scheduler const& scheduler() const noexcept { return *_scheduler; }
+    [[nodiscard]] constexpr co::context const& context() const noexcept { return *_context; }
     [[nodiscard]] constexpr Pyld const& payload() const noexcept { return *_payload; }
 };
 

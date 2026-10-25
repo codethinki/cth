@@ -31,7 +31,7 @@ static_assert(foreign_awaitable<sync_task<int>>);
 static_assert(!this_coro_awaitable<sync_task<int>>);
 
 // tags are neither
-static_assert(!this_coro_awaitable<this_coro::scheduler_tag>);
-static_assert(!foreign_awaitable<this_coro::scheduler_tag>);
-static_assert(!foreign_awaitable<this_coro::scheduler_tag const&>);
+static_assert(!this_coro_awaitable<this_coro::context_tag>);
+static_assert(!foreign_awaitable<this_coro::context_tag>);
+static_assert(!foreign_awaitable<this_coro::context_tag const&>);
 }

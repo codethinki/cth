@@ -8,7 +8,7 @@
 namespace cth::co::dev {
 
 /**
- * awaiter of @ref capture_task, the capture continues the caller on its scheduler
+ * awaiter of @ref capture_task, the capture continues the caller on its context
  */
 template<class Promise>
 struct capture_promise_awaiter
@@ -17,7 +17,7 @@ struct capture_promise_awaiter
     using dev::basic_promise_awaiter<Promise>::basic_promise_awaiter;
 
     /**
-     * stores the scheduler of the caller and starts the capture
+     * stores the context of the caller and starts the capture
      * @param caller this_coro coroutine that awaits the capture
      * @return handle of the capture
      */
@@ -26,7 +26,7 @@ struct capture_promise_awaiter
         static_assert(this_coro_compatible<Caller>, "captures need a this_coro caller");
 
         auto& capture = this->handle.promise();
-        capture.parentScheduler = &caller.promise().scheduler();
+        capture.parentContext = &caller.promise().context();
         capture.continuation = caller;
         return this->handle;
     }

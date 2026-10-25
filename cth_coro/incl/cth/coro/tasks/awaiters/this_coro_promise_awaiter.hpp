@@ -10,8 +10,8 @@
 
 namespace cth::co {
 /**
- * awaiter of this_coro tasks, the task runs with the scheduler and the payload of the caller
- * @details the task continues the caller on its scheduler
+ * awaiter of this_coro tasks, the task runs with the context and the payload of the caller
+ * @details the task continues the caller on its context
  */
 template<cth_promise Promise>
 struct this_coro_promise_awaiter
@@ -32,7 +32,7 @@ public:
 
 
     /**
-     * passes the scheduler and the payload of the caller to the task and starts it
+     * passes the context and the payload of the caller to the task and starts it
      * @details a throwing payload copy resumes the caller with the exception, the task does not start
      * @param caller this_coro coroutine that awaits the task
      * @return handle of the task
@@ -47,7 +47,7 @@ public:
 
         auto& child = base_t::handle.promise();
         child.inherit(caller.promise());
-        child.parentScheduler = &caller.promise().scheduler();
+        child.parentContext = &caller.promise().context();
         child.continuation = caller;
         return base_t::handle;
     }
