@@ -19,7 +19,7 @@ class websocket_connection;
 
 
 
-class accept_awaiter : public cth::co::osfence_awaiter_base<> {
+class accept_awaiter : public cth::co::osfence_awaiter_base {
 public:
     explicit accept_awaiter(net::websocket_server& server) noexcept :
         osfence_awaiter_base{server.fence()},
@@ -32,7 +32,7 @@ private:
 };
 
 
-class message_awaiter_base : public cth::co::osfence_awaiter_base<> {
+class message_awaiter_base : public cth::co::osfence_awaiter_base {
 public:
     explicit message_awaiter_base(net::websocket_connection& connection) noexcept :
         osfence_awaiter_base{connection.fence()},

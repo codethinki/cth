@@ -1,6 +1,8 @@
 #pragma once
 #include "cth/coro/tasks/task_base.hpp"
 #include "cth/coro/tasks/awaiters/this_coro_promise_awaiter.hpp"
+#include "cth/coro/tasks/awaiters/dev/affine_final_promise_awaiter.hpp"
+#include "cth/coro/tasks/promises/affine_promise_base.hpp"
 #include "cth/coro/tasks/promises/basic_promise.hpp"
 #include "cth/coro/tasks/promises/this_coro_promise_base.hpp"
 
@@ -11,7 +13,10 @@
 
 namespace cth::co::dev {
 template<class T, payload Pyld = this_coro::default_payload>
-struct executor_promise : basic_promise<T>, this_coro_promise_base<Pyld> {
+struct executor_promise
+    : basic_promise<T, std::suspend_always{}, dev::affine_final_promise_awaiter{}>
+    , dev::affine_promise_base
+    , this_coro_promise_base<Pyld> {
     executor_task<T, Pyld> get_return_object() noexcept;
 };
 }
@@ -20,7 +25,9 @@ struct executor_promise : basic_promise<T>, this_coro_promise_base<Pyld> {
 namespace cth::co {
 /**
  * Task to be spawned on the @ref executor
+ * @details runs on the scheduler of the caller, the caller continues on its scheduler afterwards
  * @tparam T task return type
+ * @tparam Pyld payload of the task, the payload of the caller must convert to it
  */
 template<class T, payload Pyld>
 class [[nodiscard]] executor_task : public task_base<dev::executor_promise<T, Pyld>, this_coro_promise_awaiter> {

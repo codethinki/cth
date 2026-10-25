@@ -11,27 +11,19 @@ namespace cth::co::this_coro {}
 
 namespace cth::co {
 
-
+/**
+ * true if the awaiter of @ref T derives @ref this_coro_awaiter_base
+ * @details the awaiter resumes the caller on its scheduler itself
+ */
 template<class T>
-concept has_scheduler = requires(T const& t) {
-    { t.scheduler() } -> std::convertible_to<co::scheduler const&>;
-};
+concept this_coro_awaitable =
+    co::awaitable<T> && std::is_base_of_v<this_coro_awaiter_base, std::remove_cvref_t<co::awaiter_t<T>>>;
 
-
+/**
+ * true if @ref T is awaitable, not a @ref this_coro_awaitable and not a tag
+ */
 template<class T>
-concept this_coro_awaitable = this_coro_compatible<co::awaiter_t<T>>;
-
-template<class T>
-concept captured_awaitable = co::awaitable<T> && std::is_base_of_v<capture_awaiter_base, co::awaiter_t<T>>;
-
-
-template<class T>
-concept foreign_awaitable =
-    co::awaitable<T> && !captured_awaitable<T> && !this_coro_awaitable<T> && !co::this_coro::tag<T>;
-
-template<class T>
-concept non_this_coro_awaitable = awaitable<T> && !this_coro_awaitable<T>;
-
+concept foreign_awaitable = co::awaitable<T> && !this_coro_awaitable<T> && !co::this_coro::tag<T>;
 
 template<class T>
 concept sync_promise_type = std::is_base_of_v<sync_promise_base, T>;

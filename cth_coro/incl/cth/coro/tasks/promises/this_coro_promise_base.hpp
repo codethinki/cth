@@ -1,9 +1,10 @@
 #pragma once
 #include "cth/coro/utility.hpp"
 #include "cth/coro/awaiters/raw_native_handle_awaiter.hpp"
-#include "cth/coro/func/steal.hpp"
+#include "cth/coro/func/dev/steal.hpp"
 #include "cth/coro/tasks/dev/capture_task.hpp"
 #include "cth/coro/this_coro/payload.hpp"
+#include "cth/coro/this_coro/this_coro_base.hpp"
 #include "cth/coro/utility/concepts.hpp"
 
 #include <cth/data/optional.hpp>
@@ -22,74 +23,88 @@ concept native_handle_waitable = requires(T const& value) {
 
 
 /**
- * promises supporting the libs this_coro namespace must publicly inherit from this
+ * base of this_coro promises, holds the scheduler the coroutine runs on and the payload
  * @details
- * - children must forward the payload on construction
+ * - promises supporting the libs this_coro namespace must publicly inherit from this
+ * - the awaiter of a task calls @ref inherit() before the task runs, a spawned task gets both on construction
  */
 template<payload Pyld>
 struct this_coro_promise_base : this_coro_base<Pyld> {
+    /**
+     * @param scheduler the coroutine runs on
+     * @param payload of the coroutine
+     */
+    this_coro_promise_base(co::scheduler const& scheduler, Pyld const& payload) :
+        _scheduler{&scheduler},
+        _payload{payload} {}
+    this_coro_promise_base() noexcept = default;
+
+    /**
+     * calls the tag with the scheduler and the payload
+     * @return awaitable of the tag
+     */
     template<this_coro::tag Tag>
     [[nodiscard]] constexpr decltype(auto) await_transform(Tag&& t) {
         static_assert(
-            requires(Tag t) { { t.operator()(std::declval<Pyld>()) } -> awaitable; },
-            "Pyld must satisfy the tags call operator"
+            requires(Tag tag, co::scheduler const& s, Pyld& p) { { std::forward<Tag>(tag)(s, p) } -> awaitable; },
+            "the tag must be callable with the scheduler and the payload"
         );
 
-        return std::forward<Tag>(t).operator()(*_payload);
+        return std::forward<Tag>(t)(*_scheduler, *_payload);
     }
 
-
+    /**
+     * awaits the awaitable as it is, its awaiter resumes this coroutine on its scheduler
+     */
     template<this_coro_awaitable Awaitable>
     [[nodiscard]] constexpr auto await_transform(Awaitable&& awaitable) -> awaiter_t<Awaitable> {
+        return co::extract_awaiter(std::forward<Awaitable>(awaitable));
+    }
+
+    /**
+     * waits on the native handle of the waitable, resumes this coroutine on its scheduler
+     */
+    template<native_handle_waitable Waitable>
+    [[nodiscard]] auto await_transform(Waitable const& waitable) {
+        return raw_native_handle_awaiter{*_scheduler, waitable.native_handle()};
+    }
+
+    /**
+     * captures the foreign awaitable, the capture resumes this coroutine on its scheduler
+     */
+    template<foreign_awaitable Awaitable> requires (!native_handle_waitable<Awaitable>)
+    [[nodiscard]] auto await_transform(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
+        return dev::steal(std::move(awaitable));
+    }
+
+    /**
+     * copies the scheduler and the payload of the caller
+     * @param caller promise of the awaiting coroutine
+     */
+    template<class CallerPromise>
+    constexpr void inherit(CallerPromise const& caller) {
         static_assert(
-            this_coro::awaitable_injectable_with<Awaitable, Pyld>,
-            "awaited task carries a payload incompatible with this coroutine's payload"
+            this_coro::promise_injectable_with<this_coro_promise_base, payload_t<CallerPromise>>,
+            "the payload of the caller must convert to the payload of the task"
         );
 
-        auto awaiter = co::extract_awaiter(std::forward<Awaitable>(awaitable));
-
-        awaiter.inject(*_payload);
-
-        return awaiter;
-    }
-
-    template<captured_awaitable Awaitable>
-    [[nodiscard]] constexpr auto await_transform(Awaitable&& captured) { return cth::co::extract_awaiter(captured); }
-
-    template<native_handle_waitable Waitable> requires (this_coro::scheduler_payload<Pyld>)
-    [[nodiscard]] auto await_transform(Waitable const& waitable) {
-        return raw_native_handle_awaiter{_payload->scheduler(), waitable.native_handle()};
-    }
-
-    template<foreign_awaitable Awaitable>
-        requires (this_coro::scheduler_payload<Pyld> && !native_handle_waitable<Awaitable>)
-    [[nodiscard]] auto await_transform(Awaitable awaitable) -> capture_task<awaited_t<Awaitable>> {
-        return co::steal(std::move(awaitable), *_payload);
+        _scheduler = &caller.scheduler();
+        _payload.emplace(caller.payload());
     }
 
     /**
-     * injects the this_coro default_payload into the promise
-     * @param payload to inject
+     * sets the scheduler the coroutine runs on, keeps the payload
+     * @param scheduler the coroutine moves to
      */
-    constexpr void inject(Pyld const& payload) { _payload = payload; }
-
-    /**
-     * repoints the promise's payload at a new scheduler, preserving every other payload field
-     * @details only available for scheduler payloads; the payload is engaged on every path that reaches
-     *  this (a this_coro co_await goes through await_transform, which derefs the payload first)
-     * @param scheduler the coroutine has migrated onto
-     */
-    constexpr void rebind_scheduler(co::scheduler const& scheduler)
-        requires this_coro::scheduler_payload<Pyld>
-    {
-        _payload->rebind_scheduler(scheduler);
-    }
-
-    this_coro_promise_base(Pyld const& payload) noexcept : _payload{payload} {}
-    this_coro_promise_base() noexcept = default;
+    constexpr void rebind_scheduler(co::scheduler const& scheduler) noexcept { _scheduler = &scheduler; }
 
 private:
+    co::scheduler const* _scheduler = nullptr;
     cth::dt::optional<Pyld> _payload{};
+
+public:
+    [[nodiscard]] constexpr co::scheduler const& scheduler() const noexcept { return *_scheduler; }
+    [[nodiscard]] constexpr Pyld const& payload() const noexcept { return *_payload; }
 };
 
 }

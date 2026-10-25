@@ -1,13 +1,12 @@
 #pragma once
 #include "cth/coro/awaiters/data_awaiter.hpp"
 #include "cth/coro/utility/fwd.hpp"
-#include "payload.hpp"
 
 
 namespace cth::co::this_coro {
 struct [[nodiscard]] scheduler_tag : tag_base {
-    static constexpr auto operator()(scheduler_payload auto const& payload) {
-        return data_awaiter<co::scheduler const&>{payload.scheduler()};
+    static constexpr auto operator()(co::scheduler const& s, auto const&) {
+        return data_awaiter<co::scheduler const&>{s};
     }
 };
 

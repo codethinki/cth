@@ -1,17 +1,22 @@
 #pragma once
 #include "cth/coro/tasks/awaiters/dev/basic_promise_awaiter.hpp"
-#include "cth/coro/tasks/awaiters/dev/this_coro_awaiter_base.hpp"
+#include "cth/coro/utility/fwd.hpp"
 
 #include <cth/meta/coro.hpp>
 
+#include <coroutine>
+
 namespace cth::co {
+/**
+ * awaiter of this_coro tasks, the task runs with the scheduler and the payload of the caller
+ * @details the task continues the caller on its scheduler
+ */
 template<cth_promise Promise>
 struct this_coro_promise_awaiter
-    : dev::this_coro_awaiter_base<payload_t<Promise>>,
+    : this_coro_awaiter_base,
     private dev::basic_promise_awaiter<Promise> {
 private:
     using base_t = dev::basic_promise_awaiter<Promise>;
-    using payload_t = Promise::payload_type;
 
 public:
     this_coro_promise_awaiter() = delete;
@@ -24,10 +29,23 @@ public:
     using base_t::base_t;
 
 
-    template<class T>
-    decltype(auto) await_suspend(std::coroutine_handle<T> caller) noexcept {
-        dev::this_coro_awaiter_base<payload_t>::inject_payload_into(base_t::handle);
-        return base_t::await_suspend(caller);
+    /**
+     * passes the scheduler and the payload of the caller to the task and starts it
+     * @param caller this_coro coroutine that awaits the task
+     * @return handle of the task
+     */
+    template<class Caller>
+    auto await_suspend(std::coroutine_handle<Caller> caller) noexcept -> std::coroutine_handle<promise_type> {
+        static_assert(
+            this_coro_compatible<Caller>,
+            "this_coro tasks need a this_coro caller, use spawn() or sync_wait()"
+        );
+
+        auto& child = base_t::handle.promise();
+        child.inherit(caller.promise());
+        child.parentScheduler = &caller.promise().scheduler();
+        child.continuation = caller;
+        return base_t::handle;
     }
 };
 }

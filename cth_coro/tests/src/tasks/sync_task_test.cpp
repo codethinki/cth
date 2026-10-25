@@ -2,6 +2,8 @@
 
 #include "test.hpp"
 
+#include <thread>
+
 namespace cth::co {
 CORO_TEST(sync_task, blocks_until_finished) {
     atomic_fence coroStarted{};

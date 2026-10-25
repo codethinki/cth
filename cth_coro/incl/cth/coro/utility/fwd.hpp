@@ -24,13 +24,9 @@ struct wait_tag;
 }
 
 namespace cth::co::this_coro {
+struct payload_base;
 
-
-struct scheduler_payload_base;
-template<class Pyld>
-concept scheduler_payload = std::is_base_of_v<scheduler_payload_base, std::remove_cvref_t<Pyld>>;
-
-using default_payload = scheduler_payload_base;
+using default_payload = payload_base;
 
 }
 
@@ -60,7 +56,8 @@ template<payload Pyld = this_coro::default_payload>
 struct this_coro_base;
 
 /**
- * true if @ref T opts into the this_coro payload machinery by deriving @ref this_coro_base
+ * true if @ref T is a this_coro promise
+ * @details this_coro promises derive @ref this_coro_base
  */
 template<class T>
 concept this_coro_compatible = std::is_base_of_v<dev::this_coro_base_type, std::remove_cvref_t<T>>;
@@ -101,10 +98,7 @@ template<class T, payload Pyld = this_coro::default_payload>
 class executor_task;
 
 template<class T, payload Pyld = this_coro::default_payload>
-class scheduled_task;
-
-template<class T, payload Pyld = this_coro::default_payload>
-class sync_executor_task;
+class spawn_task;
 }
 
 
@@ -114,16 +108,18 @@ class coro_exception;
 }
 
 namespace cth::co {
-template<this_coro::scheduler_payload Pyld = this_coro::default_payload>
 struct schedule_awaiter;
 struct wait_awaiter;
 
 template<payload Pyld = this_coro::default_payload>
-struct this_coro_promise_awaiter_base;
-template<payload Pyld = this_coro::default_payload>
 struct this_coro_promise_base;
 
-struct capture_awaiter_base;
+/**
+ * base of awaiters that resume the caller on its scheduler themselves
+ * @details @ref this_coro_promise_base awaits them as they are
+ */
+struct this_coro_awaiter_base {};
+
 struct sync_promise_base;
 
 }

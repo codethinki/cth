@@ -13,8 +13,8 @@
 
 namespace cth::co {
 namespace {
-struct test_native_handle_awaiter : native_handle_awaiter_base<> {
-    using native_handle_awaiter_base<>::native_handle_awaiter_base;
+struct test_native_handle_awaiter : native_handle_awaiter_base {
+    using native_handle_awaiter_base::native_handle_awaiter_base;
 
     static constexpr void await_resume() noexcept {}
 };

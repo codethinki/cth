@@ -12,8 +12,8 @@
 
 namespace cth::co {
 namespace {
-struct test_osfence_awaiter : osfence_awaiter_base<> {
-    using osfence_awaiter_base<>::osfence_awaiter_base;
+struct test_osfence_awaiter : osfence_awaiter_base {
+    using osfence_awaiter_base::osfence_awaiter_base;
 
     static constexpr void await_resume() noexcept {}
 };
