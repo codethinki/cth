@@ -13,15 +13,16 @@
 namespace cth::mta {
 
 /**
- * @brief counts the dimensions of `Rng`
+ * counts the dimensions of `Rng`
  * @tparam Rng range
- * @param max optional max search depth
+ * @param max where to stop counting (`MAX_DEPTH` => no limit)
+ * @return dimensions of `Rng`, at most `max`
  */
 template<class Rng>
 consteval size_t dimensions(size_t max = MAX_DEPTH);
 
 /**
- * @brief checks if `Rng` is of at least `D` dimensions
+ * `true` if `Rng` has at least `D` dimensions
  * @tparam Rng range
  * @tparam D dimensions
  */
@@ -36,16 +37,16 @@ namespace dev {
 
 
 /**
- * @brief type trait to get the first non range type or 
- *  the `D` -th dimension range value type of `Rng`
+ * value type of `Rng` after `D` dimensions
+ * @details `D` above the dimensions of `Rng` -> the first non range type
  * @tparam Rng range
- * @tparam D dimension (optional)
+ * @tparam D dimensions to descend (`MAX_DEPTH` => all dimensions)
  */
 template<class Rng, size_t D = MAX_DEPTH>
 using md_range_value_t = type_of_t<dev::md_range_value<Rng, D>()>;
 
 /**
- * @brief shortcut to `md_range_value_t<Rng, 2>`
+ * `md_range_value_t` for `D = 2`
  */
 template<class Rng>
 using range2d_value_t = md_range_value_t<Rng, 2>;
@@ -83,7 +84,7 @@ concept static_dim_rng =
     std::ranges::range<Rng> && !std::same_as<std::ranges::range_value_t<Rng>, mta::rcvr_t<Rng>>;
 
 /**
- * @brief accepts viewable or copy viewable ranges
+ * `true` if `Rng` is a viewable range or a copy of it is one
  */
 template<class Rng>
 concept viewable_rng = std::ranges::viewable_range<Rng> ||

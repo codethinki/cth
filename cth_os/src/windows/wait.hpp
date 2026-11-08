@@ -10,8 +10,8 @@
 
 /**
  * @file windows/wait.hpp
- * @brief windows implementation of cth/os/wait.hpp
- * @attention included by src/wait.cpp only, not a standalone header
+ * windows implementation of cth/os/wait.hpp, uses `WaitForSingleObject()`
+ * @attention only `src/wait.cpp` includes it, not a standalone header
  */
 namespace cth::os {
 namespace {

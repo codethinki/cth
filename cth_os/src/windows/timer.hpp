@@ -9,8 +9,8 @@
 
 /**
  * @file windows/timer.hpp
- * @brief windows implementation of cth/os/timer.hpp, a high resolution waitable timer
- * @attention included by src/timer.cpp only, not a standalone header
+ * windows implementation of cth/os/timer.hpp, a high resolution waitable timer
+ * @attention only `src/timer.cpp` includes it, not a standalone header
  */
 namespace cth::os {
 namespace {

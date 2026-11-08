@@ -54,7 +54,7 @@ constexpr io::TextColor text_color(cth::except::Severity severity) {
 
 namespace cth::log {
 /**
- * \brief sets a colored log stream. `nullptr` -> colored console output
+ * sets the colored log stream
  */
 inline void set_log_stream(io::col_stream const& stream) {
     std::scoped_lock const lock{dev::logMtx};
@@ -115,8 +115,9 @@ void msg(std::format_string<Args...> f_str, Args&&... args) noexcept {
 namespace dev {
 
     /**
-     * \brief executes the statement in its destructor to support code execution before aborting /
-     * throwing
+     * delayed log message, logs in its destructor
+     * @details the statement of the macro runs before the log
+     * @details severity `CRITICAL` -> terminates after the log
      */
     template<
         cth::except::Severity S,
@@ -202,10 +203,13 @@ namespace dev {
     };
 
     /**
-     * \brief wrapper for `dev::LogObj`
-     * \param expression `(expression) == false` -> code execution + delayed log message
-     * \param fmt_message log message
-     * \param severity log severity
+     * creates a `dev::LogObj` if `expression` is `true`
+     * @details runs the following statement if it created the `dev::LogObj`
+     * @param type exception type
+     * @param severity log severity
+     * @param expression `static_cast<bool>(expression) == true` -> creates the `dev::LogObj`
+     * @param fmt_message `std::format_string` of the log message
+     * @param ... `std::format` arguments
      */
 #define CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, severity, expression, fmt_message, ...) \
         if(auto const details = static_cast<bool>(expression)                        \
@@ -252,13 +256,14 @@ namespace dev {
 // CTH_STABLE_LOGS
 // ------------------------------
 /**
- * \brief can execute code before abort (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == false` -> abort
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * aborts if `expression` is `false`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == false` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_ASSERT_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,                \
@@ -269,24 +274,26 @@ namespace dev {
         )
 
 /**
- * \brief can execute code before abort (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == false` -> abort
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * aborts if `expression` is `false`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == false` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_ASSERT(expression, message, ...) \
         CTH_STABLE_ASSERT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before abort (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> abort
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * aborts if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_ABORT_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,               \
@@ -297,127 +304,138 @@ namespace dev {
         )
 
 /**
- * \brief can execute code before abort (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> abort
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * aborts if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_ABORT(expression, message, ...) \
         CTH_STABLE_ABORT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before error-msg (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> error-msg
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * logs an error if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> error-msg
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_ERR_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before error-msg (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> error-msg
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * logs an error if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> error-msg
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_ERR(expression, message, ...) \
         CTH_STABLE_ERR_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before warn (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> warn
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * logs a warning if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> warn
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_WARN_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::WARNING, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before warn (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> warn
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * logs a warning if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> warn
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_WARN(expression, message, ...) \
         CTH_STABLE_WARN_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before info (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> info
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * logs an info message if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> info
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_INFO_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::INFO, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before info (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> info
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * logs an info message if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> info
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_INFO(expression, message, ...) \
         CTH_STABLE_INFO_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before log (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> log
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * logs a message if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> log
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_LOG_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::LOG, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before log (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> log
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * logs a message if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> log
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_LOG(expression, message, ...) \
         CTH_STABLE_LOG_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before throwing (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> throw
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * logs and throws if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> throw
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_THROW_T(type, expression, message, ...) \
         CTH_DEV_LOG_AUTO_THROW_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
 
 /**
- * \brief can execute code before throwing (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> throw
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note stable -> never disabled
+ * logs and throws if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> throw
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note never disabled
  */
 #define CTH_STABLE_THROW(expression, message, ...) \
         CTH_STABLE_THROW_T(cth::except::default_exception, expression, message, __VA_ARGS__)
@@ -465,13 +483,15 @@ namespace dev {
 #undef CTH_ASSERT_T
 #undef CTH_ASSERT
 /**
- * \brief can execute code before abort (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == false` -> abort
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * aborts if `expression` is `false`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == false` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_ASSERT_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,         \
@@ -481,12 +501,14 @@ namespace dev {
             __VA_ARGS__                              \
         )
 /**
- * \brief can execute code before abort (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == false` -> abort
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * aborts if `expression` is `false`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == false` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_ASSERT(expression, message, ...) \
         CTH_ASSERT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
@@ -494,13 +516,15 @@ namespace dev {
 #undef CTH_CRITICAL_T
 #undef CTH_CRITICAL
 /**
- * \brief can execute code before abort (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> abort
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * aborts if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_CRITICAL_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,           \
@@ -510,12 +534,14 @@ namespace dev {
             __VA_ARGS__                                \
         )
 /**
- * \brief can execute code before abort (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> abort
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * aborts if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_CRITICAL(expression, message, ...) \
         CTH_CRITICAL_T(cth::except::default_exception, expression, message, __VA_ARGS__)
@@ -525,23 +551,27 @@ namespace dev {
 #undef CTH_THROW_T
 #undef CTH_THROW
 /**
- * \brief can execute code before throwing (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> throw
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * logs and throws if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> throw
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_THROW_T(type, expression, message, ...) \
         CTH_DEV_LOG_AUTO_THROW_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
 /**
- * \brief can execute code before throwing (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> throw
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * logs and throws if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> throw
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_THROW(expression, message, ...) \
         CTH_THROW_T(cth::except::default_exception, expression, message, __VA_ARGS__)
@@ -549,23 +579,27 @@ namespace dev {
 #undef CTH_ERR_T
 #undef CTH_ERR
 /**
- * \brief can execute code before error-msg (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> error-msg
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * logs an error if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> error-msg
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_ERR_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::ERR, expression, message, __VA_ARGS__)
 /**
- * \brief can execute code before error-msg (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> error-msg
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * logs an error if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> error-msg
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_ERR(expression, message, ...) \
         CTH_ERR_T(cth::except::default_exception, expression, message, __VA_ARGS__)
@@ -574,23 +608,27 @@ namespace dev {
 #undef CTH_WARN_T
 #undef CTH_WARN
 /**
- * \brief can execute code before warning (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> warning
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * logs a warning if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> warning
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_WARN_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::WARNING, expression, message, __VA_ARGS__)
 /**
- * \brief can execute code before warning (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> warning
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * logs a warning if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> warning
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_WARN(expression, message, ...) \
         CTH_WARN_T(cth::except::default_exception, expression, message, __VA_ARGS__)
@@ -599,23 +637,27 @@ namespace dev {
 #undef CTH_INFO_T
 #undef CTH_INFO
 /**
- * \brief can execute code before info (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> inform
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * logs an info message if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> inform
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_INFO_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::INFO, expression, message, __VA_ARGS__)
 /**
- * \brief can execute code before info (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> inform
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * logs an info message if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> inform
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_INFO(expression, message, ...) \
         CTH_INFO_T(cth::except::default_exception, expression, message, __VA_ARGS__)
@@ -624,23 +666,27 @@ namespace dev {
 #undef CTH_LOG_T
 #undef CTH_LOG
 /**
- * \brief can execute code before log (use {} for multiple lines)
- * \param type exception type
- * \param expression `static_cast<bool>(expression) == true` -> log
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * logs a message if `expression` is `true`
+ * @details runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> log
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_LOG_T(type, expression, message, ...) \
         CTH_DEV_DELAYED_LOG_TEMPLATE_T(type, cth::except::Severity::LOG, expression, message, __VA_ARGS__)
 /**
- * \brief can execute code before log (use {} for multiple lines)
- * \param expression `static_cast<bool>(expression) == true` -> log
- * \param message `std::format_string`
- * \param ... `std::format` arguments
- * \note this macro MUST be followed by `;` or `{}`
- * \note `#ifndef _DEBUG` -> disabled
+ * logs a message if `expression` is `true`
+ * @details runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> log
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ * @note disabled without `CTH_DEBUG_MODE`
+ * @note disabled if `CTH_LOG_LEVEL` is above the severity
  */
 #define CTH_LOG(expression, message, ...) \
         CTH_LOG_T(cth::except::default_exception, expression, message, __VA_ARGS__)

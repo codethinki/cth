@@ -10,8 +10,8 @@
 
 /**
  * @file linux/timer.hpp
- * @brief posix implementation of cth/os/timer.hpp, a timerfd on `CLOCK_MONOTONIC`
- * @attention included by src/timer.cpp only, not a standalone header
+ * linux implementation of cth/os/timer.hpp, a `timerfd` on `CLOCK_MONOTONIC`
+ * @attention only `src/timer.cpp` includes it, not a standalone header
  */
 namespace cth::os {
 namespace {
@@ -33,7 +33,7 @@ namespace {
     }
 
     /**
-     * drops a pending expiration so the timerfd stops polling as ready
+     * drops a pending expiration, the `timerfd` stops polling as ready
      */
     void drain(native_handle_t handle) noexcept {
         // non blocking, so this is EAGAIN when nothing expired

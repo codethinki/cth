@@ -11,8 +11,8 @@
 
 /**
  * @file linux/fence.hpp
- * @brief Linux implementation of cth/os/fence.hpp
- * @attention included by src/fence.cpp only, not a standalone header
+ * linux implementation of cth/os/fence.hpp, an `eventfd`
+ * @attention only `src/fence.cpp` includes it, not a standalone header
  */
 namespace cth::os {
 

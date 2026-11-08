@@ -7,14 +7,14 @@
 namespace cth::win::proc {
 
 /**
- * \brief returns elevation status
- * \return `true` if admin
+ * checks if the process has admin rights
+ * @return `true` if elevated
  */
 bool elevated();
 
 /**
- * @brief enumerates all processes with id's
- * @return not `std::vector::empty()` if successful
+ * lists the ids of all processes
+ * @return process ids, empty -> enumerating failed
  */
 std::vector<dword_t> enumerate();
 
@@ -24,15 +24,19 @@ std::optional<std::wstring> name(dword_t process_id, bool full_path = false);
 std::vector<dword_t> find(std::wstring_view process_name, bool full_path = false);
 
 /**
- * @brief checks if `process_name` is active
- * @return result if successful, else `std::nullopt`
+ * checks if a process with the name runs
+ * @details never returns `std::nullopt`
+ * @param process_name file name of the executable, without path
+ * @return `true` if a process with the name runs, `false` -> none or `enumerate()` failed
  */
 std::optional<bool> active(std::wstring_view process_name);
 
 
 /**
- * @brief counts the number of process instances
- * @return number of processes if successful, else `std::nullopt`
+ * counts the processes with the name
+ * @details never returns `std::nullopt`
+ * @param process_name file name of the executable, without path
+ * @return number of processes, `0` -> none or `enumerate()` failed
  */
 std::optional<size_t> count(std::wstring_view process_name);
 

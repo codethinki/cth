@@ -69,8 +69,13 @@ template<cth::mta::arithmetic T>
 
 
 /**
- * \brief splits a string into a vector of strings
- * \tparam U the delimiter type
+ * splits a string at a delimiter
+ * @details drops the empty parts
+ * @tparam T string type, converts to `std::string_view` or `std::wstring_view`
+ * @tparam U delimiter type, converts to `std::string_view`, `std::wstring_view`, `char` or `wchar_t`
+ * @param str to split
+ * @param delimiter to split at
+ * @return the parts as `std::vector` of `std::string`, of `std::wstring` for a wide `str`
  */
 template<
     mta::convertible_to_any<std::string_view, std::wstring_view> T,

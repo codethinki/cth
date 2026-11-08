@@ -8,10 +8,12 @@
 #include <utility>
 
 /**
- * @brief creates a format overload for a type wrapping another, inheriting the parsing properties from the base type
+ * creates a `std::formatter` of `type` that formats like `base_type`
+ * @details parses like `std::formatter<base_type>`
  * @param type to make formattable
- * @param accessor function to access the aliased type
- * @attention must only be used in global namespace context
+ * @param base_type aliased type, `type` wraps it
+ * @param accessor function that gets the `base_type` value of a `type`
+ * @attention use it in the global namespace only
  */
 #define CTH_FORMAT_ALIAS(type, base_type, accessor)                                 \
     template<>                                                                      \
@@ -25,10 +27,12 @@
 
 
 /**
- * @brief creates a format overload for a class
- * @param type The class/struct type to format
- * @param fmt_string The format string (e.g., `"ID: {}, Val: {}"`)
- * @param tie_func An expression involving 'obj' that returns a tuple/tie
+ * creates a `std::formatter` of a class
+ * @details accepts no format specifiers
+ * @param type class or struct to format
+ * @param fmt_string format string for the members, for example `"ID: {}, Val: {}"`
+ * @param tie_func function that gets the members of a `type` as a tuple, called with a `type const&`
+ * @attention use it in the global namespace only
  */
 #define CTH_FORMAT_CLASS_CUSTOM(type, fmt_string, tie_func)                                         \
 template<>                                                                                          \
@@ -55,19 +59,23 @@ struct std::formatter<type> {                                                   
 }
 
 /**
- * creates a format overload for a class, implicitly includes type name with `type{<fmt_string>}`
- * @param type The class/struct type to format
- * @param fmt_string The format string (e.g., `"ID: {}, Val: {}"`)
- * @param tie_func An expression involving 'obj' that returns a tuple/tie
+ * creates a `std::formatter` of a class
+ * @details formats as `type{<fmt_string>}`
+ * @param type class or struct to format
+ * @param fmt_string format string for the members, for example `"ID: {}, Val: {}"`
+ * @param tie_func function that gets the members of a `type` as a tuple, called with a `type const&`
+ * @attention use it in the global namespace only
  */
 #define CTH_FORMAT_CLASS(type, fmt_string, tie_func)\
     CTH_FORMAT_CLASS_CUSTOM(type, #type "{{" fmt_string "}}", tie_func)
 
 /**
- * @brief creates a format overload for the concept
+ * creates a `std::formatter` of all types that satisfy a concept
+ * @details formats as `cpt{<value>}`, parses like `std::formatter<int>`
  * @param cpt concept
- * @param to_formattable `to_formattable()` function
- * @attention should only be used in global namespace context
+ * @param to_formattable function that gets a value of `cpt` as a formattable value
+ * @pre `to_formattable()` does not return `void`
+ * @attention use it in the global namespace only
  */
 #define CTH_FORMAT_CPT(cpt, to_formattable)                                                                  \
     template<cpt T>                                                                                          \

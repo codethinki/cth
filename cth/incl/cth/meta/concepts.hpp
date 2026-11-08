@@ -19,19 +19,19 @@ template<class T, class... Ts>
 concept is_any_of = (std::same_as<T, Ts> || ...);
 
 /**
- * @brief satisfied if any of `Ts...` are constructible from `T`
+ * `true` if any of `Ts...` is constructible from `T`
  */
 template<class T, class... Ts>
 concept constructs_any_of = (std::constructible_from<Ts, T> || ...);
 
 /**
- * @brief `true` if any of `Ts...` are convertible to `T`
+ * `true` if any of `Ts...` is convertible to `T`
  */
 template<class T, class... Ts>
 concept any_convertible_to = (std::convertible_to<Ts, T> || ...);
 
 /**
- * @brief `true` if `T` is convertible to any of `Ts...`
+ * `true` if `T` is convertible to any of `Ts...`
  */
 template<class T, class... Ts>
 concept convertible_to_any = (std::convertible_to<T, Ts> || ...);
