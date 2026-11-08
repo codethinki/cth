@@ -220,10 +220,7 @@ namespace cth::win::ui {
  */
 class section {
 public:
-    /**
-     * in bytes
-     */
-    static constexpr size_t PIXEL_SIZE = 4;
+    static constexpr size_t PIXEL_SIZE = 4; ///< in bytes
 
     /**
      * constructs with pos & dimensions

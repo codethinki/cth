@@ -14,10 +14,7 @@ namespace cth::co::dev {
  * base of every `raw_promise`: the exception and the continuation
  */
 struct raw_promise_base {
-    /**
-     * exception of the task, `nullptr` -> no exception
-     */
-    std::exception_ptr exception;
+    std::exception_ptr exception; ///< exception of the task, `nullptr` -> no exception
     /**
      * coroutine that continues after the task, `nullptr` -> none
      */

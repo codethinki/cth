@@ -27,10 +27,7 @@ struct window_capture_config{
  */
 class window_capture {
 public:
-    /**
-     * in bytes
-     */
-    static constexpr size_t PIXEL_SIZE = 4;
+    static constexpr size_t PIXEL_SIZE = 4; ///< in bytes
 
     using config_t = window_capture_config;
 

@@ -17,10 +17,7 @@ struct basic_promise_awaiter {
 
     constexpr basic_promise_awaiter(std::coroutine_handle<promise_type> h) : handle{h} {}
 
-    /**
-     * coroutine of the task, the task owns it
-     */
-    std::coroutine_handle<promise_type> handle;
+    std::coroutine_handle<promise_type> handle; ///< coroutine of the task, the task owns it
 
     /**
      * ready if there is no coroutine or the task is done

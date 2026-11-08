@@ -79,7 +79,8 @@ protected:
     }
 
     /**
-     * context of the job that runs on this thread, see `context::current()`
+     * context of the job that runs on this thread
+     * @see `context::current()`
      */
     static inline thread_local context const* _current = nullptr;
 

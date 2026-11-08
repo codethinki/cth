@@ -133,10 +133,7 @@ struct window_t {
 
 
 struct monitor_t {
-    /**
-     * corresponds to `HMONITOR`
-     */
-    void* handle;
+    void* handle; ///< corresponds to `HMONITOR`
     rect_t rect;
 };
 }

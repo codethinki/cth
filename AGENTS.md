@@ -19,6 +19,9 @@ Documentation uses doxygen comments and follows ASD-STE100 (Simplified Technical
   `` `start()` ``, `` `scheduler::owns_thread()` ``, `` `std::nullopt` ``, `` `workers` ``, `` `x < y` ``.
   Doxygen links our names inside backticks by itself (autolink), CLion shows backticks as code.
 - `@ref` only where autolink does not resolve a name; a member variable is qualified instead: `` `scheduler::_workers` ``.
+- A member with one fact gets a trailing `///<` on its line: `static constexpr size_t PIXEL_SIZE = 4; ///< in bytes`.
+  More than one fact: a `/** */` block above it.
+- Related functions go to `@see`, not into the text: ``@see `await_stop()` ``.
 - Do not document what the signature already tells. A getter without conditions needs no comment.
 
 ### Tags
@@ -26,7 +29,8 @@ Documentation uses doxygen comments and follows ASD-STE100 (Simplified Technical
 | Tag | Use |
 |---|---|
 | `@details` | more information after the brief. `calls:` followed by a list of the functions it calls |
-| `@param` | name, then what it is for: `@param work to run` |
+| `@param` | name, then what it is for: `@param work to run`; input is implicit, an output parameter is explicit: `@param[out] buffer to fill` |
+| `@see` | related functions: ``@see `await_stop()` `` |
 | `@tparam` | template parameter, same form as `@param` |
 | `@return` | what the result is |
 | `@pre` | condition that must be true before the call: ``@pre `active()` `` |
