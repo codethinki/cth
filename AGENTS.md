@@ -32,7 +32,7 @@ Documentation uses doxygen comments and follows ASD-STE100 (Simplified Technical
 | Tag | Use |
 |---|---|
 | `@details` | more information after the brief. `calls:` followed by a list of the functions it calls |
-| `@param` | name, then what it is for: `@param work to run`; input is implicit, an output parameter is explicit: `@param[out] buffer to fill` |
+| `@param` | name, then what it is for: `@param work to run`; input is implicit, every output parameter (a non-const reference or pointer that the function writes to) is explicit, also without a description: `@param[out] buffer to fill`, `@param[out] buffer` |
 | `@see` | related functions: ``@see `await_stop()` `` |
 | `@tparam` | template parameter, same form as `@param` |
 | `@return` | what the result is |
