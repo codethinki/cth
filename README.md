@@ -49,6 +49,7 @@ header only core
 
 ### pointers
 - `not_null`, `not_null_ptr`, `unique_not_null`, `move_ptr`
+- `ref_wrapper`: `std::reference_wrapper` with `->` and `*`
 
 ### io (`cth::io`)
 - colored console output: `col_stream`

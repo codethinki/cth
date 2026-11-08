@@ -8,6 +8,7 @@
 
 
 #include <cth/meta/coro.hpp>
+#include <cth/ptr/ref_wrapper.hpp>
 
 #include <utility>
 
@@ -20,7 +21,7 @@ namespace cth::co {
  */
 class executor {
 public:
-    constexpr executor(co::context const& context) noexcept : _context(&context) {}
+    constexpr executor(co::context const& context) noexcept : _context{context} {}
     constexpr ~executor() = default;
 
     /**
@@ -77,7 +78,7 @@ private:
         co_return co_await std::move(task);
     }
 
-    co::context const* _context;
+    cth::ref_wrapper<co::context const> _context;
 
 public:
     constexpr co::context const& context() const { return *_context; }
@@ -85,7 +86,7 @@ public:
     /**
      * checks if both executors refer to the same context
      */
-    constexpr bool operator==(executor const&) const = default;
+    constexpr bool operator==(executor const& other) const { return &context() == &other.context(); }
 
     constexpr executor(executor const& other) = default;
     constexpr executor(executor&& other) noexcept = default;
