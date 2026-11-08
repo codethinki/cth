@@ -18,10 +18,12 @@ Documentation uses doxygen comments and follows ASD-STE100 (Simplified Technical
 - Put every piece of code in backticks: our names, std names, values, parameter names, expressions:
   `` `start()` ``, `` `scheduler::owns_thread()` ``, `` `std::nullopt` ``, `` `workers` ``, `` `x < y` ``.
   Doxygen links our names inside backticks by itself (autolink), CLion shows backticks as code.
-- `@ref` only where autolink does not resolve a name; a member variable is qualified instead: `` `scheduler::_workers` ``.
+- `@ref` only where autolink does not resolve a name (a member variable is qualified instead: `` `scheduler::_workers` ``) or where the exact overload matters, see below.
 - Write function references without a parameter list: `` `start()` ``, `` `scheduler::owns_thread()` ``.
+  `` `start()` `` names the function with all its overloads, it does not mean the overload without parameters.
   Doxygen links the class and the parameter types of `` `strand(scheduler const&)` ``, not the overload. The name alone links an overload.
-  Exception: the text must name one overload and the name alone is ambiguous: name the parameter in words, ``calls `wait()` with a timeout``.
+  Exception: the text must point at one specific overload: `@ref` with the parameter list links exactly that overload, ``@details calls @ref union_find(size_t)``, `@ref await(native_handle, await_func)`.
+  Do not write `(...)`: it does not link.
 - A member with one fact gets a trailing `///<` on its line: `static constexpr size_t PIXEL_SIZE = 4; ///< in bytes`.
   More than one fact: a `/** */` block above it.
 - Related functions go to `@see`, not into the text: ``@see `await_stop()` ``.

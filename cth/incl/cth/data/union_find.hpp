@@ -37,7 +37,7 @@ public:
      * constructs and immediately merges given pairs
      * @param n size
      * @param groups to execute immediately
-     * @details calls `union_find()` with a size
+     * @details calls @ref union_find(size_t)
      */
     union_find(size_t n, std::span<group_t const> groups) : union_find{n} {
         for(auto& group : groups)
@@ -45,7 +45,7 @@ public:
     }
 
     /**
-     * delegation for `union_find()` with a span of groups
+     * delegation for @ref union_find(size_t, std::span<group_t const>)
      */
     union_find(size_t n, std::initializer_list<group_t> groups) : union_find{n, std::span{groups}} {}
 
@@ -94,7 +94,7 @@ public:
         s.size_ref(parent) += s.size_ref(child);
     }
     /**
-     * delegates to `merge()` with two indices
+     * delegates to @ref merge(this union_find&, index_type, index_type)
      * @param group set of indices to merge
      * @pre all of `group` in bounds `[0, size)`
      * @param group merge pair
