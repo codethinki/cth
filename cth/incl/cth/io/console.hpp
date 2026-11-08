@@ -2,6 +2,7 @@
 #include "cth/string.hpp"
 #include "cth/data/string_joiner.hpp"
 #include "cth/meta/ranges.hpp"
+#include "cth/ptr/ref_wrapper.hpp"
 
 #include <cstddef>
 #include <array>
@@ -221,7 +222,7 @@ public:
     constexpr col_stream(
         std::ostream& out,
         ansi_state state = {}
-    ) : _out{&out},
+    ) : _out{out},
         _stateStack{std::move(state)} {}
     constexpr ~col_stream() = default;
 
@@ -303,7 +304,7 @@ private:
 
     [[nodiscard]] constexpr ansi_state& state() { return _stateStack.back(); }
 
-    std::ostream* _out;
+    cth::ref_wrapper<std::ostream> _out;
     std::vector<ansi_state> _stateStack;
 
     std::optional<std::string> _ansiCache{};
