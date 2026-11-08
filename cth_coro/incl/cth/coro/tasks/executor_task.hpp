@@ -15,7 +15,7 @@
 
 namespace cth::co::dev {
 /**
- * promise of @ref executor_task
+ * promise of `executor_task`
  */
 template<class T, payload Pyld = this_coro::default_payload>
 struct executor_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
@@ -24,7 +24,7 @@ struct executor_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
     /**
      * copies the context and the payload of the caller
      * @details the task continues the caller on its context
-     * @details calls: @ref this_coro_promise_base::inherit(), @ref affine_promise::attach()
+     * @details calls: `this_coro_promise_base::inherit()`, `affine_promise::attach()`
      * @param caller promise of the caller
      * @throws what the payload conversion throws
      */
@@ -43,7 +43,7 @@ struct executor_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
 private:
     /**
      * payload of the caller, the own payload for a caller without one
-     * @details the static_assert in @ref attach() reports a caller without one
+     * @details the `static_assert` in `attach()` reports a caller without one
      */
     template<class CallerPromise>
     using caller_payload_t = mta::conditional_pack_t<
@@ -57,7 +57,7 @@ private:
 namespace cth::co {
 /**
  * task that runs on the context of the caller
- * @details the caller continues on its context afterwards, @ref executor::spawn() runs it on another context
+ * @details the caller continues on its context afterwards, `executor::spawn()` runs it on another context
  * @tparam T result type
  * @tparam Pyld payload of the task, the payload of the caller must convert to it
  */

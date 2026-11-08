@@ -31,7 +31,7 @@ namespace {
 
     /**
      * libhv's default logger writes libhv.<date>.log into the working directory,
-     * its warnings and errors go to cth::log instead
+     * its warnings and errors go to `cth::log` instead
      */
     void route_libhv_log() {
         static std::once_flag once;

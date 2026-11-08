@@ -5,7 +5,7 @@
 namespace cth::co::this_coro {
 /**
  * base of custom payloads, carries no data
- * @details the @ref default_payload
+ * @details the `default_payload`
  * @details a custom payload slices to it when its task awaits a task with the default payload
  */
 struct payload_base {};

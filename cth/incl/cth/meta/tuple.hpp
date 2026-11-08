@@ -7,7 +7,7 @@
 
 namespace cth::mta {
 /**
- * Mimics std::apply for type traits, i.e. applies a tuple pack as variadic type list
+ * Mimics `std::apply` for type traits, i.e. applies a tuple pack as variadic type list
  * @tparam Trait to apply to
  * @tparam Tuple type list
  */
@@ -18,7 +18,7 @@ template<template<class...> class Trait, class... Ts>
 struct trait_apply<Trait, std::tuple<Ts...>> : std::type_identity<Trait<Ts...>> {};
 
 /**
- * shorthand for @ref trait_apply
+ * shorthand for `trait_apply`
  * @tparam Trait to apply to
  * @tparam Tuple type list
  */

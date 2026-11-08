@@ -16,7 +16,7 @@
 
 namespace cth::co {
 /**
- * true if T has a native_handle() that gives a handle
+ * `true` if `T` has a `native_handle()` that gives a handle
  */
 template<class T>
 concept native_handle_waitable = requires(T const& value) {
@@ -25,9 +25,9 @@ concept native_handle_waitable = requires(T const& value) {
 
 
 /**
- * base of this_coro promises, holds the context the coroutine runs on and the payload
- * @details promises that support the this_coro namespace derive it publicly
- * @details @ref dev::executor_promise::attach() calls @ref inherit() before the task runs
+ * base of `this_coro` promises, holds the context the coroutine runs on and the payload
+ * @details promises that support the `this_coro` namespace derive it publicly
+ * @details `dev::executor_promise::attach()` calls `inherit()` before the task runs
  * @details a spawned task gets both on construction
  * @tparam Pyld payload of the coroutine
  */
@@ -112,12 +112,12 @@ private:
 public:
     /**
      * gives the context the coroutine runs on
-     * @pre constructed with a context or @ref inherit() called
+     * @pre constructed with a context or `inherit()` called
      */
     [[nodiscard]] constexpr co::context const& context() const noexcept { return *_context; }
     /**
      * gives the payload of the coroutine
-     * @pre constructed with a payload or @ref inherit() called
+     * @pre constructed with a payload or `inherit()` called
      */
     [[nodiscard]] constexpr Pyld const& payload() const noexcept { return *_payload; }
 };

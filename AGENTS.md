@@ -15,7 +15,10 @@ Documentation uses doxygen comments and follows ASD-STE100 (Simplified Technical
 - Do not put a period at the end of a line.
 - Write short fragments, not full sentences. Start them with a verb in the present tense: `creates the fence`, `posts the work`.
 - Fragments win over STE100: where STE100 asks for a full sentence or an article, write the shorter fragment.
-- Use `@ref` for every name of code: `@ref start()`, `@ref scheduler::owns_thread()`.
+- Put every piece of code in backticks: our names, std names, values, parameter names, expressions:
+  `` `start()` ``, `` `scheduler::owns_thread()` ``, `` `std::nullopt` ``, `` `workers` ``, `` `x < y` ``.
+  Doxygen links our names inside backticks by itself (autolink), CLion shows backticks as code.
+- `@ref` only where autolink does not resolve a name; a member variable is qualified instead: `` `scheduler::_workers` ``.
 - Do not document what the signature already tells. A getter without conditions needs no comment.
 
 ### Tags
@@ -26,9 +29,9 @@ Documentation uses doxygen comments and follows ASD-STE100 (Simplified Technical
 | `@param` | name, then what it is for: `@param work to run` |
 | `@tparam` | template parameter, same form as `@param` |
 | `@return` | what the result is |
-| `@pre` | condition that must be true before the call: `@pre @ref active()` |
-| `@post` | condition that is true after the call: `@post @ref signaled()` |
-| `@throws` | exception type and the cause: `@throws cth::except::default_exception reason: file not found` |
+| `@pre` | condition that must be true before the call: ``@pre `active()` `` |
+| `@post` | condition that is true after the call: ``@post `signaled()` `` |
+| `@throws` | exception type and the cause: `@throws cth::except::default_exception reason: file not found`; the exception type stays raw, doxygen links it |
 | `@note` | side effect the caller must know: `@note resets the fence` |
 | `@attention` | danger that is not a precondition: undefined behavior, not thread safe |
 
@@ -39,9 +42,10 @@ Documentation uses doxygen comments and follows ASD-STE100 (Simplified Technical
 
 Use symbols when they are shorter and clearer than words:
 
-- implication: `nullptr -> no job of a context`
-- conditions and ranges: `@pre 0 < workers < MAX_INT`
-- special values: `(INFINITE_WAIT => no timeout)`
+- implication: `` `nullptr` -> no job of a context ``
+- conditions and ranges: `` @pre `0 < workers < MAX_INT` ``
+- special values: `` (`INFINITE_WAIT` => no timeout) ``
+- the expression goes in backticks, the arrow and the words stay outside
 
 ### STE100 rules that apply
 
@@ -49,7 +53,7 @@ Use symbols when they are shorter and clearer than words:
 2. Write descriptions with 25 words or fewer and instructions with 20 words or fewer.
 3. Write one topic in one fragment. Split two actions into two lines.
 4. Use the active voice and the present tense.
-5. Write instructions to the caller in the imperative: `call @ref start() first`.
+5. Write instructions to the caller in the imperative: ``call `start()` first``.
 6. Do not use phrasal verbs (`set up`, `carry out`). Use one verb (`create`, `do`).
 7. Do not use `-ing` forms as nouns or adjectives.
 8. Use `it`, `this` and `they` only when the reference is clear.

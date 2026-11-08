@@ -7,8 +7,8 @@
 
 namespace cth::co {
 /**
- * base of awaiters that wait with @ref context::await(), a failed wait throws in the caller
- * @attention a derived await_resume() calls the one of this base first, else a failed wait goes unnoticed
+ * base of awaiters that wait with `context::await()`, a failed wait throws in the caller
+ * @attention a derived `await_resume()` calls the one of this base first, else a failed wait goes unnoticed
  */
 class wait_awaiter_base {
 public:
@@ -22,9 +22,9 @@ public:
 
 protected:
     /**
-     * gives the callback for @ref context::await(), it stores the error and resumes the coroutine
+     * gives the callback for `context::await()`, it stores the error and resumes the coroutine
      * @param h coroutine to resume
-     * @return callback for @ref context::await()
+     * @return callback for `context::await()`
      */
     [[nodiscard]] auto resume(std::coroutine_handle<> h) {
         return [this, h](std::error_code ec) {

@@ -10,7 +10,7 @@
 
 /**
  * @file linux/timer.hpp
- * @brief posix implementation of cth/os/timer.hpp, a timerfd on CLOCK_MONOTONIC
+ * @brief posix implementation of cth/os/timer.hpp, a timerfd on `CLOCK_MONOTONIC`
  * @attention included by src/timer.cpp only, not a standalone header
  */
 namespace cth::os {

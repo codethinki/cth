@@ -12,7 +12,7 @@ namespace cth::co {
 /**
  * waits until the time point, resumes the caller on the context
  * @details awaitable in any coroutine
- * @details this_coro coroutines get it from @ref this_coro::wait() and @ref this_coro::wait_until()
+ * @details `this_coro` coroutines get it from `this_coro::wait()` and `this_coro::wait_until()`
  * @details a failed wait throws in the caller
  */
 struct time_point_awaiter : wait_awaiter_base {

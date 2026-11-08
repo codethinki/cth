@@ -10,7 +10,7 @@ namespace cth::co {
  */
 struct sync_promise_base {
     /**
-     * blocks until @ref signal()
+     * blocks until `signal()`
      */
     void wait() const noexcept { fence.wait(); }
 
@@ -19,7 +19,7 @@ struct sync_promise_base {
 
     /**
      * wakes the threads that wait
-     * @post @ref signaled()
+     * @post `signaled()`
      */
     void signal() noexcept { fence.signal(); }
 

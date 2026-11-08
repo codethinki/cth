@@ -16,7 +16,7 @@
 /**
  * @brief creates a vector of unique elements with exactly one element from each given range. order is
  *  preserved
- * @tparam Rng rng<rng<std::equality_comparable>    >
+ * @tparam Rng `rng<rng<std::equality_comparable>    >`
  * @param selections range of ranges
  * @return vector of T, empty if no unique selection is possible
  */
@@ -100,11 +100,11 @@ namespace cth::alg {
 
 /**
  * \brief assigns a's to b's based of every a's options for b's, prioritizing spread
- * \tparam Rng1 rng<rng<std::integral>>
- * \tparam Rng2 rng<std::integral>
+ * \tparam Rng1 `rng<rng<std::integral>>`
+ * \tparam Rng2 `rng<std::integral>`
  * \param a_b_options range of b options from a's
  * \param b_max  max assignments for b's
- * \return vector<integral> based on Rng1
+ * \return `vector<integral>` based on `Rng1`
  */
 template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT(std::integral)> Rng2>
 [[nodiscard]] auto assign(

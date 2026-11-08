@@ -7,9 +7,9 @@
 
 namespace cth::co {
 /**
- * serial queue on a @ref scheduler
+ * serial queue on a `scheduler`
  * @details its jobs run one at a time and in post order on the workers of the scheduler
- * @details a coroutine holds the strand between two suspension points, not across a co_await
+ * @details a coroutine holds the strand between two suspension points, not across a `co_await`
  * @attention the scheduler must outlive the strand
  */
 class strand final : public context {
@@ -46,13 +46,13 @@ public:
     strand(strand const& other) = delete;
     strand& operator=(strand const& other) = delete;
     /**
-     * moves other into this strand
-     * @attention executors, coroutines and jobs of other still refer to other
+     * moves `other` into this strand
+     * @attention executors, coroutines and jobs of `other` still refer to `other`
      */
     strand(strand&& other) noexcept;
     /**
-     * moves other into this strand
-     * @attention executors, coroutines and jobs of other still refer to other
+     * moves `other` into this strand
+     * @attention executors, coroutines and jobs of `other` still refer to `other`
      */
     strand& operator=(strand&& other) noexcept;
 };

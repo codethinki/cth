@@ -2,8 +2,8 @@
 
 namespace cth::var {
 /**
- * \brief std::visit lambda overload capsule
- * \note every std::variant visitation must be specified
+ * \brief `std::visit` lambda overload capsule
+ * \note every `std::variant` visitation must be specified
  */
 template<class... Ts>
 struct overload : Ts... {
@@ -13,7 +13,7 @@ template<class... Ts>
 overload(Ts...) -> overload<Ts...>;
 
 /**
- * \brief std::visit single lambda capsule
+ * \brief `std::visit` single lambda capsule
  */
 template<class Ts>
 struct visitor : Ts {

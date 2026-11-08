@@ -13,7 +13,7 @@
 namespace cth::mta {
 
 /**
- * @brief counts the dimensions of @ref Rng
+ * @brief counts the dimensions of `Rng`
  * @tparam Rng range
  * @param max optional max search depth
  */
@@ -21,7 +21,7 @@ template<class Rng>
 consteval size_t dimensions(size_t max = MAX_DEPTH);
 
 /**
- * @brief checks if @ref Rng is of at least @ref D dimensions
+ * @brief checks if `Rng` is of at least `D` dimensions
  * @tparam Rng range
  * @tparam D dimensions
  */
@@ -45,7 +45,7 @@ template<class Rng, size_t D = MAX_DEPTH>
 using md_range_value_t = type_of_t<dev::md_range_value<Rng, D>()>;
 
 /**
- * @brief shortcut to @ref md_range_value_t<Rng, 2>
+ * @brief shortcut to `md_range_value_t<Rng, 2>`
  */
 template<class Rng>
 using range2d_value_t = md_range_value_t<Rng, 2>;

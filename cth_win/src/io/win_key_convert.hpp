@@ -164,7 +164,7 @@ struct win_key_params {
 };
 
 /**
- * maps @ref win_key_params to a @ref cth::io::key_state
+ * maps `win_key_params` to a `cth::io::key_state`
  */
 [[nodiscard]] constexpr io::key_state to_key_state_generic(win_key_params const& p) {
     bool const down = !p.isUp;
@@ -297,7 +297,7 @@ struct win_key_params {
 }
 
 /**
- * ADAPTER: Low-Level Keyboard Hook (WH_KEYBOARD_LL)
+ * ADAPTER: Low-Level Keyboard Hook (`WH_KEYBOARD_LL`)
  */
 [[nodiscard]] constexpr io::key_state to_key_state(KBDLLHOOKSTRUCT const& s) {
     return to_key_state_generic(

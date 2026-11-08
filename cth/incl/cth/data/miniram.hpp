@@ -94,7 +94,7 @@ public:
     /**
      * constructs
      * @param capacity of ram (in elements)
-     * @param initial_alloc_capacity (in allocations), >= 1
+     * @param initial_alloc_capacity (in allocations), `>= 1`
      */
     constexpr explicit basic_miniram(size_type capacity, size_t initial_alloc_capacity = 128 * 1024);
     constexpr ~basic_miniram() = default;
@@ -107,7 +107,7 @@ public:
     /**
      * allocates a block, may fail
      * @param size (in elements)
-     * @return allocation (offset, id) or (NO_SPACE, NO_SPACE)
+     * @return allocation (offset, id) or (`NO_SPACE`, `NO_SPACE`)
      */
     [[nodiscard]] constexpr alloc_type allocate(size_type size);
 
@@ -226,11 +226,11 @@ public:
     [[nodiscard]] constexpr size_type allocated() const { return capacity() - remaining(); }
 
     /**
-     * true if no more elements can be allocated
+     * `true` if no more elements can be allocated
      */
     [[nodiscard]] constexpr bool exhausted() const { return remaining() == 0; }
     /**
-     * true if nothing is allocated
+     * `true` if nothing is allocated
      */
     [[nodiscard]] constexpr bool empty() const { return remaining() == capacity(); }
     /**

@@ -10,7 +10,7 @@
 
 namespace cth::net {
 
-/** WebSocket server bound to the IPv4 loopback interface. */
+/** `WebSocket` server bound to the IPv4 loopback interface. */
 class websocket_server {
 public:
     static constexpr std::size_t DEFAULT_MAX_MESSAGE_SIZE = 1024 * 1024;
@@ -23,7 +23,7 @@ public:
 
     /**
      * blocks until a connection is accepted, the server stops, or the timeout elapses
-     * @return the connection, or @ref std::nullopt if stopped or timed out
+     * @return the connection, or `std::nullopt` if stopped or timed out
      */
     [[nodiscard]] std::optional<websocket_connection> accept(
         std::chrono::milliseconds timeout = os::INFINITE_WAIT

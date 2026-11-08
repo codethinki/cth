@@ -9,7 +9,7 @@
 
 namespace cth::co::dev {
 /**
- * promise part of sync tasks: the fence, the result and @ref final_sync_awaiter
+ * promise part of sync tasks: the fence, the result and `final_sync_awaiter`
  */
 template<class T>
 struct sync_promise_template : sync_promise_base,
@@ -63,7 +63,7 @@ public:
 
 namespace cth::co::dev {
 /**
- * promise of @ref sync_task
+ * promise of `sync_task`
  */
 template<class T>
 struct sync_promise : dev::sync_promise_template<T> {
@@ -75,7 +75,7 @@ namespace cth::co {
 
 /**
  * task that a thread can block on without a coroutine
- * @details a caller without a context: @ref start() it now, @ref await() it later
+ * @details a caller without a context: `start()` it now, `await()` it later
  * @tparam T result type
  */
 template<class T>

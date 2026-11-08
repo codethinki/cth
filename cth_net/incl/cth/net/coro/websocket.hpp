@@ -92,10 +92,10 @@ public:
     /** awaits and consumes the next binary message */
     [[nodiscard]] bytes_awaiter read_bytes() { return bytes_awaiter{_connection}; }
 
-    /** consumes the text message made ready by @ref wait() */
+    /** consumes the text message made ready by `wait()` */
     [[nodiscard]] std::string take_text() { return _connection.read_text(); }
 
-    /** consumes the binary message made ready by @ref wait() */
+    /** consumes the binary message made ready by `wait()` */
     [[nodiscard]] std::vector<std::byte> take_bytes() { return _connection.read_bytes(); }
 
     void write_text(std::string_view message) const { _connection.write_text(message); }

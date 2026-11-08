@@ -14,20 +14,20 @@ hwnd_t desktop_handle();
 
 /**
  * gets the window currently receiving foreground input
- * @return foreground window, nullptr when no window has focus
+ * @return foreground window, `nullptr` when no window has focus
  */
 [[nodiscard]] hwnd_t foreground_window() noexcept;
 
 double desktop_scale();
 /**
  * Gets the desktop rect, origin top left
- * @details calls @ref window_rect(hwnd_t)
+ * @details calls `window_rect(hwnd_t)`
  */
 rect_t desktop_rect();
 
 /**
  * gets the desktop frame count
- * @details calls @ref window_frame_count(hwnd_t)
+ * @details calls `window_frame_count(hwnd_t)`
  */
 size_t desktop_frame_count();
 
@@ -83,7 +83,7 @@ namespace cth::win::ui {
  * creates a windows window
  * @param name of window (in utf8), must not be empty
  * @param rect pos + size
- * @param class_name (in utf8) if empty => name is used, class doesn't exist => created
+ * @param class_name (in utf8) if empty => `name` is used, class doesn't exist => created
  * @throws cth::except::win_exception on window class registration failure
  * @throws cth::except::win_exception on window creation failure
  */
@@ -129,7 +129,7 @@ namespace cth::win::ui {
 
 
 /**
- * blits from src to dst
+ * blits from `src` to `dst`
  * @param src for blit
  * @param dst for blit
  * @throws
@@ -146,7 +146,7 @@ void raw_blit(
 );
 
 /**
- * blits from src to dst with scaling, falls back to raw_blit if sizes are equal
+ * blits from `src` to `dst` with scaling, falls back to `raw_blit` if sizes are equal
  * @param src to blit from
  * @param dst to blit to
  */
@@ -167,7 +167,7 @@ void blit(
  * blits a bmp to the screen
  * @param src buffer
  * @param dst screen
- * @param dpi_aware true => raw blit
+ * @param dpi_aware `true` => raw blit
  */
 void blit_to_screen(
     hbmp_t src,
@@ -185,7 +185,7 @@ void blit_to_screen(
  * blits from the screen to the buffer
  * @param src screen
  * @param dst buffer
- * @param dpi_aware true => raw blit
+ * @param dpi_aware `true` => raw blit
  */
 void blit_from_screen(
     hbmp_t src,
@@ -228,15 +228,15 @@ public:
     /**
      * constructs with pos & dimensions
      * @param rect pos and dimensions of section
-     * @param dpi_aware if true, uses faster BitBlt instead of StretchBlt
+     * @param dpi_aware if `true`, uses faster `BitBlt` instead of `StretchBlt`
      */
     section(rect_t rect, bool dpi_aware = false);
     ~section();
 
     /**
      * refreshes the stored pixels
-     * @return @ref view()
-     * @throws cth::except::win_exception if BitBlt fails
+     * @return `view()`
+     * @throws cth::except::win_exception if `BitBlt` fails
      * @attention blocks if captured faster than screen refresh rate
      */
     std::span<std::byte> capture() {
@@ -257,7 +257,7 @@ public:
 
     /**
      * writes the stored pixels
-     * @throws cth::except::win_exception if BitBlt fails
+     * @throws cth::except::win_exception if `BitBlt` fails
      */
     void write() const {
         // TODO figure out why writes are not visible on screen

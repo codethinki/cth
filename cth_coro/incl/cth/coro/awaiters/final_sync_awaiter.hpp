@@ -3,7 +3,7 @@
 
 namespace cth::co {
 /**
- * final awaiter of @ref sync_task, signals the threads that wait
+ * final awaiter of `sync_task`, signals the threads that wait
  * @details resumes the continuation if the sync task has one
  */
 struct final_sync_awaiter {
@@ -13,7 +13,7 @@ struct final_sync_awaiter {
      * signals the promise, then transfers to the continuation
      * @details reads the continuation before the signal: a thread that waits can destroy the coroutine after it
      * @param h coroutine of the sync task
-     * @return continuation, std::noop_coroutine() if there is none
+     * @return continuation, `std::noop_coroutine()` if there is none
      */
     template<sync_promise_type Promise>
     auto await_suspend(std::coroutine_handle<Promise> h) noexcept -> std::coroutine_handle<> {

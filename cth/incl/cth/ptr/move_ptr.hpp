@@ -6,7 +6,7 @@
 
 namespace cth {
 /**
- * move aware pointer (nullptr after move)
+ * move aware pointer (`nullptr` after move)
  * @attention NOT memory safe
  */
 template<typename T>

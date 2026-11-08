@@ -7,7 +7,7 @@
 
 namespace cth::co::this_coro {
 /**
- * tag of @ref wait() and @ref wait_until()
+ * tag of `wait()` and `wait_until()`
  */
 struct [[nodiscard]] wait_tag : tag_base {
     constexpr explicit wait_tag(chrono::time_point_t t) : timePoint{t} {}
@@ -24,15 +24,15 @@ struct [[nodiscard]] wait_tag : tag_base {
 /**
  * waits until the time point, no wait if it is past
  * @param time_point to wait for
- * @return tag, co_await it
+ * @return tag, `co_await` it
  */
 constexpr auto wait_until(chrono::time_point_t time_point) { return wait_tag{time_point}; }
 
 /**
  * waits for the duration
- * @details the call reads the clock: the time point is now + duration
+ * @details the call reads the clock: the time point is now + `duration`
  * @param duration to wait for
- * @return tag, co_await it
+ * @return tag, `co_await` it
  */
 template<class Rep, class Period>
 auto wait(std::chrono::duration<Rep, Period> const& duration) {

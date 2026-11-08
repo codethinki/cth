@@ -9,23 +9,23 @@
 
 namespace cth::co {
 /**
- * moves the caller onto a target @ref context
- * @details a this_coro caller runs on the target afterwards, its payload stays
+ * moves the caller onto a target `context`
+ * @details a `this_coro` caller runs on the target afterwards, its payload stays
  */
 struct schedule_awaiter : this_coro_awaiter_base {
 public:
     constexpr schedule_awaiter(co::context const& target) : _target{target} {}
 
     /**
-     * never ready, @ref await_suspend() decides
+     * never ready, `await_suspend()` decides
      */
     [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
 
     /**
-     * rebinds a this_coro caller to the target and posts the caller to the target
-     * @details @ref context::owns_thread() is not enough: a scheduler also owns the threads of its strand jobs
+     * rebinds a `this_coro` caller to the target and posts the caller to the target
+     * @details `context::owns_thread()` is not enough: a scheduler also owns the threads of its strand jobs
      * @param h coroutine of the caller
-     * @return false -> @ref context::current() is the target, the caller continues without a post
+     * @return `false` -> `context::current()` is the target, the caller continues without a post
      */
     template<promise Promise>
     bool await_suspend(std::coroutine_handle<Promise> h) {

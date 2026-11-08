@@ -27,7 +27,7 @@
 /**
  * @brief creates a format overload for a class
  * @param type The class/struct type to format
- * @param fmt_string The format string (e.g., "ID: {}, Val: {}")
+ * @param fmt_string The format string (e.g., `"ID: {}, Val: {}"`)
  * @param tie_func An expression involving 'obj' that returns a tuple/tie
  */
 #define CTH_FORMAT_CLASS_CUSTOM(type, fmt_string, tie_func)                                         \
@@ -55,9 +55,9 @@ struct std::formatter<type> {                                                   
 }
 
 /**
- * creates a format overload for a class, implicitly includes type name with type{<fmt_string>}
+ * creates a format overload for a class, implicitly includes type name with `type{<fmt_string>}`
  * @param type The class/struct type to format
- * @param fmt_string The format string (e.g., "ID: {}, Val: {}")
+ * @param fmt_string The format string (e.g., `"ID: {}, Val: {}"`)
  * @param tie_func An expression involving 'obj' that returns a tuple/tie
  */
 #define CTH_FORMAT_CLASS(type, fmt_string, tie_func)\
@@ -66,7 +66,7 @@ struct std::formatter<type> {                                                   
 /**
  * @brief creates a format overload for the concept
  * @param cpt concept
- * @param to_formattable to_formattable(type) function
+ * @param to_formattable `to_formattable(type)` function
  * @attention should only be used in global namespace context
  */
 #define CTH_FORMAT_CPT(cpt, to_formattable)                                                                  \

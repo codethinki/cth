@@ -4,7 +4,7 @@
 
 namespace cth::co::this_coro {
 /**
- * tag of @ref await_handle()
+ * tag of `await_handle()`
  */
 struct [[nodiscard]] native_handle_tag : tag_base {
     constexpr explicit native_handle_tag(os::native_handle_t h) : handle{h} {}
@@ -21,7 +21,7 @@ struct [[nodiscard]] native_handle_tag : tag_base {
 /**
  * waits until the handle is signaled, no wait if it is signaled
  * @param h to wait on
- * @return tag, co_await it
+ * @return tag, `co_await` it
  */
 constexpr auto await_handle(os::native_handle_t h) { return native_handle_tag{h}; }
 }

@@ -12,7 +12,7 @@
 namespace cth::co::dev {
 
 /**
- * promise of @ref spawn_task
+ * promise of `spawn_task`
  */
 template<class T, payload Pyld = this_coro::default_payload>
 struct spawn_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
@@ -47,7 +47,7 @@ struct spawn_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
 namespace cth::co {
 
 /**
- * task of @ref executor::spawn()
+ * task of `executor::spawn()`
  * @details runs on the context of the executor with its own payload
  * @details the caller continues on its context, a caller without a context continues on the context of the executor
  * @tparam T result type

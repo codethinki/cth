@@ -9,7 +9,7 @@
 namespace cth::co {
 
 /**
- * true if the awaiter of T derives @ref this_coro_awaiter_base
+ * `true` if the awaiter of `T` derives `this_coro_awaiter_base`
  * @details the awaiter resumes the caller on its context itself
  */
 template<class T>
@@ -17,20 +17,20 @@ concept this_coro_awaitable =
     co::awaitable<T> && std::is_base_of_v<this_coro_awaiter_base, std::remove_cvref_t<co::awaiter_t<T>>>;
 
 /**
- * true if T is awaitable, not a @ref this_coro_awaitable and not a tag
+ * `true` if `T` is awaitable, not a `this_coro_awaitable` and not a tag
  */
 template<class T>
 concept foreign_awaitable = co::awaitable<T> && !this_coro_awaitable<T> && !co::this_coro::tag<T>;
 
 /**
- * true if T derives @ref sync_promise_base
+ * `true` if `T` derives `sync_promise_base`
  */
 template<class T>
 concept sync_promise_type = std::is_base_of_v<sync_promise_base, T>;
 
 namespace dev {
     /**
-     * true if Promise attaches to a CallerPromise without a throw
+     * `true` if `Promise` attaches to a `CallerPromise` without a throw
      */
     template<class Promise, class CallerPromise>
     concept nothrow_attachable = requires(Promise& p, CallerPromise const& c) { { p.attach(c) } noexcept; };

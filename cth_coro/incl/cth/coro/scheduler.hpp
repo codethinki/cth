@@ -13,7 +13,7 @@
 
 namespace cth::co {
 /**
- * tag, the @ref scheduler constructor with it calls @ref scheduler::start()
+ * tag, the `scheduler` constructor with it calls `scheduler::start()`
  */
 constexpr auto autostart = [] {};
 using autostart_t = decltype(autostart);
@@ -22,8 +22,8 @@ using autostart_t = decltype(autostart);
 namespace cth::co {
 /**
  * runs its jobs on its own worker threads
- * @details @ref context on an asio::io_context
- * @details call @ref start() to run the workers
+ * @details `context` on an `asio::io_context`
+ * @details call `start()` to run the workers
  */
 class scheduler final : public context {
     struct Impl;
@@ -36,19 +36,19 @@ public:
     /**
      * constructs the scheduler, does not start the workers
      * @param workers number of worker threads
-     * @pre 0 < workers < MAX_INT
+     * @pre `0 < workers < MAX_INT`
      */
     scheduler(size_t workers = 1);
 
     // ReSharper disable once CppNonExplicitConvertingConstructor
     /**
-     * constructs the scheduler and calls @ref start()
+     * constructs the scheduler and calls `start()`
      * @param workers number of worker threads
-     * @pre 0 < workers < MAX_INT
+     * @pre `0 < workers < MAX_INT`
      */
     scheduler(autostart_t, size_t workers = 1) : scheduler{workers} { start(); }
     /**
-     * calls @ref await_stop()
+     * calls `await_stop()`
      * @details blocks until the jobs that run end
      * @note jobs that did not start do not run
      */
@@ -62,20 +62,20 @@ public:
 
     /**
      * starts the workers
-     * @pre not @ref active()
-     * @post @ref active()
+     * @pre not `active()`
+     * @post `active()`
      */
     void start();
 
     /**
      * tells the workers to stop, does not wait for them
-     * @details jobs that run end, jobs that did not start run after the next @ref start()
-     * @note call @ref await_stop() to wait for the workers
+     * @details jobs that run end, jobs that did not start run after the next `start()`
+     * @note call `await_stop()` to wait for the workers
      */
     void request_stop();
 
     /**
-     * calls @ref request_stop() and blocks until the workers end
+     * calls `request_stop()` and blocks until the workers end
      */
     void await_stop() {
         request_stop();
@@ -94,7 +94,7 @@ private:
 public:
     /**
      * checks if the calling thread is a worker of this scheduler
-     * @details also true in the jobs of its strands
+     * @details also `true` in the jobs of its strands
      */
     [[nodiscard]] bool owns_thread() const override { return _threadScheduler == _impl.get(); }
 
@@ -116,16 +116,16 @@ public:
     scheduler(scheduler const& other) = delete;
     scheduler& operator=(scheduler const& other) = delete;
     /**
-     * moves other into this scheduler
-     * @pre other not @ref active()
-     * @attention executors and coroutines of other still refer to other
+     * moves `other` into this scheduler
+     * @pre `other` not `active()`
+     * @attention executors and coroutines of `other` still refer to `other`
      */
     scheduler(scheduler&& other) noexcept;
     /**
-     * moves other into this scheduler
-     * @pre not @ref active()
-     * @pre other not @ref active()
-     * @attention executors and coroutines of other still refer to other
+     * moves `other` into this scheduler
+     * @pre not `active()`
+     * @pre `other` not `active()`
+     * @attention executors and coroutines of `other` still refer to `other`
      */
     scheduler& operator=(scheduler&& other) noexcept;
 };

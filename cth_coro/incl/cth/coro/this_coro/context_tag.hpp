@@ -5,7 +5,7 @@
 
 namespace cth::co::this_coro {
 /**
- * tag of @ref this_coro::context
+ * tag of `this_coro::context`
  */
 struct [[nodiscard]] context_tag : tag_base {
     /**
@@ -16,7 +16,7 @@ struct [[nodiscard]] context_tag : tag_base {
 };
 
 /**
- * co_await it: gives the context of the caller
+ * `co_await` it: gives the context of the caller
  */
 inline constexpr context_tag context{};
 }

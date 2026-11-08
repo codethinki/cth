@@ -77,7 +77,7 @@ struct window_capture::impl {
 
     /**
      * best-effort: drops the capture border
-     * @details requires IGraphicsCaptureSession3 (>= WIN10 20348) and user consent,
+     * @details requires `IGraphicsCaptureSession3` (>= WIN10 20348) and user consent,
      * silently keeps the border otherwise
      */
     void remove_border() {
@@ -102,7 +102,7 @@ struct window_capture::impl {
 
     /**
      * drains the frame pool
-     * @return newest frame or nullptr
+     * @return newest frame or `nullptr`
      */
     wgc::Direct3D11CaptureFrame latest_frame() {
         wgc::Direct3D11CaptureFrame latest{nullptr};
@@ -120,7 +120,7 @@ struct window_capture::impl {
     }
 
     /**
-     * copies the frame into @ref buffer via a staging texture
+     * copies the frame into `buffer` via a staging texture
      */
     void store(wgc::Direct3D11CaptureFrame const& frame) {
         winrt::com_ptr<ID3D11Texture2D> texture{};

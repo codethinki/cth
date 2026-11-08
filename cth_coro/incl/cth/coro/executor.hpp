@@ -25,9 +25,9 @@ public:
 
     /**
      * moves the caller onto this context
-     * @details a this_coro caller continues on this context after later co_awaits too
+     * @details a `this_coro` caller continues on this context after later `co_await`s too
      * @details the payload of the caller stays
-     * @return awaiter, co_await it
+     * @return awaiter, `co_await` it
      */
     [[nodiscard]] constexpr auto schedule() const { return schedule_awaiter{context()}; }
 
@@ -61,7 +61,7 @@ public:
 
 private:
     /**
-     * moves onto the context of self, then awaits the task
+     * moves onto the context of `self`, then awaits the task
      * @param payload the promise constructor reads it, the task inherits it
      * @param self the promise constructor reads it, the task runs on its context
      * @param task to await
@@ -106,7 +106,7 @@ constexpr spawn_promise<T, Pyld>::spawn_promise(Pyld const& payload, executor co
 
 namespace cth::co::this_coro {
 /**
- * tag of @ref this_coro::executor
+ * tag of `this_coro::executor`
  */
 struct [[nodiscard]] executor_tag : tag_base {
     /**
@@ -121,7 +121,7 @@ struct [[nodiscard]] executor_tag : tag_base {
 
 
 /**
- * co_await it: gives an executor of the context of the caller
+ * `co_await` it: gives an executor of the context of the caller
  */
 inline constexpr executor_tag executor{};
 

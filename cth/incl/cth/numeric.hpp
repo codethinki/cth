@@ -48,7 +48,7 @@ namespace num {
     [[nodiscard]] T dist(T x1, T y1, T x2, T y2);
 
     /**
-     * @brief checks if @ref x is in [ @ref a, @ref b)
+     * @brief checks if `x` is in [ `a`, `b`)
      */
     [[nodiscard]] constexpr bool in(auto x, auto a, auto b);
 
@@ -60,7 +60,7 @@ namespace num {
 
     /**
      * @brief calculates the unsigned integral power of an arithmetic base
-     * @attention power must be >= 0
+     * @attention `power` must be `>= 0`
      */
     template<mta::arithmetic T>
     [[nodiscard]] constexpr T pow(T base, std::integral auto power);

@@ -53,7 +53,7 @@ template<auto TCpt, class... Ts> requires(mta::any_satisfy<TCpt, Ts...>)
 struct cpt_find : mta::at<cpt_find_idx<TCpt, Ts...>(), Ts...> {};
 
 /**
- * @brief shorthand for @ref cpt_find
+ * @brief shorthand for `cpt_find`
  */
 template<auto TCpt, class... Ts>
 using cpt_find_t = cpt_find<TCpt, Ts...>::type;
@@ -83,7 +83,7 @@ template<class T, class... Ts>
 using convert_to_any_t = convert_to_any<T, Ts...>::type;
 
 /**
- * @brief converts to the first type of `To... that is convertible from `From`,
+ * @brief converts to the first type of `To...` that is convertible from `From`,
  *  does nothing if `From` is in `To...`
  * @tparam To possible conversions
  * @tparam From conversion type
@@ -97,7 +97,7 @@ decltype(auto) to_convertible_from(T&& arg) {
 }
 
 /**
- * @brief shorthand for @ref to_convertible_from with U = T
+ * @brief shorthand for `to_convertible_from` with `U = T`
  */
 template<class... Ts, class T>
 decltype(auto) to_convertible(T&& arg) { return mta::to_convertible_from<T, Ts...>(std::forward<T>(arg)); }
@@ -119,7 +119,7 @@ consteval auto construct_any_from_fn() {
 
 /**
  * Resolves to the first of `Ts...` that is constructible from `T`.
- *  Tries to use @ref convert_to_any if possible
+ *  Tries to use `convert_to_any` if possible
  * @tparam T constructor arg
  * @tparam Ts options for construction
  */
@@ -127,7 +127,7 @@ template<class T, class... Ts> requires(constructs_any_of<T, Ts...>)
 struct construct_any_of : decltype(construct_any_from_fn<T, Ts...>()) {};
 
 /**
- * @brief shorthand for @ref construct_any_of
+ * @brief shorthand for `construct_any_of`
  * @tparam T constructor arg
  * @tparam Ts options for construction
  */
@@ -136,10 +136,10 @@ using construct_any_from_t = construct_any_of<T, Ts...>::type;
 
 /**
  * constructs the first type of `Ts...` that is constructible from `T`,
- *  or calls @ref to_convertible_from<T, Ts...> if possible
- * @tparam Ts to any of Ts...
+ *  or calls `to_convertible_from<T, Ts...>` if possible
+ * @tparam Ts to any of `Ts...`
  * @tparam U from
- * @note prioritizes to_convertible<T, Ts...> if available
+ * @note prioritizes `to_convertible<T, Ts...>` if available
  */
 template<class U, class... Ts, class T> requires(constructs_any_of<T, Ts...>)
 auto to_constructible_from(T&& arg) {
@@ -150,7 +150,7 @@ auto to_constructible_from(T&& arg) {
 }
 
 /**
- * @brief shorthand for @ref to_constructible_from with `U = T`
+ * @brief shorthand for `to_constructible_from` with `U = T`
  */
 template<class... Ts, class T>
 auto to_constructible(T&& arg) { return mta::to_constructible_from<T, Ts...>(std::forward<T>(arg)); }
@@ -198,7 +198,7 @@ namespace dev {
 }
 
 /**
- * Resolves the correct function overload type for Overload from Overloads
+ * Resolves the correct function overload type for `Overload` from `Overloads`
  * @tparam T resolve target
  * @tparam Overloads options to resolve from
  */
@@ -206,7 +206,7 @@ template<class T, class... Overloads>
 struct resolve_overload_from : std::invoke_result<dev::overload_set<Overloads...>, T> {};
 
 /**
- * shorthand for @ref resolve_overload_from
+ * shorthand for `resolve_overload_from`
  * @tparam T resolve target
  * @tparam Overloads options to resolve from
  */

@@ -11,7 +11,7 @@ namespace cth::co {
 /**
  * waits until the handle is signaled, resumes the caller on the context
  * @details awaitable in any coroutine
- * @details this_coro coroutines get it from @ref this_coro::await_handle() and co_await on a native handle waitable
+ * @details `this_coro` coroutines get it from `this_coro::await_handle()` and `co_await` on a native handle waitable
  * @details a failed wait throws in the caller
  */
 struct raw_native_handle_awaiter : wait_awaiter_base {

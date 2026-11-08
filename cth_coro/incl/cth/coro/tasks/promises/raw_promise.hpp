@@ -11,15 +11,15 @@
 
 namespace cth::co::dev {
 /**
- * base of every @ref raw_promise: the exception and the continuation
+ * base of every `raw_promise`: the exception and the continuation
  */
 struct raw_promise_base {
     /**
-     * exception of the task, nullptr -> no exception
+     * exception of the task, `nullptr` -> no exception
      */
     std::exception_ptr exception;
     /**
-     * coroutine that continues after the task, nullptr -> none
+     * coroutine that continues after the task, `nullptr` -> none
      */
     std::coroutine_handle<> continuation = nullptr;
 

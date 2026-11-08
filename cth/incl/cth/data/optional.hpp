@@ -11,7 +11,7 @@
 namespace cth::dt {
 
 /**
- * drop in std::optional replacement with support for references and void
+ * drop in `std::optional` replacement with support for references and void
  * @tparam T contained type
  */
 template<class T>

@@ -9,7 +9,7 @@ namespace cth::co {
 /**
  * base of the tasks, owns the coroutine
  * @tparam Promise promise of the task
- * @tparam Awaiter awaiter template, @ref operator co_await() gives an Awaiter<Promise>
+ * @tparam Awaiter awaiter template, `task_base::operator co_await()` gives an `Awaiter<Promise>`
  */
 template<cth_promise Promise, template<class> class Awaiter>
 class [[nodiscard]] task_base {
@@ -34,9 +34,9 @@ public:
 
     /**
      * gives the awaiter of the task, the task stays the owner of the coroutine
-     * @details a temporary task lives until the end of the full expression, after await_resume()
+     * @details a temporary task lives until the end of the full expression, after `await_resume()`
      * @pre the task owns a coroutine: not moved from
-     * @attention the task must outlive the co_await
+     * @attention the task must outlive the `co_await`
      */
     [[nodiscard]] constexpr auto operator co_await() const& noexcept { return awaiter_type{handle()}; }
 

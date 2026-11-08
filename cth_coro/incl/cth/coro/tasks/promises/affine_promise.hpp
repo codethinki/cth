@@ -10,7 +10,7 @@
 namespace cth::co::dev {
 /**
  * promise of tasks that continue the caller on its context
- * @details its final awaiter is @ref affine_final_promise_awaiter, it reads @ref callerContext
+ * @details its final awaiter is `affine_final_promise_awaiter`, it reads `callerContext`
  * @tparam T result type
  */
 template<class T>
@@ -26,7 +26,7 @@ struct affine_promise : basic_promise<T, std::suspend_always{}, affine_final_pro
     }
 
     /**
-     * context the caller continues on, @ref attach() sets it before the task runs
+     * context the caller continues on, `attach()` sets it before the task runs
      */
     co::context const* callerContext = nullptr;
 };
