@@ -6,8 +6,9 @@
 
 namespace cth {
 /**
- * move aware pointer (nullptr after move)
- * @attention NOT memory safe
+ * pointer that is `nullptr` after a move
+ * @details does not own the pointee
+ * @attention not memory safe
  */
 template<typename T>
 struct move_ptr {
@@ -27,7 +28,7 @@ public:
     [[nodiscard]] constexpr auto get(this auto& s) noexcept { return s._ptr; }
 
     /**
-     * @brief returns current pointer and resets the object
+     * returns the pointer and sets it to `nullptr`
      */
     [[nodiscard]] constexpr T* release(this move_ptr& s) noexcept { return std::exchange(s._ptr, nullptr); }
     [[nodiscard]] constexpr auto operator->(this auto& s) noexcept { return s._ptr; }

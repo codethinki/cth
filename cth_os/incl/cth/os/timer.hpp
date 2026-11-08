@@ -19,7 +19,7 @@ public:
     using time_point_t = clock_t::time_point;
 
     /**
-     * @param auto_reset if true, timer automatically resets after being signaled & waited on
+     * @param auto_reset if `true`, timer automatically resets after being signaled & waited on
      * @throws cth::except::os_exception if creation fails
      */
     explicit timer(bool auto_reset = true);
@@ -40,17 +40,17 @@ public:
 
     /**
      * resets the signaled state and cancels the timer
-     * @details calls @ref cancel()
+     * @details calls `cancel()`
      * @throws cth::except::os_exception if signal state reset fails
-     * @throws cth::except::os_exception if @ref cancel() fails
+     * @throws cth::except::os_exception if `cancel()` fails
      */
     void reset();
 
     /**
-     * blocks until timer or timeout
+     * blocks until timer or `timeout`
      * @param timeout to time out on
-     * @details calls @ref cth::os::wait(native_handle_t, std::chrono::milliseconds)
-     * @details consumes the signal if @ref auto_reset()
+     * @details calls `cth::os::wait()`
+     * @details consumes the signal if `auto_reset()`
      */
     wait_result wait(std::chrono::milliseconds timeout);
 

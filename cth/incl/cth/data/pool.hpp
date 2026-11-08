@@ -17,7 +17,7 @@ struct basic_pool_manipulator {};
 /**
  * generic reusable resource pool
  * @tparam T to pool
- * @tparam Manipulator may implement void reset(T&) to reset released instances
+ * @tparam Manipulator may implement `void reset(T&)` to reset released instances
  */
 template<class T, class Manipulator = basic_pool_manipulator>
 class pool {
@@ -34,7 +34,7 @@ public:
     /**
      * constructs an instance of T in the pool
      * @post capacity increases by one
-     * @param args to construct @ref T with
+     * @param args to construct `T` with
      */
     template<class... CArgs> requires std::constructible_from<T, CArgs...>
     void emplace(CArgs&&... args) {
@@ -44,7 +44,7 @@ public:
 
     /**
      * forwards range to storage
-     * @post pools capacity increases by size of @ref Rng
+     * @post pools capacity increases by size of `Rng`
      */
     template<class Rng> requires requires(Rng r, storage_type s) { s.append_range(std::forward<Rng>(r)); }
     void append_range(Rng&& rng) {
@@ -62,8 +62,8 @@ public:
 
     /**
      * acquires a resource from the pool, will not be acquired again until released
-     * @pre must not be @ref exhausted()
-     * @post resource will not be acquired again until @ref release(T&) is called with this instance
+     * @pre must not be `exhausted()`
+     * @post resource will not be acquired again until `release()` is called with this instance
      */
     [[nodiscard]] T& acquire() {
         CTH_CRITICAL(_inactive.empty(), "pool exhausted") {}
@@ -74,8 +74,8 @@ public:
     }
 
     /**
-     * @pre @ref t was acquired, not already released and the pool not cleared
-     * @post @ref t is reset and can be acquired again
+     * @pre `t` was acquired, not already released and the pool not cleared
+     * @post `t` is reset and can be acquired again
      */
     void release(T& t) {
         auto const ptr = std::addressof(t);
@@ -138,7 +138,7 @@ public:
     [[nodiscard]] size_t remaining() const noexcept { return _inactive.size(); }
 
     /**
-     * true if no more acquire calls are possible
+     * `true` if no more acquire calls are possible
      */
     [[nodiscard]] bool exhausted() const noexcept { return _inactive.empty(); }
 };

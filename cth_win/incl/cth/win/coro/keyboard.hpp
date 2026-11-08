@@ -33,7 +33,7 @@ public:
 
 
 /**
- * awaitable @ref cth::win::keybd_event_queue
+ * awaitable `cth::win::keybd_event_queue`
  */
 class keybd_event_queue : private win::keybd_event_queue {
 public:

@@ -28,7 +28,7 @@ void post_on(Executor const& executor, Work&& work) {
  * calls the callback on the executor once the handle is signaled
  * @details the callback gets the error code of the wait
  * @param executor to call the callback on
- * @param ctx io_context of the executor, runs the wait
+ * @param ctx `io_context` of the executor, runs the wait
  * @param cb to call with the error code
  * @throws cth::except::os_exception if the handle duplication fails
  */
@@ -52,7 +52,7 @@ void await_on(Executor const& executor, bas::io_context& ctx, context::native_ha
  * calls the callback on the executor once the time point is reached
  * @details the timer callback dispatches the callback onto the executor, the callback gets the error code of the wait
  * @param executor to call the callback on
- * @param pool timer pool of the io_context of the executor
+ * @param pool timer pool of the `io_context` of the executor
  * @param time_point to wait for
  * @param cb to call with the error code
  */

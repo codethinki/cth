@@ -7,8 +7,8 @@
 namespace cth::dt {
 
 /**
- * copies the range returned by a constexpr generator into a std::array
- * @details allows results computed with constexpr std::vector & co. to outlive constant evaluation
+ * copies the range returned by a constexpr generator into a `std::array`
+ * @details allows results computed with constexpr `std::vector` & co. to outlive constant evaluation
  * @tparam Generator callable without arguments that returns a sized range
  */
 template<auto Generator>

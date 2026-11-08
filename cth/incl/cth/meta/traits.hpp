@@ -37,7 +37,7 @@ template<class T, auto TCpt, template<class> class Trait>
 [[nodiscard]] consteval size_t cpt_count(size_t max_depth = MAX_DEPTH);
 
 /**
- * should not be used, use std::forward_like instead
+ * should not be used, use `std::forward_like` instead
  */
 template<class From, class To>
 struct fwd_const {
@@ -45,7 +45,7 @@ struct fwd_const {
 };
 
 /**
- * should not be used, use std::forward_like instead
+ * should not be used, use `std::forward_like` instead
  */
 template<class From, class To>
 using fwd_const_t = fwd_const<From, To>::type;

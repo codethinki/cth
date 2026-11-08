@@ -25,14 +25,14 @@ public:
     }
 
     /**
-     * calls @ref force_off()
+     * calls `force_off()`
      */
     ~global_switch() { force_off(); }
 
     /**
      * acquires the switch, only calls on if count was 0
      * @details a throw of on leaves the count unchanged, the next acquire calls on again
-     * @return true if on was called
+     * @return `true` if on was called
      */
     bool acquire() {
         std::scoped_lock const lock{_mutex};
@@ -47,7 +47,7 @@ public:
     /**
      * releases the switch, only calls off if acquire count is 0
      * @attention calling release without a previous acquire is UB
-     * @return true if off was called
+     * @return `true` if off was called
      */
     bool release() {
         std::scoped_lock const lock{_mutex};

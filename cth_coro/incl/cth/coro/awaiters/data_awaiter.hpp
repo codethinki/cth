@@ -6,6 +6,10 @@
 
 
 namespace cth::co {
+/**
+ * ready awaiter that gives a value
+ * @tparam T type of the value, a reference type gives the reference
+ */
 template<class T>
 class data_awaiter {
 public:
@@ -17,7 +21,8 @@ public:
     constexpr void await_suspend(std::coroutine_handle<>) const noexcept {}
 
     /**
-     * @attention moves the value out, resume once
+     * moves the value out
+     * @attention a second call gives a moved from value
      */
     [[nodiscard]] constexpr T await_resume() noexcept(mta::nothrow_constructible<T, T&&>) {
         return std::forward<T>(_type);

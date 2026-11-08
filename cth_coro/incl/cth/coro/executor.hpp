@@ -14,7 +14,9 @@
 
 namespace cth::co {
 /**
- * wraps the context with coroutines functionality
+ * spawns tasks on a context and moves coroutines onto it
+ * @details holds a pointer to the context, copies refer to the same context
+ * @attention the context must outlive the executor and its tasks
  */
 class executor {
 public:
@@ -22,18 +24,20 @@ public:
     constexpr ~executor() = default;
 
     /**
-     * calling co_await on this switches the execution onto this context and stays there
+     * moves the caller onto this context
+     * @details a `this_coro` caller continues on this context after later `co_await`s too
      * @details the payload of the caller stays
+     * @return awaiter, `co_await` it
      */
     [[nodiscard]] constexpr auto schedule() const { return schedule_awaiter{context()}; }
 
     /**
-     * runs the task on this context once awaited, with a fresh payload
+     * runs the task on this context once awaited, with a new payload
      * @details the caller continues on its context, a caller without a context continues on this context
      * @tparam Pyld payload of the task, constructed from the arguments
      * @param task to run on this context
      * @param args to construct the payload with
-     * @return cold spawn task, starts when awaited
+     * @return spawn task, starts when awaited
      */
     template<payload Pyld = this_coro::default_payload, awaitable Awaitable, class... Args>
     [[nodiscard]] auto spawn(Awaitable task, Args&&... args) const -> spawn_task<awaited_t<Awaitable>, Pyld> {
@@ -46,8 +50,9 @@ public:
      * @param task to run on this context
      * @param args to construct the payload with
      * @return result of the task
+     * @throws what the task throws
      * @attention blocks the calling thread
-     * @attention waiting from a job of the own context deadlocks (a strand job, or the only worker of a scheduler)
+     * @attention called in a job of this context: deadlock once the task suspends (a strand job, the only worker)
      */
     template<payload Pyld = this_coro::default_payload, awaitable Awaitable, class... Args>
     auto sync_wait(Awaitable task, Args&&... args) const -> awaited_t<Awaitable> {
@@ -56,8 +61,10 @@ public:
 
 private:
     /**
+     * moves onto the context of `self`, then awaits the task
      * @param payload the promise constructor reads it, the task inherits it
      * @param self the promise constructor reads it, the task runs on its context
+     * @param task to await
      */
     template<payload Pyld, awaitable Awaitable>
     static auto spawn_impl(
@@ -73,11 +80,11 @@ private:
     co::context const* _context;
 
 public:
-    /**
-     * gets underlying context
-     */
     constexpr co::context const& context() const { return *_context; }
 
+    /**
+     * checks if both executors refer to the same context
+     */
     constexpr bool operator==(executor const&) const = default;
 
     constexpr executor(executor const& other) = default;
@@ -98,13 +105,24 @@ constexpr spawn_promise<T, Pyld>::spawn_promise(Pyld const& payload, executor co
 
 
 namespace cth::co::this_coro {
+/**
+ * tag of `this_coro::executor`
+ */
 struct [[nodiscard]] executor_tag : tag_base {
+    /**
+     * gives an executor of the context of the caller
+     * @param c context of the caller
+     * @return ready awaiter with the executor
+     */
     [[nodiscard]] static constexpr auto operator()(co::context const& c, auto const&) {
         return data_awaiter{executor{c}};
     }
 };
 
 
+/**
+ * `co_await` it: gives an executor of the context of the caller
+ */
 inline constexpr executor_tag executor{};
 
 }

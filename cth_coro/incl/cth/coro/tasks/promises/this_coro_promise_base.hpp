@@ -15,6 +15,9 @@
 
 
 namespace cth::co {
+/**
+ * `true` if `T` has a `native_handle()` that gives a handle
+ */
 template<class T>
 concept native_handle_waitable = requires(T const& value) {
     { value.native_handle() } -> std::same_as<os::native_handle_t>;
@@ -22,14 +25,16 @@ concept native_handle_waitable = requires(T const& value) {
 
 
 /**
- * base of this_coro promises, holds the context the coroutine runs on and the payload
- * @details
- * - promises supporting the libs this_coro namespace must publicly inherit from this
- * - the awaiter of a task calls @ref inherit() before the task runs, a spawned task gets both on construction
+ * base of `this_coro` promises, holds the context the coroutine runs on and the payload
+ * @details promises that support the `this_coro` namespace derive it publicly
+ * @details `dev::executor_promise::attach()` calls `inherit()` before the task runs
+ * @details a spawned task gets both on construction
+ * @tparam Pyld payload of the coroutine
  */
 template<payload Pyld>
 struct this_coro_promise_base : this_coro_base<Pyld> {
     /**
+     * constructs with the context and a copy of the payload
      * @param context the coroutine runs on
      * @param payload of the coroutine
      */
@@ -62,7 +67,7 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
     }
 
     /**
-     * waits on the native handle of the waitable, resumes this coroutine on its context
+     * waits on the handle of the waitable, resumes this coroutine on its context
      */
     template<native_handle_waitable Waitable>
     [[nodiscard]] constexpr auto await_transform(Waitable const& waitable) {
@@ -79,7 +84,8 @@ struct this_coro_promise_base : this_coro_base<Pyld> {
 
     /**
      * copies the context and the payload of the caller
-     * @param caller promise of the awaiting coroutine
+     * @param caller promise of the caller
+     * @throws what the payload conversion throws
      */
     template<class CallerPromise>
     constexpr void inherit(CallerPromise const& caller)
@@ -104,7 +110,15 @@ private:
     cth::dt::optional<Pyld> _payload{};
 
 public:
+    /**
+     * gives the context the coroutine runs on
+     * @pre constructed with a context or `inherit()` called
+     */
     [[nodiscard]] constexpr co::context const& context() const noexcept { return *_context; }
+    /**
+     * gives the payload of the coroutine
+     * @pre constructed with a payload or `inherit()` called
+     */
     [[nodiscard]] constexpr Pyld const& payload() const noexcept { return *_payload; }
 };
 

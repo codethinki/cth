@@ -2,8 +2,10 @@
 
 namespace cth::var {
 /**
- * \brief std::visit lambda overload capsule
- * \note every std::variant visitation must be specified
+ * callable with the call operators of all `Ts`
+ * @details use it as visitor of `std::visit`
+ * @tparam Ts callables to merge
+ * @note `std::visit` needs a call operator for every alternative
  */
 template<class... Ts>
 struct overload : Ts... {
@@ -13,7 +15,9 @@ template<class... Ts>
 overload(Ts...) -> overload<Ts...>;
 
 /**
- * \brief std::visit single lambda capsule
+ * callable that wraps `Ts`
+ * @details use it as visitor of `std::visit`
+ * @tparam Ts callable to wrap
  */
 template<class Ts>
 struct visitor : Ts {

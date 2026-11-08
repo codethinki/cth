@@ -8,10 +8,9 @@
 namespace cth::mta {
 
 /**
- * @brief creates a std::extents with D dimensions and equal extents
+ * creates `std::extents` with `D` dimensions of equal extent
  * @tparam D dimensions
  * @tparam Extent extent of every dimension
- * @return std::extents
  */
 template<size_t D, auto Extent>
 [[nodiscard]] consteval auto mdextent() {
@@ -24,18 +23,18 @@ template<size_t D, auto Extent>
 }
 
 /**
- * @brief std::extents with D dimensions and equal extents
+ * `std::extents` type with `D` dimensions of equal extent
  * @tparam D dimensions
- * @tparam Extent extent of
+ * @tparam Extent extent of every dimension
  */
 template<size_t D, auto Extent>
 using sq_mdextent_t = decltype(mdextent<D, Extent>());
 
 /**
- * @brief is a mdspan with base T and D dimensions
- * @tparam T base type
+ * `std::mdspan` of `T` with `D` dimensions of equal extent
+ * @tparam T element type
  * @tparam D dimensions
- * @tparam Extent extent of every dimension
+ * @tparam Extent extent of every dimension (`std::dynamic_extent` => dynamic extents)
  */
 template<class T, size_t D, size_t Extent = std::dynamic_extent>
 using sq_mdspan_t = std::mdspan<T, sq_mdextent_t<D, Extent>>;

@@ -13,15 +13,15 @@
 #include <unordered_set>
 #include <vector>
 
-/**
- * @brief creates a vector of unique elements with exactly one element from each given range. order is
- *  preserved
- * @tparam Rng rng<rng<std::equality_comparable>    >
- * @param selections range of ranges
- * @return vector of T, empty if no unique selection is possible
- */
 namespace cth::alg {
 
+/**
+ * picks one element from every range, all picked elements are different
+ * @details the picked element of range `i` is element `i` of the result
+ * @tparam Rng random access range of ranges of values with `std::hash` and `==`
+ * @param selections ranges to pick from
+ * @return the picked elements, empty -> no selection of different elements exists
+ */
 template<mta::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
 [[nodiscard]] auto unique_combine(Rng const& selections) {
     using T = std::remove_cvref_t<mta::range2d_value_t<Rng>>;
@@ -99,12 +99,14 @@ template<mta::range2d_over_cpt<CPT(std::equality_comparable)> Rng>
 namespace cth::alg {
 
 /**
- * \brief assigns a's to b's based of every a's options for b's, prioritizing spread
- * \tparam Rng1 rng<rng<std::integral>>
- * \tparam Rng2 rng<std::integral>
- * \param a_b_options range of b options from a's
- * \param b_max  max assignments for b's
- * \return vector<integral> based on Rng1
+ * assigns every a to one b of its options, spreads the a's over the b's
+ * @details `b_max[i]` limits the a's assigned to b `i`
+ * @tparam Rng1 range of ranges of `std::integral`
+ * @tparam Rng2 range of `std::integral`
+ * @param a_b_options b options of every a, as indices into `b_max`
+ * @param b_max maximum of a's assigned to every b
+ * @return b of every a, empty -> not every a can be assigned
+ * @pre `0 <= index < size(b_max)` for every index in `a_b_options`
  */
 template<mta::range2d_over_cpt<CPT(std::integral)> Rng1, mta::range_over_cpt<CPT(std::integral)> Rng2>
 [[nodiscard]] auto assign(

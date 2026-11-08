@@ -3,6 +3,10 @@
 #include <cth/io/log.hpp>
 
 namespace cth::except {
+/**
+ * exception of cth_coro
+ * @details prefixes the message with `"cth_coro: "`
+ */
 class coro_exception : public default_exception {
 public:
     coro_exception(

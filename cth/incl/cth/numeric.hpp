@@ -29,9 +29,10 @@ namespace num {
     }
 
     /**
-     * \brief cycles a value between a and b
-     * \param a included
-     * \param b excluded
+     * maps `x` cyclically into `[a, b)`
+     * @param a lower bound, included
+     * @param b upper bound, excluded
+     * @pre `a < b`
      */
     template<std::integral T>
     [[nodiscard]] constexpr T cycle(T x, T a, T b);
@@ -48,19 +49,21 @@ namespace num {
     [[nodiscard]] T dist(T x1, T y1, T x2, T y2);
 
     /**
-     * @brief checks if @ref x is in [ @ref a, @ref b)
+     * checks if `x` is in `[a, b)`
+     * @pre `a < b`
      */
     [[nodiscard]] constexpr bool in(auto x, auto a, auto b);
 
     /**
-     * @brief in for two values
+     * checks if `x` is in `[a_x, b_x)` and `y` is in `[a_y, b_y)`
+     * @pre `a_x < b_x`, `a_y < b_y`
      */
     template<mta::arithmetic T, mta::arithmetic U>
     [[nodiscard]] constexpr bool in(T x, T a_x, T b_x, U y, U a_y, U b_y);
 
     /**
-     * @brief calculates the unsigned integral power of an arithmetic base
-     * @attention power must be >= 0
+     * raises `base` to the integral `power`
+     * @pre `power >= 0`
      */
     template<mta::arithmetic T>
     [[nodiscard]] constexpr T pow(T base, std::integral auto power);

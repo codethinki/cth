@@ -6,17 +6,26 @@
 
 namespace cth::win::cmd {
 /**
- * @brief executes a cmd command with location in the background
- * @param dir directory to execute the command in
- * @param command = "cmd.exe /c {command}"
- * @note paths only work with '\' NOT '/'
+ * runs a command hidden with `cmd /c` in a directory
+ * @details blocks until the process ends
+ * @param dir directory to run the command in
+ * @param command to run
+ * @return exit code of the process, `EXIT_FAILURE` -> the process was not created
+ * @throws cth::except::win_exception reason: waiting for the process failed
+ * @note paths in `command` only work with `'\'`, not with `'/'`
  */
 [[nodiscard]] size_t hidden_dir(std::string_view dir, std::string_view command);
 
 /**
- * @brief executes a cmd command with location in the background
- * @param command = "cmd.exe /c (...)"
- * @note paths only work with '\' NOT '/'
+ * runs a formatted command hidden with `cmd /c` in a directory
+ * @details blocks until the process ends
+ * @details formats the command with `std::format`
+ * @param dir directory to run the command in
+ * @param command format string of the command to run
+ * @param types arguments of the format string
+ * @return exit code of the process, `EXIT_FAILURE` -> the process was not created
+ * @throws cth::except::win_exception reason: waiting for the process failed
+ * @note paths in `command` only work with `'\'`, not with `'/'`
  */
 template<typename... Types>
 requires(sizeof...(Types) > 0u)
@@ -26,19 +35,26 @@ hidden_dir(std::string_view dir, std::format_string<Types...> command, Types&&..
 }
 
 /**
- * @brief executes a cmd command with location in the background
- * @param command = "cmd.exe /c (...)"
- * @note paths only work with '\' NOT '/'
+ * runs a command hidden with `cmd /c` in the current directory
+ * @details blocks until the process ends
+ * @param command to run
+ * @return exit code of the process, `EXIT_FAILURE` -> the process was not created
+ * @throws cth::except::win_exception reason: waiting for the process failed
+ * @note paths in `command` only work with `'\'`, not with `'/'`
  */
 [[nodiscard]] inline size_t hidden(std::string_view command) {
     return cth::win::cmd::hidden_dir(std::filesystem::current_path().string(), command);
 }
 
 /**
- * @brief executes a cmd command in the background
- * @param command already contains "cmd.exe /c"
- * @note command is executed in the proc dir
- * @note paths only work with '\' NOT '/'
+ * runs a formatted command hidden with `cmd /c` in the current directory
+ * @details blocks until the process ends
+ * @details formats the command with `std::format`
+ * @param command format string of the command to run
+ * @param types arguments of the format string
+ * @return exit code of the process, `EXIT_FAILURE` -> the process was not created
+ * @throws cth::except::win_exception reason: waiting for the process failed
+ * @note paths in `command` only work with `'\'`, not with `'/'`
  */
 template<typename... Types>
 requires(sizeof...(Types) > 0u)

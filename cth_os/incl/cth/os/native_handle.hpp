@@ -16,7 +16,7 @@ namespace cth::os {
 
 /**
  * the platform's waitable handle
- * @details win: win32 HANDLE, linux: a posix file descriptor
+ * @details win: win32 `HANDLE`, linux: a posix file descriptor
  */
 using native_handle_t = CTH_OS_WIN_POSIX_VALUE(void*, int);
 
@@ -30,8 +30,8 @@ using native_handle_t = CTH_OS_WIN_POSIX_VALUE(void*, int);
 
 /**
  * closes the handle
- * @details noop for @ref invalid_handle()
- * @return true if a handle was closed
+ * @details noop for `invalid_handle()`
+ * @return `true` if a handle was closed
  */
 bool close_handle(native_handle_t handle) noexcept;
 
@@ -44,7 +44,7 @@ bool close_handle(native_handle_t handle) noexcept;
 
 
 /**
- * owning @ref native_handle_t
+ * owning `native_handle_t`
  */
 class unique_native_handle {
 public:
@@ -54,7 +54,7 @@ public:
     ~unique_native_handle() { close_handle(_handle); }
 
     /**
-     * closes the owned handle and takes @p handle in its place
+     * closes the owned handle and takes `handle` in its place
      */
     void reset(native_handle_t handle = invalid_handle()) noexcept {
         close_handle(std::exchange(_handle, handle));
@@ -74,7 +74,7 @@ public:
     [[nodiscard]] constexpr native_handle_t get() const noexcept { return _handle; }
 
     /**
-     * @return true if a handle is owned
+     * @return `true` if a handle is owned
      */
     [[nodiscard]] constexpr explicit operator bool() const noexcept { return _handle != invalid_handle(); }
 

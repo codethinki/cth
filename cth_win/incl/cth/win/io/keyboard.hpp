@@ -30,13 +30,13 @@ struct keybd_event_queue {
 
     /**
      * gets the queues front
-     * @pre !@ref empty()
+     * @pre `!empty()`
      */
     [[nodiscard]] event_t front() const;
 
     /**
      * peeks the queues front
-     * @return front, @ref std::nullopt if @ref empty()
+     * @return front, `std::nullopt` if `empty()`
      */
     [[nodiscard]] std::optional<event_t> peek() const;
     /**
@@ -53,7 +53,7 @@ struct keybd_event_queue {
      */
     void clear();
 
-    /** pushes onto the queue and signals @ref fence() */
+    /** pushes onto the queue and signals `fence()` */
     void push(event_t event);
 
 private:
@@ -74,7 +74,7 @@ public:
     [[nodiscard]] size_t size() const;
 
     /**
-     * true if empty
+     * `true` if empty
      */
     [[nodiscard]] bool empty() const;
 };

@@ -10,7 +10,8 @@ namespace cth::co {
 
 namespace dev {
     /**
-     * promise of @ref capture_task, not a this_coro promise: its body awaits the foreign awaitable as it is
+     * promise of `capture_task`
+     * @details not a `this_coro` promise: its body awaits the foreign awaitable as it is
      */
     template<class T>
     struct capture_promise : dev::affine_promise<T> {
@@ -19,6 +20,11 @@ namespace dev {
 }
 
 
+/**
+ * task of `dev::steal()`, awaits a foreign awaitable
+ * @details continues the caller on its context, also after an exception
+ * @tparam T result type
+ */
 template<class T>
 class [[nodiscard]] capture_task : public task_base<dev::capture_promise<T>, this_coro_promise_awaiter> {
     using base_t = task_base<dev::capture_promise<T>, this_coro_promise_awaiter>;

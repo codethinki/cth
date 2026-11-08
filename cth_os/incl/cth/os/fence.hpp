@@ -12,10 +12,10 @@ namespace cth::os {
  * Manual-reset, OS-backed synchronization fence.
  *
  * A signaled fence releases every current waiter and remains signaled until
- * @ref reset() is called. Its native handle can be registered with an OS wait
- * service without dedicating a thread to @ref wait().
+ * `reset()` is called. Its native handle can be registered with an OS wait
+ * service without dedicating a thread to `wait()`.
  *
- * The fence owns its native handle. A handle returned by @ref native_handle()
+ * The fence owns its native handle. A handle returned by `native_handle()`
  * is borrowed and remains valid until the fence is moved from or destroyed.
  */
 class fence {

@@ -63,7 +63,7 @@ struct hdc_deleter {
     void operator()(void* hdc) const;
 };
 /**
- * deletes the HDC on destruction
+ * deletes the `HDC` on destruction
  */
 using unique_dc_ptr = std::unique_ptr<void, hdc_deleter>;
 
@@ -75,7 +75,7 @@ struct hdc_releaser {
 };
 
 /**
- * releases the HDC on destruction
+ * releases the `HDC` on destruction
  */
 using borrow_dc_ptr = std::unique_ptr<void, hdc_releaser>;
 
@@ -133,10 +133,7 @@ struct window_t {
 
 
 struct monitor_t {
-    /**
-     * corresponds to @ref HMONITOR
-     */
-    void* handle;
+    void* handle; ///< corresponds to `HMONITOR`
     rect_t rect;
 };
 }

@@ -7,8 +7,8 @@
 
 /**
  * @file windows/fence.hpp
- * @brief Windows implementation of cth/os/fence.hpp
- * @attention included by src/fence.cpp only, not a standalone header
+ * windows implementation of cth/os/fence.hpp, a manual reset event
+ * @attention only `src/fence.cpp` includes it, not a standalone header
  */
 namespace cth::os {
 

@@ -23,7 +23,7 @@ struct split_into_fn {
      *
      * @param rng to chunk
      * @param max_chunks count of chunks to split into
-     * @pre chunks > 0
+     * @pre `chunks > 0`
      * @post split into `N` chunks where `N <= chunks`
      * @return view of
      */
@@ -46,7 +46,7 @@ struct split_into_fn {
 };
 
 /**
- * splits a range into <= n chunks
+ * splits a range into `<= n` chunks
  */
 inline constexpr split_into_fn split_into;
 

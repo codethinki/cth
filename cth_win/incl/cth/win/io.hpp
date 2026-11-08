@@ -11,8 +11,8 @@ namespace cth::win::io {
 /**
  * reads the file without buffering
  * @param path to file
- * @param buffer to fill
- * @attention @ref buffer will be resized, may already have reserved memory
+ * @param[out] buffer to fill
+ * @attention `buffer` will be resized, may already have reserved memory
  */
 void read_unbuffered(std::string_view path, std::vector<std::byte>& buffer);
 

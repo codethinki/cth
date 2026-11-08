@@ -11,6 +11,8 @@
 namespace cth::co {
 /**
  * waits until the time point, resumes the caller on the context
+ * @details awaitable in any coroutine
+ * @details `this_coro` coroutines get it from `this_coro::wait()` and `this_coro::wait_until()`
  * @details a failed wait throws in the caller
  */
 struct time_point_awaiter : wait_awaiter_base {
@@ -19,8 +21,15 @@ struct time_point_awaiter : wait_awaiter_base {
     chrono::time_point_t timePoint;
     co::context const& context;
 
+    /**
+     * checks if the time point is past
+     */
     [[nodiscard]] bool await_ready() const noexcept { return chrono::clock_t::now() >= timePoint; }
 
+    /**
+     * resumes the caller on the context once the time point is reached
+     * @param h coroutine of the caller
+     */
     void await_suspend(std::coroutine_handle<> h) { context.await(timePoint, resume(h)); }
 };
 

@@ -10,8 +10,8 @@
 
 /**
  * @file linux/wait.hpp
- * @brief posix implementation of cth/os/wait.hpp
- * @attention included by src/wait.cpp only, not a standalone header
+ * posix implementation of cth/os/wait.hpp, uses `poll()`
+ * @attention only `src/wait.cpp` includes it, not a standalone header
  */
 namespace cth::os {
 namespace {

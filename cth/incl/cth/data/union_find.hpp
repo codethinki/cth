@@ -45,7 +45,7 @@ public:
     }
 
     /**
-     * delegation for @ref union_find(size_t, std::span<merge_t const>)
+     * delegation for @ref union_find(size_t, std::span<group_t const>)
      */
     union_find(size_t n, std::initializer_list<group_t> groups) : union_find{n, std::span{groups}} {}
 
@@ -58,7 +58,7 @@ public:
     union_find(std::initializer_list<group_t> groups) : union_find(std::span{groups}) {}
 
     /**
-     * finds the root of @ref x, uses path compression
+     * finds the root of `x`, uses path compression
      * @param x must be in `[0, size)`
      * @return root index
      */
@@ -94,7 +94,7 @@ public:
         s.size_ref(parent) += s.size_ref(child);
     }
     /**
-     * delegates to @ref merge(index_type, index_type)
+     * delegates to @ref merge(this union_find&, index_type, index_type)
      * @param group set of indices to merge
      * @pre all of `group` in bounds `[0, size)`
      * @param group merge pair
@@ -200,7 +200,7 @@ public:
     }
 
     /**
-     * checks if @ref x is a root
+     * checks if `x` is a root
      */
     [[nodiscard]] constexpr bool root(this auto const& self, index_type x) { return self.parent(x) == x; }
     /**

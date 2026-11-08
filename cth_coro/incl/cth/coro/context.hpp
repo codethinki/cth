@@ -9,8 +9,8 @@
 
 namespace cth::co {
 /**
- * where coroutines run and wait
- * @details implemented by @ref scheduler and @ref strand, @ref executor and the awaiters only use this interface
+ * interface of where coroutines run and wait
+ * @details implemented by `scheduler` and `strand`, `executor` and the awaiters only use this interface
  */
 class context {
 public:
@@ -19,33 +19,38 @@ public:
     using native_handle = os::native_handle_t;
 
     /**
-     * runs the work on this context
+     * posts the work to this context
+     * @param work to run
+     * @attention work that throws terminates the program
      */
     virtual void post(void_func work) const = 0;
 
     /**
      * calls the callback on this context once the handle is signaled
-     * @details the callback gets the result of the wait, an empty error_code -> signaled
+     * @details the callback gets the result of the wait, an empty `error_code` -> signaled
      * @param cb to call
+     * @throws cth::except::os_exception reason: the handle cannot be duplicated
+     * @attention a callback that throws terminates the program
      */
     virtual void await(native_handle, await_func cb) const = 0;
     /**
      * calls the callback on this context once the time point is reached
-     * @details the callback gets the result of the wait, an empty error_code -> reached
+     * @details the callback gets the result of the wait, an empty `error_code` -> reached
      * @param time_point to wait for
      * @param cb to call
+     * @attention a callback that throws terminates the program
      */
     virtual void await(chrono::time_point_t time_point, await_func cb) const = 0;
 
     /**
-     * true if the calling thread runs a job of this context
+     * checks if the calling thread runs a job of this context
      * @details a scheduler also owns the threads that run the jobs of its strands
      */
     [[nodiscard]] virtual bool owns_thread() const = 0;
 
     /**
      * gets the context whose job runs on the calling thread
-     * @return context of the job, nullptr -> no job of a context
+     * @return context of the job, `nullptr` -> no job of a context
      */
     [[nodiscard]] static context const* current() noexcept { return _current; }
 
@@ -59,7 +64,7 @@ protected:
     context& operator=(context&& other) noexcept = default;
 
     /**
-     * wraps the work: @ref context::current() is this context while the work runs
+     * wraps the work: `context::current()` is this context while the work runs
      * @details restores the previous context after the work, also if the work throws
      * @details forwards the arguments of the call to the work
      * @param work to wrap
@@ -74,11 +79,15 @@ protected:
     }
 
     /**
-     * context of the job that runs on this thread, see @ref context::current()
+     * context of the job that runs on this thread
+     * @see `context::current()`
      */
     static inline thread_local context const* _current = nullptr;
 
 private:
+    /**
+     * sets `_current` for its lifetime, restores the previous value
+     */
     struct current_guard {
         explicit current_guard(context const* ctx) noexcept : previous{std::exchange(_current, ctx)} {}
         ~current_guard() { _current = previous; }

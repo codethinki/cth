@@ -11,6 +11,7 @@ namespace cth::co {
 /**
  * awaiter of the tasks of this library, the promise of the task attaches to the caller
  * @details the task continues the caller on its context
+ * @tparam Promise promise of the task
  */
 template<cth_promise Promise>
 struct this_coro_promise_awaiter
@@ -32,9 +33,9 @@ public:
 
     /**
      * attaches the task to the caller and starts it
-     * @details a throwing attach (a payload copy) resumes the caller with the exception, the task does not start
-     * @param caller coroutine that awaits the task
-     * @return handle of the task
+     * @details an attach that throws (a payload copy) resumes the caller with the exception, the task does not start
+     * @param caller coroutine of the caller
+     * @return coroutine of the task
      */
     template<class Caller>
     auto await_suspend(std::coroutine_handle<Caller> caller) noexcept(dev::nothrow_attachable<promise_type, Caller>)

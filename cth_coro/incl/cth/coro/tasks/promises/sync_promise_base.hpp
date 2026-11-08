@@ -5,12 +5,22 @@
 #include "cth/coro/atomic_fence.hpp"
 
 namespace cth::co {
+/**
+ * promise part that a thread can block on
+ */
 struct sync_promise_base {
+    /**
+     * blocks until `signal()`
+     */
     void wait() const noexcept { fence.wait(); }
 
 
     [[nodiscard]] bool signaled() const noexcept { return fence.signaled(); }
 
+    /**
+     * wakes the threads that wait
+     * @post `signaled()`
+     */
     void signal() noexcept { fence.signal(); }
 
     atomic_fence fence{};

@@ -43,7 +43,7 @@ public:
 
     /**
      * allocates
-     * @param size to allocate (< @ref max_alloc())
+     * @param size to allocate (`< max_alloc()`)
      * @return alloc info or empty if not enough space
      */
     [[nodiscard]] std::optional<ring_allocation> alloc(size_t size) {
@@ -115,7 +115,7 @@ public:
 
     /**
      * allocated bytes
-     * @note may not be used to determine the max allocation, use @ref max_alloc() instead
+     * @note may not be used to determine the max allocation, use `max_alloc()` instead
      */
     [[nodiscard]] size_t allocated() const {
         return _head.load(std::memory_order::relaxed) - _tail.load(std::memory_order::relaxed);

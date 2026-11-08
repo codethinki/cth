@@ -16,7 +16,7 @@ struct unpacked<true, Trait, Args...> {
 namespace cth::mta {
 /**
  * a trait with its arguments, instantiated only when unpacked
- * @details @ref type is Trait<Args...>, void if Trait<Args...> is ill-formed
+ * @details `type` is `Trait<Args...>`, `void` if `Trait<Args...>` is ill-formed
  */
 template<template<class...> class Trait, class... Args>
 struct trait_pack {
@@ -29,7 +29,7 @@ struct trait_pack {
 };
 
 /**
- * a pack that always unpacks to T
+ * a pack that always unpacks to `T`
  */
 template<class T>
 using type_pack = trait_pack<std::type_identity_t, T>;

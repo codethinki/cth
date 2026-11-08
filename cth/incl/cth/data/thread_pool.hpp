@@ -9,11 +9,11 @@
 namespace cth::dt {
 
 /**
- * thread safe @ref pool that binds an acquired resource to a thread id
+ * thread safe `pool` that binds an acquired resource to a thread id
  * @details a thread acquires a resource once and keeps it across calls until it releases it, so every
  *  thread owns at most one resource at a time
  * @tparam T to pool
- * @tparam Manipulator may implement void reset(T&) to reset released instances
+ * @tparam Manipulator may implement `void reset(T&)` to reset released instances
  */
 template<class T, class Manipulator = basic_pool_manipulator>
 class thread_pool {
@@ -28,7 +28,7 @@ public:
     /**
      * constructs an instance of T in the pool
      * @post capacity increases by one
-     * @param args to construct @ref T with
+     * @param args to construct `T` with
      */
     template<class... CArgs> requires std::constructible_from<T, CArgs...>
     void emplace(CArgs&&... args) {
@@ -38,7 +38,7 @@ public:
 
     /**
      * forwards range to storage
-     * @post capacity increases by the size of @ref rng
+     * @post capacity increases by the size of `rng`
      */
     template<class Rng>
     void append_range(Rng&& rng) {
@@ -47,9 +47,9 @@ public:
     }
 
     /**
-     * the resource bound to @ref id, acquiring a fresh one from the pool the first time @ref id asks
-     * @pre the pool must not be @ref exhausted() when @ref id has no resource yet
-     * @post @ref id owns the returned resource until @ref release(id)
+     * the resource bound to `id`, acquiring a fresh one from the pool the first time `id` asks
+     * @pre the pool must not be `exhausted()` when `id` has no resource yet
+     * @post `id` owns the returned resource until `release()`
      */
     [[nodiscard]] T& acquire(std::thread::id id = std::this_thread::get_id()) {
         std::lock_guard lock{_mtx};
@@ -64,8 +64,8 @@ public:
     }
 
     /**
-     * releases the resource bound to @ref id back to the pool
-     * @pre @ref id currently owns a resource
+     * releases the resource bound to `id` back to the pool
+     * @pre `id` currently owns a resource
      * @post the resource is reset (if supported) and can be acquired again
      */
     void release(std::thread::id id = std::this_thread::get_id()) {
@@ -80,7 +80,7 @@ public:
 
     /**
      * releases every bound resource back to the pool
-     * @pre no concurrent @ref acquire / @ref release
+     * @pre no concurrent `acquire` / `release`
      */
     void clear() {
         std::lock_guard lock{_mtx};
@@ -106,7 +106,7 @@ public:
         return _pool.remaining();
     }
 
-    /** true if no more acquire calls are possible */
+    /** `true` if no more acquire calls are possible */
     [[nodiscard]] bool exhausted() const {
         std::lock_guard lock{_mtx};
         return _pool.exhausted();

@@ -24,7 +24,7 @@ public:
     /** blocks until a message is ready or the connection closes */
     [[nodiscard]] bool wait();
 
-    /** consumes the message made available by wait() */
+    /** consumes the message made available by `wait()` */
     [[nodiscard]] std::string read_text();
     [[nodiscard]] std::vector<std::byte> read_bytes();
 

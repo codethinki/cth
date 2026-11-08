@@ -27,17 +27,14 @@ struct window_capture_config{
  */
 class window_capture {
 public:
-    /**
-     * in bytes
-     */
-    static constexpr size_t PIXEL_SIZE = 4;
+    static constexpr size_t PIXEL_SIZE = 4; ///< in bytes
 
     using config_t = window_capture_config;
 
     /**
      * begins capturing the window's buffer
      * @param window to capture, must not be minimized
-     * @throws cth::except::win_exception if capture is not @ref supported()
+     * @throws cth::except::win_exception if capture is not `supported()`
      * @throws cth::except::win_exception on capture creation failure
      * @note initializes WinRT (MTA) on the calling thread if required
      */
@@ -46,15 +43,15 @@ public:
 
     /**
      * waits for the next frame and stores it
-     * @param timeout max wait, 0 => infinite
-     * @return @ref view(), empty on timeout or @ref closed()
+     * @param timeout max wait, `0` => infinite
+     * @return `view()`, empty on timeout or `closed()`
      * @throws cth::except::win_exception on frame copy failure
      */
     std::span<std::byte> next_frame(std::chrono::milliseconds timeout = {});
 
     /**
      * stores the newest frame if one is available, never blocks
-     * @return @ref view(), empty if no new frame
+     * @return `view()`, empty if no new frame
      * @throws cth::except::win_exception on frame copy failure
      */
     std::span<std::byte> try_frame();
@@ -71,7 +68,7 @@ private:
 
 public:
     /**
-     * @return true once the captured window was destroyed
+     * @return `true` once the captured window was destroyed
      */
     bool closed() const;
 
