@@ -21,13 +21,13 @@ hwnd_t desktop_handle();
 double desktop_scale();
 /**
  * Gets the desktop rect, origin top left
- * @details calls `window_rect(hwnd_t)`
+ * @details calls `window_rect()`
  */
 rect_t desktop_rect();
 
 /**
  * gets the desktop frame count
- * @details calls `window_frame_count(hwnd_t)`
+ * @details calls `window_frame_count()`
  */
 size_t desktop_frame_count();
 

@@ -49,7 +49,7 @@ public:
     /**
      * blocks until timer or `timeout`
      * @param timeout to time out on
-     * @details calls `cth::os::wait(native_handle_t, std::chrono::milliseconds)`
+     * @details calls `cth::os::wait()`
      * @details consumes the signal if `auto_reset()`
      */
     wait_result wait(std::chrono::milliseconds timeout);

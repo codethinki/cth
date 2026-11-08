@@ -49,7 +49,7 @@ public:
     /**
      * the resource bound to `id`, acquiring a fresh one from the pool the first time `id` asks
      * @pre the pool must not be `exhausted()` when `id` has no resource yet
-     * @post `id` owns the returned resource until `release(id)`
+     * @post `id` owns the returned resource until `release()`
      */
     [[nodiscard]] T& acquire(std::thread::id id = std::this_thread::get_id()) {
         std::lock_guard lock{_mtx};

@@ -63,7 +63,7 @@ public:
     /**
      * acquires a resource from the pool, will not be acquired again until released
      * @pre must not be `exhausted()`
-     * @post resource will not be acquired again until `release(T&)` is called with this instance
+     * @post resource will not be acquired again until `release()` is called with this instance
      */
     [[nodiscard]] T& acquire() {
         CTH_CRITICAL(_inactive.empty(), "pool exhausted") {}

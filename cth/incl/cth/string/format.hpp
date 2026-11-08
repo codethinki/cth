@@ -66,7 +66,7 @@ struct std::formatter<type> {                                                   
 /**
  * @brief creates a format overload for the concept
  * @param cpt concept
- * @param to_formattable `to_formattable(type)` function
+ * @param to_formattable `to_formattable()` function
  * @attention should only be used in global namespace context
  */
 #define CTH_FORMAT_CPT(cpt, to_formattable)                                                                  \
