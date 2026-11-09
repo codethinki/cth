@@ -10,8 +10,10 @@
 #include <cth/coro/tasks/executor_task.hpp>
 #include <cth/os/osdef.hpp>
 
+#include <coroutine>
 #include <cstdio>
 #include <memory>
+#include <system_error>
 
 namespace cth::co {
 namespace {
@@ -26,6 +28,13 @@ namespace {
         void operator()(std::FILE* file) const noexcept { std::fclose(file); }
     };
 
+    /**
+     * gets the error code through the callback of `wait_awaiter_base::resume()`
+     */
+    struct failed_wait_awaiter : wait_awaiter_base {
+        explicit failed_wait_awaiter(std::error_code code) { resume(std::noop_coroutine())(code); }
+    };
+
     auto await_failing(os::native_handle_t handle) -> executor_task<bool> {
         bool caught = false;
         try {
@@ -35,6 +44,39 @@ namespace {
         }
         co_return caught;
     }
+}
+
+CORO_TEST(wait_awaiter_base, failed_wait_throws_its_code) {
+    auto const code = std::make_error_code(std::errc::operation_canceled);
+    failed_wait_awaiter const awaiter{code};
+
+    try {
+        awaiter.await_resume();
+        FAIL() << "the failed wait must throw";
+    } catch(except::coro_exception const& e) {
+        EXPECT_EQ(e.code(), code);
+    }
+}
+
+CORO_TEST(wait_awaiter_base, reached_wait_does_not_throw) {
+    failed_wait_awaiter const awaiter{std::error_code{}};
+
+    EXPECT_NO_THROW(awaiter.await_resume());
+}
+
+CORO_TEST(coro_exception, code_is_empty_without_a_wait_error) {
+    except::coro_exception const e{"message"};
+
+    EXPECT_FALSE(e.code());
+}
+
+CORO_TEST(coro_exception, add_stores_the_code) {
+    auto const code = std::make_error_code(std::errc::timed_out);
+    except::coro_exception e{"message"};
+
+    e.add(code);
+
+    EXPECT_EQ(e.code(), code);
 }
 
 // epoll does not support regular files: the wait on one fails with operation_not_supported

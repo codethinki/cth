@@ -14,10 +14,10 @@ class wait_awaiter_base {
 public:
     /**
      * throws if the wait failed
-     * @throws cth::except::coro_exception reason: the wait failed
+     * @throws cth::except::coro_exception reason: the wait failed, `coro_exception::code()` is the error of the wait
      */
     void await_resume() const {
-        CTH_CORO_STABLE_THROW(_error, "wait failed, got {}", _error.message()) {}
+        CTH_CORO_CODE_STABLE_THROW(_error, _error, "wait failed, got {}", _error.message()) {}
     }
 
 protected:
