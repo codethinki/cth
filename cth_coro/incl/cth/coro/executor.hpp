@@ -2,6 +2,8 @@
 #include "cth/coro/sync.hpp"
 #include "cth/coro/awaiters/data_awaiter.hpp"
 #include "cth/coro/awaiters/schedule_awaiter.hpp"
+#include "cth/coro/simple_counting_scope.hpp"
+#include "cth/coro/tasks/dev/detach_task.hpp"
 #include "cth/coro/tasks/dev/spawn_task.hpp"
 #include "cth/coro/this_coro/payload.hpp"
 #include "cth/coro/utility/concepts.hpp"
@@ -60,6 +62,24 @@ public:
         return co::sync(spawn<Pyld>(std::move(task), std::forward<Args>(args)...));
     }
 
+    /**
+     * runs the task on this context, nothing owns it
+     * @details
+     * - runs on the calling thread until it moves onto this context, see `schedule()`
+     * - a caller in a job of this context runs it inline until its first suspension
+     * - the task ends -> destroys its coroutine, then leaves the scope
+     * - an exception of the task terminates
+     * @tparam Pyld payload of the task, constructed from the arguments
+     * @param scope the task enters, `simple_counting_scope::wait()` waits for it
+     * @param task to run on this context
+     * @param args to construct the payload with
+     */
+    template<payload Pyld = this_coro::default_payload, awaitable Awaitable, class... Args>
+    void detach(co::simple_counting_scope& scope, Awaitable task, Args&&... args) const {
+        static_assert(mta::is_void<awaited_t<Awaitable>>, "a detached task has no caller for the result");
+        detach_impl(scope, Pyld{std::forward<Args>(args)...}, *this, std::move(task));
+    }
+
 private:
     /**
      * moves onto the context of `self`, then awaits the task
@@ -76,6 +96,25 @@ private:
         -> spawn_task<awaited_t<Awaitable>, Pyld> {
         co_await self.schedule();
         co_return co_await std::move(task);
+    }
+
+    /**
+     * moves onto the context of `self`, then awaits the task
+     * @param scope the promise constructor reads it, the task enters it
+     * @param payload the promise constructor reads it, the task inherits it
+     * @param self the promise constructor reads it, the task runs on its context
+     * @param task to await
+     */
+    template<payload Pyld, awaitable Awaitable>
+    static auto detach_impl(
+        [[maybe_unused]] co::simple_counting_scope& scope,
+        [[maybe_unused]] Pyld payload,
+        executor self,
+        Awaitable task
+    )
+        -> dev::detach_task<Pyld> {
+        co_await self.schedule();
+        co_await std::move(task);
     }
 
     cth::ref_wrapper<co::context const> _context;
@@ -102,6 +141,19 @@ template<class T, payload Pyld>
 template<class... Args>
 constexpr spawn_promise<T, Pyld>::spawn_promise(Pyld const& payload, executor const& self, Args&&...) :
     this_coro_promise_base<Pyld>{self.context(), payload} {}
+
+template<payload Pyld>
+template<class... Args>
+detach_promise<Pyld>::detach_promise(
+    co::simple_counting_scope& scope,
+    Pyld const& payload,
+    executor const& self,
+    Args&&...
+) :
+    this_coro_promise_base<Pyld>{self.context(), payload},
+    _scope{scope} {
+    scope.enter();
+}
 }
 
 
