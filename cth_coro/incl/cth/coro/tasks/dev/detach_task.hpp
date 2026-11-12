@@ -1,4 +1,5 @@
 #pragma once
+#include "cth/coro/context.hpp"
 #include "cth/coro/simple_counting_scope.hpp"
 #include "cth/coro/tasks/promises/this_coro_promise_base.hpp"
 #include "cth/coro/utility/fwd.hpp"
@@ -12,26 +13,47 @@
 namespace cth::co::dev {
 /**
  * final awaiter of `detach_task`
- * @details destroys the coroutine, then leaves the scope
+ * @details releases the coroutine from its owner, then destroys it
  */
 struct final_detach_awaiter {
     [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
 
     /**
-     * destroys the coroutine, then leaves the scope of the task
+     * releases the coroutine from its owner, then destroys it
      * @param h coroutine of the detached task
      */
     template<class Promise>
     void await_suspend(std::coroutine_handle<Promise> h) noexcept {
         // before the destroy: the awaiter lives in the coroutine frame
-        co::simple_counting_scope& owner = h.promise().owner();
-        // the frame, the awaited task in it and everything they hold
+        h.promise().owner().release(h);
+        // the last action: the destruction leaves the scope at its end, see detach_scope_guard
         h.destroy();
-        // the last action: the frame is gone
-        owner.leave();
     }
 
     constexpr void await_resume() const noexcept {}
+};
+
+// a first base: the promise destructor body runs before the destruction of the bases and the parameters
+/**
+ * first base of `detach_promise`, the task is in the scope for its lifetime
+ * @details
+ * - enters the scope on construction, leaves it on destruction
+ * - the first base: destroyed after the other parts of the promise
+ */
+struct detach_scope_guard {
+    explicit detach_scope_guard(co::simple_counting_scope& scope) noexcept : _scope{scope} { scope.enter(); }
+
+    // the last access to the scope: the deallocation of the frame after it does not touch the scope
+    ~detach_scope_guard() { _scope->leave(); }
+
+private:
+    cth::ref_wrapper<co::simple_counting_scope> _scope;
+
+public:
+    detach_scope_guard(detach_scope_guard const& other) = delete;
+    detach_scope_guard(detach_scope_guard&& other) = delete;
+    detach_scope_guard& operator=(detach_scope_guard const& other) = delete;
+    detach_scope_guard& operator=(detach_scope_guard&& other) = delete;
 };
 
 template<payload Pyld>
@@ -39,7 +61,7 @@ struct detach_promise;
 
 /**
  * return type of the coroutine of `executor::detach()`
- * @details owns nothing, the coroutine destroys itself at its end
+ * @details owns nothing: the scheduler of the detach owns the coroutine, it destroys itself at its end
  * @tparam Pyld payload of the detached task
  */
 template<payload Pyld>
@@ -52,19 +74,30 @@ struct detach_task {
  * @details
  * - the awaited task attaches to it: a `this_coro` coroutine
  * - starts at once, `final_detach_awaiter` ends it
+ * - the scheduler of the detach owns the coroutine until it ends, see `context::detach()`
+ * - leaves the scope after the other parts of the coroutine are destroyed, see `detach_scope_guard`
  * @tparam Pyld payload of the detached task
  */
 template<payload Pyld>
-struct detach_promise : this_coro_promise_base<Pyld> {
+struct detach_promise : detach_scope_guard, this_coro_promise_base<Pyld> {
     /**
      * constructs from the coroutine parameters, enters the scope
-     * @details defined in executor.hpp, the executor is incomplete here
+     * @details calls `context::detach()` with the coroutine
      * @param scope the task enters
      * @param payload of the detached task
-     * @param self executor that detaches the task, the task runs on its context
+     * @param context the task runs on, its scheduler owns the coroutine
      */
     template<class... Args>
-    explicit detach_promise(co::simple_counting_scope& scope, Pyld const& payload, executor const& self, Args&&...);
+    explicit detach_promise(
+        co::simple_counting_scope& scope,
+        Pyld const& payload,
+        co::context const& context,
+        Args&&...
+    ) :
+        detach_scope_guard{scope},
+        this_coro_promise_base<Pyld>{context, payload},
+        // a throw: detach_scope_guard leaves the scope
+        _owner{context.detach(std::coroutine_handle<detach_promise>::from_promise(*this))} {}
 
     [[nodiscard]] detach_task<Pyld> get_return_object() noexcept { return {}; }
 
@@ -79,9 +112,12 @@ struct detach_promise : this_coro_promise_base<Pyld> {
      */
     [[noreturn]] void unhandled_exception() noexcept { std::terminate(); }
 
-    [[nodiscard]] co::simple_counting_scope& owner() const noexcept { return *_scope; }
+    /**
+     * gives the owner of the coroutine: the scheduler of the detach
+     */
+    [[nodiscard]] co::context const& owner() const noexcept { return *_owner; }
 
 private:
-    cth::ref_wrapper<co::simple_counting_scope> _scope;
+    cth::ref_wrapper<co::context const> _owner;
 };
 }

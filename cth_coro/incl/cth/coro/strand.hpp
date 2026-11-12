@@ -32,6 +32,9 @@ public:
     void await(native_handle, await_func cb) const override;
     void await(chrono::time_point_t time_point, await_func cb) const override;
 
+    [[nodiscard]] context const& detach(std::coroutine_handle<>) const override;
+    void release(std::coroutine_handle<>) const override;
+
 private:
     [[nodiscard]] Impl& impl() const { return *_impl; }
 

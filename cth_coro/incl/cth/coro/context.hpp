@@ -2,6 +2,7 @@
 #include <cth/chrono.hpp>
 #include <cth/os/native_handle.hpp>
 
+#include <coroutine>
 #include <functional>
 #include <system_error>
 #include <utility>
@@ -41,6 +42,20 @@ public:
      * @attention a callback that throws terminates the program
      */
     virtual void await(chrono::time_point_t time_point, await_func cb) const = 0;
+
+    /**
+     * gives the ownership of the coroutine to the scheduler of this context
+     * @details the coroutine did not end at the destruction of the scheduler -> the scheduler destroys it
+     * @return the owner: a scheduler itself, a strand its scheduler
+     * @see `release()`
+     */
+    [[nodiscard]] virtual context const& detach(std::coroutine_handle<>) const = 0;
+
+    /**
+     * releases the coroutine to the caller, does not destroy it
+     * @pre `detach()` of the coroutine returned this context
+     */
+    virtual void release(std::coroutine_handle<>) const = 0;
 
     /**
      * checks if the calling thread runs a job of this context

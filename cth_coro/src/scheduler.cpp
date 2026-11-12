@@ -26,6 +26,12 @@ void scheduler::await(chrono::time_point_t time_point, await_func cb) const {
     dev::await_on(impl().ctx.get_executor(), impl().timerPool, time_point, std::move(cb));
 }
 
+context const& scheduler::detach(std::coroutine_handle<> h) const {
+    impl().detach(h);
+    return *this;
+}
+void scheduler::release(std::coroutine_handle<> h) const { impl().release(h); }
+
 void scheduler::start() {
     CTH_CRITICAL(active(), "start() on an active scheduler, the workers are still running") {}
 

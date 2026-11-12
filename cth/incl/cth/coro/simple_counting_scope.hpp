@@ -9,7 +9,8 @@ namespace cth::co {
 /**
  * counter of the running detached tasks
  * @details
- * - a detached task enters it at its start and leaves it after its coroutine is destroyed
+ * - a detached task enters it at its start
+ * - the task leaves it at the end of the destruction of its coroutine, only the deallocation of the frame follows
  * - `wait()` blocks until no task runs
  * - thread safe
  * @see `executor::detach()`
@@ -33,7 +34,7 @@ public:
     /**
      * counts a task that ended
      * @details the last task wakes the waiters
-     * @pre the task destroyed its coroutine
+     * @pre the parts of the coroutine of the task are destroyed, the deallocation of its frame can follow
      */
     void leave() noexcept {
         // release: the destruction of the coroutine of the task happens before wait() returns
