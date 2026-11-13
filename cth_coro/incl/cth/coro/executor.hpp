@@ -76,9 +76,8 @@ public:
      * @param task to run on this context
      * @param args to construct the payload with
      */
-    template<payload Pyld = this_coro::default_payload, awaitable Awaitable, class... Args>
+    template<payload Pyld = this_coro::default_payload, void_awaitable Awaitable, class... Args>
     void detach(co::simple_counting_scope& scope, Awaitable task, Args&&... args) const {
-        static_assert(mta::is_void<awaited_t<Awaitable>>, "a detached task has no caller for the result");
         detach_impl<Pyld, Awaitable>(scope, Pyld{std::forward<Args>(args)...}, context(), std::move(task));
     }
 
