@@ -188,18 +188,17 @@ CORO_TEST(scheduler, destroys_a_task_detached_on_a_strand_that_did_not_end) {
         scheduler sched{autostart, 1};
         strand str{sched};
 
-        // waits on the scheduler: the strand is destroyed first, no coroutine waits on it then
-        auto task = [](scheduler const& s, std::atomic<size_t>& count, std::atomic<bool>& started)
-            -> executor_task<void> {
+        // waits on the strand: the scheduler stops first, nothing resumes on the strand then
+        auto task = [](std::atomic<size_t>& count, std::atomic<bool>& started) -> executor_task<void> {
             destruction_counter const counter{count};
-            co_await executor{s}.schedule();
             started = true;
             started.notify_one();
             co_await this_coro::wait(std::chrono::hours{1});
         };
 
-        executor{str}.detach(tasks, task(sched, destroyed, waits));
+        executor{str}.detach(tasks, task(destroyed, waits));
         waits.wait(false);
+        sched.await_stop();
     }
 
     ASSERT_EQ(destroyed.load(), 1);

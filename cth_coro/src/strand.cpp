@@ -11,7 +11,7 @@ namespace cth::co {
 struct strand::Impl {
     co::scheduler const& owner; ///< owns the coroutines detached on the strand
     scheduler::Impl& parent;
-    bas::strand<bas::io_context::executor_type> executor;
+    asio::strand<asio::io_context::executor_type> executor;
 };
 }
 
@@ -19,7 +19,7 @@ struct strand::Impl {
 namespace cth::co {
 
 strand::strand(scheduler const& scheduler) :
-    _impl{std::make_unique<Impl>(scheduler, scheduler.impl(), bas::make_strand(scheduler.impl().ctx))} {}
+    _impl{std::make_unique<Impl>(scheduler, scheduler.impl(), asio::make_strand(scheduler.impl().ctx))} {}
 strand::~strand() = default;
 
 void strand::post(void_func work) const { dev::post_on(impl().executor, scoped(std::move(work))); }

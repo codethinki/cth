@@ -23,7 +23,8 @@ public:
     explicit strand(scheduler const& scheduler);
     /**
      * destroys the asio strand
-     * @pre no coroutine runs or waits on the strand
+     * @pre no coroutine runs or resumes on the strand anymore
+     * @pre the scheduler of the strand still exists
      */
     ~strand();
 
