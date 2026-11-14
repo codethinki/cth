@@ -16,7 +16,6 @@
 #include <coroutine>
 #include <cstddef>
 #include <ranges>
-#include <source_location>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -26,7 +25,6 @@
 namespace cth::co::dev {
 /**
  * starts the children of `co::all()`, owns their coroutines
- * @details the caller resumes after the last child on its context
  */
 class all_awaiter_base : public this_coro_awaiter_base {
 public:
@@ -49,11 +47,8 @@ protected:
 
     /**
      * a ready awaiter: stores its result in the slot at once, else creates the child that awaits the awaitable
-     * @details
-     * - a stored awaitable: the child awaits its awaiter, a reference to a stored awaiter stays a reference
-     * - a temporary awaiter: the child owns it
-     * - a temporary task: the child owns it, a task is never ready
-     * - the child does not start yet, see `start()`
+     * @details a reference stays a reference, the child owns a temporary awaiter or task
+     * @details the child starts in `start()`
      * @tparam T result type of the awaitable
      * @param caller coroutine of the caller, the child gets its context and its payload
      * @param awaitable to await, a reference lives until the end of the `co_await`
@@ -125,18 +120,12 @@ protected:
      * @throws cth::except::group_coro_exception reason: a child failed
      */
     template<std::ranges::input_range Results>
-    static void throw_failures(
-        Results const& results,
-        std::source_location const& loc = std::source_location::current()
-    ) {
+    static void throw_failures(Results const& results) {
         auto const failed = [](auto const* result) { return result->exception != nullptr; };
         if(std::ranges::none_of(results, failed)) return;
 
         auto const exception = [](auto const* result) { return result->exception; };
-        throw except::group_coro_exception{
-            results | std::views::transform(exception) | std::ranges::to<std::vector>(),
-            loc
-        };
+        throw except::group_coro_exception{results | std::views::transform(exception) | std::ranges::to<std::vector>()};
     }
 
 private:
@@ -182,9 +171,7 @@ public:
     explicit all_awaiter(std::tuple<Awaitables...>&& awaitables) : _awaitables{std::move(awaitables)} {}
 
     /**
-     * starts the children, resumes the caller after the last one
-     * @param caller coroutine of the caller, its context and its payload go to the children
-     * @return `false` -> every child ended at once, the caller does not suspend
+     * creates the children, then starts them, see `start()`
      * @throws what the allocation of a coroutine throws, no child started then
      */
     template<this_coro_compatible Caller>
@@ -197,7 +184,7 @@ public:
     }
 
     /**
-     * @return the results in child order, no element for a void child, `void` if every child is void
+     * @return the results, see `co::all()`
      * @throws cth::except::group_coro_exception reason: a child failed
      */
     auto await_resume() {
@@ -241,10 +228,8 @@ public:
     explicit all_range_awaiter(Range&& range) : _range{std::forward<Range>(range)} {}
 
     /**
-     * starts the children, resumes the caller after the last one
-     * @param caller coroutine of the caller, its context and its payload go to the children
-     * @return `false` -> every child ended at once, the caller does not suspend
-     * @throws what the allocation of a coroutine throws, no child started then
+     * creates the children, then starts them
+     * @details the details of `all_awaiter::await_suspend()`
      */
     template<this_coro_compatible Caller>
     bool await_suspend(std::coroutine_handle<Caller> caller) {
@@ -260,7 +245,7 @@ public:
     }
 
     /**
-     * @return the results in child order, a reference as a `cth::ref_wrapper`, `void` for void children
+     * @return the results, see `co::all()`
      * @throws cth::except::group_coro_exception reason: a child failed
      */
     auto await_resume() {

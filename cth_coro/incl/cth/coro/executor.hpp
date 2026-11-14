@@ -64,36 +64,10 @@ public:
     }
 
     /**
-     * runs the task on this context, without a caller, in the scope
+     * runs the task on this context, without a caller
      * @details
-     * - runs on the calling thread until it moves onto this context, see `schedule()`
-     * - a caller in a job of this context runs it inline until its first suspension
-     * - the scheduler of this context owns the task until it ends, see `context::detach()`
-     * - the task did not end at `~scheduler()` -> the scheduler destroys it
-     * - the coroutine of the task is destroyed -> leaves the scope
-     * - an exception of the task terminates
-     * @tparam Pyld payload of the task, constructed from the arguments
-     * @param scope the task enters, `simple_counting_scope::wait()` waits for it
-     * @param task to run on this context
-     * @param args to construct the payload with
-     */
-    template<payload Pyld = this_coro::default_payload, void_awaitable Awaitable, class... Args>
-    void detach(co::simple_counting_scope& scope, Awaitable task, Args&&... args) const {
-        detach_impl<Pyld, co::simple_counting_scope&, Awaitable>(
-            scope,
-            Pyld{std::forward<Args>(args)...},
-            context(),
-            std::move(task)
-        );
-    }
-
-    /**
-     * runs the task on this context, without a caller and without a scope
-     * @details
-     * - runs on the calling thread until it moves onto this context, see `schedule()`
-     * - a caller in a job of this context runs it inline until its first suspension
-     * - the scheduler of this context owns the task until it ends, see `context::detach()`
-     * - nothing waits for the task: the task did not end at `~scheduler()` -> the scheduler destroys it
+     * - a caller in a job of this context runs it inline until its first suspension, else it is posted
+     * - the scheduler of this context owns the task: `~scheduler()` destroys it if it did not end
      * - an exception of the task terminates
      * @tparam Pyld payload of the task, constructed from the arguments
      * @param task to run on this context
@@ -103,6 +77,24 @@ public:
     void detach(Awaitable task, Args&&... args) const {
         detach_impl<Pyld, dev::no_scope, Awaitable>(
             dev::no_scope{},
+            Pyld{std::forward<Args>(args)...},
+            context(),
+            std::move(task)
+        );
+    }
+
+    /**
+     * runs the task on this context, without a caller, in the scope
+     * @details the details of `detach()` without a scope
+     * @tparam Pyld payload of the task, constructed from the arguments
+     * @param scope the task is in, see `simple_counting_scope`
+     * @param task to run on this context
+     * @param args to construct the payload with
+     */
+    template<payload Pyld = this_coro::default_payload, void_awaitable Awaitable, class... Args>
+    void detach(co::simple_counting_scope& scope, Awaitable task, Args&&... args) const {
+        detach_impl<Pyld, co::simple_counting_scope&, Awaitable>(
+            scope,
             Pyld{std::forward<Args>(args)...},
             context(),
             std::move(task)
@@ -131,7 +123,6 @@ private:
     // leaves the scope
     /**
      * moves onto the context, then awaits the task
-     * @details the parameters are references or the empty `dev::no_scope`, the frame holds the task in a local
      * @tparam Scope `co::simple_counting_scope&`, `dev::no_scope` -> no scope
      * @param scope the promise constructor reads it, the task enters it
      * @param payload the promise constructor reads it, the task inherits it

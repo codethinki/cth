@@ -53,18 +53,12 @@ template<class R>
 concept all_range = std::ranges::forward_range<R> && !awaitable<R> && awaitable<std::ranges::range_reference_t<R>>;
 
 /**
- * awaits every awaitable
+ * awaits every awaitable at once
  * @details
- * - each awaitable runs in a child, the children start in turn on the calling thread until they suspend
- * - a ready awaiter gets no child: its `await_resume()` runs at once
- * - the children are `this_coro` coroutines with the context and the payload of the caller
- * - the caller resumes after the last child on its context
- * - every child ended at the start -> the caller does not suspend
- * - an lvalue stays a reference: it lives until the end of the `co_await`
- * - a child failed -> after the last child the `co_await` throws `cth::except::group_coro_exception`
- * @param awaitables to await
- * @return awaitable for a `this_coro` caller, gives a `std::tuple` of the results in argument order, no element for a
- *  void result, `void` if every result is void
+ * - the children start in turn on the calling thread, the caller resumes after the last one on its context
+ * - a child failed -> throws `cth::except::group_coro_exception` after the last child
+ * @param awaitables to await, an lvalue stays a reference until the end of the `co_await`
+ * @return awaitable, gives a `std::tuple` of the results, no element for a void result, `void` if all are void
  */
 template<awaitable... Awaitables>
 [[nodiscard]] auto all(Awaitables&&... awaitables) -> dev::all_group<Awaitables...> {
@@ -72,14 +66,10 @@ template<awaitable... Awaitables>
 }
 
 /**
- * awaits every awaitable of the range
- * @details
- * - the details of the overload with awaitables
- * - an lvalue range stays a reference: it lives until the end of the `co_await`
- * - a range of temporaries, like a `std::views::transform` that makes tasks or awaiters: each child owns its element
- * @param range of awaitables of one type
- * @return awaitable for a `this_coro` caller, gives a `std::vector` of the results in range order, a reference
- *  as a `cth::ref_wrapper`, `void` for void results
+ * awaits every awaitable of the range at once
+ * @details the details of `all()` with awaitables
+ * @param range of awaitables, an lvalue stays a reference until the end of the `co_await`
+ * @return awaitable, gives a `std::vector` of the results, a reference as `cth::ref_wrapper`, `void` for void results
  */
 template<all_range Range>
 [[nodiscard]] auto all(Range&& range) -> dev::all_range_group<Range> {

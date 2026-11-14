@@ -8,11 +8,8 @@
 namespace cth::co {
 /**
  * counter of the running detached tasks
- * @details
- * - a task detached with the scope enters it at its start
- * - the task leaves it at the end of the destruction of its coroutine, only the deallocation of the frame follows
- * - `wait()` blocks until no task runs
- * - thread safe
+ * @details a task leaves it after the destruction of its coroutine: after `wait()` no part of a task exists
+ * @details thread safe
  * @see `executor::detach()`
  */
 class simple_counting_scope {
@@ -33,8 +30,7 @@ public:
 
     /**
      * counts a task that ended
-     * @details the last task wakes the waiters
-     * @pre the parts of the coroutine of the task are destroyed, the deallocation of its frame can follow
+     * @pre the coroutine of the task is destroyed, up to the deallocation of its frame
      */
     void leave() noexcept {
         // release: the destruction of the coroutine of the task happens before wait() returns
@@ -48,7 +44,6 @@ public:
 
     /**
      * blocks until no task runs
-     * @details no task -> returns at once
      * @attention blocks the calling thread
      */
     void wait() const noexcept {

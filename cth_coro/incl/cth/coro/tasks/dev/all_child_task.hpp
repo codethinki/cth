@@ -27,13 +27,12 @@ struct all_state {
 
 /**
  * final awaiter of a child of `co::all()`
- * @details the last child resumes the caller, its `raw_promise_base::continuation`, on its context
  */
 struct all_final_awaiter {
     [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
 
     /**
-     * counts the end of the child, the last child resumes the caller
+     * counts the end of the child, the last child resumes the caller on its context
      * @param h coroutine of the child, the awaiter of `co::all()` destroys it
      * @return see `transfer_on()` for the last child, else `std::noop_coroutine()`
      * @attention the post can throw inside noexcept: terminates
@@ -69,11 +68,8 @@ struct all_child_task {
 
 /**
  * promise of a child of `co::all()`
- * @details
- * - a `this_coro` coroutine with the context and the payload of the caller
- * - starts when the awaiter of `co::all()` resumes it
- * - stores the result or the exception, see `raw_promise`
- * - `raw_promise_base::continuation`: the caller
+ * @details a `this_coro` coroutine with the context and the payload of the caller
+ * @details `raw_promise_base::continuation`: the caller
  * @tparam T result type of the child
  * @tparam Pyld payload of the caller
  */

@@ -44,15 +44,13 @@ public:
     virtual void await(chrono::time_point_t time_point, await_func cb) const = 0;
 
     /**
-     * gives the ownership of the coroutine to the scheduler of this context
-     * @details the coroutine did not end at the destruction of the scheduler -> the scheduler destroys it
-     * @return the owner: a scheduler itself, a strand its scheduler
-     * @see `release()`
+     * gives the ownership of the coroutine to the scheduler of this context, see `~scheduler()`
+     * @return the owner for `release()`: a scheduler itself, a strand its scheduler
      */
     [[nodiscard]] virtual context const& detach(std::coroutine_handle<>) const = 0;
 
     /**
-     * releases the coroutine to the caller, does not destroy it
+     * releases the coroutine to the caller
      * @pre `detach()` of the coroutine returned this context
      */
     virtual void release(std::coroutine_handle<>) const = 0;
@@ -118,11 +116,10 @@ private:
 namespace cth::co::dev {
 /**
  * gives the coroutine to continue with on the context, for a symmetric transfer
- * @details `context::current()` is the target -> no post, the caller transfers to the coroutine or resumes it
  * @param target context the coroutine continues on
  * @param h coroutine to continue
  * @return the coroutine if `context::current()` is the target, else `std::noop_coroutine()` after a post of the resume
- * @attention nothing may touch the frame of the caller after the post: the coroutine can resume at once
+ * @attention after the post the coroutine can resume at once: nothing may touch the frame of the caller
  */
 [[nodiscard]] inline std::coroutine_handle<> transfer_on(context const& target, std::coroutine_handle<> h) {
     if(context::current() == &target) return h;

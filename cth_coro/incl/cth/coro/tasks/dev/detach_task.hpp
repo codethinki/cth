@@ -14,7 +14,6 @@
 namespace cth::co::dev {
 /**
  * final awaiter of `detach_task`
- * @details releases the coroutine from its owner, then destroys it
  */
 struct final_detach_awaiter {
     [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
@@ -39,12 +38,9 @@ struct final_detach_awaiter {
  */
 struct no_scope {};
 
-// a first base: the promise destructor body runs before the destruction of the bases and the parameters
 /**
  * first base of `detach_promise`, the task is in the scope for its lifetime
- * @details
- * - enters the scope on construction, leaves it on destruction
- * - the first base: destroyed after the other parts of the promise
+ * @details enters the scope on construction, leaves it on destruction: after the other parts of the promise
  * @tparam Scope `co::simple_counting_scope`, `no_scope` -> nothing to enter or leave
  */
 template<class Scope>
@@ -80,7 +76,7 @@ struct detach_promise;
 
 /**
  * return type of the coroutine of `executor::detach()`
- * @details owns nothing: the scheduler of the detach owns the coroutine, it destroys itself at its end
+ * @details owns nothing: the scheduler of the detach owns the coroutine
  * @tparam Pyld payload of the detached task
  * @tparam Scope the task is in, see `detach_scope_guard`
  */
@@ -91,12 +87,7 @@ struct detach_task {
 
 /**
  * promise of `detach_task`
- * @details
- * - the awaited task attaches to it: a `this_coro` coroutine
- * - starts at once, `final_detach_awaiter` ends it
- * - the scheduler of the detach owns the coroutine until it ends, see `context::detach()`
- * - a scope: leaves it after the other parts of the coroutine are destroyed, see `detach_scope_guard`
- * - no result, no exception and no caller: an exception terminates
+ * @details a `this_coro` coroutine: the awaited task attaches to it
  * @tparam Pyld payload of the detached task
  * @tparam Scope the task is in, see `detach_scope_guard`
  */

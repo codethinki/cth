@@ -51,7 +51,7 @@ public:
      * calls `await_stop()`, destroys the detached coroutines that did not end
      * @details blocks until the jobs that run end
      * @note jobs that did not start do not run
-     * @attention destroys also a detached coroutine that waits on another context, that context can still resume it
+     * @attention a destroyed coroutine can wait on another context: that context can still resume it
      */
     ~scheduler();
 

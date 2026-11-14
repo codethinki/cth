@@ -49,14 +49,12 @@ private:
 
 /**
  * exception of `co::all()`: children of it failed
- * @details
- * - `exceptions()`: one per child in child order, `nullptr` -> the child ended without an exception
- * - the message counts the failed children, a detail line per failed child gives its `what()`
+ * @details the message counts the failed children, a detail line per failed child gives its `what()`
  */
 class group_coro_exception : public coro_exception {
 public:
     /**
-     * @param exceptions one per child in child order, `nullptr` -> the child ended without an exception
+     * @param exceptions one per child, see `exceptions()`
      * @pre at least one exception is not `nullptr`
      */
     explicit group_coro_exception(
