@@ -99,6 +99,34 @@ CORO_TEST(executor, detach_without_a_scope_runs_on_the_context) {
     EXPECT_TRUE(onContext);
 }
 
+CORO_TEST(executor, detach_without_a_scope_is_in_no_scope) {
+    std::atomic<bool> release{false};
+    std::atomic<bool> ended{false};
+    // after the atomics: the destruction of the scheduler waits for the job of the task
+    scheduler sched{autostart, 2};
+    executor exec{sched};
+    simple_counting_scope tasks{};
+
+    auto blocked = [](std::atomic<bool>& go, std::atomic<bool>& done) -> executor_task<void> {
+        go.wait(false);
+        done = true;
+        done.notify_one();
+        co_return;
+    };
+    auto quick = []() -> executor_task<void> { co_return; };
+
+    exec.detach(blocked(release, ended));
+    exec.detach(tasks, quick());
+
+    // the scope counts its own task only, the task without a scope still blocks
+    tasks.wait();
+    EXPECT_FALSE(ended.load());
+
+    release = true;
+    release.notify_one();
+    ended.wait(false);
+}
+
 CORO_TEST(executor, detach_wait_returns_after_the_frames_are_destroyed) {
     constexpr size_t TASKS = 16;
     scheduler sched{autostart, 2};

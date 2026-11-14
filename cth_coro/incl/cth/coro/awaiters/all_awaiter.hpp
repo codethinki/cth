@@ -1,6 +1,7 @@
 #pragma once
 #include "cth/coro/exception.hpp"
 #include "cth/coro/tasks/dev/all_child_task.hpp"
+#include "cth/coro/tasks/promises/raw_promise.hpp"
 #include "cth/coro/this_coro/this_coro_base.hpp"
 #include "cth/coro/utility/concepts.hpp"
 #include "cth/coro/utility/fwd.hpp"
@@ -10,9 +11,10 @@
 #include <cth/meta/coro.hpp>
 #include <cth/ptr/ref_wrapper.hpp>
 
+#include <algorithm>
+#include <array>
 #include <coroutine>
 #include <cstddef>
-#include <exception>
 #include <ranges>
 #include <source_location>
 #include <tuple>
@@ -46,44 +48,52 @@ protected:
     }
 
     /**
-     * a ready awaiter: stores its result at once, else creates the child that awaits it
-     * @details the child does not start yet, see `start()`
+     * a ready awaiter: stores its result in the slot at once, else creates the child that awaits the awaitable
+     * @details
+     * - a stored awaitable: the child awaits its awaiter, a reference to a stored awaiter stays a reference
+     * - a temporary awaiter: the child owns it
+     * - a temporary task: the child owns it, a task is never ready
+     * - the child does not start yet, see `start()`
      * @tparam T result type of the awaitable
      * @param caller coroutine of the caller, the child gets its context and its payload
-     * @param awaitable to await, lives until the end of the `co_await`
-     * @param[out] slot gets the result or the exception
+     * @param awaitable to await, a reference lives until the end of the `co_await`
+     * @param[out] slot gets the result or the exception of a ready awaiter
+     * @return the slot or the promise of the child: it holds the result or the exception
      * @pre `reserve()` for the child
      * @throws what the allocation of the coroutine throws
      */
     template<class T, class Caller, awaitable Awaitable>
-    void add(std::coroutine_handle<Caller> caller, Awaitable&& awaitable, all_slot<T>& slot) {
-        using awaiter_type = decltype(co::extract_awaiter(std::forward<Awaitable>(awaitable)));
-        awaiter_type awaiter = co::extract_awaiter(std::forward<Awaitable>(awaitable));
+    [[nodiscard]] raw_promise<T>* add(
+        std::coroutine_handle<Caller> caller,
+        Awaitable&& awaitable,
+        raw_promise<T>& slot
+    ) {
+        if constexpr(!std::is_reference_v<Awaitable> && task<Awaitable>)
+            return addChild<T, Awaitable>(caller, std::forward<Awaitable>(awaitable));
+        else {
+            using extracted_type = decltype(co::extract_awaiter(std::forward<Awaitable>(awaitable)));
+            using awaiter_type = std::conditional_t<
+                std::is_reference_v<Awaitable>,
+                extracted_type,
+                std::remove_cvref_t<extracted_type>>;
+            awaiter_type awaiter = co::extract_awaiter(std::forward<Awaitable>(awaitable));
 
-        try {
-            if(awaiter.await_ready()) {
-                if constexpr(mta::is_void<T>) {
-                    awaiter.await_resume();
-                    slot.result.emplace();
-                } else
-                    slot.result.emplace(awaiter.await_resume());
-                return;
+            try {
+                if(awaiter.await_ready()) {
+                    if constexpr(mta::is_void<T>) {
+                        awaiter.await_resume();
+                        slot.return_void();
+                    } else
+                        slot.return_value(awaiter.await_resume());
+                    return &slot;
+                }
             }
+            catch(...) {
+                slot.unhandled_exception();
+                return &slot;
+            }
+            return addChild<T, awaiter_type>(caller, std::forward<awaiter_type>(awaiter));
         }
-        catch(...) {
-            slot.exception = std::current_exception();
-            return;
-        }
-
-        auto const& promise = caller.promise();
-        auto const child = all_child<T, payload_t<Caller>, awaiter_type>(
-            _state,
-            promise.context(),
-            promise.payload(),
-            std::forward<awaiter_type>(awaiter),
-            slot
-        );
-        _children.push_back(child.handle);
     }
 
     /**
@@ -98,7 +108,6 @@ protected:
      */
     template<this_coro_compatible Caller>
     [[nodiscard]] bool start(std::coroutine_handle<Caller> caller) {
-        _state.caller = caller;
         _state.callerContext = &caller.promise().context();
         // one more for the start: no child resumes the caller before every child started
         _state.count.store(_children.size() + 1, std::memory_order_relaxed);
@@ -112,18 +121,43 @@ protected:
 
     /**
      * throws if a child failed
-     * @param exceptions one per child in child order
+     * @param results one slot or child promise per child in child order
      * @throws cth::except::group_coro_exception reason: a child failed
      */
+    template<std::ranges::input_range Results>
     static void throw_failures(
-        std::vector<std::exception_ptr> exceptions,
+        Results const& results,
         std::source_location const& loc = std::source_location::current()
     ) {
-        for(auto const& exception : exceptions)
-            if(exception != nullptr) throw except::group_coro_exception{std::move(exceptions), loc};
+        auto const failed = [](auto const* result) { return result->exception != nullptr; };
+        if(std::ranges::none_of(results, failed)) return;
+
+        auto const exception = [](auto const* result) { return result->exception; };
+        throw except::group_coro_exception{
+            results | std::views::transform(exception) | std::ranges::to<std::vector>(),
+            loc
+        };
     }
 
 private:
+    /**
+     * creates the child that awaits the awaitable, it awaits the caller as its continuation
+     * @return the promise of the child
+     */
+    template<class T, class Awaitable, class Caller>
+    [[nodiscard]] raw_promise<T>* addChild(std::coroutine_handle<Caller> caller, Awaitable&& awaitable) {
+        auto const& promise = caller.promise();
+        auto const child = all_child<T, payload_t<Caller>, Awaitable>(
+            _state,
+            promise.context(),
+            promise.payload(),
+            std::forward<Awaitable>(awaitable)
+        );
+        child.handle.promise().continuation = caller;
+        _children.push_back(child.handle);
+        return &child.handle.promise();
+    }
+
     all_state _state{};
     std::vector<std::coroutine_handle<>> _children{}; ///< the children with a coroutine
 };
@@ -157,7 +191,7 @@ public:
     bool await_suspend(std::coroutine_handle<Caller> caller) {
         reserve(sizeof...(Awaitables));
         [&]<size_t... Is>(std::index_sequence<Is...>) {
-            (add(caller, std::forward<Awaitables>(std::get<Is>(_awaitables)), std::get<Is>(_slots)), ...);
+            ((std::get<Is>(_results) = add(caller, std::get<Is>(_awaitables), std::get<Is>(_slots))), ...);
         }(std::index_sequence_for<Awaitables...>{});
         return start(caller);
     }
@@ -168,8 +202,8 @@ public:
      */
     auto await_resume() {
         throw_failures(std::apply(
-            [](auto const&... slots) { return std::vector<std::exception_ptr>{slots.exception...}; },
-            _slots
+            [](auto const*... results) { return std::array<raw_promise_base const*, sizeof...(results)>{results...}; },
+            _results
         ));
 
         if constexpr((mta::is_void<awaited_t<Awaitables>> && ...)) return;
@@ -187,11 +221,12 @@ private:
     [[nodiscard]] auto element() {
         using result_type = awaited_t<std::tuple_element_t<I, std::tuple<Awaitables...>>>;
         if constexpr(mta::is_void<result_type>) return std::tuple<>{};
-        else return std::tuple<result_type>{std::forward<result_type>(*std::get<I>(_slots).result)};
+        else return std::tuple<result_type>{std::forward<result_type>(*std::get<I>(_results)->result)};
     }
 
     std::tuple<Awaitables...> _awaitables;
-    std::tuple<all_slot<awaited_t<Awaitables>>...> _slots{};
+    std::tuple<raw_promise<awaited_t<Awaitables>>...> _slots{}; ///< the results of the ready awaiters
+    std::tuple<raw_promise<awaited_t<Awaitables>>*...> _results{}; ///< per child: its slot or its promise
 };
 
 /**
@@ -215,11 +250,12 @@ public:
     bool await_suspend(std::coroutine_handle<Caller> caller) {
         auto const children = static_cast<size_t>(std::ranges::distance(_range));
         _slots.resize(children);
+        _results.reserve(children);
         reserve(children);
 
         size_t childIdx = 0;
-        for(auto& awaitable : _range)
-            add(caller, awaitable, _slots[childIdx++]);
+        for(auto&& awaitable : _range)
+            _results.push_back(add(caller, std::forward<decltype(awaitable)>(awaitable), _slots[childIdx++]));
         return start(caller);
     }
 
@@ -228,24 +264,21 @@ public:
      * @throws cth::except::group_coro_exception reason: a child failed
      */
     auto await_resume() {
-        std::vector<std::exception_ptr> exceptions{};
-        exceptions.reserve(_slots.size());
-        for(auto const& slot : _slots)
-            exceptions.push_back(slot.exception);
-        throw_failures(std::move(exceptions));
+        throw_failures(_results);
 
         if constexpr(mta::is_void<result_type>) return;
         else {
             std::vector<all_element_t<result_type>> results{};
-            results.reserve(_slots.size());
-            for(auto& slot : _slots)
-                results.emplace_back(std::forward<result_type>(*slot.result));
+            results.reserve(_results.size());
+            for(auto* result : _results)
+                results.emplace_back(std::forward<result_type>(*result->result));
             return results;
         }
     }
 
 private:
     Range _range;
-    std::vector<all_slot<result_type>> _slots{};
+    std::vector<raw_promise<result_type>> _slots{}; ///< the results of the ready awaiters
+    std::vector<raw_promise<result_type>*> _results{}; ///< per child: its slot or its promise
 };
 }

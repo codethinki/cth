@@ -6,7 +6,6 @@
 
 #include <ranges>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 
@@ -48,12 +47,10 @@ struct [[nodiscard]] all_range_group {
 
 namespace cth::co {
 /**
- * `true` if `R` is a range for `co::all()`: a forward range of stored awaitables, not an awaitable itself
+ * `true` if `R` is a range for `co::all()`: a forward range of awaitables, not an awaitable itself
  */
 template<class R>
-concept all_range = std::ranges::forward_range<R> && !awaitable<R>
-    && std::is_lvalue_reference_v<std::ranges::range_reference_t<R>>
-    && awaitable<std::ranges::range_reference_t<R>>;
+concept all_range = std::ranges::forward_range<R> && !awaitable<R> && awaitable<std::ranges::range_reference_t<R>>;
 
 /**
  * awaits every awaitable
@@ -79,7 +76,8 @@ template<awaitable... Awaitables>
  * @details
  * - the details of the overload with awaitables
  * - an lvalue range stays a reference: it lives until the end of the `co_await`
- * @param range of awaitables of one type, stored in the range
+ * - a range of temporaries, like a `std::views::transform` that makes tasks or awaiters: each child owns its element
+ * @param range of awaitables of one type
  * @return awaitable for a `this_coro` caller, gives a `std::vector` of the results in range order, a reference
  *  as a `cth::ref_wrapper`, `void` for void results
  */

@@ -12,6 +12,7 @@
 #include <cth/meta/coro.hpp>
 #include <cth/ptr/ref_wrapper.hpp>
 
+#include <type_traits>
 #include <utility>
 
 
@@ -78,7 +79,12 @@ public:
      */
     template<payload Pyld = this_coro::default_payload, void_awaitable Awaitable, class... Args>
     void detach(co::simple_counting_scope& scope, Awaitable task, Args&&... args) const {
-        detach_impl<Pyld, Awaitable>(&scope, Pyld{std::forward<Args>(args)...}, context(), std::move(task));
+        detach_impl<Pyld, co::simple_counting_scope&, Awaitable>(
+            scope,
+            Pyld{std::forward<Args>(args)...},
+            context(),
+            std::move(task)
+        );
     }
 
     /**
@@ -95,7 +101,12 @@ public:
      */
     template<payload Pyld = this_coro::default_payload, void_awaitable Awaitable, class... Args>
     void detach(Awaitable task, Args&&... args) const {
-        detach_impl<Pyld, Awaitable>(nullptr, Pyld{std::forward<Args>(args)...}, context(), std::move(task));
+        detach_impl<Pyld, dev::no_scope, Awaitable>(
+            dev::no_scope{},
+            Pyld{std::forward<Args>(args)...},
+            context(),
+            std::move(task)
+        );
     }
 
 private:
@@ -116,24 +127,25 @@ private:
         co_return co_await std::move(task);
     }
 
-    // references, a pointer and a local: the parameters of a coroutine are destroyed after its promise, the promise
+    // references, an empty tag and a local: the parameters of a coroutine are destroyed after its promise, the promise
     // leaves the scope
     /**
      * moves onto the context, then awaits the task
-     * @details the parameters are references and a pointer, the frame holds the task in a local
-     * @param scopePtr the promise constructor reads it, the task enters it, `nullptr` -> no scope
+     * @details the parameters are references or the empty `dev::no_scope`, the frame holds the task in a local
+     * @tparam Scope `co::simple_counting_scope&`, `dev::no_scope` -> no scope
+     * @param scope the promise constructor reads it, the task enters it
      * @param payload the promise constructor reads it, the task inherits it
      * @param context the promise constructor reads it, the task runs on it
      * @param task to await, the coroutine moves it into its frame before its first suspension
      */
-    template<payload Pyld, awaitable Awaitable>
+    template<payload Pyld, class Scope, awaitable Awaitable>
     static auto detach_impl(
-        [[maybe_unused]] co::simple_counting_scope* scopePtr,
+        [[maybe_unused]] Scope scope,
         [[maybe_unused]] Pyld const& payload,
         co::context const& context,
         Awaitable&& task
     )
-        -> dev::detach_task<Pyld> {
+        -> dev::detach_task<Pyld, std::remove_reference_t<Scope>> {
         // before the first suspension: the caller of detach() holds the task until then
         Awaitable ownedTask = std::move(task);
         co_await schedule_awaiter{context};

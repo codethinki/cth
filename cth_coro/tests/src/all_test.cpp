@@ -12,6 +12,7 @@
 #include <chrono>
 #include <concepts>
 #include <exception>
+#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -120,6 +121,45 @@ CORO_TEST(all, range_of_void_children) {
 
     exec.sync_wait(root(ran));
     EXPECT_EQ(ran.load(), 4);
+}
+
+CORO_TEST(all, transform_view_of_tasks) {
+    scheduler sched{autostart, 2};
+    executor exec{sched};
+    std::atomic<int> ran{0};
+
+    // the view makes the tasks: each child owns its task
+    auto root = [](std::atomic<int>& r) -> executor_task<std::vector<int>> {
+        std::vector const inputs{1, 2, 3};
+        auto results = co_await co::all(inputs | std::views::transform(value));
+        co_await co::all(std::views::iota(0, 4) | std::views::transform([&r](int) { return count_later(r); }));
+        co_return results;
+    };
+
+    EXPECT_EQ(exec.sync_wait(root(ran)), (std::vector{1, 2, 3}));
+    EXPECT_EQ(ran.load(), 4);
+}
+
+CORO_TEST(all, transform_view_of_awaiters) {
+    scheduler home{autostart, 1};
+    scheduler other{autostart, 1};
+    executor exec{home};
+
+    auto root = [](scheduler const& h, scheduler const& o)
+        -> executor_task<std::tuple<std::vector<int>, context const*, bool>> {
+        std::vector const inputs{4, 5};
+        // ready: the results at once
+        auto ready = co_await co::all(inputs | std::views::transform([](int i) { return data_awaiter{i}; }));
+        // not ready: each child owns its awaiter, it moves to the other context
+        co_await co::all(inputs | std::views::transform([&o](int) { return executor{o}.schedule(); }));
+        context const& current = co_await this_coro::context;
+        co_return std::tuple{ready, &current, h.owns_thread()};
+    };
+
+    auto const [ready, current, onHome] = exec.sync_wait(root(home, other));
+    EXPECT_EQ(ready, (std::vector{4, 5}));
+    EXPECT_EQ(current, &home);
+    EXPECT_TRUE(onHome);
 }
 
 CORO_TEST(all, empty_range_gives_an_empty_vector) {
