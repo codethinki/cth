@@ -19,9 +19,8 @@ struct affine_promise : basic_promise<T, std::suspend_always{}, affine_final_pro
      * stores the context of the caller, the task continues the caller on it
      * @param caller promise of the caller
      */
-    template<class CallerPromise>
+    template<this_coro_compatible CallerPromise>
     constexpr void attach(CallerPromise const& caller) noexcept {
-        static_assert(this_coro_compatible<CallerPromise>, "the caller must be a this_coro coroutine");
         callerContext = &caller.context();
     }
 

@@ -17,20 +17,20 @@ namespace cth::co::dev {
 template<class T, payload Pyld = this_coro::default_payload>
 struct spawn_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
     /**
-     * constructs from the coroutine parameters, the task runs on the context of the executor
-     * @details defined in executor.hpp, the executor is incomplete here
+     * constructs from the coroutine parameters
      * @param payload of the spawned task
-     * @param self executor that spawns the task
+     * @param context the task runs on
      */
     template<class... Args>
-    constexpr explicit spawn_promise(Pyld const& payload, executor const& self, Args&&...);
+    constexpr explicit spawn_promise(Pyld const& payload, co::context const& context, Args&&...) :
+        this_coro_promise_base<Pyld>{context, payload} {}
 
 
     spawn_task<T, Pyld> get_return_object() noexcept;
 
     /**
      * stores the context the caller continues on, copies no payload
-     * @details a caller without a context continues on the context of the executor
+     * @details a caller without a context continues on the context of the task
      * @param caller promise of the caller
      */
     template<class CallerPromise>

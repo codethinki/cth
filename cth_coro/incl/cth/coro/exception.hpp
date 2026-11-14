@@ -2,7 +2,15 @@
 #include <cth/exception.hpp>
 #include <cth/io/log.hpp>
 
+#include <cstddef>
+#include <exception>
+#include <format>
+#include <source_location>
+#include <stacktrace>
+#include <string>
 #include <system_error>
+#include <utility>
+#include <vector>
 
 namespace cth::except {
 /**
@@ -37,6 +45,60 @@ public:
 
 private:
     std::error_code _code{};
+};
+
+/**
+ * exception of `co::all()`: children of it failed
+ * @details
+ * - `exceptions()`: one per child in child order, `nullptr` -> the child ended without an exception
+ * - the message counts the failed children, a detail line per failed child gives its `what()`
+ */
+class group_coro_exception : public coro_exception {
+public:
+    /**
+     * @param exceptions one per child in child order, `nullptr` -> the child ended without an exception
+     * @pre at least one exception is not `nullptr`
+     */
+    explicit group_coro_exception(
+        std::vector<std::exception_ptr> exceptions,
+        std::source_location const& loc = std::source_location::current(),
+        std::stacktrace trace = std::stacktrace::current()
+    ) :
+        coro_exception{message(exceptions), Severity::ERR, loc, std::move(trace)},
+        _exceptions{std::move(exceptions)} {
+        for(size_t i = 0; i < _exceptions.size(); ++i)
+            if(_exceptions[i] != nullptr) add("child {}: {}", i, what_of(_exceptions[i]));
+    }
+
+    /**
+     * @return one per child in child order, `nullptr` -> the child ended without an exception
+     */
+    [[nodiscard]] std::vector<std::exception_ptr> const& exceptions() const noexcept { return _exceptions; }
+
+private:
+    [[nodiscard]] static std::string message(std::vector<std::exception_ptr> const& exceptions) {
+        size_t failed = 0;
+        for(auto const& exception : exceptions)
+            if(exception != nullptr) ++failed;
+        return std::format("{} of {} children of co::all() failed", failed, exceptions.size());
+    }
+
+    /**
+     * @return `what()` of a `std::exception`, a fixed text for other exceptions
+     */
+    [[nodiscard]] static std::string what_of(std::exception_ptr const& exception) {
+        try {
+            std::rethrow_exception(exception);
+        }
+        catch(std::exception const& e) {
+            return e.what();
+        }
+        catch(...) {
+            return "an exception that does not derive std::exception";
+        }
+    }
+
+    std::vector<std::exception_ptr> _exceptions;
 };
 }
 

@@ -6,12 +6,14 @@
 #include <cth/coro/strand.hpp>
 #include <cth/coro/tasks/executor_task.hpp>
 #include <cth/coro/this_coro.hpp>
+#include <cth/coro/utility/concepts.hpp>
 #include <cth/os/fence.hpp>
 
 #include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <latch>
+#include <optional>
 #include <ranges>
 #include <semaphore>
 #include <system_error>
@@ -26,6 +28,11 @@ namespace cth::co {
 
 namespace {
     constexpr auto TIMEOUT = std::chrono::seconds{5};
+
+    // a this_coro caller awaits the awaiter of the strand as it is, no capture
+    static_assert(this_coro_awaitable<strand&>);
+    static_assert(this_coro_awaitable<strand const&>);
+    static_assert(!awaitable<scheduler&>, "a scheduler has no co_await");
 }
 
 CORO_TEST(strand, jobs_run_one_at_a_time_in_post_order) {
@@ -269,6 +276,107 @@ CORO_TEST(strand, scheduler_jobs_run_beside_strand_job) {
 
     ASSERT_TRUE(strandDone.try_acquire_for(2 * TIMEOUT));
     EXPECT_TRUE(overlapped);
+}
+
+CORO_TEST(strand, co_await_waits_for_the_jobs_posted_before) {
+    constexpr size_t THREADS = 4;
+    constexpr size_t JOBS = 50;
+
+    scheduler sched{autostart, 4};
+    strand serial{sched};
+
+    std::atomic<size_t> ran{0};
+    std::atomic<bool> awaits{false};
+
+    // holds the strand until the task awaits it, the jobs below wait in the queue
+    serial.post([&awaits] {
+        awaits.wait(false);
+        std::this_thread::sleep_for(std::chrono::milliseconds{2}); // the task posts its job in this time
+    });
+
+    {
+        std::vector<std::jthread> threads{};
+        for(size_t i = 0; i < THREADS; ++i)
+            threads.emplace_back([&serial, &ran] {
+                for(size_t j = 0; j < JOBS; ++j)
+                    serial.post([&ran] { ran.fetch_add(1); });
+            });
+    }
+
+    auto task = [](strand const& s, std::atomic<size_t>& count, std::atomic<bool>& started) -> executor_task<size_t> {
+        started = true;
+        started.notify_one();
+        co_await s;
+        co_return count.load();
+    };
+
+    EXPECT_EQ(executor{sched}.sync_wait(task(serial, ran, awaits)), THREADS * JOBS);
+}
+
+CORO_TEST(strand, co_await_resumes_on_the_context_of_the_caller) {
+    scheduler sched{autostart, 2};
+    strand serial{sched};
+
+    auto task = [](strand const& s) -> executor_task<std::tuple<context const*, context const*, bool>> {
+        co_await s;
+        context const& current = co_await this_coro::context;
+        co_return std::tuple{&current, context::current(), s.owns_thread()};
+    };
+
+    auto const [current, job, inStrand] = executor{sched}.sync_wait(task(serial));
+    EXPECT_EQ(current, &sched);
+    EXPECT_EQ(job, &sched);
+    EXPECT_FALSE(inStrand);
+}
+
+CORO_TEST(strand, co_await_inside_strand_continues_inside_strand) {
+    // before the scheduler: the later job can run after the task ended
+    std::atomic<bool> laterJob{false};
+    scheduler sched{autostart, 2};
+    strand serial{sched};
+
+    auto task = [](strand const& s, std::atomic<bool>& later)
+        -> executor_task<std::tuple<bool, bool, bool, context const*, context const*>> {
+        std::atomic<bool> ran{false};
+        // queued behind the current job, it queues the later job behind the job of the co_await
+        s.post([&ran, &s, &later] {
+            ran = true;
+            s.post([&later] { later = true; });
+        });
+
+        co_await s;
+        context const& current = co_await this_coro::context;
+        co_return std::tuple{ran.load(), later.load(), s.owns_thread(), &current, context::current()};
+    };
+
+    auto const [ran, later, inStrand, current, job] = executor{serial}.sync_wait(task(serial, laterJob));
+    EXPECT_TRUE(ran);
+    // the caller continues inline in the job of the co_await, before the later job
+    EXPECT_FALSE(later);
+    EXPECT_TRUE(inStrand);
+    EXPECT_EQ(current, &serial);
+    EXPECT_EQ(job, &serial);
+}
+
+CORO_TEST(strand, destruction_right_after_co_await_from_outside) {
+    constexpr size_t JOBS = 100;
+
+    scheduler sched{autostart, 4};
+    std::optional<strand> serialOpt{std::in_place, sched};
+
+    std::atomic<size_t> ran{0};
+    for(size_t i = 0; i < JOBS; ++i)
+        serialOpt->post([&ran] { ran.fetch_add(1); });
+
+    auto task = [](std::optional<strand>& s) -> executor_task<void> {
+        co_await *s;
+        // the job of the co_await can still end on another worker
+        s.reset();
+    };
+
+    executor{sched}.sync_wait(task(serialOpt));
+    EXPECT_FALSE(serialOpt.has_value());
+    EXPECT_EQ(ran.load(), JOBS);
 }
 
 CORO_TEST(strand, move_only) {

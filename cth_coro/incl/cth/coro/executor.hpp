@@ -2,6 +2,8 @@
 #include "cth/coro/sync.hpp"
 #include "cth/coro/awaiters/data_awaiter.hpp"
 #include "cth/coro/awaiters/schedule_awaiter.hpp"
+#include "cth/coro/simple_counting_scope.hpp"
+#include "cth/coro/tasks/dev/detach_task.hpp"
 #include "cth/coro/tasks/dev/spawn_task.hpp"
 #include "cth/coro/this_coro/payload.hpp"
 #include "cth/coro/utility/concepts.hpp"
@@ -10,6 +12,7 @@
 #include <cth/meta/coro.hpp>
 #include <cth/ptr/ref_wrapper.hpp>
 
+#include <type_traits>
 #include <utility>
 
 
@@ -42,7 +45,7 @@ public:
      */
     template<payload Pyld = this_coro::default_payload, awaitable Awaitable, class... Args>
     [[nodiscard]] auto spawn(Awaitable task, Args&&... args) const -> spawn_task<awaited_t<Awaitable>, Pyld> {
-        return spawn_impl(Pyld{std::forward<Args>(args)...}, *this, std::move(task));
+        return spawn_impl(Pyld{std::forward<Args>(args)...}, context(), std::move(task));
     }
 
     /**
@@ -60,22 +63,93 @@ public:
         return co::sync(spawn<Pyld>(std::move(task), std::forward<Args>(args)...));
     }
 
+    /**
+     * runs the task on this context, without a caller, in the scope
+     * @details
+     * - runs on the calling thread until it moves onto this context, see `schedule()`
+     * - a caller in a job of this context runs it inline until its first suspension
+     * - the scheduler of this context owns the task until it ends, see `context::detach()`
+     * - the task did not end at `~scheduler()` -> the scheduler destroys it
+     * - the coroutine of the task is destroyed -> leaves the scope
+     * - an exception of the task terminates
+     * @tparam Pyld payload of the task, constructed from the arguments
+     * @param scope the task enters, `simple_counting_scope::wait()` waits for it
+     * @param task to run on this context
+     * @param args to construct the payload with
+     */
+    template<payload Pyld = this_coro::default_payload, void_awaitable Awaitable, class... Args>
+    void detach(co::simple_counting_scope& scope, Awaitable task, Args&&... args) const {
+        detach_impl<Pyld, co::simple_counting_scope&, Awaitable>(
+            scope,
+            Pyld{std::forward<Args>(args)...},
+            context(),
+            std::move(task)
+        );
+    }
+
+    /**
+     * runs the task on this context, without a caller and without a scope
+     * @details
+     * - runs on the calling thread until it moves onto this context, see `schedule()`
+     * - a caller in a job of this context runs it inline until its first suspension
+     * - the scheduler of this context owns the task until it ends, see `context::detach()`
+     * - nothing waits for the task: the task did not end at `~scheduler()` -> the scheduler destroys it
+     * - an exception of the task terminates
+     * @tparam Pyld payload of the task, constructed from the arguments
+     * @param task to run on this context
+     * @param args to construct the payload with
+     */
+    template<payload Pyld = this_coro::default_payload, void_awaitable Awaitable, class... Args>
+    void detach(Awaitable task, Args&&... args) const {
+        detach_impl<Pyld, dev::no_scope, Awaitable>(
+            dev::no_scope{},
+            Pyld{std::forward<Args>(args)...},
+            context(),
+            std::move(task)
+        );
+    }
+
 private:
     /**
-     * moves onto the context of `self`, then awaits the task
+     * moves onto the context, then awaits the task
      * @param payload the promise constructor reads it, the task inherits it
-     * @param self the promise constructor reads it, the task runs on its context
+     * @param context the promise constructor reads it, the task runs on it
      * @param task to await
      */
     template<payload Pyld, awaitable Awaitable>
     static auto spawn_impl(
         [[maybe_unused]] Pyld payload,
-        executor self,
+        co::context const& context,
         Awaitable task
     )
         -> spawn_task<awaited_t<Awaitable>, Pyld> {
-        co_await self.schedule();
+        co_await schedule_awaiter{context};
         co_return co_await std::move(task);
+    }
+
+    // references, an empty tag and a local: the parameters of a coroutine are destroyed after its promise, the promise
+    // leaves the scope
+    /**
+     * moves onto the context, then awaits the task
+     * @details the parameters are references or the empty `dev::no_scope`, the frame holds the task in a local
+     * @tparam Scope `co::simple_counting_scope&`, `dev::no_scope` -> no scope
+     * @param scope the promise constructor reads it, the task enters it
+     * @param payload the promise constructor reads it, the task inherits it
+     * @param context the promise constructor reads it, the task runs on it
+     * @param task to await, the coroutine moves it into its frame before its first suspension
+     */
+    template<payload Pyld, class Scope, awaitable Awaitable>
+    static auto detach_impl(
+        [[maybe_unused]] Scope scope,
+        [[maybe_unused]] Pyld const& payload,
+        co::context const& context,
+        Awaitable&& task
+    )
+        -> dev::detach_task<Pyld, std::remove_reference_t<Scope>> {
+        // before the first suspension: the caller of detach() holds the task until then
+        Awaitable ownedTask = std::move(task);
+        co_await schedule_awaiter{context};
+        co_await std::move(ownedTask);
     }
 
     cth::ref_wrapper<co::context const> _context;
@@ -96,14 +170,6 @@ public:
 
 
 }
-
-namespace cth::co::dev {
-template<class T, payload Pyld>
-template<class... Args>
-constexpr spawn_promise<T, Pyld>::spawn_promise(Pyld const& payload, executor const& self, Args&&...) :
-    this_coro_promise_base<Pyld>{self.context(), payload} {}
-}
-
 
 namespace cth::co::this_coro {
 /**

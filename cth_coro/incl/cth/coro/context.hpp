@@ -2,6 +2,7 @@
 #include <cth/chrono.hpp>
 #include <cth/os/native_handle.hpp>
 
+#include <coroutine>
 #include <functional>
 #include <system_error>
 #include <utility>
@@ -41,6 +42,20 @@ public:
      * @attention a callback that throws terminates the program
      */
     virtual void await(chrono::time_point_t time_point, await_func cb) const = 0;
+
+    /**
+     * gives the ownership of the coroutine to the scheduler of this context
+     * @details the coroutine did not end at the destruction of the scheduler -> the scheduler destroys it
+     * @return the owner: a scheduler itself, a strand its scheduler
+     * @see `release()`
+     */
+    [[nodiscard]] virtual context const& detach(std::coroutine_handle<>) const = 0;
+
+    /**
+     * releases the coroutine to the caller, does not destroy it
+     * @pre `detach()` of the coroutine returned this context
+     */
+    virtual void release(std::coroutine_handle<>) const = 0;
 
     /**
      * checks if the calling thread runs a job of this context
@@ -98,4 +113,20 @@ private:
         current_guard& operator=(current_guard const&) = delete;
     };
 };
+}
+
+namespace cth::co::dev {
+/**
+ * gives the coroutine to continue with on the context, for a symmetric transfer
+ * @details `context::current()` is the target -> no post, the caller transfers to the coroutine or resumes it
+ * @param target context the coroutine continues on
+ * @param h coroutine to continue
+ * @return the coroutine if `context::current()` is the target, else `std::noop_coroutine()` after a post of the resume
+ * @attention nothing may touch the frame of the caller after the post: the coroutine can resume at once
+ */
+[[nodiscard]] inline std::coroutine_handle<> transfer_on(context const& target, std::coroutine_handle<> h) {
+    if(context::current() == &target) return h;
+    target.post([h] { h.resume(); });
+    return std::noop_coroutine();
+}
 }

@@ -48,9 +48,10 @@ public:
      */
     scheduler(autostart_t, size_t workers = 1) : scheduler{workers} { start(); }
     /**
-     * calls `await_stop()`
+     * calls `await_stop()`, destroys the detached coroutines that did not end
      * @details blocks until the jobs that run end
      * @note jobs that did not start do not run
+     * @attention destroys also a detached coroutine that waits on another context, that context can still resume it
      */
     ~scheduler();
 
@@ -59,6 +60,8 @@ public:
     void await(native_handle, await_func cb) const override;
     void await(chrono::time_point_t time_point, await_func cb) const override;
 
+    [[nodiscard]] context const& detach(std::coroutine_handle<>) const override;
+    void release(std::coroutine_handle<>) const override;
 
     /**
      * starts the workers
@@ -125,6 +128,7 @@ public:
      * moves `other` into this scheduler
      * @pre not `active()`
      * @pre `other` not `active()`
+     * @note destroys the detached coroutines of this scheduler that did not end
      * @attention executors and coroutines of `other` still refer to `other`
      */
     scheduler& operator=(scheduler&& other) noexcept;
