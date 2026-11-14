@@ -35,7 +35,7 @@ struct all_final_awaiter {
     /**
      * counts the end of the child, the last child resumes the caller
      * @param h coroutine of the child, the awaiter of `co::all()` destroys it
-     * @return see `resume_on()` for the last child, else `std::noop_coroutine()`
+     * @return see `transfer_on()` for the last child, else `std::noop_coroutine()`
      * @attention the post can throw inside noexcept: terminates
      */
     template<class Promise>
@@ -45,7 +45,7 @@ struct all_final_awaiter {
         if(state.count.fetch_sub(1, std::memory_order_acq_rel) != 1) return std::noop_coroutine();
 
         // the last: nothing else touches the state or this coroutine until the caller resumes
-        return resume_on(*state.callerContext, h.promise().continuation);
+        return transfer_on(*state.callerContext, h.promise().continuation);
     }
 
     constexpr void await_resume() const noexcept {}

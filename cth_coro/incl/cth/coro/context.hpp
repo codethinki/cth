@@ -117,14 +117,14 @@ private:
 
 namespace cth::co::dev {
 /**
- * continues the coroutine on the context
- * @details `context::current()` is the target -> no post, the caller of `resume_on()` transfers to the coroutine
+ * gives the coroutine to continue with on the context, for a symmetric transfer
+ * @details `context::current()` is the target -> no post, the caller transfers to the coroutine or resumes it
  * @param target context the coroutine continues on
  * @param h coroutine to continue
  * @return the coroutine if `context::current()` is the target, else `std::noop_coroutine()` after a post of the resume
  * @attention nothing may touch the frame of the caller after the post: the coroutine can resume at once
  */
-[[nodiscard]] inline std::coroutine_handle<> resume_on(context const& target, std::coroutine_handle<> h) {
+[[nodiscard]] inline std::coroutine_handle<> transfer_on(context const& target, std::coroutine_handle<> h) {
     if(context::current() == &target) return h;
     target.post([h] { h.resume(); });
     return std::noop_coroutine();

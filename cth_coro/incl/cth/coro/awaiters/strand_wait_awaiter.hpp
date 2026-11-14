@@ -16,8 +16,8 @@ struct strand_wait_awaiter : this_coro_awaiter_base {
 
     template<this_coro_compatible Caller>
     void await_suspend(std::coroutine_handle<Caller> caller) const {
-        // behind every job posted before, then back to the context of the caller
-        strand.post([caller, &target = caller.promise().context()] { target.post([caller] { caller.resume(); }); });
+        // behind every job posted before, then on the context of the caller: inline if it is the strand
+        strand.post([caller, &target = caller.promise().context()] { dev::transfer_on(target, caller).resume(); });
     }
 
     static constexpr void await_resume() noexcept {}

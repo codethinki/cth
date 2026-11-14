@@ -330,20 +330,29 @@ CORO_TEST(strand, co_await_resumes_on_the_context_of_the_caller) {
 }
 
 CORO_TEST(strand, co_await_inside_strand_continues_inside_strand) {
+    // before the scheduler: the later job can run after the task ended
+    std::atomic<bool> laterJob{false};
     scheduler sched{autostart, 2};
     strand serial{sched};
 
-    auto task = [](strand const& s) -> executor_task<std::tuple<bool, bool, context const*, context const*>> {
+    auto task = [](strand const& s, std::atomic<bool>& later)
+        -> executor_task<std::tuple<bool, bool, bool, context const*, context const*>> {
         std::atomic<bool> ran{false};
-        s.post([&ran] { ran = true; }); // queued behind the current job
+        // queued behind the current job, it queues the later job behind the job of the co_await
+        s.post([&ran, &s, &later] {
+            ran = true;
+            s.post([&later] { later = true; });
+        });
 
         co_await s;
         context const& current = co_await this_coro::context;
-        co_return std::tuple{ran.load(), s.owns_thread(), &current, context::current()};
+        co_return std::tuple{ran.load(), later.load(), s.owns_thread(), &current, context::current()};
     };
 
-    auto const [ran, inStrand, current, job] = executor{serial}.sync_wait(task(serial));
+    auto const [ran, later, inStrand, current, job] = executor{serial}.sync_wait(task(serial, laterJob));
     EXPECT_TRUE(ran);
+    // the caller continues inline in the job of the co_await, before the later job
+    EXPECT_FALSE(later);
     EXPECT_TRUE(inStrand);
     EXPECT_EQ(current, &serial);
     EXPECT_EQ(job, &serial);
