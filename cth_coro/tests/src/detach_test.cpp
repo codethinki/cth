@@ -79,6 +79,26 @@ CORO_TEST(executor, detach_runs_on_the_context) {
     EXPECT_TRUE(onContext);
 }
 
+CORO_TEST(executor, detach_without_a_scope_runs_on_the_context) {
+    std::atomic<bool> onContext{false};
+    std::atomic<bool> ended{false};
+    // after the atomics: the destruction of the scheduler waits for the job of the task
+    scheduler sched{autostart, 1};
+    executor exec{sched};
+
+    auto task = [](scheduler const& s, std::atomic<bool>& result, std::atomic<bool>& done) -> executor_task<void> {
+        result = s.owns_thread();
+        done = true;
+        done.notify_one();
+        co_return;
+    };
+
+    exec.detach(task(sched, onContext, ended));
+    ended.wait(false);
+
+    EXPECT_TRUE(onContext);
+}
+
 CORO_TEST(executor, detach_wait_returns_after_the_frames_are_destroyed) {
     constexpr size_t TASKS = 16;
     scheduler sched{autostart, 2};
@@ -177,6 +197,29 @@ CORO_TEST(scheduler, destroys_a_detached_task_that_did_not_end) {
     ASSERT_EQ(destroyed.load(), 1);
     // returns at once: the destruction left the scope
     tasks.wait();
+}
+
+CORO_TEST(scheduler, destroys_a_task_detached_without_a_scope_that_did_not_end) {
+    std::atomic<size_t> destroyed{0};
+    std::atomic<bool> waits{false};
+
+    {
+        scheduler sched{autostart, 1};
+        executor exec{sched};
+
+        auto task = [](std::atomic<size_t>& count, std::atomic<bool>& started) -> executor_task<void> {
+            destruction_counter const counter{count};
+            started = true;
+            started.notify_one();
+            // does not end before the destruction of the scheduler
+            co_await this_coro::wait(std::chrono::hours{1});
+        };
+
+        exec.detach(task(destroyed, waits));
+        waits.wait(false);
+    }
+
+    EXPECT_EQ(destroyed.load(), 1);
 }
 
 CORO_TEST(scheduler, destroys_a_task_detached_on_a_strand_that_did_not_end) {

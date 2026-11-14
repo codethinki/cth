@@ -9,7 +9,7 @@ namespace cth::co {
 /**
  * counter of the running detached tasks
  * @details
- * - a detached task enters it at its start
+ * - a task detached with the scope enters it at its start
  * - the task leaves it at the end of the destruction of its coroutine, only the deallocation of the frame follows
  * - `wait()` blocks until no task runs
  * - thread safe
