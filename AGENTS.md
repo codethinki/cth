@@ -80,6 +80,7 @@ Use symbols when they are shorter and clearer than words:
 | context | where coroutines run and wait: a `scheduler` or a `strand` |
 | payload | the user data that a task gets from its caller |
 | post | give work to a context, the work runs later |
+| dispatch | give work to a context, the work runs inline if the context allows it now, else it is posted |
 | job | work that a context runs |
 | worker | a thread of a scheduler |
 | coroutine | the coroutine frame behind a `std::coroutine_handle` (handle stays the OS handle) |

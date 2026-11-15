@@ -29,6 +29,7 @@ public:
 
     /**
      * moves the caller onto this context
+     * @details enters by `context::dispatch()`: an idle strand resumes a caller in a job of its scheduler inline
      * @details a `this_coro` caller continues on this context after later `co_await`s too
      * @details the payload of the caller stays
      * @return awaiter, `co_await` it
@@ -66,7 +67,8 @@ public:
     /**
      * runs the task on this context, without a caller
      * @details
-     * - a caller in a job of this context runs it inline until its first suspension, else it is posted
+     * - a caller in a job of this context runs it inline until its first suspension
+     * - else it enters by `context::dispatch()`: an idle strand runs it inline too, else it is posted
      * - the scheduler of this context owns the task: `~scheduler()` destroys it if it did not end
      * - an exception of the task terminates
      * @tparam Pyld payload of the task, constructed from the arguments

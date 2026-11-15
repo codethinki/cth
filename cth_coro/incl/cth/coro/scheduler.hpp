@@ -56,6 +56,8 @@ public:
     ~scheduler();
 
     void post(void_func work) const override;
+    // dispatch() stays the post of context: an inline entry from inside a strand job would run worker code while the
+    // strand is held
 
     void await(native_handle, await_func cb) const override;
     void await(chrono::time_point_t time_point, await_func cb) const override;

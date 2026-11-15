@@ -129,6 +129,102 @@ CORO_TEST(strand, schedule_continues_inside_strand) {
     EXPECT_TRUE(after);
 }
 
+CORO_TEST(strand, schedule_from_a_scheduler_job_enters_an_idle_strand_inline) {
+    // before the scheduler: the earlier job can run after the task ended
+    std::atomic<bool> earlierJob{false};
+    // one worker: a post of the entry runs after the job posted before it
+    scheduler sched{autostart, 1};
+    strand serial{sched};
+
+    auto task = [](scheduler const& b, strand const& s, std::atomic<bool>& earlier)
+        -> executor_task<std::tuple<bool, bool, bool>> {
+        auto const thread = std::this_thread::get_id();
+        b.post([&earlier] { earlier = true; });
+
+        co_await executor{s}.schedule();
+        co_return std::tuple{std::this_thread::get_id() == thread, earlier.load(), s.owns_thread()};
+    };
+
+    auto const [sameThread, earlierRan, inStrand] = executor{sched}.sync_wait(task(sched, serial, earlierJob));
+    EXPECT_TRUE(sameThread);
+    // no suspension until the job: the caller continues before the job posted before the entry
+    EXPECT_FALSE(earlierRan);
+    EXPECT_TRUE(inStrand);
+}
+
+CORO_TEST(strand, dispatch_onto_a_busy_strand_queues_in_order) {
+    constexpr size_t JOBS = 100;
+
+    std::vector<size_t> order{};
+    order.reserve(JOBS + 1);
+    std::binary_semaphore released{0};
+    std::binary_semaphore dispatched{0};
+    std::latch done{JOBS + 1};
+
+    scheduler sched{autostart, 2};
+    strand serial{sched};
+
+    // the strand is busy from the post on, the job holds it until the dispatches returned
+    serial.post([&] {
+        released.acquire();
+        order.push_back(0);
+        done.count_down();
+    });
+    sched.post([&] {
+        for(size_t i = 1; i <= JOBS; ++i)
+            serial.dispatch([&, i] {
+                order.push_back(i); // the strand serializes the access
+                done.count_down();
+            });
+        dispatched.release();
+    });
+
+    bool const returned = dispatched.try_acquire_for(TIMEOUT);
+    released.release();
+    done.wait();
+
+    EXPECT_TRUE(returned);
+    EXPECT_TRUE(std::ranges::equal(order, std::views::iota(size_t{0}, JOBS + 1)));
+}
+
+CORO_TEST(strand, dispatch_from_a_foreign_thread_posts) {
+    std::atomic<std::thread::id> thread{};
+    std::atomic<context const*> current{nullptr};
+    atomic_fence done{};
+
+    scheduler sched{autostart, 2};
+    strand serial{sched};
+
+    serial.dispatch([&] {
+        thread = std::this_thread::get_id();
+        current = context::current();
+        done.signal();
+    });
+
+    done.wait();
+    EXPECT_NE(thread.load(), std::this_thread::get_id());
+    EXPECT_EQ(current.load(), &serial);
+}
+
+CORO_TEST(strand, dispatch_from_a_job_of_another_strand_posts) {
+    std::atomic<bool> otherHeld{true};
+    atomic_fence done{};
+
+    scheduler sched{autostart, 2};
+    strand serial{sched};
+    strand other{sched};
+
+    other.post([&] {
+        serial.dispatch([&] {
+            otherHeld = other.owns_thread();
+            done.signal();
+        });
+    });
+
+    done.wait();
+    EXPECT_FALSE(otherHeld);
+}
+
 CORO_TEST(strand, spawned_task_waits_inside_strand) {
     scheduler sched{autostart, 4};
     strand serial{sched};

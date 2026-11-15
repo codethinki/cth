@@ -27,6 +27,14 @@ public:
     virtual void post(void_func work) const = 0;
 
     /**
+     * runs the work on this context, inline if the context allows it now, else posts it
+     * @details default -> `post()`
+     * @param work to run
+     * @attention work that throws: inline -> the exception leaves `dispatch()`, posted -> terminates the program
+     */
+    virtual void dispatch(void_func work) const { post(std::move(work)); }
+
+    /**
      * calls the callback on this context once the handle is signaled
      * @details the callback gets the result of the wait, an empty `error_code` -> signaled
      * @param cb to call

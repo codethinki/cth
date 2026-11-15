@@ -60,7 +60,8 @@ coroutine runtime on asio
 
 - `co::context`: interface of where coroutines run and wait, implemented by `scheduler` and `strand`
 - `co::scheduler`: `asio::io_context` on its own threads
-- `co::strand`: serial queue on a scheduler, its jobs run one at a time and in post order
+- `co::strand`: serial queue on a scheduler, its jobs run one at a time and in post order, an idle strand runs a
+  dispatched job inline
 - `co::executor`: spawns tasks, every `co_await` returns the caller to its context, except `schedule()`
 - `this_coro::executor`, `this_coro::wait(duration)`, native handle waits
 

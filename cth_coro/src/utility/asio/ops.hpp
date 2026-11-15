@@ -25,6 +25,17 @@ void post_on(Executor const& executor, Work&& work) {
 }
 
 /**
+ * runs the work on the executor, inline if the executor allows it now
+ * @details asio strand: inline if it is idle and the calling thread runs its `io_context`, or a job of the strand
+ * @param executor to run on
+ * @param work to run
+ */
+template<class Executor, class Work>
+void dispatch_on(Executor const& executor, Work&& work) {
+    asio::dispatch(executor, std::forward<Work>(work));
+}
+
+/**
  * calls the callback on the executor once the handle is signaled
  * @details the callback gets the error code of the wait
  * @param executor to call the callback on

@@ -10,6 +10,7 @@ namespace cth::co {
 /**
  * serial queue on a `scheduler`
  * @details its jobs run one at a time and in post order on the workers of the scheduler
+ * @details an idle strand runs a dispatched job inline, see `dispatch()`
  * @details a coroutine holds the strand between two suspension points, not across a `co_await`
  * @attention the scheduler must outlive the strand
  */
@@ -30,6 +31,14 @@ public:
     ~strand();
 
     void post(void_func work) const override;
+    /**
+     * runs the work inline if the strand is idle and the calling thread runs a job of its scheduler, else posts it
+     * @details a caller in a job of this strand runs the work inline, before the queued jobs
+     * @details a caller in a job of another strand posts: inline, the work would run while that strand is held
+     * @param work to run
+     * @attention work that throws: inline -> the exception leaves `dispatch()`, posted -> terminates the program
+     */
+    void dispatch(void_func work) const override;
 
     void await(native_handle, await_func cb) const override;
     void await(chrono::time_point_t time_point, await_func cb) const override;
@@ -38,7 +47,7 @@ public:
     void release(std::coroutine_handle<>) const override;
 
     /**
-     * waits until the jobs posted before it ran, resumes the caller on its context
+     * waits until the jobs posted or dispatched before it ran, resumes the caller on its context
      * @details a pending `await()` posts its callback later, the wait does not cover it
      * @details caller off the strand, no later job -> `~strand()` is safe
      */
