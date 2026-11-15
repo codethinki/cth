@@ -32,21 +32,19 @@ class scheduler final : public context {
     static inline thread_local Impl* _threadScheduler = nullptr;
 
 public:
-    // ReSharper disable once CppNonExplicitConvertingConstructor
     /**
      * constructs the scheduler, does not start the workers
      * @param workers number of worker threads
      * @pre `0 < workers < MAX_INT`
      */
-    scheduler(size_t workers = 1);
+    explicit scheduler(size_t workers = 1);
 
-    // ReSharper disable once CppNonExplicitConvertingConstructor
     /**
      * constructs the scheduler and calls `start()`
      * @param workers number of worker threads
      * @pre `0 < workers < MAX_INT`
      */
-    scheduler(autostart_t, size_t workers = 1) : scheduler{workers} { start(); }
+    explicit scheduler(autostart_t, size_t workers = 1) : scheduler{workers} { start(); }
     /**
      * calls `await_stop()`, destroys the detached coroutines that did not end
      * @details blocks until the jobs that run end
