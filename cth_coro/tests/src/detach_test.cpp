@@ -138,7 +138,6 @@ CORO_TEST(executor, detach_wait_returns_after_the_frames_are_destroyed) {
         destruction_counter const counter{count};
         // suspends before the end
         co_await this_coro::wait(std::chrono::milliseconds{2});
-        co_await this_coro::executor;
     };
 
     for(size_t i = 0; i < TASKS; ++i)
@@ -156,7 +155,7 @@ CORO_TEST(executor, detach_wait_returns_after_the_parameters_are_destroyed) {
 
     std::atomic<size_t> destroyed{0};
     // the frame of the task holds the counter until the frame is destroyed
-    auto task = [](destruction_counter) -> executor_task<void> { co_await this_coro::executor; };
+    auto task = [](destruction_counter) -> executor_task<void> { co_return; };
 
     for(size_t i = 0; i < TASKS; ++i)
         exec.detach(tasks, task(destruction_counter{destroyed}));
