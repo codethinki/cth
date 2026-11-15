@@ -80,7 +80,7 @@ public:
             Pyld{std::forward<Args>(args)...},
             context(),
             std::move(task)
-        );
+        ).start();
     }
 
     /**
@@ -98,7 +98,7 @@ public:
             Pyld{std::forward<Args>(args)...},
             context(),
             std::move(task)
-        );
+        ).start();
     }
 
 private:
@@ -127,7 +127,7 @@ private:
      * @param scope the promise constructor reads it, the task enters it
      * @param payload the promise constructor reads it, the task inherits it
      * @param context the promise constructor reads it, the task runs on it
-     * @param task to await, the coroutine moves it into its frame before its first suspension
+     * @param task to await, the coroutine moves it into its frame before `detach()` returns
      */
     template<payload Pyld, class Scope, awaitable Awaitable>
     static auto detach_impl(
@@ -137,7 +137,7 @@ private:
         Awaitable&& task
     )
         -> dev::detach_task<Pyld, std::remove_reference_t<Scope>> {
-        // before the first suspension: the caller of detach() holds the task until then
+        // the first statement: detach() holds the task until start() returns
         Awaitable ownedTask = std::move(task);
         co_await schedule_awaiter{context};
         co_await std::move(ownedTask);

@@ -12,6 +12,15 @@
 
 
 namespace cth::co::dev {
+//TEMP gcc 15.2+: the ramp of a coroutine that starts eagerly races with the thread that resumes or destroys it, the
+// task starts lazily: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=127320
+#if defined(__GNUC__) && !defined(__clang__)
+#define CTH_CORO_LAZY_DETACH
+using initial_detach_suspend_t = std::suspend_always;
+#else
+using initial_detach_suspend_t = std::suspend_never;
+#endif
+
 /**
  * final awaiter of `detach_task`
  */
@@ -83,6 +92,20 @@ struct detach_promise;
 template<payload Pyld, class Scope>
 struct detach_task {
     using promise_type = detach_promise<Pyld, Scope>;
+
+#ifdef CTH_CORO_LAZY_DETACH
+    std::coroutine_handle<promise_type> handle; ///< the coroutine to start
+#endif
+
+    /**
+     * runs the coroutine until its first suspension
+     * @details `CTH_CORO_LAZY_DETACH` -> resumes it, else it runs already
+     */
+    void start() const {
+#ifdef CTH_CORO_LAZY_DETACH
+        handle.resume();
+#endif
+    }
 };
 
 /**
@@ -94,7 +117,7 @@ struct detach_task {
 template<payload Pyld, class Scope>
 struct detach_promise :
     detach_scope_guard<Scope>,
-    suspend_promise_base<std::suspend_never{}, final_detach_awaiter{}>,
+    suspend_promise_base<initial_detach_suspend_t{}, final_detach_awaiter{}>,
     this_coro_promise_base<Pyld> {
     /**
      * constructs from the coroutine parameters, enters the scope
@@ -110,7 +133,13 @@ struct detach_promise :
         // a throw: detach_scope_guard leaves the scope
         _owner{context.detach(std::coroutine_handle<detach_promise>::from_promise(*this))} {}
 
-    [[nodiscard]] detach_task<Pyld, Scope> get_return_object() noexcept { return {}; }
+    [[nodiscard]] detach_task<Pyld, Scope> get_return_object() noexcept {
+#ifdef CTH_CORO_LAZY_DETACH
+        return {std::coroutine_handle<detach_promise>::from_promise(*this)};
+#else
+        return {};
+#endif
+    }
 
     constexpr void return_void() noexcept {}
 
