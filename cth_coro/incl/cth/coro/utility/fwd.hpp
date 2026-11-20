@@ -5,6 +5,7 @@
 namespace cth::co {
 class context;
 class scheduler;
+class simple_counting_scope;
 class strand;
 class executor;
 }
@@ -114,6 +115,7 @@ class spawn_task;
 
 namespace cth::except {
 class coro_exception;
+class group_coro_exception;
 }
 
 namespace cth::co {

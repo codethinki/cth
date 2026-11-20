@@ -25,11 +25,10 @@ struct native_handle_awaiter_base : this_coro_awaiter_base, wait_awaiter_base {
 
     /**
      * resumes the caller on its context once the handle is signaled
-     * @param caller coroutine of the caller, a `this_coro` coroutine
+     * @param caller coroutine of the caller
      */
-    template<class Caller>
+    template<this_coro_compatible Caller>
     void await_suspend(std::coroutine_handle<Caller> caller) {
-        static_assert(this_coro_compatible<Caller>, "native handle awaiters need a this_coro caller");
         caller.promise().context().await(_handle, resume(caller));
     }
 

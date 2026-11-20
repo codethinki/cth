@@ -8,7 +8,6 @@
 #include "cth/coro/utility/fwd.hpp"
 
 #include <cth/meta/concepts.hpp>
-#include <cth/meta/traits.hpp>
 
 #include <coroutine>
 
@@ -28,28 +27,12 @@ struct executor_promise : dev::affine_promise<T>, this_coro_promise_base<Pyld> {
      * @param caller promise of the caller
      * @throws what the payload conversion throws
      */
-    template<class CallerPromise>
+    template<this_coro_compatible CallerPromise>
     constexpr void attach(CallerPromise const& caller)
-        noexcept(mta::nothrow_constructible<Pyld, caller_payload_t<CallerPromise> const&>) {
-        static_assert(
-            this_coro_compatible<CallerPromise>,
-            "this_coro tasks need a this_coro caller, use spawn() or sync_wait()"
-        );
-
+        noexcept(mta::nothrow_constructible<Pyld, payload_t<CallerPromise> const&>) {
         this->inherit(caller);
         dev::affine_promise<T>::attach(caller);
     }
-
-private:
-    /**
-     * payload of the caller, the own payload for a caller without one
-     * @details the `static_assert` in `attach()` reports a caller without one
-     */
-    template<class CallerPromise>
-    using caller_payload_t = mta::conditional_pack_t<
-        this_coro_compatible<CallerPromise>,
-        mta::trait_pack<payload_t, CallerPromise>,
-        mta::type_pack<Pyld>>;
 };
 }
 

@@ -22,10 +22,11 @@ public:
     [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
 
     /**
-     * rebinds a `this_coro` caller to the target and posts the caller to the target
+     * rebinds a `this_coro` caller to the target and dispatches the caller to the target
      * @details `context::owns_thread()` is not enough: a scheduler also owns the threads of its strand jobs
+     * @details `context::dispatch()`: an idle strand resumes a caller in a job of its scheduler inline
      * @param h coroutine of the caller
-     * @return `false` -> `context::current()` is the target, the caller continues without a post
+     * @return `false` -> `context::current()` is the target, the caller continues without a dispatch
      */
     template<promise Promise>
     bool await_suspend(std::coroutine_handle<Promise> h) {
@@ -35,7 +36,8 @@ public:
         if(context::current() == &_target)
             return false;
 
-        _target.post([h]() { h.resume(); });
+        // nothing touches the frame after the dispatch: an inline resume can end the coroutine
+        _target.dispatch([h]() { h.resume(); });
         return true;
     }
 

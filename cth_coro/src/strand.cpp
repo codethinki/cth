@@ -9,8 +9,9 @@
 namespace cth::co {
 
 struct strand::Impl {
+    co::scheduler const& owner; ///< owns the coroutines detached on the strand
     scheduler::Impl& parent;
-    bas::strand<bas::io_context::executor_type> executor;
+    asio::strand<asio::io_context::executor_type> executor;
 };
 }
 
@@ -18,10 +19,21 @@ struct strand::Impl {
 namespace cth::co {
 
 strand::strand(scheduler const& scheduler) :
-    _impl{std::make_unique<Impl>(scheduler.impl(), bas::make_strand(scheduler.impl().ctx))} {}
+    _impl{std::make_unique<Impl>(scheduler, scheduler.impl(), asio::make_strand(scheduler.impl().ctx))} {}
 strand::~strand() = default;
 
 void strand::post(void_func work) const { dev::post_on(impl().executor, scoped(std::move(work))); }
+
+void strand::dispatch(void_func work) const {
+    //TODO review inline only in a job of the scheduler or of this strand: in a job of another strand, the work would
+    // run while that strand is held
+    auto const* current = context::current();
+    if(current != &impl().owner && current != this) {
+        post(std::move(work));
+        return;
+    }
+    dev::dispatch_on(impl().executor, scoped(std::move(work)));
+}
 
 void strand::await(native_handle handle, await_func cb) const {
     dev::await_on(impl().executor, impl().parent.ctx, handle, scoped(std::move(cb)));
@@ -29,6 +41,9 @@ void strand::await(native_handle handle, await_func cb) const {
 void strand::await(chrono::time_point_t time_point, await_func cb) const {
     dev::await_on(impl().executor, impl().parent.timerPool, time_point, scoped(std::move(cb)));
 }
+
+context const& strand::detach(std::coroutine_handle<> h) const { return impl().owner.detach(h); }
+void strand::release(std::coroutine_handle<> h) const { impl().parent.release(h); }
 
 bool strand::owns_thread() const { return impl().executor.running_in_this_thread(); }
 

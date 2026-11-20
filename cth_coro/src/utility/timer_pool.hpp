@@ -22,7 +22,7 @@ namespace dev {
     class adapted_timer {
 
     public:
-        adapted_timer(bas::io_context& ctx) :
+        adapted_timer(asio::io_context& ctx) :
             _timer{}, _handler{ctx, os::duplicate_handle(_timer.native_handle())} {}
 
         [[nodiscard]] native_handle_handler_t& set(chrono::time_point_t time_point) {
@@ -44,7 +44,7 @@ public:
     using await_func = std::move_only_function<void(std::error_code)>;
     using timer_t = dev::adapted_timer;
 
-    timer_pool(bas::io_context& ctx) : _ctx{ctx} {}
+    timer_pool(asio::io_context& ctx) : _ctx{ctx} {}
 
     /**
      * calls the callback once the time point is reached
@@ -79,7 +79,7 @@ private:
         return _pool.acquire();
     }
 
-    bas::io_context& _ctx;
+    asio::io_context& _ctx;
 
     std::mutex _poolMtx;
     dt::pool<dev::adapted_timer> _pool{};

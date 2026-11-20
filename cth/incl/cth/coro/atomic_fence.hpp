@@ -15,8 +15,12 @@ public:
     ~atomic_fence() { signal(); }
 
     void signal() noexcept {
-        if(!_state.exchange(true, std::memory_order_release))
-            _state.notify_all();
+        if(_state.exchange(true, std::memory_order_release)) return;
+
+        //TODO technically UB: wait() can see the signal before notify_all() runs, the owner destroys the fence,
+        // notify_all() then runs on a destroyed atomic. in practice notify_all() uses the address only as a key (futex,
+        // WakeByAddressAll), libstdc++ std::latch::count_down() does the same. fix it once std offers a way (P2616)
+        _state.notify_all();
     }
     void force_signal() noexcept {
         _state.store(true, std::memory_order_release);

@@ -1,9 +1,13 @@
 #pragma once
 #include <cstddef>
 #include <array>
+#include <bit>
 #include <cassert>
 #include <cmath>
+#include <concepts>
 #include <string>
+#include <type_traits>
+#include <utility>
 
 #include "io/log.hpp"
 
@@ -11,6 +15,15 @@ namespace cth {
 // ------------------
 // DECLARATIONS
 // ------------------
+namespace num::dev {
+    /**
+     * checks if `x` is a power of 2
+     */
+    [[nodiscard]] constexpr bool power_of_2(std::integral auto x) {
+        return std::cmp_greater(x, 0) && std::has_single_bit(static_cast<std::make_unsigned_t<decltype(x)>>(x));
+    }
+} // namespace num::dev
+
 namespace num {
     template<std::integral T, std::integral U>
     [[nodiscard]] constexpr auto abs_diff(T t, U u) {
@@ -67,6 +80,34 @@ namespace num {
      */
     template<mta::arithmetic T>
     [[nodiscard]] constexpr T pow(T base, std::integral auto power);
+
+    /**
+     * rounds `unaligned` up to a multiple of `multiple`
+     * @details negative values round up too: `align_to(-5, 4) == -4`
+     * @param multiple alignment
+     * @return the smallest multiple of `multiple` that is `>= unaligned`, in the type of `unaligned`
+     * @pre `multiple` is a power of 2
+     * @pre the result fits into the type of `unaligned`
+     */
+    [[nodiscard]] constexpr auto align_to(std::integral auto unaligned, std::integral auto multiple);
+
+    /**
+     * rounds `unaligned` up to a multiple of `Multiple`
+     * @tparam Multiple alignment, a power of 2
+     * @see @ref align_to(std::integral auto, std::integral auto)
+     */
+    template<std::integral auto Multiple>
+    requires(dev::power_of_2(Multiple))
+    [[nodiscard]] constexpr auto align_to(std::integral auto unaligned);
+
+    /**
+     * rounds `unaligned` up to a multiple of `sizeof(T)`
+     * @tparam T its size is the alignment, a power of 2
+     * @see @ref align_to(std::integral auto, std::integral auto)
+     */
+    template<class T>
+    requires(dev::power_of_2(sizeof(T)))
+    [[nodiscard]] constexpr auto align_to(std::integral auto unaligned);
 } // namespace num
 
 // -----------------------
@@ -81,22 +122,22 @@ namespace num {
         return off < 0 ? b + off : a + off;
     }
 
-    template<std::integral auto Size>
-    requires(Size > 0)
-    consteval bool power_2() { return Size == 0 || ((Size & (Size - 1)) == 0); }
+    constexpr auto align_to(std::integral auto unaligned, std::integral auto multiple) {
+        CTH_CRITICAL(!dev::power_of_2(multiple), "multiple must be a power of 2, got {}", multiple) {}
 
-    template<std::integral auto Multiple>
-    requires(Multiple > 0)
-    constexpr auto align_to(std::integral auto unaligned) {
-        if constexpr((Multiple & (Multiple - 1)) == 0)
-            return (unaligned + (Multiple - 1)) & ~(Multiple - 1);
-
-        auto const padding = Multiple - unaligned % Multiple;
-        return unaligned + padding;
+        // the mask in the type of `unaligned`: a narrower unsigned mask would clear the high bits
+        using value_t = decltype(unaligned);
+        auto const mask = static_cast<value_t>(multiple - 1);
+        return static_cast<value_t>((unaligned + mask) & ~mask);
     }
 
+    template<std::integral auto Multiple>
+    requires(dev::power_of_2(Multiple))
+    constexpr auto align_to(std::integral auto unaligned) { return cth::num::align_to(unaligned, Multiple); }
+
     template<class T>
-    constexpr auto align_to(std::integral auto unaligned) { return cth::num::align_to<sizeof(T)>(unaligned); }
+    requires(dev::power_of_2(sizeof(T)))
+    constexpr auto align_to(std::integral auto unaligned) { return cth::num::align_to(unaligned, sizeof(T)); }
 
     template<std::floating_point T>
     [[nodiscard]] constexpr T exp(T x, T precision) {
