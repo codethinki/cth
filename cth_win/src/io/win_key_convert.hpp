@@ -13,9 +13,49 @@ struct win_key {
     DWORD flags;
 };
 
-constexpr win_key to_win_key(io::ex_key ex_key) {
-    auto& [key, right] = ex_key;
+/**
+ * converts a key of the numeric keypad to a Win32 virtual key
+ * @return `vk == 0` -> no keypad copy of `key`
+ */
+[[nodiscard]] constexpr win_key to_win_keypad_key(io::Key key) {
+    using io::Key;
 
+    if(key >= Key::DIGIT_0 && key <= Key::DIGIT_9)
+        return {static_cast<WORD>(VK_NUMPAD0 + (*key - *Key::DIGIT_0)), 0};
+
+    switch(key) {
+        case Key::PERIOD: return {VK_DECIMAL, 0};
+        case Key::SLASH: return {VK_DIVIDE, KEYEVENTF_EXTENDEDKEY};
+        case Key::STAR: return {VK_MULTIPLY, 0};
+        case Key::MINUS: return {VK_SUBTRACT, 0};
+        case Key::PLUS: return {VK_ADD, 0};
+        case Key::ENTER: return {VK_RETURN, KEYEVENTF_EXTENDEDKEY};
+
+        // NumLock off: the navigation keys without the extended flag
+#pragma push_macro("DELETE")
+#undef DELETE
+        case Key::DELETE: return {VK_DELETE, 0};
+#pragma pop_macro("DELETE")
+        case Key::END: return {VK_END, 0};
+        case Key::HOME: return {VK_HOME, 0};
+        case Key::INSERT: return {VK_INSERT, 0};
+        case Key::PAGE_DOWN: return {VK_NEXT, 0};
+        case Key::PAGE_UP: return {VK_PRIOR, 0};
+        case Key::ARROW_DOWN: return {VK_DOWN, 0};
+        case Key::ARROW_LEFT: return {VK_LEFT, 0};
+        case Key::ARROW_RIGHT: return {VK_RIGHT, 0};
+        case Key::ARROW_UP: return {VK_UP, 0};
+
+        default: return {0, 0};
+    }
+}
+
+/**
+ * converts a key of the main block to a Win32 virtual key
+ * @param right `true` -> right modifier, else left modifier
+ * @return `vk == 0` -> no Win32 key
+ */
+[[nodiscard]] constexpr win_key to_win_main_key(io::Key key, bool right) {
     using io::Key;
 
     if(key >= Key::A && key <= Key::Z)
@@ -26,6 +66,9 @@ constexpr win_key to_win_key(io::ex_key ex_key) {
 
     if(key >= Key::F1 && key <= Key::F12)
         return {static_cast<WORD>(VK_F1 + (*key - *Key::F1)), 0};
+
+    if(key >= Key::F13 && key <= Key::F24)
+        return {static_cast<WORD>(VK_F13 + (*key - *Key::F13)), 0};
 
     WORD vk = 0;
     DWORD flags = 0;
@@ -57,11 +100,7 @@ constexpr win_key to_win_key(io::ex_key ex_key) {
             break;
         case Key::HASH: vk = VK_OEM_3;
             break;
-        case Key::PLUS: vk = VK_ADD;
-            break;
-        case Key::STAR: vk = VK_MULTIPLY;
-            break;
-        case Key::LESS_THAN: vk = VK_OEM_COMMA;
+        case Key::LESS_THAN: vk = VK_OEM_102;
             break;
 
         case Key::BACKSPACE: vk = VK_BACK;
@@ -132,9 +171,9 @@ constexpr win_key to_win_key(io::ex_key ex_key) {
         case Key::SHIFT: vk = right ? VK_RSHIFT : VK_LSHIFT;
             break;
 
-        case Key::META: vk = VK_APPS;
-            break;
         case Key::PLATFORM: vk = right ? VK_RWIN : VK_LWIN;
+            break;
+        case Key::MENU: vk = VK_APPS;
             break;
 
         case Key::NUM_LOCK:
@@ -142,12 +181,48 @@ constexpr win_key to_win_key(io::ex_key ex_key) {
             flags |= KEYEVENTF_EXTENDEDKEY;
             break;
 
+        case Key::PRINT_SCREEN:
+            vk = VK_SNAPSHOT;
+            flags |= KEYEVENTF_EXTENDEDKEY;
+            break;
+        case Key::SCROLL_LOCK: vk = VK_SCROLL;
+            break;
+        case Key::PAUSE: vk = VK_PAUSE;
+            break;
+
+        case Key::MOUSE_LEFT: vk = VK_LBUTTON;
+            break;
+        case Key::MOUSE_RIGHT: vk = VK_RBUTTON;
+            break;
+        case Key::MOUSE_MIDDLE: vk = VK_MBUTTON;
+            break;
+        case Key::MOUSE_4: vk = VK_XBUTTON1;
+            break;
+        case Key::MOUSE_5: vk = VK_XBUTTON2;
+            break;
+
         default: break;
     }
 
-    CTH_CRITICAL(vk == 0, "failed to convert to win key") {}
-
     return {vk, flags};
+}
+
+/**
+ * converts the key to a Win32 virtual key
+ * @details modifier without `right` -> left modifier
+ */
+[[nodiscard]] constexpr win_key to_win_key(io::ex_key ex_key) {
+    auto const [key, right] = ex_key;
+
+    using io::Key;
+
+    bool const modifier = key == Key::SHIFT || key == Key::CONTROL || key == Key::ALT || key == Key::PLATFORM;
+
+    auto const winKey = right && !modifier ? to_win_keypad_key(key) : to_win_main_key(key, right);
+
+    CTH_CRITICAL(winKey.vk == 0, "failed to convert to win key, got {}", ex_key) {}
+
+    return winKey;
 }
 }
 
@@ -170,6 +245,9 @@ struct win_key_params {
     bool const down = !p.isUp;
     bool right = false;
     using io::Key;
+
+    // navigation keys: no extended flag -> keypad copy with NumLock off
+    bool const navRight = !p.isExtended;
 
     auto key = Key::NONE;
     switch(p.vkCode) {
@@ -209,7 +287,7 @@ struct win_key_params {
         case VK_RWIN: key = Key::PLATFORM;
             right = true;
             break;
-        case VK_APPS: key = Key::META;
+        case VK_APPS: key = Key::MENU;
             break;
 
         // --- System Keys ---
@@ -220,6 +298,7 @@ struct win_key_params {
         case VK_CAPITAL: key = Key::CAPS_LOCK;
             break;
         case VK_RETURN: key = Key::ENTER;
+            right = p.isExtended;
             break;
         case VK_ESCAPE: key = Key::ESCAPE;
             break;
@@ -227,32 +306,48 @@ struct win_key_params {
             break;
         case VK_NUMLOCK: key = Key::NUM_LOCK;
             break;
+        case VK_SNAPSHOT: key = Key::PRINT_SCREEN;
+            break;
+        case VK_SCROLL: key = Key::SCROLL_LOCK;
+            break;
+        case VK_PAUSE: key = Key::PAUSE;
+            break;
 
 #pragma push_macro("DELETE")
 #undef DELETE
         case VK_DELETE: key = Key::DELETE;
+            right = navRight;
             break;
 #pragma pop_macro("DELETE")
 
         case VK_END: key = Key::END;
+            right = navRight;
             break;
         case VK_HOME: key = Key::HOME;
+            right = navRight;
             break;
         case VK_INSERT: key = Key::INSERT;
+            right = navRight;
             break;
         case VK_NEXT: key = Key::PAGE_DOWN;
+            right = navRight;
             break;
         case VK_PRIOR: key = Key::PAGE_UP;
+            right = navRight;
             break;
 
         // --- Arrows ---
         case VK_DOWN: key = Key::ARROW_DOWN;
+            right = navRight;
             break;
         case VK_LEFT: key = Key::ARROW_LEFT;
+            right = navRight;
             break;
         case VK_RIGHT: key = Key::ARROW_RIGHT;
+            right = navRight;
             break;
         case VK_UP: key = Key::ARROW_UP;
+            right = navRight;
             break;
 
         // --- OEM / Symbols ---
@@ -278,21 +373,55 @@ struct win_key_params {
             break;
         case VK_OEM_2: key = Key::SLASH;
             break;
-        case VK_ADD: key = Key::PLUS;
+        case VK_OEM_102: key = Key::LESS_THAN;
+            break;
+
+        // --- Keypad ---
+        case VK_DECIMAL: key = Key::PERIOD;
+            right = true;
+            break;
+        case VK_DIVIDE: key = Key::SLASH;
+            right = true;
             break;
         case VK_MULTIPLY: key = Key::STAR;
+            right = true;
+            break;
+        case VK_SUBTRACT: key = Key::MINUS;
+            right = true;
+            break;
+        case VK_ADD: key = Key::PLUS;
+            right = true;
+            break;
+
+        // --- Mouse ---
+        case VK_LBUTTON: key = Key::MOUSE_LEFT;
+            break;
+        case VK_RBUTTON: key = Key::MOUSE_RIGHT;
+            break;
+        case VK_MBUTTON: key = Key::MOUSE_MIDDLE;
+            break;
+        case VK_XBUTTON1: key = Key::MOUSE_4;
+            break;
+        case VK_XBUTTON2: key = Key::MOUSE_5;
             break;
 
         default:
             if(p.vkCode >= VK_F1 && p.vkCode <= VK_F12)
                 key = static_cast<Key>(static_cast<uint16_t>(Key::F1) + (p.vkCode - VK_F1));
+            else if(p.vkCode >= VK_F13 && p.vkCode <= VK_F24)
+                key = static_cast<Key>(static_cast<uint16_t>(Key::F13) + (p.vkCode - VK_F13));
             else if(p.vkCode >= 'A' && p.vkCode <= 'Z')
                 key = static_cast<Key>(static_cast<uint16_t>(Key::A) + (p.vkCode - 'A'));
             else if(p.vkCode >= '0' && p.vkCode <= '9')
                 key = static_cast<Key>(static_cast<uint16_t>(Key::DIGIT_0) + (p.vkCode - '0'));
+            else if(p.vkCode >= VK_NUMPAD0 && p.vkCode <= VK_NUMPAD9) {
+                key = static_cast<Key>(static_cast<uint16_t>(Key::DIGIT_0) + (p.vkCode - VK_NUMPAD0));
+                right = true;
+            }
             break;
     }
 
+    //TODO character stays empty: ToUnicodeEx() in the hook breaks dead keys
     return io::key_state{io::ex_key{key, right}, down};
 }
 
@@ -353,7 +482,15 @@ template<mta::convertible_to_any<RAWKEYBOARD, KBDLLHOOKSTRUCT> T>
 }
 
 
-[[nodiscard]] constexpr INPUT to_win_input(cth::io::key_state state) {
+/**
+ * converts the `state` to a keyboard `INPUT`
+ * @pre `state` holds no mouse key
+ */
+[[nodiscard]] constexpr INPUT to_win_input(cth::io::key_state const& state) {
+    using io::Key;
+    auto const key = state.exKey.key;
+    CTH_CRITICAL(key >= Key::MOUSE_LEFT && key <= Key::MOUSE_5, "key must be a keyboard key, got {}", key) {}
+
     auto const [vk, flags] = to_win_key(state.exKey);
 
     return {

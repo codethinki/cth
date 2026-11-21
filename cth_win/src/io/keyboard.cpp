@@ -8,6 +8,7 @@
 #include "hidusage.h"
 
 #include <algorithm>
+#include <array>
 #include <mutex>
 #include <print>
 #include <ranges>
@@ -40,11 +41,21 @@ namespace {
             _hookSwitch.release();
         }
 
+        /**
+         * pushes the event to every subscribed queue
+         * @details sets `key_state::repeat` of a down event of a key that is already down
+         */
         void push_event(cth::io::key_update update) {
-            if(update.data.exKey.key == ::cth::io::Key::NONE)
+            auto& state = update.data;
+            if(state.exKey.key == ::cth::io::Key::NONE)
                 return;
 
             std::scoped_lock const _{_mutex};
+
+            auto& keyDown = _keysDown[*state.exKey.key][state.exKey.right];
+            state.repeat = state.down && keyDown;
+            keyDown = state.down;
+
             for(auto* queue : _queues)
                 queue->push(update);
         }
@@ -52,8 +63,11 @@ namespace {
         static LRESULT CALLBACK hook_callback(int n_code, WPARAM w_param, LPARAM l_param);
 
     private:
+        using keys_down_t = std::array<std::array<bool, 2>, ::cth::io::keys_size()>;
+
         std::vector<keybd_event_queue*> _queues;
         std::mutex _mutex;
+        keys_down_t _keysDown{}; ///< down state per `[key][right]`, guarded by `_mutex`
         std::jthread _hookThread;
 
         os::unique_native_handle _stopEvent{CreateEventW(nullptr, TRUE, FALSE, nullptr)};
@@ -64,7 +78,10 @@ namespace {
             [this] { stop_hook(); }
         };
 
-        void start_hook() { _hookThread = std::jthread{[this] { thread_proc(); }}; }
+        void start_hook() {
+            _keysDown = {};
+            _hookThread = std::jthread{[this] { thread_proc(); }};
+        }
 
         void stop_hook() {
             SetEvent(_stopEvent.get());

@@ -12,7 +12,15 @@
 
 namespace cth::win::keybd {
 
+/**
+ * sends the key state as keyboard input
+ * @pre the key is no mouse key
+ */
 void send(::cth::io::key_state);
+/**
+ * sends the key states as keyboard input
+ * @pre no key of `states` is a mouse key
+ */
 void send(std::span<::cth::io::key_state const> states);
 
 }
