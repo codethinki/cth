@@ -14,11 +14,17 @@ namespace cth::win::keybd {
 
 /**
  * sends the key state as keyboard input
+ * @details
+ * - sends the scan code: the position, the layout of the receiver makes the character
+ * - `PAUSE` -> virtual key, `SendInput()` has no `0xE1` flag
  * @pre the key is no mouse key
  */
 void send(::cth::io::key_state);
 /**
  * sends the key states as keyboard input
+ * @details
+ * - sends the scan codes: the positions, the layout of the receiver makes the characters
+ * - `PAUSE` -> virtual key, `SendInput()` has no `0xE1` flag
  * @pre no key of `states` is a mouse key
  */
 void send(std::span<::cth::io::key_state const> states);
