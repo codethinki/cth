@@ -31,6 +31,7 @@ public:
     constexpr explicit counter_event(uint64_t value = 0) noexcept : _value{value} {}
 
     /**
+     * @details waits for the end of a running `set()` and `awaiter::await_suspend()`
      * @pre no pending wait
      */
     ~counter_event();
@@ -67,20 +68,29 @@ private:
      */
     void drain() const noexcept;
 
+    /**
+     * waits until no `set()` and no `awaiter::await_suspend()` runs
+     */
+    void wait_in_flight() const noexcept;
+
     std::atomic<uint64_t> _value;
     /** lock free stack of the suspended waits, `nullptr` -> no pending wait */
     mutable std::atomic<node*> _head{nullptr};
+    /** running `set()` and `awaiter::await_suspend()` calls, the destructor and the moves wait for `0` */
+    mutable std::atomic<uint32_t> _inFlight{0};
 
 public:
     counter_event(counter_event const& other) = delete;
     counter_event& operator=(counter_event const& other) = delete;
     /**
      * copies the value of `other`
+     * @details waits for the end of a running `set()` and `awaiter::await_suspend()` on `other`
      * @pre no pending wait on `other`
      */
     counter_event(counter_event&& other) noexcept;
     /**
      * copies the value of `other`
+     * @details waits for the end of a running `set()` and `awaiter::await_suspend()` on both events
      * @pre no pending wait on both events
      */
     counter_event& operator=(counter_event&& other) noexcept;
@@ -126,13 +136,16 @@ public:
         // after the push a drain can resume the caller at once: nothing touches the frame afterwards
         auto const& event = *_event;
         auto const value = _node.value;
+        // relaxed: the release of the push orders it before the resume, a destruction comes after the resume
+        event._inFlight.fetch_add(1, std::memory_order_relaxed);
         event.push(_node);
 
         // a set() between await_ready() and the push found no node to resume
-        //TODO technically UB: a drain can resume the caller before this load, the owner can then destroy the
-        // event. it needs the whole resume within the push and the load, the owner cannot see this window
         if(event.value() >= value)
             event.drain();
+
+        // release, the last access: the resumed caller can destroy the event, the destructor waits for it
+        event._inFlight.fetch_sub(1, std::memory_order_release);
     }
 
     constexpr void await_resume() const noexcept {}

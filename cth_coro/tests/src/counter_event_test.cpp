@@ -14,6 +14,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -220,6 +221,36 @@ CORO_TEST(counter_event, set_from_another_thread_while_waits_push) {
 
         tasks.wait();
         ASSERT_EQ(resumes.load(), expected) << "iteration " << i;
+    }
+}
+
+CORO_TEST(counter_event, the_resumed_caller_destroys_the_event_at_once) {
+    constexpr size_t ITERATIONS = 5000;
+
+    // owns the event, destroys it at once after the resume: set() and await_suspend() can still run
+    auto waiter = [](std::unique_ptr<counter_event> event) -> executor_task<void> {
+        co_await event->wait(1);
+        event.reset();
+    };
+
+    scheduler sched{autostart, 4};
+    executor const exec{sched};
+
+    for(size_t i = 0; i < ITERATIONS; ++i) {
+        auto event = std::make_unique<counter_event>();
+        auto* const eventPtr = event.get();
+        simple_counting_scope tasks{};
+        atomic_fence setDone{};
+
+        exec.detach(tasks, waiter(std::move(event)));
+        // on another worker: the set() races the push of the wait
+        sched.post([eventPtr, &setDone] {
+            eventPtr->set(1);
+            setDone.signal();
+        });
+
+        setDone.wait();
+        tasks.wait();
     }
 }
 
