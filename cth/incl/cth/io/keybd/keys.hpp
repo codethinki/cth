@@ -81,7 +81,7 @@ enum class Key : uint16_t {
     // --- Navigation and Editing Keys (No Left/Right Specifics) ---
     BACKSPACE,
     CAPS_LOCK,
-    DELETE,
+    DEL, ///< Delete, not `DELETE`: `windows.h` defines `DELETE` as a macro
     END,
     ENTER, // Return/Enter
     ESCAPE,
@@ -218,7 +218,7 @@ constexpr std::string_view to_utf8_string(Key key) {
         // Navigation and editing keys
         case Key::BACKSPACE: return "⌫";
         case Key::CAPS_LOCK: return "⇪";
-        case Key::DELETE: return "Del";
+        case Key::DEL: return "Del";
         case Key::END: return "End";
         case Key::ENTER: return "↵";
         case Key::ESCAPE: return "Esc";

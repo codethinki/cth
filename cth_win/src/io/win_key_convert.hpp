@@ -144,10 +144,7 @@ inline constexpr auto SCAN_CODE_KEYS = [] {
             {0xE050, {ARROW_DOWN}},
             {0xE051, {PAGE_DOWN}},
             {0xE052, {INSERT}},
-#pragma push_macro("DELETE")
-#undef DELETE
-            {0xE053, {DELETE}},
-#pragma pop_macro("DELETE")
+            {0xE053, {DEL}},
 
             // --- Keypad, by position: NumLock changes the meaning, not the key ---
             {0x37, {STAR, true}},
