@@ -2,503 +2,322 @@
 #include "cth/chrono.hpp"
 #include "cth/io/log.hpp"
 #include "cth/win/io/keyboard.hpp"
+#include "cth/win/string.hpp"
 
 // private
 #include "../win_include.hpp"
 
+#include <algorithm>
+#include <array>
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <utility>
+
 
 namespace cth::win {
-struct win_key {
-    WORD vk;
-    DWORD flags;
+using scan_code_t = uint16_t; ///< Set 1 scan code, the prefix `0xE0` or `0xE1` in the high byte: `0xE01C`
+
+struct scan_code_key {
+    scan_code_t scanCode;
+    io::ex_key exKey;
 };
 
 /**
- * converts a key of the numeric keypad to a Win32 virtual key
- * @return `vk == 0` -> no keypad copy of `key`
+ * Set 1 scan codes of the keys
+ * @details
+ * - one entry per key and per scan code: `to_scan_code()` and `to_ex_key()` read it in both directions
+ * - the scan code is the position, `0x2B` is the US `\` and the ISO `#`
+ * - missing: the fake Shift `0xE02A` and `0xE036` of raw input, media keys, keys without an `io::Key`
  */
-[[nodiscard]] constexpr win_key to_win_keypad_key(io::Key key) {
-    using io::Key;
+inline constexpr auto SCAN_CODE_KEYS = [] {
+    using enum io::Key;
 
-    if(key >= Key::DIGIT_0 && key <= Key::DIGIT_9)
-        return {static_cast<WORD>(VK_NUMPAD0 + (*key - *Key::DIGIT_0)), 0};
+    return std::to_array<scan_code_key>(
+        {
+            // --- Main Block ---
+            {0x01, {ESCAPE}},
+            {0x02, {DIGIT_1}},
+            {0x03, {DIGIT_2}},
+            {0x04, {DIGIT_3}},
+            {0x05, {DIGIT_4}},
+            {0x06, {DIGIT_5}},
+            {0x07, {DIGIT_6}},
+            {0x08, {DIGIT_7}},
+            {0x09, {DIGIT_8}},
+            {0x0A, {DIGIT_9}},
+            {0x0B, {DIGIT_0}},
+            {0x0C, {MINUS}},
+            {0x0D, {EQUAL}},
+            {0x0E, {BACKSPACE}},
+            {0x0F, {TAB}},
+            {0x10, {Q}},
+            {0x11, {W}},
+            {0x12, {E}},
+            {0x13, {R}},
+            {0x14, {T}},
+            {0x15, {Y}},
+            {0x16, {U}},
+            {0x17, {I}},
+            {0x18, {O}},
+            {0x19, {P}},
+            {0x1A, {OPEN_BRACKET}},
+            {0x1B, {CLOSE_BRACKET}},
+            {0x1C, {ENTER}},
+            {0x1D, {CONTROL}},
+            {0x1E, {A}},
+            {0x1F, {S}},
+            {0x20, {D}},
+            {0x21, {F}},
+            {0x22, {G}},
+            {0x23, {H}},
+            {0x24, {J}},
+            {0x25, {K}},
+            {0x26, {L}},
+            {0x27, {SEMICOLON}},
+            {0x28, {QUOTE}},
+            {0x29, {BACKTICK}},
+            {0x2A, {SHIFT}},
+            {0x2B, {BACKSLASH}},
+            {0x2C, {Z}},
+            {0x2D, {X}},
+            {0x2E, {C}},
+            {0x2F, {V}},
+            {0x30, {B}},
+            {0x31, {N}},
+            {0x32, {M}},
+            {0x33, {COMMA}},
+            {0x34, {PERIOD}},
+            {0x35, {SLASH}},
+            {0x36, {SHIFT, true}},
+            {0x38, {ALT}},
+            {0x39, {SPACE}},
+            {0x3A, {CAPS_LOCK}},
+            {0x56, {LESS_THAN}},
 
-    switch(key) {
-        case Key::PERIOD: return {VK_DECIMAL, 0};
-        case Key::SLASH: return {VK_DIVIDE, KEYEVENTF_EXTENDEDKEY};
-        case Key::STAR: return {VK_MULTIPLY, 0};
-        case Key::MINUS: return {VK_SUBTRACT, 0};
-        case Key::PLUS: return {VK_ADD, 0};
-        case Key::ENTER: return {VK_RETURN, KEYEVENTF_EXTENDEDKEY};
+            // --- Function Keys ---
+            {0x3B, {F1}},
+            {0x3C, {F2}},
+            {0x3D, {F3}},
+            {0x3E, {F4}},
+            {0x3F, {F5}},
+            {0x40, {F6}},
+            {0x41, {F7}},
+            {0x42, {F8}},
+            {0x43, {F9}},
+            {0x44, {F10}},
+            {0x57, {F11}},
+            {0x58, {F12}},
+            {0x64, {F13}},
+            {0x65, {F14}},
+            {0x66, {F15}},
+            {0x67, {F16}},
+            {0x68, {F17}},
+            {0x69, {F18}},
+            {0x6A, {F19}},
+            {0x6B, {F20}},
+            {0x6C, {F21}},
+            {0x6D, {F22}},
+            {0x6E, {F23}},
+            {0x76, {F24}},
 
-        // NumLock off: the navigation keys without the extended flag
+            // --- System Keys ---
+            {0xE037, {PRINT_SCREEN}},
+            {0x46, {SCROLL_LOCK}},
+            {0xE11D, {PAUSE}},
+            {0x45, {NUM_LOCK}},
+
+            // --- Modifiers ---
+            {0xE01D, {CONTROL, true}},
+            {0xE038, {ALT, true}},
+            {0xE05B, {PLATFORM}},
+            {0xE05C, {PLATFORM, true}},
+            {0xE05D, {MENU}},
+
+            // --- Navigation Block ---
+            {0xE047, {HOME}},
+            {0xE048, {ARROW_UP}},
+            {0xE049, {PAGE_UP}},
+            {0xE04B, {ARROW_LEFT}},
+            {0xE04D, {ARROW_RIGHT}},
+            {0xE04F, {END}},
+            {0xE050, {ARROW_DOWN}},
+            {0xE051, {PAGE_DOWN}},
+            {0xE052, {INSERT}},
 #pragma push_macro("DELETE")
 #undef DELETE
-        case Key::DELETE: return {VK_DELETE, 0};
+            {0xE053, {DELETE}},
 #pragma pop_macro("DELETE")
-        case Key::END: return {VK_END, 0};
-        case Key::HOME: return {VK_HOME, 0};
-        case Key::INSERT: return {VK_INSERT, 0};
-        case Key::PAGE_DOWN: return {VK_NEXT, 0};
-        case Key::PAGE_UP: return {VK_PRIOR, 0};
-        case Key::ARROW_DOWN: return {VK_DOWN, 0};
-        case Key::ARROW_LEFT: return {VK_LEFT, 0};
-        case Key::ARROW_RIGHT: return {VK_RIGHT, 0};
-        case Key::ARROW_UP: return {VK_UP, 0};
 
-        default: return {0, 0};
+            // --- Keypad, by position: NumLock changes the meaning, not the key ---
+            {0x37, {STAR, true}},
+            {0x47, {DIGIT_7, true}},
+            {0x48, {DIGIT_8, true}},
+            {0x49, {DIGIT_9, true}},
+            {0x4A, {MINUS, true}},
+            {0x4B, {DIGIT_4, true}},
+            {0x4C, {DIGIT_5, true}},
+            {0x4D, {DIGIT_6, true}},
+            {0x4E, {PLUS, true}},
+            {0x4F, {DIGIT_1, true}},
+            {0x50, {DIGIT_2, true}},
+            {0x51, {DIGIT_3, true}},
+            {0x52, {DIGIT_0, true}},
+            {0x53, {PERIOD, true}},
+            {0x59, {EQUAL, true}},
+            {0xE01C, {ENTER, true}},
+            {0xE035, {SLASH, true}},
+        }
+    );
+}();
+
+/**
+ * Set 1 scan code of the key
+ * @return `0` -> no scan code
+ */
+[[nodiscard]] constexpr scan_code_t to_scan_code(io::ex_key exKey) {
+    auto const it = std::ranges::find(SCAN_CODE_KEYS, exKey, &scan_code_key::exKey);
+    return it == SCAN_CODE_KEYS.end() ? 0 : it->scanCode;
+}
+
+/**
+ * key of the Set 1 scan code
+ * @return `Key::NONE` -> no key
+ */
+[[nodiscard]] constexpr io::ex_key to_ex_key(scan_code_t scanCode) {
+    auto const it = std::ranges::find(SCAN_CODE_KEYS, scanCode, &scan_code_key::scanCode);
+    return it == SCAN_CODE_KEYS.end() ? io::ex_key{io::Key::NONE} : it->exKey;
+}
+
+/**
+ * Set 1 scan code of the raw input
+ */
+[[nodiscard]] constexpr scan_code_t to_scan_code(RAWKEYBOARD const& raw) {
+    bool const e0 = (raw.Flags & RI_KEY_E0) != 0;
+    bool const e1 = (raw.Flags & RI_KEY_E1) != 0;
+
+    scan_code_t const prefix = e0 ? 0xE000 : e1 ? 0xE100 : 0;
+    return static_cast<scan_code_t>(prefix | (raw.MakeCode & 0x7F));
+}
+
+/**
+ * key of the raw input
+ * @details by scan code, quirks of raw input:
+ * - overrun or fake key of an escape sequence (`VKey == 0xFF`) -> `Key::NONE`
+ * - fake Shift around `0xE0` keys (`0xE02A`, `0xE036`) -> `Key::NONE`
+ * - Pause is `0xE11D 0x45` and `0x45` is NumLock: `VKey` decides `0x45`
+ * - Alt + PrintScreen (`0x54`) -> `PRINT_SCREEN`, Control + Pause (`0xE046`) -> `PAUSE`
+ */
+[[nodiscard]] constexpr io::ex_key to_ex_key(RAWKEYBOARD const& raw) {
+    using io::Key;
+
+    if(raw.MakeCode == KEYBOARD_OVERRUN_MAKE_CODE || raw.VKey >= 0xFF)
+        return {Key::NONE};
+
+    auto const scanCode = to_scan_code(raw);
+    switch(scanCode) {
+        case 0x45:
+            if(raw.VKey == VK_NUMLOCK)
+                return {Key::NUM_LOCK};
+            return {raw.VKey == VK_PAUSE ? Key::PAUSE : Key::NONE};
+        case 0x54: return {Key::PRINT_SCREEN};
+        case 0xE046: return {Key::PAUSE};
+        case 0xE02A:
+        case 0xE036: return {Key::NONE};
+        default: return to_ex_key(scanCode);
+    }
+}
+
+[[nodiscard]] constexpr io::key_state to_key_state(RAWKEYBOARD const& raw) {
+    return io::key_state{to_ex_key(raw), (raw.Flags & RI_KEY_BREAK) == 0};
+}
+
+/**
+ * output of the key in the keyboard layout of the foreground window, without modifiers
+ * @details
+ * - no modifiers: lowercase letters
+ * - dead key -> its spacing character, for example `^`
+ * - control characters stay: Enter `\r`, Tab `\t`, Backspace `\b`, Escape `\x1B`
+ * - `VK_DELETE` -> Delete `\x7F` like other platforms, `ToUnicodeEx()` gives none
+ * - failed UTF-8 conversion -> empty, logs a warning
+ * @return UTF-8, empty -> none
+ * @attention older than Windows 10 1607: changes the keyboard state, dead keys break
+ */
+[[nodiscard]] inline std::string to_character(RAWKEYBOARD const& raw) {
+    constexpr UINT KEEP_KEYBOARD_STATE = 0x4; ///< `ToUnicodeEx()` flag, Windows 10 1607 and newer
+
+    HKL const layout = GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), nullptr));
+    std::array<BYTE, 256> const noModifiers{};
+    std::array<wchar_t, 8> buffer{};
+
+    int const result = ToUnicodeEx(
+        raw.VKey,
+        raw.MakeCode,
+        noModifiers.data(),
+        buffer.data(),
+        static_cast<int>(buffer.size()),
+        KEEP_KEYBOARD_STATE,
+        layout
+    );
+
+    if(result == 0 && raw.VKey == VK_DELETE)
+        return "\x7F";
+
+    // -1: dead key, the buffer holds its spacing character
+    std::wstring_view const units{buffer.data(), result < 0 ? 1 : static_cast<size_t>(result)};
+
+    try {
+        return win::to_string(units);
+    }
+    catch(except::win_exception const& exception) {
+        CTH_WIN_WARN(true, "failed to convert the key character to UTF-8, got {}", exception.what()) {}
+        return {};
     }
 }
 
 /**
- * converts a key of the main block to a Win32 virtual key
- * @param right `true` -> right modifier, else left modifier
- * @return `vk == 0` -> no Win32 key
+ * converts the raw input to a key update at the current time
+ * @details calls `to_key_state()`, `to_character()`
  */
-[[nodiscard]] constexpr win_key to_win_main_key(io::Key key, bool right) {
-    using io::Key;
+[[nodiscard]] inline io::key_update to_key_update(RAWKEYBOARD const& raw) {
+    auto state = to_key_state(raw);
+    if(state.exKey.key != io::Key::NONE)
+        state.character = to_character(raw);
 
-    if(key >= Key::A && key <= Key::Z)
-        return {static_cast<WORD>('A' + (*key - *Key::A)), 0};
-
-    if(key >= Key::DIGIT_0 && key <= Key::DIGIT_9)
-        return {static_cast<WORD>('0' + (*key - *Key::DIGIT_0)), 0};
-
-    if(key >= Key::F1 && key <= Key::F12)
-        return {static_cast<WORD>(VK_F1 + (*key - *Key::F1)), 0};
-
-    if(key >= Key::F13 && key <= Key::F24)
-        return {static_cast<WORD>(VK_F13 + (*key - *Key::F13)), 0};
-
-    WORD vk = 0;
-    DWORD flags = 0;
-
-    switch(key) {
-        case Key::SPACE: vk = VK_SPACE;
-            break;
-        case Key::BACKTICK: vk = VK_OEM_3;
-            break;
-        case Key::MINUS: vk = VK_OEM_MINUS;
-            break;
-        case Key::EQUAL: vk = VK_OEM_PLUS;
-            break;
-        case Key::OPEN_BRACKET: vk = VK_OEM_4;
-            break;
-        case Key::CLOSE_BRACKET: vk = VK_OEM_6;
-            break;
-        case Key::BACKSLASH: vk = VK_OEM_5;
-            break;
-        case Key::SEMICOLON: vk = VK_OEM_1;
-            break;
-        case Key::QUOTE: vk = VK_OEM_7;
-            break;
-        case Key::COMMA: vk = VK_OEM_COMMA;
-            break;
-        case Key::PERIOD: vk = VK_OEM_PERIOD;
-            break;
-        case Key::SLASH: vk = VK_OEM_2;
-            break;
-        case Key::HASH: vk = VK_OEM_3;
-            break;
-        case Key::LESS_THAN: vk = VK_OEM_102;
-            break;
-
-        case Key::BACKSPACE: vk = VK_BACK;
-            break;
-        case Key::CAPS_LOCK: vk = VK_CAPITAL;
-            break;
-#pragma push_macro("DELETE")
-#undef DELETE
-        case Key::DELETE:
-#pragma pop_macro("DELETE")
-            vk = VK_DELETE;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::END:
-            vk = VK_END;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::ENTER: vk = VK_RETURN;
-            break;
-        case Key::ESCAPE: vk = VK_ESCAPE;
-            break;
-        case Key::HOME:
-            vk = VK_HOME;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::INSERT:
-            vk = VK_INSERT;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::PAGE_DOWN:
-            vk = VK_NEXT;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::PAGE_UP:
-            vk = VK_PRIOR;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::TAB: vk = VK_TAB;
-            break;
-
-        case Key::ARROW_DOWN:
-            vk = VK_DOWN;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::ARROW_LEFT:
-            vk = VK_LEFT;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::ARROW_RIGHT:
-            vk = VK_RIGHT;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::ARROW_UP:
-            vk = VK_UP;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-
-        case Key::ALT:
-            vk = right ? VK_RMENU : VK_LMENU;
-            if(right)
-                flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::CONTROL:
-            vk = right ? VK_RCONTROL : VK_LCONTROL;
-            if(right)
-                flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::SHIFT: vk = right ? VK_RSHIFT : VK_LSHIFT;
-            break;
-
-        case Key::PLATFORM: vk = right ? VK_RWIN : VK_LWIN;
-            break;
-        case Key::MENU: vk = VK_APPS;
-            break;
-
-        case Key::NUM_LOCK:
-            vk = VK_NUMLOCK;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-
-        case Key::PRINT_SCREEN:
-            vk = VK_SNAPSHOT;
-            flags |= KEYEVENTF_EXTENDEDKEY;
-            break;
-        case Key::SCROLL_LOCK: vk = VK_SCROLL;
-            break;
-        case Key::PAUSE: vk = VK_PAUSE;
-            break;
-
-        case Key::MOUSE_LEFT: vk = VK_LBUTTON;
-            break;
-        case Key::MOUSE_RIGHT: vk = VK_RBUTTON;
-            break;
-        case Key::MOUSE_MIDDLE: vk = VK_MBUTTON;
-            break;
-        case Key::MOUSE_4: vk = VK_XBUTTON1;
-            break;
-        case Key::MOUSE_5: vk = VK_XBUTTON2;
-            break;
-
-        default: break;
-    }
-
-    return {vk, flags};
+    return {std::move(state), chrono::clock_t::now()};
 }
-
-/**
- * converts the key to a Win32 virtual key
- * @details modifier without `right` -> left modifier
- */
-[[nodiscard]] constexpr win_key to_win_key(io::ex_key ex_key) {
-    auto const [key, right] = ex_key;
-
-    using io::Key;
-
-    bool const modifier = key == Key::SHIFT || key == Key::CONTROL || key == Key::ALT || key == Key::PLATFORM;
-
-    auto const winKey = right && !modifier ? to_win_keypad_key(key) : to_win_main_key(key, right);
-
-    CTH_CRITICAL(winKey.vk == 0, "failed to convert to win key, got {}", ex_key) {}
-
-    return winKey;
-}
-}
-
-namespace cth::win {
-
-/**
- * Agnostic structure to hold core Windows key data
- */
-struct win_key_params {
-    uint32_t vkCode;
-    uint32_t scanCode;
-    bool isUp;
-    bool isExtended;
-};
-
-/**
- * maps `win_key_params` to a `cth::io::key_state`
- */
-[[nodiscard]] constexpr io::key_state to_key_state_generic(win_key_params const& p) {
-    bool const down = !p.isUp;
-    bool right = false;
-    using io::Key;
-
-    // navigation keys: no extended flag -> keypad copy with NumLock off
-    bool const navRight = !p.isExtended;
-
-    auto key = Key::NONE;
-    switch(p.vkCode) {
-        // --- Modifiers ---
-        case VK_LSHIFT: key = Key::SHIFT;
-            break;
-        case VK_RSHIFT: key = Key::SHIFT;
-            right = true;
-            break;
-        case VK_SHIFT:
-            key = Key::SHIFT;
-            right = (p.scanCode == 54); // RSHIFT scan code is usually 54
-            break;
-
-        case VK_LCONTROL: key = Key::CONTROL;
-            break;
-        case VK_RCONTROL: key = Key::CONTROL;
-            right = true;
-            break;
-        case VK_CONTROL:
-            key = Key::CONTROL;
-            right = p.isExtended;
-            break;
-
-        case VK_LMENU: key = Key::ALT;
-            break;
-        case VK_RMENU: key = Key::ALT;
-            right = true;
-            break;
-        case VK_MENU:
-            key = Key::ALT;
-            right = p.isExtended;
-            break;
-
-        case VK_LWIN: key = Key::PLATFORM;
-            break;
-        case VK_RWIN: key = Key::PLATFORM;
-            right = true;
-            break;
-        case VK_APPS: key = Key::MENU;
-            break;
-
-        // --- System Keys ---
-        case VK_SPACE: key = Key::SPACE;
-            break;
-        case VK_BACK: key = Key::BACKSPACE;
-            break;
-        case VK_CAPITAL: key = Key::CAPS_LOCK;
-            break;
-        case VK_RETURN: key = Key::ENTER;
-            right = p.isExtended;
-            break;
-        case VK_ESCAPE: key = Key::ESCAPE;
-            break;
-        case VK_TAB: key = Key::TAB;
-            break;
-        case VK_NUMLOCK: key = Key::NUM_LOCK;
-            break;
-        case VK_SNAPSHOT: key = Key::PRINT_SCREEN;
-            break;
-        case VK_SCROLL: key = Key::SCROLL_LOCK;
-            break;
-        case VK_PAUSE: key = Key::PAUSE;
-            break;
-
-#pragma push_macro("DELETE")
-#undef DELETE
-        case VK_DELETE: key = Key::DELETE;
-            right = navRight;
-            break;
-#pragma pop_macro("DELETE")
-
-        case VK_END: key = Key::END;
-            right = navRight;
-            break;
-        case VK_HOME: key = Key::HOME;
-            right = navRight;
-            break;
-        case VK_INSERT: key = Key::INSERT;
-            right = navRight;
-            break;
-        case VK_NEXT: key = Key::PAGE_DOWN;
-            right = navRight;
-            break;
-        case VK_PRIOR: key = Key::PAGE_UP;
-            right = navRight;
-            break;
-
-        // --- Arrows ---
-        case VK_DOWN: key = Key::ARROW_DOWN;
-            right = navRight;
-            break;
-        case VK_LEFT: key = Key::ARROW_LEFT;
-            right = navRight;
-            break;
-        case VK_RIGHT: key = Key::ARROW_RIGHT;
-            right = navRight;
-            break;
-        case VK_UP: key = Key::ARROW_UP;
-            right = navRight;
-            break;
-
-        // --- OEM / Symbols ---
-        case VK_OEM_3: key = Key::BACKTICK;
-            break;
-        case VK_OEM_MINUS: key = Key::MINUS;
-            break;
-        case VK_OEM_PLUS: key = Key::EQUAL;
-            break;
-        case VK_OEM_4: key = Key::OPEN_BRACKET;
-            break;
-        case VK_OEM_6: key = Key::CLOSE_BRACKET;
-            break;
-        case VK_OEM_5: key = Key::BACKSLASH;
-            break;
-        case VK_OEM_1: key = Key::SEMICOLON;
-            break;
-        case VK_OEM_7: key = Key::QUOTE;
-            break;
-        case VK_OEM_COMMA: key = Key::COMMA;
-            break;
-        case VK_OEM_PERIOD: key = Key::PERIOD;
-            break;
-        case VK_OEM_2: key = Key::SLASH;
-            break;
-        case VK_OEM_102: key = Key::LESS_THAN;
-            break;
-
-        // --- Keypad ---
-        case VK_DECIMAL: key = Key::PERIOD;
-            right = true;
-            break;
-        case VK_DIVIDE: key = Key::SLASH;
-            right = true;
-            break;
-        case VK_MULTIPLY: key = Key::STAR;
-            right = true;
-            break;
-        case VK_SUBTRACT: key = Key::MINUS;
-            right = true;
-            break;
-        case VK_ADD: key = Key::PLUS;
-            right = true;
-            break;
-
-        // --- Mouse ---
-        case VK_LBUTTON: key = Key::MOUSE_LEFT;
-            break;
-        case VK_RBUTTON: key = Key::MOUSE_RIGHT;
-            break;
-        case VK_MBUTTON: key = Key::MOUSE_MIDDLE;
-            break;
-        case VK_XBUTTON1: key = Key::MOUSE_4;
-            break;
-        case VK_XBUTTON2: key = Key::MOUSE_5;
-            break;
-
-        default:
-            if(p.vkCode >= VK_F1 && p.vkCode <= VK_F12)
-                key = static_cast<Key>(static_cast<uint16_t>(Key::F1) + (p.vkCode - VK_F1));
-            else if(p.vkCode >= VK_F13 && p.vkCode <= VK_F24)
-                key = static_cast<Key>(static_cast<uint16_t>(Key::F13) + (p.vkCode - VK_F13));
-            else if(p.vkCode >= 'A' && p.vkCode <= 'Z')
-                key = static_cast<Key>(static_cast<uint16_t>(Key::A) + (p.vkCode - 'A'));
-            else if(p.vkCode >= '0' && p.vkCode <= '9')
-                key = static_cast<Key>(static_cast<uint16_t>(Key::DIGIT_0) + (p.vkCode - '0'));
-            else if(p.vkCode >= VK_NUMPAD0 && p.vkCode <= VK_NUMPAD9) {
-                key = static_cast<Key>(static_cast<uint16_t>(Key::DIGIT_0) + (p.vkCode - VK_NUMPAD0));
-                right = true;
-            }
-            break;
-    }
-
-    //TODO character stays empty: ToUnicodeEx() in the hook breaks dead keys
-    return io::key_state{io::ex_key{key, right}, down};
-}
-
-/**
- * ADAPTER: Low-Level Keyboard Hook (`WH_KEYBOARD_LL`)
- */
-[[nodiscard]] constexpr io::key_state to_key_state(KBDLLHOOKSTRUCT const& s) {
-    return to_key_state_generic(
-        {
-            s.vkCode,
-            s.scanCode,
-            (s.flags & LLKHF_UP) != 0,
-            (s.flags & LLKHF_EXTENDED) != 0
-        }
-    );
-}
-
-[[nodiscard]] constexpr io::key_state to_key_state(RAWKEYBOARD const& r) {
-    return to_key_state_generic(
-        {
-            r.VKey,
-            static_cast<uint32_t>(r.MakeCode),
-            (r.Flags & RI_KEY_BREAK) != 0,
-            (r.Flags & RI_KEY_E0) != 0
-        }
-    );
-}
-
-[[nodiscard]] constexpr io::key_state to_key_state(WPARAM w_param, LPARAM l_param) {
-    return to_key_state_generic(
-        {
-            static_cast<uint32_t>(w_param),
-            static_cast<uint32_t>((l_param >> 16) & 0xFF),
-            (l_param & (1 << 31)) != 0,
-            // Bit 31: Transition state (0 for pressed, 1 for released)
-            (l_param & (1 << 24)) != 0 // Bit 24: Extended key flag
-        }
-    );
-}
-
-/**
- * Timestamp wrapper: Use this to generate the final update object
- */
-template<mta::convertible_to_any<RAWKEYBOARD, KBDLLHOOKSTRUCT> T>
-[[nodiscard]] io::key_update to_key_update(T const& source) {
-    return {
-        win::to_key_state(source),
-        chrono::clock_t::now()
-    };
-}
-
-// Special overload for window messages since they take two params
-[[nodiscard]] inline io::key_update to_key_update(WPARAM w_param, LPARAM l_param) {
-    return {
-        to_key_state(w_param, l_param),
-        chrono::clock_t::now()
-    };
-}
-
 
 /**
  * converts the `state` to a keyboard `INPUT`
+ * @details
+ * - sends the scan code: the position, the layout of the receiver makes the character
+ * - `PAUSE` -> virtual key `VK_PAUSE`, `SendInput()` has no `0xE1` flag
  * @pre `state` holds no mouse key
  */
-[[nodiscard]] constexpr INPUT to_win_input(cth::io::key_state const& state) {
+[[nodiscard]] constexpr INPUT to_win_input(io::key_state const& state) {
     using io::Key;
     auto const key = state.exKey.key;
     CTH_CRITICAL(key >= Key::MOUSE_LEFT && key <= Key::MOUSE_5, "key must be a keyboard key, got {}", key) {}
 
-    auto const [vk, flags] = to_win_key(state.exKey);
+    DWORD const up = state.down ? 0 : KEYEVENTF_KEYUP;
+
+    if(key == Key::PAUSE)
+        return {
+            .type = INPUT_KEYBOARD,
+            .ki{.wVk = VK_PAUSE, .wScan = 0, .dwFlags = up, .time = 0, .dwExtraInfo = 0}
+        };
+
+    auto const scanCode = to_scan_code(state.exKey);
+    CTH_CRITICAL(scanCode == 0, "key must have a scan code, got {}", state.exKey) {}
+
+    DWORD const extended = (scanCode >> 8) == 0xE0 ? KEYEVENTF_EXTENDEDKEY : 0;
 
     return {
         .type = INPUT_KEYBOARD,
         .ki{
-            .wVk = vk,
-            .wScan = 0,
-            .dwFlags = static_cast<DWORD>(flags | (state.down ? 0 : KEYEVENTF_KEYUP)),
+            .wVk = 0,
+            .wScan = static_cast<WORD>(scanCode & 0xFF),
+            .dwFlags = KEYEVENTF_SCANCODE | extended | up,
             .time = 0,
             .dwExtraInfo = 0
         }

@@ -17,20 +17,20 @@
 
 namespace cth::win {
 namespace {
-    class keybd_hook_manager {
+    class keybd_input_manager {
     public:
-        keybd_hook_manager() = default;
-        ~keybd_hook_manager() { stop_hook(); }
+        keybd_input_manager() = default;
+        ~keybd_input_manager() { stop_input(); }
 
-        keybd_hook_manager(keybd_hook_manager const&) = delete;
-        keybd_hook_manager& operator=(keybd_hook_manager const&) = delete;
+        keybd_input_manager(keybd_input_manager const&) = delete;
+        keybd_input_manager& operator=(keybd_input_manager const&) = delete;
 
         void subscribe(keybd_event_queue& queue) {
             {
                 std::scoped_lock const _{_mutex};
                 _queues.push_back(&queue);
             }
-            _hookSwitch.acquire();
+            _inputSwitch.acquire();
         }
 
         void unsubscribe(keybd_event_queue& queue) {
@@ -38,7 +38,7 @@ namespace {
                 std::scoped_lock const _{_mutex};
                 std::erase(_queues, &queue);
             }
-            _hookSwitch.release();
+            _inputSwitch.release();
         }
 
         /**
@@ -60,34 +60,32 @@ namespace {
                 queue->push(update);
         }
 
-        static LRESULT CALLBACK hook_callback(int n_code, WPARAM w_param, LPARAM l_param);
-
     private:
         using keys_down_t = std::array<std::array<bool, 2>, ::cth::io::keys_size()>;
 
         std::vector<keybd_event_queue*> _queues;
         std::mutex _mutex;
         keys_down_t _keysDown{}; ///< down state per `[key][right]`, guarded by `_mutex`
-        std::jthread _hookThread;
+        std::jthread _inputThread;
 
         os::unique_native_handle _stopEvent{CreateEventW(nullptr, TRUE, FALSE, nullptr)};
 
-        // global_switch wired directly to our internal start/stop methods
-        cth::co::global_switch _hookSwitch{
-            [this] { start_hook(); },
-            [this] { stop_hook(); }
+        // runs the input thread while a queue is subscribed
+        cth::co::global_switch _inputSwitch{
+            [this] { start_input(); },
+            [this] { stop_input(); }
         };
 
-        void start_hook() {
+        void start_input() {
             _keysDown = {};
-            _hookThread = std::jthread{[this] { thread_proc(); }};
+            _inputThread = std::jthread{[this] { thread_proc(); }};
         }
 
-        void stop_hook() {
+        void stop_input() {
             SetEvent(_stopEvent.get());
 
-            if(_hookThread.joinable())
-                _hookThread.join();
+            if(_inputThread.joinable())
+                _inputThread.join();
 
             ResetEvent(_stopEvent.get());
         }
@@ -150,18 +148,7 @@ namespace {
         }
     };
 
-    inline keybd_hook_manager keybdManager{};
-
-    LRESULT CALLBACK keybd_hook_manager::hook_callback(int n_code, WPARAM w_param, LPARAM l_param) {
-        if(n_code == HC_ACTION) {
-            auto const keyStruct = *reinterpret_cast<KBDLLHOOKSTRUCT const*>(l_param);
-            auto const event = to_key_update(keyStruct);
-
-            keybdManager.push_event(event);
-        }
-        return CallNextHookEx(nullptr, n_code, w_param, l_param);
-    }
-
+    inline keybd_input_manager keybdManager{};
 }
 }
 

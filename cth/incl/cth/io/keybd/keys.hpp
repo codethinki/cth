@@ -13,10 +13,12 @@
 
 namespace cth::io {
 /**
- * A Key enum which covers most of the common keyboard keys
+ * physical position of a key, named after the US layout
  * @details
-      - comparison operators may be used for symbol ranges, see implementation for supported ones.
-      - operator*() converts to the underlying type
+ * - like `KeyboardEvent.code` of browsers
+ * - the output of the key in the layout is `key_state::character`
+ * - comparison operators may be used for symbol ranges, see implementation for supported ones
+ * - `operator*()` converts to the underlying type
  */
 enum class Key : uint16_t {
     NONE, // No key, or invalid key (keep this near the end for logical grouping)
@@ -66,15 +68,14 @@ enum class Key : uint16_t {
     EQUAL, // = +
     OPEN_BRACKET, // [ {
     CLOSE_BRACKET, // ] }
-    BACKSLASH, // \ |
+    BACKSLASH, // \ | (ISO: the key left of Enter)
     SEMICOLON, // ; :
     QUOTE, // ' "
     COMMA, // , <
     PERIOD, // . >
-    SLASH, /// ?
-    HASH, // # (or other symbol depending on layout)
-    PLUS, // + (often on numpad or shifted =)
-    STAR,
+    SLASH, // / ?
+    PLUS, ///< keypad `+` only, with `ex_key::right`
+    STAR, ///< keypad `*` only, with `ex_key::right`
     LESS_THAN, // < (extra ISO key between left Shift and Z)
 
     // --- Navigation and Editing Keys (No Left/Right Specifics) ---
@@ -210,7 +211,6 @@ constexpr std::string_view to_utf8_string(Key key) {
         case Key::COMMA: return ",";
         case Key::PERIOD: return ".";
         case Key::SLASH: return "/";
-        case Key::HASH: return "#";
         case Key::PLUS: return "+";
         case Key::STAR: return "*";
         case Key::LESS_THAN: return "<";
@@ -321,7 +321,8 @@ struct ex_key {
      * @details
      * - modifier: right modifier (`SHIFT`, `CONTROL`, `ALT`, `PLATFORM`)
      * - other key: keypad copy, the keypad is right of the main block
-     * - examples: `DIGIT_0` -> keypad 0, `ARROW_UP` -> keypad 8 with NumLock off
+     * - examples: `DIGIT_0` -> keypad 0, `ENTER` -> keypad Enter
+     * - keypad copy by position: NumLock off does not change it
      */
     bool right = false;
 
@@ -336,7 +337,12 @@ struct key_state {
 
     ex_key exKey;
     bool down;
-    std::string character{}; ///< UTF-8 character of the key in the layout, empty -> none
+    /**
+     * UTF-8 output of the key in the layout without modifiers, empty -> none
+     * @details control characters, the same on every platform:
+     * - Enter `\r`, Tab `\t`, Backspace `\b`, Escape `\x1B`, Delete `\x7F`
+     */
+    std::string character{};
     bool repeat = false; ///< `true` -> auto repeat, a down event of a key that is already down
 
     [[nodiscard]] constexpr bool operator==(key_state const&) const = default;
