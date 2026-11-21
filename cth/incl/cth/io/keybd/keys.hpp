@@ -8,6 +8,8 @@
 
 #include <cstddef>
 #include <chrono>
+#include <string>
+#include <utility>
 
 namespace cth::io {
 /**
@@ -73,7 +75,7 @@ enum class Key : uint16_t {
     HASH, // # (or other symbol depending on layout)
     PLUS, // + (often on numpad or shifted =)
     STAR,
-    LESS_THAN, // < (often shifted comma)
+    LESS_THAN, // < (extra ISO key between left Shift and Z)
 
     // --- Navigation and Editing Keys (No Left/Right Specifics) ---
     BACKSPACE,
@@ -115,6 +117,30 @@ enum class Key : uint16_t {
     F11,
     F12,
     NUM_LOCK,
+    // --- Function Keys (F13-F24) ---
+    F13,
+    F14,
+    F15,
+    F16,
+    F17,
+    F18,
+    F19,
+    F20,
+    F21,
+    F22,
+    F23,
+    F24,
+    // --- System Keys ---
+    PRINT_SCREEN,
+    SCROLL_LOCK,
+    PAUSE,
+    MENU,
+    // --- Mouse Buttons ---
+    MOUSE_LEFT,
+    MOUSE_RIGHT,
+    MOUSE_MIDDLE,
+    MOUSE_4,
+    MOUSE_5,
     // --- Custom Keys (User-Defined Functions or Layers) ---
     CUSTOM_0,
     CUSTOM_1,
@@ -234,8 +260,33 @@ constexpr std::string_view to_utf8_string(Key key) {
         case Key::F10: return "F10";
         case Key::F11: return "F11";
         case Key::F12: return "F12";
+        case Key::F13: return "F13";
+        case Key::F14: return "F14";
+        case Key::F15: return "F15";
+        case Key::F16: return "F16";
+        case Key::F17: return "F17";
+        case Key::F18: return "F18";
+        case Key::F19: return "F19";
+        case Key::F20: return "F20";
+        case Key::F21: return "F21";
+        case Key::F22: return "F22";
+        case Key::F23: return "F23";
+        case Key::F24: return "F24";
 
         case Key::NUM_LOCK: return "NumLock";
+
+        // System keys
+        case Key::PRINT_SCREEN: return "PrtSc";
+        case Key::SCROLL_LOCK: return "ScrLk";
+        case Key::PAUSE: return "Pause";
+        case Key::MENU: return "Menu";
+
+        // Mouse buttons
+        case Key::MOUSE_LEFT: return "LMB";
+        case Key::MOUSE_RIGHT: return "RMB";
+        case Key::MOUSE_MIDDLE: return "MMB";
+        case Key::MOUSE_4: return "M4";
+        case Key::MOUSE_5: return "M5";
 
         // Custom keys
         case Key::CUSTOM_0: return "Custom0";
@@ -265,17 +316,28 @@ namespace cth::io {
 
 struct ex_key {
     Key key;
+    /**
+     * right copy of a key that exists twice
+     * @details
+     * - modifier: right modifier (`SHIFT`, `CONTROL`, `ALT`, `PLATFORM`)
+     * - other key: keypad copy, the keypad is right of the main block
+     * - examples: `DIGIT_0` -> keypad 0, `ARROW_UP` -> keypad 8 with NumLock off
+     */
     bool right = false;
 
     [[nodiscard]] constexpr bool operator==(ex_key const&) const = default;
 };
 
 struct key_state {
-    constexpr key_state(ex_key ex_key, bool down) : exKey{ex_key}, down{down} {}
-    constexpr key_state(Key key, bool right, bool down) : key_state{{key, right}, down} {}
+    constexpr key_state(ex_key exKey, bool down, std::string character = {}, bool repeat = false) :
+        exKey{exKey}, down{down}, character{std::move(character)}, repeat{repeat} {}
+    constexpr key_state(Key key, bool right, bool down, std::string character = {}, bool repeat = false) :
+        key_state{{key, right}, down, std::move(character), repeat} {}
 
     ex_key exKey;
     bool down;
+    std::string character{}; ///< UTF-8 character of the key in the layout, empty -> none
+    bool repeat = false; ///< `true` -> auto repeat, a down event of a key that is already down
 
     [[nodiscard]] constexpr bool operator==(key_state const&) const = default;
 };
@@ -297,8 +359,12 @@ CTH_FORMAT_CLASS(
 
 CTH_FORMAT_CLASS(
     cth::io::key_state,
-    "{}, down: {}",
-    ([](cth::io::key_state const& key) { return std::tie(key.exKey, key.down); })
+    "{}, down: {}, character: {:?}, repeat: {}",
+    (
+        [](cth::io::key_state const& key) {
+            return std::tie(key.exKey, key.down, key.character, key.repeat);
+        }
+    )
 );
 
 CTH_FORMAT_CLASS(
@@ -306,7 +372,7 @@ CTH_FORMAT_CLASS(
     "{}, time: {}",
     (
         [](cth::io::key_update const& update) {
-            return std::forward_as_tuple(
+            return std::make_tuple(
                 update.data,
                 std::chrono::duration_cast<std::chrono::seconds>(update.time - cth::chrono::session_start)
             );
