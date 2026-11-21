@@ -25,7 +25,7 @@ strand::~strand() = default;
 void strand::post(void_func work) const { dev::post_on(impl().executor, scoped(std::move(work))); }
 
 void strand::dispatch(void_func work) const {
-    //TODO review inline only in a job of the scheduler or of this strand: in a job of another strand, the work would
+    // inline only in a job of the scheduler or of this strand: in a job of another strand, the work would
     // run while that strand is held
     auto const* current = context::current();
     if(current != &impl().owner && current != this) {
