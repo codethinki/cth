@@ -11,7 +11,11 @@
 #include <atomic>
 #include <chrono>
 #include <concepts>
+#include <coroutine>
+#include <cstddef>
+#include <cstdlib>
 #include <exception>
+#include <new>
 #include <ranges>
 #include <stdexcept>
 #include <string>
@@ -19,6 +23,29 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+
+namespace {
+thread_local size_t allocations = 0; ///< the `operator new` calls of the thread
+}
+
+// counts the allocations of every test of the binary, only the tests of co::all() read the count
+// the plain and the nothrow forms: a sanitizer runtime defines its own, its allocations must not reach this free
+void* operator new(size_t size, std::nothrow_t const&) noexcept {
+    ++allocations;
+    return std::malloc(size == 0 ? 1 : size);
+}
+
+void* operator new(size_t size) {
+    if(auto* const ptr = operator new(size, std::nothrow)) return ptr;
+    throw std::bad_alloc{};
+}
+
+void operator delete(void* ptr) noexcept { std::free(ptr); }
+
+void operator delete(void* ptr, size_t) noexcept { std::free(ptr); }
+
+void operator delete(void* ptr, std::nothrow_t const&) noexcept { std::free(ptr); }
 
 
 namespace cth::co {
@@ -47,6 +74,39 @@ namespace {
         throw 42;
         co_return;
     }
+
+    /**
+     * ready -> gives the value at once, else resumes the caller on the context
+     */
+    struct value_awaiter {
+        context const* contextPtr; ///< `nullptr` -> ready
+        int value;
+
+        [[nodiscard]] bool await_ready() const noexcept { return contextPtr == nullptr; }
+        void await_suspend(std::coroutine_handle<> caller) const {
+            contextPtr->post([caller] { caller.resume(); });
+        }
+        [[nodiscard]] int await_resume() const noexcept { return value; }
+    };
+
+    /**
+     * ready -> counts at once, else resumes the caller on the context, then counts
+     */
+    struct count_awaiter {
+        context const* contextPtr; ///< `nullptr` -> ready
+        std::atomic<int>* ranPtr;
+        bool fails = false; ///< `true` -> `await_resume()` throws after the count
+
+        [[nodiscard]] bool await_ready() const noexcept { return contextPtr == nullptr; }
+        void await_suspend(std::coroutine_handle<> caller) const {
+            contextPtr->post([caller] { caller.resume(); });
+        }
+
+        void await_resume() const {
+            ++*ranPtr;
+            if(fails) throw std::runtime_error{"count fails"};
+        }
+    };
 
     // the type of co_await co::all() on the arguments
     template<class... Awaitables>
@@ -303,5 +363,77 @@ CORO_TEST(all, failed_child_of_a_range) {
     };
 
     EXPECT_EQ(exec.sync_wait(root()), (std::vector{false, true, false}));
+}
+CORO_TEST(all, ready_void_children_allocate_nothing) {
+    scheduler sched{autostart, 1};
+    executor exec{sched};
+
+    // no suspension: the count is of this thread only
+    auto root = []() -> executor_task<std::pair<size_t, size_t>> {
+        auto const ready = [](int) { return std::suspend_never{}; };
+        auto const range = std::views::iota(0, 8) | std::views::transform(ready);
+
+        auto const before = allocations;
+        co_await co::all(range);
+        auto const afterRange = allocations;
+        co_await co::all(std::suspend_never{}, std::suspend_never{}, std::suspend_never{});
+        co_return std::pair{afterRange - before, allocations - afterRange};
+    };
+
+    auto const [range, tuple] = exec.sync_wait(root());
+    EXPECT_EQ(range, 0);
+    EXPECT_EQ(tuple, 0);
+}
+
+CORO_TEST(all, range_of_ready_and_suspended_void_children) {
+    scheduler sched{autostart, 2};
+    executor exec{sched};
+    std::atomic<int> ran{0};
+
+    auto root = [](scheduler const& s, std::atomic<int>& r) -> executor_task<void> {
+        auto const awaiter = [&](int i) { return count_awaiter{i % 2 == 0 ? nullptr : &s, &r}; };
+        co_await co::all(std::views::iota(0, 6) | std::views::transform(awaiter));
+    };
+
+    exec.sync_wait(root(sched, ran));
+    EXPECT_EQ(ran.load(), 6);
+}
+
+CORO_TEST(all, range_of_ready_and_suspended_children_keeps_the_child_order) {
+    scheduler sched{autostart, 2};
+    executor exec{sched};
+
+    auto root = [](scheduler const& s) -> executor_task<std::vector<int>> {
+        auto const awaiter = [&](int i) { return value_awaiter{i % 3 == 0 ? &s : nullptr, i}; };
+        co_return co_await co::all(std::views::iota(0, 7) | std::views::transform(awaiter));
+    };
+
+    EXPECT_EQ(exec.sync_wait(root(sched)), (std::vector{0, 1, 2, 3, 4, 5, 6}));
+}
+
+CORO_TEST(all, failed_ready_and_suspended_void_children_of_a_range) {
+    scheduler sched{autostart, 2};
+    executor exec{sched};
+    std::atomic<int> ran{0};
+
+    // ready at the even indices, 2 fails ready, 3 fails suspended
+    auto root = [](scheduler const& s, std::atomic<int>& r) -> executor_task<std::vector<bool>> {
+        auto const awaiter = [&](int i) {
+            return count_awaiter{i % 2 == 0 ? nullptr : &s, &r, i == 2 || i == 3};
+        };
+        try {
+            co_await co::all(std::views::iota(0, 6) | std::views::transform(awaiter));
+        }
+        catch(except::group_coro_exception const& e) {
+            std::vector<bool> failed{};
+            for(auto const& exception : e.exceptions())
+                failed.push_back(exception != nullptr);
+            co_return failed;
+        }
+        co_return std::vector<bool>{};
+    };
+
+    EXPECT_EQ(exec.sync_wait(root(sched, ran)), (std::vector{false, false, true, true, false, false}));
+    EXPECT_EQ(ran.load(), 6);
 }
 }
