@@ -23,6 +23,17 @@ template<class T>
 concept foreign_awaitable = co::awaitable<T> && !this_coro_awaitable<T> && !co::this_coro::tag<T>;
 
 /**
+ * `true` if `T` is a scope of `executor::detach()`: it counts the detached tasks
+ * @details `enter()` at the start of a task, `leave()` after the destruction of its coroutine
+ * @see `simple_counting_scope`, `catching_scope`
+ */
+template<class T>
+concept detach_scope = requires(T& scope) {
+    { scope.enter() } noexcept;
+    { scope.leave() } noexcept;
+};
+
+/**
  * `true` if `T` derives `sync_promise_base`
  */
 template<class T>

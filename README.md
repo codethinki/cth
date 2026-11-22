@@ -65,6 +65,8 @@ coroutine runtime on asio
 - `co::executor`: spawns tasks, every `co_await` returns the caller to its context, except `schedule()`
 - `co::counter_event`: counter that only rises, `co_await wait(value)` resumes on the context of the caller,
   lock free
+- `co::catching_scope`: counting scope of detached tasks, keeps the first exception of them instead of a
+  terminate
 - `this_coro::executor`, `this_coro::wait(duration)`, native handle waits
 
 ## cth::os

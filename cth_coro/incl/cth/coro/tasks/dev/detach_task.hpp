@@ -1,5 +1,6 @@
 #pragma once
 #include "cth/coro/context.hpp"
+#include "cth/coro/catching_scope.hpp"
 #include "cth/coro/simple_counting_scope.hpp"
 #include "cth/coro/tasks/promises/suspend_promise_base.hpp"
 #include "cth/coro/tasks/promises/this_coro_promise_base.hpp"
@@ -7,6 +8,7 @@
 
 #include <cth/ptr/ref_wrapper.hpp>
 
+#include <concepts>
 #include <coroutine>
 #include <exception>
 
@@ -50,7 +52,7 @@ struct no_scope {};
 /**
  * first base of `detach_promise`, the task is in the scope for its lifetime
  * @details enters the scope on construction, leaves it on destruction: after the other parts of the promise
- * @tparam Scope `co::simple_counting_scope`, `no_scope` -> nothing to enter or leave
+ * @tparam Scope `co::simple_counting_scope`, `co::catching_scope`, `no_scope` -> nothing to enter or leave
  */
 template<class Scope>
 struct detach_scope_guard {
@@ -61,6 +63,12 @@ struct detach_scope_guard {
 
     // the last access to the scope: the deallocation of the frame after it does not touch the scope
     ~detach_scope_guard() { _scope->leave(); }
+
+protected:
+    /**
+     * the scope the task is in
+     */
+    [[nodiscard]] Scope& scope() const noexcept { return *_scope; }
 
 private:
     cth::ref_wrapper<Scope> _scope;
@@ -144,9 +152,19 @@ struct detach_promise :
     constexpr void return_void() noexcept {}
 
     /**
-     * a detached task has no caller for the exception
+     * a detached task has no caller for the exception: terminates
      */
-    [[noreturn]] void unhandled_exception() noexcept { std::terminate(); }
+    [[noreturn]] void unhandled_exception() noexcept requires (!std::same_as<Scope, co::catching_scope>) {
+        std::terminate();
+    }
+
+    /**
+     * stores the exception in the scope, the scope keeps the first one
+     * @details before the destruction of the coroutine: the error is visible after `catching_scope::wait()`
+     */
+    void unhandled_exception() noexcept requires std::same_as<Scope, co::catching_scope> {
+        this->scope().store(std::current_exception());
+    }
 
     /**
      * gives the owner of the coroutine: the scheduler of the detach
