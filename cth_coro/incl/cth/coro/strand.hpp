@@ -26,6 +26,8 @@ public:
     /**
      * destroys the asio strand
      * @pre no coroutine runs or resumes on the strand anymore
+     * @pre no other thread is in a call of the strand: a thread that resumes its coroutines, e.g. the
+     *  callback thread of a foreign library, ended or was joined
      * @pre the scheduler of the strand still exists
      */
     ~strand();
@@ -73,6 +75,7 @@ public:
     strand(strand&& other) noexcept;
     /**
      * moves `other` into this strand
+     * @pre the preconditions of `~strand()` for this strand: the move destroys its asio strand
      * @attention executors, coroutines and jobs of `other` still refer to `other`
      */
     strand& operator=(strand&& other) noexcept;

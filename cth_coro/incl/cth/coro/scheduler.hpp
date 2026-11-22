@@ -48,6 +48,8 @@ public:
     /**
      * calls `await_stop()`, destroys the detached coroutines that did not end
      * @details blocks until the jobs that run end
+     * @pre no other thread is in a call of the scheduler or of its strands: a thread that resumes their
+     *  coroutines, e.g. the callback thread of a foreign library, ended or was joined
      * @note jobs that did not start do not run
      * @attention a destroyed coroutine can wait on another context: that context can still resume it
      */
@@ -128,6 +130,7 @@ public:
      * moves `other` into this scheduler
      * @pre not `active()`
      * @pre `other` not `active()`
+     * @pre no other thread is in a call of this scheduler or of its strands, see `~scheduler()`
      * @note destroys the detached coroutines of this scheduler that did not end
      * @attention executors and coroutines of `other` still refer to `other`
      */

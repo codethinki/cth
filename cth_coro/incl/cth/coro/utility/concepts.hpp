@@ -18,6 +18,9 @@ concept this_coro_awaitable =
 
 /**
  * `true` if `T` is awaitable, not a `this_coro_awaitable` and not a tag
+ * @details a `this_coro` coroutine captures it, see `dev::steal()`
+ * @attention its awaiter can resume the capture on its own thread: that thread then posts to the context of
+ *  the caller, end or join it before the context, see `scheduler::~scheduler()`
  */
 template<class T>
 concept foreign_awaitable = co::awaitable<T> && !this_coro_awaitable<T> && !co::this_coro::tag<T>;

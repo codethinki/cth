@@ -10,6 +10,8 @@ namespace cth::co::dev {
 /**
  * captures a foreign awaitable
  * @details the capture continues the caller on its context, also after an exception
+ * @details the post runs on the thread that resumes the capture, see the precondition of
+ *  `scheduler::~scheduler()`
  * @param awaitable to capture
  * @return capture task, awaitable by `this_coro` coroutines
  */
