@@ -14,6 +14,7 @@ namespace cth::co {
  * counter of the running detached tasks, keeps the first error of them
  * @details
  * - a task of `executor::detach()` in the scope: an escaped exception is stored, it does not terminate
+ * - owns its tasks: `~scheduler()` destroys only the tasks without a scope, call `wait()` before it
  * - the first `store()` wins, the later errors are dropped
  * - thread safe: `enter()`, `leave()`, `wait()`, `store()` and `failed()` from any thread
  * @see `simple_counting_scope`

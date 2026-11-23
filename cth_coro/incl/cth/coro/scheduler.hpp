@@ -46,8 +46,9 @@ public:
      */
     explicit scheduler(autostart_t, size_t workers = 1) : scheduler{workers} { start(); }
     /**
-     * calls `await_stop()`, destroys the detached coroutines that did not end
+     * calls `await_stop()`, destroys the detached coroutines without a scope that did not end
      * @details blocks until the jobs that run end
+     * @pre the tasks detached into a scope ended: their scope owns them, see `executor::detach()`
      * @pre no other thread is in a call of the scheduler or of its strands: a thread that resumes their
      *  coroutines, e.g. the callback thread of a foreign library, ended or was joined
      * @note jobs that did not start do not run
@@ -131,7 +132,7 @@ public:
      * @pre not `active()`
      * @pre `other` not `active()`
      * @pre no other thread is in a call of this scheduler or of its strands, see `~scheduler()`
-     * @note destroys the detached coroutines of this scheduler that did not end
+     * @note destroys the detached coroutines without a scope of this scheduler that did not end
      * @attention executors and coroutines of `other` still refer to `other`
      */
     scheduler& operator=(scheduler&& other) noexcept;

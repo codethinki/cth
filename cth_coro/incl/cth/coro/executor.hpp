@@ -89,8 +89,10 @@ public:
     /**
      * runs the task on this context, without a caller, in the scope
      * @details
-     * - the details of `detach()` without a scope
+     * - the details of `detach()` without a scope, except the owner
+     * - the scope owns the task: `~scheduler()` destroys only the tasks without a scope
      * - an exception of the task: `catching_scope` -> the scope stores it, else terminates
+     * @pre the task ends before the scheduler of this context is destroyed: call `wait()` of the scope first
      * @tparam Pyld payload of the task, constructed from the arguments
      * @tparam Scope `simple_counting_scope` or `catching_scope`
      * @param scope the task is in

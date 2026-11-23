@@ -200,32 +200,6 @@ CORO_TEST(executor, detach_passes_the_payload) {
     EXPECT_EQ(received.load(), 42);
 }
 
-CORO_TEST(scheduler, destroys_a_detached_task_that_did_not_end) {
-    simple_counting_scope tasks{};
-    std::atomic<size_t> destroyed{0};
-    std::atomic<bool> waits{false};
-
-    {
-        scheduler sched{autostart, 1};
-        executor exec{sched};
-
-        auto task = [](std::atomic<size_t>& count, std::atomic<bool>& started) -> executor_task<void> {
-            destruction_counter const counter{count};
-            started = true;
-            started.notify_one();
-            // does not end before the destruction of the scheduler
-            co_await this_coro::wait(std::chrono::hours{1});
-        };
-
-        exec.detach(tasks, task(destroyed, waits));
-        waits.wait(false);
-    }
-
-    ASSERT_EQ(destroyed.load(), 1);
-    // returns at once: the destruction left the scope
-    tasks.wait();
-}
-
 CORO_TEST(scheduler, destroys_a_task_detached_without_a_scope_that_did_not_end) {
     std::atomic<size_t> destroyed{0};
     std::atomic<bool> waits{false};
@@ -249,8 +223,7 @@ CORO_TEST(scheduler, destroys_a_task_detached_without_a_scope_that_did_not_end) 
     EXPECT_EQ(destroyed.load(), 1);
 }
 
-CORO_TEST(scheduler, destroys_a_task_detached_on_a_strand_that_did_not_end) {
-    simple_counting_scope tasks{};
+CORO_TEST(scheduler, destroys_a_task_detached_on_a_strand_without_a_scope_that_did_not_end) {
     std::atomic<size_t> destroyed{0};
     std::atomic<bool> waits{false};
 
@@ -266,12 +239,11 @@ CORO_TEST(scheduler, destroys_a_task_detached_on_a_strand_that_did_not_end) {
             co_await this_coro::wait(std::chrono::hours{1});
         };
 
-        executor{str}.detach(tasks, task(destroyed, waits));
+        executor{str}.detach(task(destroyed, waits));
         waits.wait(false);
         sched.await_stop();
     }
 
-    ASSERT_EQ(destroyed.load(), 1);
-    tasks.wait();
+    EXPECT_EQ(destroyed.load(), 1);
 }
 }

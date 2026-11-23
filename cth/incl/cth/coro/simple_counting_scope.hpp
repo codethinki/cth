@@ -9,6 +9,7 @@ namespace cth::co {
 /**
  * counter of the running detached tasks
  * @details a task leaves it after the destruction of its coroutine: after `wait()` no part of a task exists
+ * @details owns its tasks: `~scheduler()` destroys only the tasks without a scope, call `wait()` before it
  * @details thread safe
  * @see `executor::detach()`
  */
