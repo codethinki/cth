@@ -259,9 +259,8 @@ namespace dev {
             __VA_ARGS__                                                \
         )
 
-    // while potentially correct the assume call triggers clang warnings
-    // [[assume(!static_cast<bool>(expr))]];
-
+    //TODO [[assume]] instead of the unreachable branch: never evaluates the check, needs the clang -Wassume
+    // warning silenced without compiler guards
 #define CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(type, expr)                                                    \
         if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::CRITICAL, type>> details = nullptr; \
             static_cast<bool>(expr))                                                                        \
