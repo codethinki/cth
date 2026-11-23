@@ -32,7 +32,11 @@ header only core
 - trait packs, tuple & variant helpers
 
 ### logging & exceptions (`cth::log`, `cth::except`)
-- `CTH_STABLE_*` macros always active, `CTH_*` debug only
+- `CTH_STABLE_*` macros always active, the other `CTH_*` debug only
+- `CTH_CRITICAL`, `CTH_ASSERT`: `CTH_CRITICAL_MODE` picks the behavior
+  - `CTH_CRITICAL_MODE_DEBUG`: check, log, terminate (default in debug)
+  - `CTH_CRITICAL_MODE_ENFORCE`: check, terminate, no log
+  - `CTH_CRITICAL_MODE_ASSUME`: assume the check, a violated check is undefined behavior (default in release)
 - capture `std::source_location` and `std::stacktrace`
 - trailing block runs only if the condition holds
 
