@@ -3,6 +3,8 @@
 
 #include <cth/meta/coro.hpp>
 
+#include <concepts>
+#include <execution>
 #include <type_traits>
 
 
@@ -24,6 +26,15 @@ concept this_coro_awaitable =
  */
 template<class T>
 concept foreign_awaitable = co::awaitable<T> && !this_coro_awaitable<T> && !co::this_coro::tag<T>;
+
+/**
+ * `true` if `P` is an execution policy of `co::all()`
+ * @details `std::execution::sequenced_policy` or `std::execution::parallel_policy`
+ * @details the unsequenced policies are none
+ */
+template<class P>
+concept all_policy = std::same_as<P, std::execution::sequenced_policy>
+    || std::same_as<P, std::execution::parallel_policy>;
 
 /**
  * `true` if `T` is a scope of `executor::detach()`: it counts the detached tasks

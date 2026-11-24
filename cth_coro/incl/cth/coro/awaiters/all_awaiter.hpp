@@ -16,6 +16,7 @@
 #include <coroutine>
 #include <cstddef>
 #include <exception>
+#include <execution>
 #include <memory>
 #include <ranges>
 #include <tuple>
@@ -102,21 +103,33 @@ protected:
     }
 
     /**
-     * starts the children in turn on the calling thread, each runs until it suspends
+     * starts the children, see `co::all()` for the policies
+     * @tparam Policy how the children start
      * @param caller coroutine of the caller
      * @param handles coroutines of the children, `nullptr` -> no coroutine
      * @return `false` -> every child ended, the caller does not suspend
      */
-    template<this_coro_compatible Caller, std::ranges::forward_range Handles>
+    template<all_policy Policy, this_coro_compatible Caller, std::ranges::forward_range Handles>
     [[nodiscard]] bool start(std::coroutine_handle<Caller> caller, Handles&& handles) {
-        _state.callerContext = &caller.promise().context();
+        auto const& context = caller.promise().context();
+        _state.callerContext = &context;
 
         auto const coroutines = std::ranges::distance(handles) - std::ranges::count(handles, nullptr);
         // one more for the start: no child resumes the caller before every child started
         _state.count.store(static_cast<size_t>(coroutines) + 1, std::memory_order_relaxed);
 
-        for(auto const handle : handles)
-            if(handle) handle.resume();
+        if constexpr(std::same_as<Policy, std::execution::parallel_policy>) {
+            // each child is posted once the next one is known: the last one starts inline
+            std::coroutine_handle<> pending = nullptr;
+            for(auto const handle : handles) {
+                if(!handle) continue;
+                if(pending) post_start(context, pending);
+                pending = handle;
+            }
+            if(pending) pending.resume();
+        } else
+            for(auto const handle : handles)
+                if(handle) handle.resume();
 
         // the start is the last: the children ended
         return _state.count.fetch_sub(1, std::memory_order_acq_rel) != 1;
@@ -140,6 +153,24 @@ protected:
     }
 
 private:
+    /**
+     * posts the start of the child to the context
+     * @details a failed post (an allocation) posts nothing: the child starts inline
+     * @param context of the caller
+     * @param child coroutine of the child
+     */
+    static void post_start(co::context const& context, std::coroutine_handle<> child) {
+        bool posted = false;
+        try {
+            context.post([child] { child.resume(); });
+            posted = true;
+        }
+        catch(...) {}
+
+        // outside of the catch: the child does not see the exception of the post
+        if(!posted) child.resume();
+    }
+
     /**
      * creates the child that awaits the awaitable, it awaits the caller as its continuation
      * @return the child
@@ -172,9 +203,10 @@ using all_element_t = std::conditional_t<
 
 /**
  * awaiter of `co::all()` with awaitables
+ * @tparam Policy how the children start, see `co::all()`
  * @tparam Awaitables the awaitables, a reference -> the awaiter keeps the reference
  */
-template<class... Awaitables>
+template<all_policy Policy, class... Awaitables>
 class all_awaiter : public all_awaiter_base {
     static constexpr size_t CHILDREN = sizeof...(Awaitables);
 
@@ -197,7 +229,7 @@ public:
             },
             _coroutines
         );
-        return start(caller, handles);
+        return start<Policy>(caller, handles);
     }
 
     /**
@@ -250,9 +282,10 @@ private:
 
 /**
  * awaiter of `co::all()` with a range of awaitables
+ * @tparam Policy how the children start, see `co::all()`
  * @tparam Range of awaitables, a reference -> the awaiter keeps the reference
  */
-template<class Range>
+template<all_policy Policy, class Range>
 class all_range_awaiter : public all_awaiter_base {
     using result_type = awaited_t<std::ranges::range_reference_t<Range>>;
 
@@ -298,7 +331,7 @@ public:
         }
 
         auto const handle = [](child_entry const& entry) { return entry.coroutine.get_deleter().handle; };
-        return start(caller, _entries | std::views::transform(handle));
+        return start<Policy>(caller, _entries | std::views::transform(handle));
     }
 
     /**
