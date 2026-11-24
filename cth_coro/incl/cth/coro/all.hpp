@@ -57,6 +57,8 @@ concept all_range = std::ranges::forward_range<R> && !awaitable<R> && awaitable<
  * @details
  * - the children start in turn on the calling thread, the caller resumes after the last one on its context
  * - a child failed -> throws `cth::except::group_coro_exception` after the last child
+ * - a ready awaiter gives its result at once, no coroutine
+ * - allocates a coroutine per child that is no ready awaiter, nothing else
  * @param awaitables to await, an lvalue stays a reference until the end of the `co_await`
  * @return awaitable, gives a `std::tuple` of the results, no element for a void result, `void` if all are void
  */
@@ -68,6 +70,10 @@ template<awaitable... Awaitables>
 /**
  * awaits every awaitable of the range at once
  * @details the details of `all()` with awaitables
+ * @details the allocations:
+ * - a coroutine per child that is no ready awaiter
+ * - `void` result: one vector of the children with a coroutine or a failure, none without such a child
+ * - other result: one vector of every child, then the vector of the results
  * @param range of awaitables, an lvalue stays a reference until the end of the `co_await`
  * @return awaitable, gives a `std::vector` of the results, a reference as `cth::ref_wrapper`, `void` for void results
  */

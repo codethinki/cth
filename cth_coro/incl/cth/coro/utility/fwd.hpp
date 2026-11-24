@@ -6,6 +6,7 @@ namespace cth::co {
 class context;
 class scheduler;
 class simple_counting_scope;
+class catching_scope;
 class strand;
 class executor;
 }

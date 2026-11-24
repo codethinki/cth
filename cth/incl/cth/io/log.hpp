@@ -18,6 +18,34 @@
 #define CTH_LOG_LEVEL CTH_LOG_LEVEL_ALL
 #endif
 
+// not 0: an undefined name in `#if` is 0
+#define CTH_CRITICAL_MODE_DEBUG 1 ///< checks, runs the following statement, logs, terminates
+#define CTH_CRITICAL_MODE_ENFORCE 2 ///< checks, terminates, no log
+#define CTH_CRITICAL_MODE_ASSUME 3 ///< assumes the check, a violated check -> undefined behavior
+
+#ifndef CTH_CRITICAL_MODE
+/**
+ * behavior of `CTH_CRITICAL` and `CTH_ASSERT`
+ * @details `CTH_CRITICAL_MODE_DEBUG`, `CTH_CRITICAL_MODE_ENFORCE` or `CTH_CRITICAL_MODE_ASSUME`
+ * @details default:
+ * - `CTH_DEBUG_MODE` and `CTH_LOG_LEVEL != CTH_LOG_LEVEL_NONE` -> `CTH_CRITICAL_MODE_DEBUG`
+ * - else `CTH_CRITICAL_MODE_ASSUME`
+ * @note define it before the first include of cth to override the default
+ * @attention use one value in all translation units: the inline functions differ otherwise
+ */
+#if defined(CTH_DEBUG_MODE) && CTH_LOG_LEVEL != CTH_LOG_LEVEL_NONE
+#define CTH_CRITICAL_MODE CTH_CRITICAL_MODE_DEBUG
+#else
+#define CTH_CRITICAL_MODE CTH_CRITICAL_MODE_ASSUME
+#endif
+#endif
+
+#if CTH_CRITICAL_MODE != CTH_CRITICAL_MODE_DEBUG && CTH_CRITICAL_MODE != CTH_CRITICAL_MODE_ENFORCE \
+    && CTH_CRITICAL_MODE != CTH_CRITICAL_MODE_ASSUME
+#error "CTH_CRITICAL_MODE must be CTH_CRITICAL_MODE_DEBUG, _ENFORCE or _ASSUME."
+#endif
+
+#include <exception>
 #include <mutex>
 #include <string>
 #include <utility>
@@ -231,9 +259,8 @@ namespace dev {
             __VA_ARGS__                                                \
         )
 
-    // while potentially correct the assume call triggers clang warnings
-    // [[assume(!static_cast<bool>(expr))]];
-
+    //TODO [[assume]] instead of the unreachable branch: never evaluates the check, needs the clang -Wassume
+    // warning silenced without compiler guards
 #define CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(type, expr)                                                    \
         if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::CRITICAL, type>> details = nullptr; \
             static_cast<bool>(expr))                                                                        \
@@ -241,6 +268,34 @@ namespace dev {
 
 #define CTH_DEV_DISABLED_CRITICAL_TEMPLATE(expr) \
         CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(cth::except::default_exception, expr)
+
+#define CTH_DEV_ENFORCED_CRITICAL_TEMPLATE_T(type, expr)                                                    \
+        if(std::unique_ptr<cth::log::dev::LogObj<cth::except::Severity::CRITICAL, type>> details = nullptr; \
+            static_cast<bool>(expr)) [[unlikely]]                                                           \
+        for(std::terminate();;)
+
+    /**
+     * the check of `CTH_CRITICAL` and `CTH_ASSERT` in the `CTH_CRITICAL_MODE`
+     * @param type exception type
+     * @param expression `static_cast<bool>(expression) == true` -> violated
+     * @param message `std::format_string` of the log message
+     * @param ... `std::format` arguments
+     */
+#if CTH_CRITICAL_MODE == CTH_CRITICAL_MODE_DEBUG
+#define CTH_DEV_CRITICAL_TEMPLATE_T(type, expression, message, ...) \
+        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,                         \
+            cth::except::Severity::CRITICAL,                         \
+            expression,                                              \
+            message,                                                 \
+            __VA_ARGS__                                              \
+        )
+#elif CTH_CRITICAL_MODE == CTH_CRITICAL_MODE_ENFORCE
+#define CTH_DEV_CRITICAL_TEMPLATE_T(type, expression, message, ...) \
+        CTH_DEV_ENFORCED_CRITICAL_TEMPLATE_T(type, expression)
+#else
+#define CTH_DEV_CRITICAL_TEMPLATE_T(type, expression, message, ...) \
+        CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(type, expression)
+#endif
 
 #define CTH_DEV_DISABLED_LOG_TEMPLATE_T(type, severity) \
         if(std::unique_ptr<cth::log::dev::LogObj<severity, type>> details = nullptr; false)
@@ -443,12 +498,51 @@ namespace dev {
 // ------------------------------
 // CTH_LOGS
 // ------------------------------
+/**
+ * aborts if `expression` is `false`
+ * @details `CTH_CRITICAL_MODE` sets the behavior
+ * @details `CTH_CRITICAL_MODE_DEBUG` -> runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == false` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ */
 #define CTH_ASSERT_T(type, expression, message, ...) \
-        CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(type, !static_cast<bool>(expression))
+        CTH_DEV_CRITICAL_TEMPLATE_T(type, !static_cast<bool>(expression), message, __VA_ARGS__)
+/**
+ * aborts if `expression` is `false`
+ * @details `CTH_CRITICAL_MODE` sets the behavior
+ * @details `CTH_CRITICAL_MODE_DEBUG` -> runs the following statement first
+ * @param expression `static_cast<bool>(expression) == false` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ */
 #define CTH_ASSERT(expression, message, ...) \
         CTH_ASSERT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
-#define CTH_CRITICAL_T(type, expression, message, ...) CTH_DEV_DISABLED_CRITICAL_TEMPLATE_T(type, expression)
+/**
+ * aborts if `expression` is `true`
+ * @details `CTH_CRITICAL_MODE` sets the behavior
+ * @details `CTH_CRITICAL_MODE_DEBUG` -> runs the following statement first
+ * @param type exception type
+ * @param expression `static_cast<bool>(expression) == true` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ */
+#define CTH_CRITICAL_T(type, expression, message, ...) \
+        CTH_DEV_CRITICAL_TEMPLATE_T(type, expression, message, __VA_ARGS__)
+/**
+ * aborts if `expression` is `true`
+ * @details `CTH_CRITICAL_MODE` sets the behavior
+ * @details `CTH_CRITICAL_MODE_DEBUG` -> runs the following statement first
+ * @param expression `static_cast<bool>(expression) == true` -> abort
+ * @param message `std::format_string` of the log message
+ * @param ... `std::format` arguments
+ * @attention follow it with `;` or `{}`
+ */
 #define CTH_CRITICAL(expression, message, ...) \
         CTH_CRITICAL_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
@@ -479,72 +573,6 @@ namespace dev {
 
 #ifdef CTH_DEBUG_MODE
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_NONE
-
-#undef CTH_ASSERT_T
-#undef CTH_ASSERT
-/**
- * aborts if `expression` is `false`
- * @details runs the following statement first
- * @param type exception type
- * @param expression `static_cast<bool>(expression) == false` -> abort
- * @param message `std::format_string` of the log message
- * @param ... `std::format` arguments
- * @attention follow it with `;` or `{}`
- * @note disabled without `CTH_DEBUG_MODE`
- * @note disabled if `CTH_LOG_LEVEL` is above the severity
- */
-#define CTH_ASSERT_T(type, expression, message, ...) \
-        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,         \
-            cth::except::Severity::CRITICAL,         \
-            !(expression),                           \
-            message,                                 \
-            __VA_ARGS__                              \
-        )
-/**
- * aborts if `expression` is `false`
- * @details runs the following statement first
- * @param expression `static_cast<bool>(expression) == false` -> abort
- * @param message `std::format_string` of the log message
- * @param ... `std::format` arguments
- * @attention follow it with `;` or `{}`
- * @note disabled without `CTH_DEBUG_MODE`
- * @note disabled if `CTH_LOG_LEVEL` is above the severity
- */
-#define CTH_ASSERT(expression, message, ...) \
-        CTH_ASSERT_T(cth::except::default_exception, expression, message, __VA_ARGS__)
-
-#undef CTH_CRITICAL_T
-#undef CTH_CRITICAL
-/**
- * aborts if `expression` is `true`
- * @details runs the following statement first
- * @param type exception type
- * @param expression `static_cast<bool>(expression) == true` -> abort
- * @param message `std::format_string` of the log message
- * @param ... `std::format` arguments
- * @attention follow it with `;` or `{}`
- * @note disabled without `CTH_DEBUG_MODE`
- * @note disabled if `CTH_LOG_LEVEL` is above the severity
- */
-#define CTH_CRITICAL_T(type, expression, message, ...) \
-        CTH_DEV_DELAYED_LOG_TEMPLATE_T(type,           \
-            cth::except::Severity::CRITICAL,           \
-            expression,                                \
-            message,                                   \
-            __VA_ARGS__                                \
-        )
-/**
- * aborts if `expression` is `true`
- * @details runs the following statement first
- * @param expression `static_cast<bool>(expression) == true` -> abort
- * @param message `std::format_string` of the log message
- * @param ... `std::format` arguments
- * @attention follow it with `;` or `{}`
- * @note disabled without `CTH_DEBUG_MODE`
- * @note disabled if `CTH_LOG_LEVEL` is above the severity
- */
-#define CTH_CRITICAL(expression, message, ...) \
-        CTH_CRITICAL_T(cth::except::default_exception, expression, message, __VA_ARGS__)
 
 #if CTH_LOG_LEVEL != CTH_LOG_LEVEL_CRITICAL
 

@@ -32,7 +32,11 @@ header only core
 - trait packs, tuple & variant helpers
 
 ### logging & exceptions (`cth::log`, `cth::except`)
-- `CTH_STABLE_*` macros always active, `CTH_*` debug only
+- `CTH_STABLE_*` macros always active, the other `CTH_*` debug only
+- `CTH_CRITICAL`, `CTH_ASSERT`: `CTH_CRITICAL_MODE` picks the behavior
+  - `CTH_CRITICAL_MODE_DEBUG`: check, log, terminate (default in debug)
+  - `CTH_CRITICAL_MODE_ENFORCE`: check, terminate, no log
+  - `CTH_CRITICAL_MODE_ASSUME`: assume the check, a violated check is undefined behavior (default in release)
 - capture `std::source_location` and `std::stacktrace`
 - trailing block runs only if the condition holds
 
@@ -63,6 +67,10 @@ coroutine runtime on asio
 - `co::strand`: serial queue on a scheduler, its jobs run one at a time and in post order, an idle strand runs a
   dispatched job inline
 - `co::executor`: spawns tasks, every `co_await` returns the caller to its context, except `schedule()`
+- `co::counter_event`: counter that only rises, `co_await wait(value)` resumes on the context of the caller,
+  lock free
+- `co::catching_scope`: counting scope of detached tasks, keeps the first exception of them instead of a
+  terminate
 - `this_coro::executor`, `this_coro::wait(duration)`, native handle waits
 
 ## cth::os

@@ -15,6 +15,8 @@
 #include <array>
 #include <coroutine>
 #include <cstddef>
+#include <exception>
+#include <memory>
 #include <ranges>
 #include <tuple>
 #include <type_traits>
@@ -24,7 +26,25 @@
 
 namespace cth::co::dev {
 /**
- * starts the children of `co::all()`, owns their coroutines
+ * deleter of `all_child_ptr`: destroys the coroutine of the child
+ */
+struct all_child_deleter {
+    std::coroutine_handle<> handle = nullptr; ///< coroutine of the child
+
+    void operator()(raw_promise_base const*) const { handle.destroy(); }
+};
+
+/**
+ * owner of the coroutine of a child of `co::all()`, points at the promise of the child
+ * @details `get_deleter().handle` is the coroutine
+ * @details destroys the coroutine at its destruction: the child did not start or it ended
+ * @tparam T result type of the child
+ */
+template<class T>
+using all_child_ptr = std::unique_ptr<raw_promise<T>, all_child_deleter>;
+
+/**
+ * starts the children of `co::all()`
  */
 class all_awaiter_base : public this_coro_awaiter_base {
 public:
@@ -37,15 +57,6 @@ protected:
     all_awaiter_base() = default;
 
     /**
-     * destroys the coroutines of the children
-     * @pre every started child ended
-     */
-    ~all_awaiter_base() {
-        for(auto const child : _children)
-            child.destroy();
-    }
-
-    /**
      * a ready awaiter: stores its result in the slot at once, else creates the child that awaits the awaitable
      * @details a reference stays a reference, the child owns a temporary awaiter or task
      * @details the child starts in `start()`
@@ -53,12 +64,11 @@ protected:
      * @param caller coroutine of the caller, the child gets its context and its payload
      * @param awaitable to await, a reference lives until the end of the `co_await`
      * @param[out] slot gets the result or the exception of a ready awaiter
-     * @return the slot or the promise of the child: it holds the result or the exception
-     * @pre `reserve()` for the child
+     * @return the child, `nullptr` -> ready, the slot holds the result or the exception
      * @throws what the allocation of the coroutine throws
      */
     template<class T, class Caller, awaitable Awaitable>
-    [[nodiscard]] raw_promise<T>* add(
+    [[nodiscard]] all_child_ptr<T> add(
         std::coroutine_handle<Caller> caller,
         Awaitable&& awaitable,
         raw_promise<T>& slot
@@ -80,35 +90,33 @@ protected:
                         slot.return_void();
                     } else
                         slot.return_value(awaiter.await_resume());
-                    return &slot;
+                    return nullptr;
                 }
             }
             catch(...) {
                 slot.unhandled_exception();
-                return &slot;
+                return nullptr;
             }
             return addChild<T, awaiter_type>(caller, std::forward<awaiter_type>(awaiter));
         }
     }
 
     /**
-     * makes room for the children, before the first `add()`
-     */
-    void reserve(size_t children) { _children.reserve(children); }
-
-    /**
      * starts the children in turn on the calling thread, each runs until it suspends
      * @param caller coroutine of the caller
+     * @param handles coroutines of the children, `nullptr` -> no coroutine
      * @return `false` -> every child ended, the caller does not suspend
      */
-    template<this_coro_compatible Caller>
-    [[nodiscard]] bool start(std::coroutine_handle<Caller> caller) {
+    template<this_coro_compatible Caller, std::ranges::forward_range Handles>
+    [[nodiscard]] bool start(std::coroutine_handle<Caller> caller, Handles&& handles) {
         _state.callerContext = &caller.promise().context();
-        // one more for the start: no child resumes the caller before every child started
-        _state.count.store(_children.size() + 1, std::memory_order_relaxed);
 
-        for(auto const child : _children)
-            child.resume();
+        auto const coroutines = std::ranges::distance(handles) - std::ranges::count(handles, nullptr);
+        // one more for the start: no child resumes the caller before every child started
+        _state.count.store(static_cast<size_t>(coroutines) + 1, std::memory_order_relaxed);
+
+        for(auto const handle : handles)
+            if(handle) handle.resume();
 
         // the start is the last: the children ended
         return _state.count.fetch_sub(1, std::memory_order_acq_rel) != 1;
@@ -116,25 +124,28 @@ protected:
 
     /**
      * throws if a child failed
-     * @param results one slot or child promise per child in child order
-     * @throws cth::except::group_coro_exception reason: a child failed
+     * @param children count of the children
+     * @param exceptions child index and exception of each child that can have failed, `nullptr` -> none
+     * @throws cth::except::group_coro_exception reason: a child failed, one exception per child
      */
-    template<std::ranges::input_range Results>
-    static void throw_failures(Results const& results) {
-        auto const failed = [](auto const* result) { return result->exception != nullptr; };
-        if(std::ranges::none_of(results, failed)) return;
+    template<std::ranges::forward_range Exceptions>
+    static void throw_failures(size_t children, Exceptions&& exceptions) {
+        auto const failed = [](auto const& child) { return std::get<1>(child) != nullptr; };
+        if(std::ranges::none_of(exceptions, failed)) return;
 
-        auto const exception = [](auto const* result) { return result->exception; };
-        throw except::group_coro_exception{results | std::views::transform(exception) | std::ranges::to<std::vector>()};
+        std::vector<std::exception_ptr> perChild(children);
+        for(auto const& [childIdx, exception] : exceptions)
+            perChild[childIdx] = exception;
+        throw except::group_coro_exception{std::move(perChild)};
     }
 
 private:
     /**
      * creates the child that awaits the awaitable, it awaits the caller as its continuation
-     * @return the promise of the child
+     * @return the child
      */
     template<class T, class Awaitable, class Caller>
-    [[nodiscard]] raw_promise<T>* addChild(std::coroutine_handle<Caller> caller, Awaitable&& awaitable) {
+    [[nodiscard]] all_child_ptr<T> addChild(std::coroutine_handle<Caller> caller, Awaitable&& awaitable) {
         auto const& promise = caller.promise();
         auto const child = all_child<T, payload_t<Caller>, Awaitable>(
             _state,
@@ -143,12 +154,10 @@ private:
             std::forward<Awaitable>(awaitable)
         );
         child.handle.promise().continuation = caller;
-        _children.push_back(child.handle);
-        return &child.handle.promise();
+        return all_child_ptr<T>{&child.handle.promise(), all_child_deleter{child.handle}};
     }
 
     all_state _state{};
-    std::vector<std::coroutine_handle<>> _children{}; ///< the children with a coroutine
 };
 
 /**
@@ -167,6 +176,8 @@ using all_element_t = std::conditional_t<
  */
 template<class... Awaitables>
 class all_awaiter : public all_awaiter_base {
+    static constexpr size_t CHILDREN = sizeof...(Awaitables);
+
 public:
     explicit all_awaiter(std::tuple<Awaitables...>&& awaitables) : _awaitables{std::move(awaitables)} {}
 
@@ -176,11 +187,17 @@ public:
      */
     template<this_coro_compatible Caller>
     bool await_suspend(std::coroutine_handle<Caller> caller) {
-        reserve(sizeof...(Awaitables));
         [&]<size_t... Is>(std::index_sequence<Is...>) {
-            ((std::get<Is>(_results) = add(caller, std::get<Is>(_awaitables), std::get<Is>(_slots))), ...);
+            ((std::get<Is>(_coroutines) = add(caller, std::get<Is>(_awaitables), std::get<Is>(_slots))), ...);
         }(std::index_sequence_for<Awaitables...>{});
-        return start(caller);
+
+        auto const handles = std::apply(
+            [](auto const&... coroutines) {
+                return std::array<std::coroutine_handle<>, CHILDREN>{coroutines.get_deleter().handle...};
+            },
+            _coroutines
+        );
+        return start(caller, handles);
     }
 
     /**
@@ -188,10 +205,14 @@ public:
      * @throws cth::except::group_coro_exception reason: a child failed
      */
     auto await_resume() {
-        throw_failures(std::apply(
-            [](auto const*... results) { return std::array<raw_promise_base const*, sizeof...(results)>{results...}; },
-            _results
-        ));
+        [this]<size_t... Is>(std::index_sequence<Is...>) {
+            throw_failures(
+                CHILDREN,
+                std::array<std::pair<size_t, std::exception_ptr>, CHILDREN>{
+                    std::pair{Is, result<Is>().exception}...
+                }
+            );
+        }(std::index_sequence_for<Awaitables...>{});
 
         if constexpr((mta::is_void<awaited_t<Awaitables>> && ...)) return;
         else
@@ -202,18 +223,29 @@ public:
 
 private:
     /**
+     * @return the slot or the promise of the child
+     */
+    template<size_t I>
+    [[nodiscard]] auto& result() {
+        auto& coroutine = std::get<I>(_coroutines);
+        return coroutine != nullptr ? *coroutine : std::get<I>(_slots);
+    }
+
+    /**
      * @return the result of the child in a tuple, an empty tuple for a void child
      */
     template<size_t I>
     [[nodiscard]] auto element() {
         using result_type = awaited_t<std::tuple_element_t<I, std::tuple<Awaitables...>>>;
         if constexpr(mta::is_void<result_type>) return std::tuple<>{};
-        else return std::tuple<result_type>{std::forward<result_type>(*std::get<I>(_results)->result)};
+        else return std::tuple<result_type>{std::forward<result_type>(*result<I>().result)};
     }
 
     std::tuple<Awaitables...> _awaitables;
     std::tuple<raw_promise<awaited_t<Awaitables>>...> _slots{}; ///< the results of the ready awaiters
-    std::tuple<raw_promise<awaited_t<Awaitables>>*...> _results{}; ///< per child: its slot or its promise
+    // after the awaitables: destroyed first, a child can refer to an awaitable
+    /** per child: its coroutine, `nullptr` -> ready, the result is in its slot */
+    std::tuple<all_child_ptr<awaited_t<Awaitables>>...> _coroutines{};
 };
 
 /**
@@ -224,24 +256,49 @@ template<class Range>
 class all_range_awaiter : public all_awaiter_base {
     using result_type = awaited_t<std::ranges::range_reference_t<Range>>;
 
+    /**
+     * child with a coroutine, a result or an exception
+     */
+    struct child_entry {
+        size_t childIdx; ///< in the order of the range
+        raw_promise<result_type> slot{}; ///< the result or the exception of a ready awaiter
+        /** `nullptr` -> ready, the result is in `child_entry::slot` */
+        all_child_ptr<result_type> coroutine{};
+
+        /**
+         * @return the slot or the promise of the child
+         */
+        [[nodiscard]] raw_promise<result_type>& result() { return coroutine != nullptr ? *coroutine : slot; }
+    };
+
 public:
     explicit all_range_awaiter(Range&& range) : _range{std::forward<Range>(range)} {}
 
     /**
      * creates the children, then starts them
      * @details the details of `all_awaiter::await_suspend()`
+     * @details void results: a ready child without an exception gets no entry
+     * @details at most one allocation for the entries: the first entry reserves room for every child after it
      */
     template<this_coro_compatible Caller>
     bool await_suspend(std::coroutine_handle<Caller> caller) {
-        auto const children = static_cast<size_t>(std::ranges::distance(_range));
-        _slots.resize(children);
-        _results.reserve(children);
-        reserve(children);
+        _children = static_cast<size_t>(std::ranges::distance(_range));
 
         size_t childIdx = 0;
-        for(auto&& awaitable : _range)
-            _results.push_back(add(caller, std::forward<decltype(awaitable)>(awaitable), _slots[childIdx++]));
-        return start(caller);
+        for(auto&& awaitable : _range) {
+            child_entry entry{.childIdx = childIdx++};
+            entry.coroutine = add(caller, std::forward<decltype(awaitable)>(awaitable), entry.slot);
+
+            // nothing to give and nothing to throw
+            if constexpr(mta::is_void<result_type>)
+                if(entry.coroutine == nullptr && entry.slot.exception == nullptr) continue;
+
+            if(_entries.empty()) _entries.reserve(_children - entry.childIdx);
+            _entries.push_back(std::move(entry));
+        }
+
+        auto const handle = [](child_entry const& entry) { return entry.coroutine.get_deleter().handle; };
+        return start(caller, _entries | std::views::transform(handle));
     }
 
     /**
@@ -249,21 +306,31 @@ public:
      * @throws cth::except::group_coro_exception reason: a child failed
      */
     auto await_resume() {
-        throw_failures(_results);
+        auto const exception = [](child_entry& entry) {
+            return std::pair{entry.childIdx, entry.result().exception};
+        };
+        throw_failures(_children, _entries | std::views::transform(exception));
 
         if constexpr(mta::is_void<result_type>) return;
         else {
+            // every child has an entry, in child order
             std::vector<all_element_t<result_type>> results{};
-            results.reserve(_results.size());
-            for(auto* result : _results)
-                results.emplace_back(std::forward<result_type>(*result->result));
+            results.reserve(_entries.size());
+            for(auto& entry : _entries)
+                results.emplace_back(std::forward<result_type>(*entry.result().result));
             return results;
         }
     }
 
 private:
     Range _range;
-    std::vector<raw_promise<result_type>> _slots{}; ///< the results of the ready awaiters
-    std::vector<raw_promise<result_type>*> _results{}; ///< per child: its slot or its promise
+    size_t _children = 0; ///< count of the children of the range
+
+    // after the range: destroyed first, a child can refer to an element of the range
+    /**
+     * the children with a coroutine, a result or an exception, in child order
+     * @details void results: no entry for a ready child without an exception
+     */
+    std::vector<child_entry> _entries{};
 };
 }

@@ -8,6 +8,8 @@
 
 #include <atomic>
 #include <chrono>
+#include <coroutine>
+#include <future>
 #include <memory>
 #include <stdexcept>
 #include <thread>
@@ -154,28 +156,42 @@ CORO_TEST(executor, context_deep_recursion) {
     EXPECT_EQ(actual, expected);
 }
 
+// gets the coroutine of a foreign awaiter, see `foreign_thread()`
+using suspended_t = std::promise<std::coroutine_handle<>>;
+
+/**
+ * resumes on a foreign thread
+ * @return a thread that resumes the coroutine of `suspended`
+ * @attention declare it after the scheduler: it joins before `~scheduler()`, the steal posts from it
+ */
+[[nodiscard]] std::jthread foreign_thread(suspended_t& suspended) {
+    return std::jthread{[future = suspended.get_future()] mutable { future.get().resume(); }};
+}
+
+// hands the coroutine to the thread of `foreign_thread()`
 struct foreign_task {
+    suspended_t& suspended;
+
     struct awaiter {
+        suspended_t& suspended;
         bool await_ready() { return false; }
-        void await_suspend(std::coroutine_handle<> h) {
-            std::thread([h] { h.resume(); }).detach();
-        }
+        void await_suspend(std::coroutine_handle<> h) { suspended.set_value(h); }
         void await_resume() {}
     };
-    awaiter operator co_await() { return {}; }
+    awaiter operator co_await() { return {suspended}; }
 };
 
 struct foreign_value_task {
+    suspended_t& suspended;
     int val;
     struct awaiter {
+        suspended_t& suspended;
         int v;
         bool await_ready() { return false; }
-        void await_suspend(std::coroutine_handle<> h) {
-            std::thread([h] { h.resume(); }).detach();
-        }
+        void await_suspend(std::coroutine_handle<> h) { suspended.set_value(h); }
         int await_resume() { return v; }
     };
-    awaiter operator co_await() { return {val}; }
+    awaiter operator co_await() { return {suspended, val}; }
 };
 
 // completes on the target scheduler, throws on resume
@@ -197,12 +213,14 @@ struct throwing_value {
 CORO_TEST(executor, interop_steal_foreign_void) {
     scheduler sched{autostart, 1};
     executor exec{sched};
+    suspended_t suspended{};
+    std::jthread const foreign = foreign_thread(suspended);
 
     auto const mainID = std::this_thread::get_id();
 
-    auto task = [](std::thread::id mid) -> executor_task<void> {
+    auto task = [](std::thread::id mid, suspended_t& s) -> executor_task<void> {
         auto const id1 = std::this_thread::get_id();
-        co_await foreign_task{};
+        co_await foreign_task{s};
         auto const id2 = std::this_thread::get_id();
 
         if(id1 == mid)
@@ -211,16 +229,18 @@ CORO_TEST(executor, interop_steal_foreign_void) {
             throw std::runtime_error("Did not return to executor thread");
     };
 
-    exec.sync_wait(task(mainID));
+    exec.sync_wait(task(mainID, suspended));
 }
 
 CORO_TEST(executor, interop_steal_foreign_value) {
     scheduler sched{autostart, 1};
     executor exec{sched};
+    suspended_t suspended{};
+    std::jthread const foreign = foreign_thread(suspended);
 
-    auto task = []() -> executor_task<int> { co_return co_await foreign_value_task{99}; };
+    auto task = [](suspended_t& s) -> executor_task<int> { co_return co_await foreign_value_task{s, 99}; };
 
-    int const res = exec.sync_wait(task());
+    int const res = exec.sync_wait(task(suspended));
     EXPECT_EQ(res, 99);
 }
 
