@@ -5,6 +5,7 @@
 #include "cth/coro/exception.hpp"
 #include "cth/coro/executor.hpp"
 #include "cth/coro/scheduler.hpp"
+#include "cth/coro/strand.hpp"
 #include "cth/coro/tasks/executor_task.hpp"
 #include "cth/coro/this_coro.hpp"
 
@@ -15,10 +16,12 @@
 #include <cstddef>
 #include <cstdlib>
 #include <exception>
+#include <execution>
 #include <new>
 #include <ranges>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -119,6 +122,36 @@ namespace {
     static_assert(std::same_as<all_t<std::vector<executor_task<int>>&>, std::vector<int>>);
     static_assert(std::is_void_v<all_t<std::vector<executor_task<void>>&>>);
     static_assert(this_coro_awaitable<decltype(co::all(std::declval<executor_task<int>>()))>);
+
+    // no policy -> par
+    static_assert(
+        std::same_as<
+            decltype(co::all(std::declval<executor_task<int>>())),
+            dev::all_group<std::execution::parallel_policy, executor_task<int>>>
+    );
+    static_assert(
+        std::same_as<
+            decltype(co::all(std::declval<std::vector<executor_task<int>>&>())),
+            dev::all_range_group<std::execution::parallel_policy, std::vector<executor_task<int>>&>>
+    );
+    static_assert(!all_policy<std::execution::parallel_unsequenced_policy>);
+    static_assert(!all_policy<std::execution::unsequenced_policy>);
+
+    // sets its flag, then waits for the flag of the other child: the two end only at the same time
+    [[nodiscard]] executor_task<void> meet(std::atomic<bool>& mine, std::atomic<bool>& theirs) {
+        mine = true;
+        mine.notify_one();
+        theirs.wait(false);
+        co_return;
+    }
+
+    // the flag at the start of the child
+    [[nodiscard]] executor_task<bool> read(std::atomic<bool> const& flag) { co_return flag.load(); }
+
+    [[nodiscard]] executor_task<void> set(std::atomic<bool>& flag) {
+        flag = true;
+        co_return;
+    }
 }
 
 CORO_TEST(all, tuple_of_the_results_without_the_void_children) {
@@ -243,8 +276,12 @@ CORO_TEST(all, ready_awaiters_and_inline_children_do_not_suspend) {
     auto root = [](scheduler const& s, std::atomic<bool>& other)
         -> executor_task<std::tuple<bool, int, std::string, int>> {
         s.post([&other] { other = true; });
-        auto [number, text] = co_await co::all(data_awaiter{1}, data_awaiter{std::string{"text"}});
-        auto [inlineValue] = co_await co::all(value(2));
+        auto [number, text] = co_await co::all(
+            std::execution::seq,
+            data_awaiter{1},
+            data_awaiter{std::string{"text"}}
+        );
+        auto [inlineValue] = co_await co::all(std::execution::seq, value(2));
         co_return std::tuple{other.load(), number, text, inlineValue};
     };
 
@@ -435,5 +472,122 @@ CORO_TEST(all, failed_ready_and_suspended_void_children_of_a_range) {
 
     EXPECT_EQ(exec.sync_wait(root(sched, ran)), (std::vector{false, false, true, true, false, false}));
     EXPECT_EQ(ran.load(), 6);
+}
+CORO_TEST(all, par_children_run_at_the_same_time) {
+    scheduler sched{autostart, 2};
+    executor exec{sched};
+    std::atomic<bool> first{false};
+    std::atomic<bool> second{false};
+
+    // no policy: par
+    auto root = [](std::atomic<bool>& f, std::atomic<bool>& s) -> executor_task<void> {
+        co_await co::all(meet(f, s), meet(s, f));
+    };
+
+    exec.sync_wait(root(first, second));
+    EXPECT_TRUE(first.load());
+    EXPECT_TRUE(second.load());
+}
+
+CORO_TEST(all, par_range_children_run_at_the_same_time) {
+    scheduler sched{autostart, 2};
+    executor exec{sched};
+    std::atomic<bool> first{false};
+    std::atomic<bool> second{false};
+
+    auto root = [](std::atomic<bool>& f, std::atomic<bool>& s) -> executor_task<void> {
+        std::vector<executor_task<void>> tasks{};
+        tasks.push_back(meet(f, s));
+        tasks.push_back(meet(s, f));
+        co_await co::all(std::execution::par, std::move(tasks));
+    };
+
+    exec.sync_wait(root(first, second));
+    EXPECT_TRUE(first.load());
+    EXPECT_TRUE(second.load());
+}
+
+CORO_TEST(all, par_posts_every_child_but_the_last_seq_starts_them_in_turn) {
+    scheduler sched{autostart, 1};
+    executor exec{sched};
+
+    // one worker: the posted first child runs after the inline last child
+    auto root = []() -> executor_task<std::pair<bool, bool>> {
+        std::atomic<bool> parLast{false};
+        auto [parFirst] = co_await co::all(std::execution::par, read(parLast), set(parLast));
+        std::atomic<bool> seqLast{false};
+        auto [seqFirst] = co_await co::all(std::execution::seq, read(seqLast), set(seqLast));
+        co_return std::pair{parFirst, seqFirst};
+    };
+
+    auto const [parLastFirst, seqLastFirst] = exec.sync_wait(root());
+    EXPECT_TRUE(parLastFirst);
+    EXPECT_FALSE(seqLastFirst);
+}
+
+CORO_TEST(all, par_last_child_starts_inline_on_the_calling_thread) {
+    scheduler sched{autostart, 2};
+    executor exec{sched};
+
+    auto thread = []() -> executor_task<std::thread::id> { co_return std::this_thread::get_id(); };
+    auto root = [](auto t) -> executor_task<std::pair<std::thread::id, std::thread::id>> {
+        auto const caller = std::this_thread::get_id();
+        auto const results = co_await co::all(std::execution::par, t(), t());
+        co_return std::pair{caller, std::get<1>(results)};
+    };
+
+    auto const [caller, last] = exec.sync_wait(root(thread));
+    EXPECT_EQ(last, caller);
+}
+
+CORO_TEST(all, par_and_seq_give_the_same_results_and_failures) {
+    scheduler sched{autostart, 2};
+    executor exec{sched};
+    std::atomic<int> ran{0};
+
+    // per child: failed, the value of the last child
+    auto root = [](auto policy, std::atomic<int>& r) -> executor_task<std::pair<std::vector<bool>, int>> {
+        auto [first, last] = co_await co::all(policy, value(1), count_later(r), value(2));
+        try {
+            co_await co::all(policy, fail(0), count_later(r), value(first + last));
+        }
+        catch(except::group_coro_exception const& e) {
+            std::vector<bool> failed{};
+            for(auto const& exception : e.exceptions())
+                failed.push_back(exception != nullptr);
+            co_return std::pair{failed, first + last};
+        }
+        co_return std::pair{std::vector<bool>{}, 0};
+    };
+
+    auto const par = exec.sync_wait(root(std::execution::par, ran));
+    auto const seq = exec.sync_wait(root(std::execution::seq, ran));
+    EXPECT_EQ(par, seq);
+    EXPECT_EQ(par.first, (std::vector{true, false, false}));
+    EXPECT_EQ(par.second, 3);
+    EXPECT_EQ(ran.load(), 4);
+}
+
+CORO_TEST(all, par_on_a_strand_runs_the_children_one_at_a_time) {
+    scheduler sched{autostart, 2};
+    strand str{sched};
+    std::atomic<int> running{0};
+    std::atomic<int> maxRunning{0};
+
+    // the posted children run on the strand after the job of the caller
+    auto child = [](std::atomic<int>& r, std::atomic<int>& m) -> executor_task<void> {
+        auto const now = ++r;
+        auto max = m.load();
+        while(max < now && !m.compare_exchange_weak(max, now)) {}
+        std::this_thread::sleep_for(std::chrono::milliseconds{1});
+        --r;
+        co_return;
+    };
+    auto root = [](auto c, std::atomic<int>& r, std::atomic<int>& m) -> executor_task<void> {
+        co_await co::all(c(r, m), c(r, m), c(r, m), c(r, m));
+    };
+
+    executor{str}.sync_wait(root(child, running, maxRunning));
+    EXPECT_EQ(maxRunning.load(), 1);
 }
 }
