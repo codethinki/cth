@@ -19,6 +19,10 @@ CTH_TEST(typ, size_types_are_the_literal_types) {
     static_assert(std::is_same_v<iz, decltype(0z)>);
     static_assert(std::is_same_v<uz, std::size_t>);
 }
+
+CTH_TEST(typ, address_types_are_the_std_address_types) {
+    static_assert(std::is_same_v<uaddr, std::uintptr_t> && std::is_same_v<iaddr, std::intptr_t>);
+}
 }
 
 namespace {

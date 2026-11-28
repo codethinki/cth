@@ -3,12 +3,12 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace cth {
+
 /**
  * short names of the fixed width types
  * @details `using namespace cth::typ` imports only these names
  */
-inline namespace typ {
+namespace cth::inline typ {
     using u8 = std::uint8_t;
     using u16 = std::uint16_t;
     using u32 = std::uint32_t;
@@ -22,7 +22,10 @@ inline namespace typ {
     using uz = std::size_t; ///< type of the `uz` literal
     using iz = std::make_signed_t<std::size_t>; ///< type of the `z` literal
 
+    using uaddr = std::uintptr_t; ///< unsigned integer that holds an address
+    using iaddr = std::intptr_t; ///< signed integer that holds an address
+
     using f32 = float;
     using f64 = double;
 }
-}
+

@@ -41,10 +41,10 @@ DATA_TEST(raw_poly_vector, DataAndAlignmentAndIntegrity) {
     auto p1 = rv.data<1>();
     auto p2 = rv.data<2>();
 
-    auto const addr1 = reinterpret_cast<uintptr_t>(p1);
+    auto const addr1 = reinterpret_cast<uaddr>(p1);
     EXPECT_EQ(addr1 % alignof(second_t), 0);
 
-    auto const addr2 = reinterpret_cast<uintptr_t>(p2);
+    auto const addr2 = reinterpret_cast<uaddr>(p2);
     EXPECT_EQ(addr2 % alignof(third_t), 0);
 
     std::fill_n(p0, n0, 'Z');
@@ -234,10 +234,10 @@ DATA_TEST(poly_vector, AlignmentAndDataIntegrity) {
     constexpr uz n0 = 7, n1 = 3, n2 = 5;
     pv_t pvMut(std::array{n0, n1, n2});
 
-    auto const ptrAddrStruct = reinterpret_cast<uintptr_t>(pvMut.data<1>());
+    auto const ptrAddrStruct = reinterpret_cast<uaddr>(pvMut.data<1>());
     EXPECT_EQ(ptrAddrStruct % alignof(AlignedStruct), 0);
 
-    auto const ptrAddrInt = reinterpret_cast<uintptr_t>(pvMut.data<2>());
+    auto const ptrAddrInt = reinterpret_cast<uaddr>(pvMut.data<2>());
     EXPECT_EQ(ptrAddrInt % alignof(int), 0);
 
     std::fill(pvMut.get<0>().begin(), pvMut.get<0>().end(), 'Z');

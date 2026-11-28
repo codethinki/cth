@@ -179,9 +179,9 @@ private:
     }
 
     [[nodiscard]] constexpr uz min_raw_size(this poly_vector const& s) {
-        auto begin = std::bit_cast<uintptr_t>(s.template raw_data<0>());
+        auto begin = std::bit_cast<uaddr>(s.template raw_data<0>());
 
-        auto end = std::bit_cast<uintptr_t>(s.template data<N - 1>() + s.sizes()[N - 1]);
+        auto end = std::bit_cast<uaddr>(s.template data<N - 1>() + s.sizes()[N - 1]);
 
         return static_cast<uz>(end - begin);
     }
