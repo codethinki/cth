@@ -3,6 +3,7 @@
 
 #include "cth/enums.hpp"
 #include "cth/string/format.hpp"
+#include "cth/types.hpp"
 
 #include <array>
 #include <chrono>
@@ -17,7 +18,7 @@ namespace cth::io {
  * axis of an input device
  * @details `operator*()` converts to the underlying type
  */
-enum class Axis : uint16_t {
+enum class Axis : u16 {
     NONE, ///< no axis, or invalid axis
 
     // --- Mouse Axes ---
@@ -33,7 +34,7 @@ enum class Axis : uint16_t {
     ENUM_LAST_VALUE = CUSTOM_4 ///< keep this last, for array sizes and iteration
 };
 
-consteval auto axes_size() { return static_cast<size_t>(Axis::ENUM_LAST_VALUE) + 1; }
+consteval auto axes_size() { return static_cast<uz>(Axis::ENUM_LAST_VALUE) + 1; }
 
 /**
  * converts the `Axis` to a UTF-8 string symbol

@@ -3,12 +3,13 @@
 #include "cth/meta/ranges.hpp"
 
 #include "cth/meta/concepts.hpp"
+#include "cth/types.hpp"
 
 
 using Base = int;
 using Prev = std::array<Base, 10>;
 using T = std::array<std::vector<Prev>, 20>;
-constexpr size_t rank = 3;
+constexpr cth::uz rank = 3;
 
 
 namespace cth::mta {

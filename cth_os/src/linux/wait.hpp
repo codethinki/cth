@@ -1,6 +1,7 @@
 #pragma once
 #include "cth/os/exception.hpp"
 #include "cth/os/wait.hpp"
+#include "cth/types.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -23,7 +24,7 @@ namespace {
         if(timeout.count() <= 0)
             return 0;
 
-        return static_cast<int>(std::min<std::int64_t>(timeout.count(), std::numeric_limits<int>::max()));
+        return static_cast<int>(std::min<i64>(timeout.count(), std::numeric_limits<int>::max()));
     }
 
 }

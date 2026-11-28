@@ -1,6 +1,7 @@
 #include "cth/test.hpp"
 
 #include "cth/algorithm/combine.hpp"
+#include "cth/types.hpp"
 
 #include <vector>
 
@@ -13,22 +14,22 @@ using std::vector;
 
 ALG_TEST(unique_combine, success) {
     // success
-    vector<vector<uint32_t>> const input = {{5, 5, 5}, {5, 5, 4}, {5, 5, 3}};
-    auto const solution = vector<uint32_t>{5, 4, 3};
+    vector<vector<u32>> const input = {{5, 5, 5}, {5, 5, 4}, {5, 5, 3}};
+    auto const solution = vector<u32>{5, 4, 3};
     EXPECT_EQ(unique_combine(input), solution);
 }
 ALG_TEST(unique_combine, fail) {
     // fail
-    vector<vector<uint32_t>> const input2 = {{5, 5, 5}, {5, 5, 5, 5, 5}};
-    auto const solution2 = vector<uint32_t>{};
+    vector<vector<u32>> const input2 = {{5, 5, 5}, {5, 5, 5, 5, 5}};
+    auto const solution2 = vector<u32>{};
     EXPECT_EQ(unique_combine(input2), solution2);
 }
 
 ALG_TEST(assign, main) {
     auto test = [](
-        vector<vector<size_t>> const& a_b_options,
-        vector<size_t> const& b_max,
-        vector<size_t> const& expected
+        vector<vector<uz>> const& a_b_options,
+        vector<uz> const& b_max,
+        vector<uz> const& expected
     ) {
         auto const result = assign(a_b_options, b_max);
         ASSERT_EQ(result, expected);
@@ -42,8 +43,8 @@ ALG_TEST(assign, main) {
 }
 ALG_TEST(assign, fail) {
     // fail
-    std::array<vector<size_t>, 3> const input = {{{1, 2, 0}, {2}, {0, 1}}};
-    std::array<size_t, 3> const max = {1, 2, 0};
+    std::array<vector<uz>, 3> const input = {{{1, 2, 0}, {2}, {0, 1}}};
+    std::array<uz, 3> const max = {1, 2, 0};
     auto const solution = assign(input, max);
     EXPECT_TRUE(solution.empty());
 }

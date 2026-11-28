@@ -1,5 +1,6 @@
 #pragma once
 #include "cth/io/log.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <algorithm>
@@ -61,7 +62,7 @@ constexpr auto basic_miniram<SizeType, IndexType>::to_uint(size_type float_value
 // Constructor
 template<uint SizeType, uint IndexType> constexpr basic_miniram<SizeType, IndexType>::basic_miniram(
     size_type capacity,
-    size_t initial_alloc_capacity
+    uz initial_alloc_capacity
 ) : _capacity(capacity),
     _maxAllocs(initial_alloc_capacity) { clear(); }
 
@@ -72,7 +73,7 @@ constexpr void basic_miniram<SizeType, IndexType>::clear() {
 
     _freeStackPtr = 0;
 
-    auto const allocCapacity = std::exchange(_maxAllocs, size_t{0});
+    auto const allocCapacity = std::exchange(_maxAllocs, uz{0});
     reserve_allocations(allocCapacity);
 
     insertNode(capacity(), 0);
@@ -166,7 +167,7 @@ constexpr auto basic_miniram<SizeType, IndexType>::defragment(size_type new_size
     usedNodes.reserve(allocated());
 
     _freeStackPtr = 0;
-    for(size_t i = 0; i < nodes(); ++i) {
+    for(uz i = 0; i < nodes(); ++i) {
         if(_nodes[i].used)
             usedNodes.push_back(static_cast<index_type>(i));
         else
@@ -211,16 +212,16 @@ constexpr auto basic_miniram<SizeType, IndexType>::allocate(size_type size) -> a
     auto const minTopBinId = minBinId >> TOP_BINS_INDEX_SHIFT;
     auto const minLeafBinId = minBinId & LEAF_BINS_INDEX_MASK;
 
-    size_t topBinIndex = minTopBinId;
-    size_t leafBinIndex = static_cast<size_t>(-1);
+    uz topBinIndex = minTopBinId;
+    uz leafBinIndex = static_cast<uz>(-1);
 
     if(_usedBinsTop & (top_bin_mask_t{1} << topBinIndex))
         leafBinIndex = findLowestBitAfter(_usedBins[topBinIndex], minLeafBinId);
 
-    if(leafBinIndex == static_cast<size_t>(-1)) {
+    if(leafBinIndex == static_cast<uz>(-1)) {
         topBinIndex = findLowestBitAfter(_usedBinsTop, minTopBinId + 1);
 
-        if(topBinIndex == static_cast<size_t>(-1))
+        if(topBinIndex == static_cast<uz>(-1))
             return {.offset = NO_SPACE, .id = INVALID_INDEX};
 
         leafBinIndex = std::countr_zero(_usedBins[topBinIndex]);
@@ -280,7 +281,7 @@ constexpr auto basic_miniram<SizeType, IndexType>::to_disjunct_copies(
 
 // Reserve Nodes
 template<uint SizeType, uint IndexType>
-constexpr void basic_miniram<SizeType, IndexType>::reserve_nodes(size_t node_capacity) {
+constexpr void basic_miniram<SizeType, IndexType>::reserve_nodes(uz node_capacity) {
     if(node_capacity <= nodes())
         return;
 
@@ -296,9 +297,9 @@ constexpr void basic_miniram<SizeType, IndexType>::reserve_nodes(size_t node_cap
 template<uint SizeType, uint IndexType>
 constexpr void basic_miniram<SizeType, IndexType>::sliceTopBinNode(
     size_type slice_size,
-    size_t bin_id,
-    size_t top_bin_id,
-    size_t leaf_bin_id
+    uz bin_id,
+    uz top_bin_id,
+    uz leaf_bin_id
 ) {
     auto const originalNodeId = _binIndices[bin_id];
     auto& node = _nodes[originalNodeId];
@@ -341,14 +342,14 @@ constexpr void basic_miniram<SizeType, IndexType>::sliceTopBinNode(
 template<uint SizeType, uint IndexType>
 constexpr auto basic_miniram<SizeType, IndexType>::findLowestBitAfter(
     top_bin_mask_t bit_mask,
-    size_t start_id
-) -> size_t {
+    uz start_id
+) -> uz {
     auto const maskBefore = (top_bin_mask_t{1} << start_id) - 1;
     auto const maskAfter = ~maskBefore;
     auto const bitsAfter = bit_mask & maskAfter;
 
     if(bitsAfter == 0)
-        return static_cast<size_t>(-1);
+        return static_cast<uz>(-1);
 
     return std::countr_zero(bitsAfter);
 }
@@ -425,9 +426,9 @@ constexpr auto basic_miniram<SizeType, IndexType>::max_alloc() const -> size_typ
     if(remaining() == 0)
         return 0;
 
-    size_t const topBinIndex = highest_bit(_usedBinsTop);
-    size_t const leafBinIndex = highest_bit(static_cast<size_type>(_usedBins[topBinIndex]));
-    size_t const finalBinIndex = (topBinIndex << TOP_BINS_INDEX_SHIFT) | leafBinIndex;
+    uz const topBinIndex = highest_bit(_usedBinsTop);
+    uz const leafBinIndex = highest_bit(static_cast<size_type>(_usedBins[topBinIndex]));
+    uz const finalBinIndex = (topBinIndex << TOP_BINS_INDEX_SHIFT) | leafBinIndex;
 
     return to_uint(static_cast<size_type>(finalBinIndex));
 }
@@ -555,7 +556,7 @@ constexpr auto basic_miniram<SizeType, IndexType>::free_regions() const
     -> std::array<regions_type, NUM_LEAF_BINS> {
     std::array<regions_type, NUM_LEAF_BINS> regions{};
 
-    for(size_t i = 0; i < NUM_LEAF_BINS; ++i) {
+    for(uz i = 0; i < NUM_LEAF_BINS; ++i) {
         regions[i].size = to_uint(static_cast<size_type>(i));
         regions[i].count = 0;
 

@@ -3,6 +3,7 @@
 #include "cth/coro/atomic_fence.hpp"
 #include "test.hpp"
 #include <cth/coro/scheduler.hpp>
+#include <cth/types.hpp>
 
 #include <atomic>
 #include <barrier>
@@ -78,7 +79,7 @@ CORO_TEST(scheduler, sequential_tasks) {
 }
 
 CORO_TEST(scheduler, concurrent_execution) {
-    constexpr size_t workers = 2;
+    constexpr uz workers = 2;
     scheduler sched{workers};
 
     std::barrier workerSync{workers};
@@ -86,7 +87,7 @@ CORO_TEST(scheduler, concurrent_execution) {
 
     sched.start();
 
-    for(size_t i = 0; i < workers; ++i) {
+    for(uz i = 0; i < workers; ++i) {
         sched.post([&] {
             workerSync.arrive_and_wait();
             tasksDone.count_down();

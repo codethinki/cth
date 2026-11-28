@@ -1,5 +1,6 @@
 #include "cth/data/pool.hpp"
 #include "test.hpp"
+#include "cth/types.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -50,7 +51,7 @@ DATA_TEST(pool, acquire_behavior) {
     p.emplace(100);
     p.emplace(200);
 
-    size_t initialCap = p.capacity();
+    uz initialCap = p.capacity();
 
     // acquire first
     int& r1 = p.acquire();

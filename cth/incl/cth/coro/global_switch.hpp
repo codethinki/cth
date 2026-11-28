@@ -1,5 +1,6 @@
 #pragma once
 #include "cth/coro/utility.hpp"
+#include "cth/types.hpp"
 
 #include <atomic>
 #include <cstddef>
@@ -77,7 +78,7 @@ public:
 
 private:
     std::mutex _mutex;
-    std::atomic<size_t> _count{};
+    std::atomic<uz> _count{};
 
     void_func _on;
     void_func _off;
@@ -86,7 +87,7 @@ public:
     /**
      * gets the amount of outstanding acquires
      */
-    [[nodiscard]] size_t acquire_count() const { return _count.load(); }
+    [[nodiscard]] uz acquire_count() const { return _count.load(); }
 
     [[nodiscard]] bool acquired() const { return acquire_count() > 0; }
 };

@@ -1,6 +1,8 @@
 #pragma once
 // heavily inspired by Sebastian Aaltonen: https://github.com/sebbbi/OffsetAllocator
 
+#include "cth/types.hpp"
+
 #include <array>
 #include <bit>
 #include <cstdint>
@@ -19,11 +21,11 @@ namespace dev {
     template<uint SizeType, uint IndexType>
     struct basic_mini_node {
         using index_t = IndexType;
-        using size_t = SizeType;
+        using uz = SizeType;
         static constexpr index_t UNUSED = invalid<index_t>();
 
-        size_t dataOffset = 0;
-        size_t dataSize = 0;
+        uz dataOffset = 0;
+        uz dataSize = 0;
 
         index_t binListPrev = UNUSED;
         index_t binListNext = UNUSED;
@@ -41,7 +43,7 @@ struct basic_mini_alloc {
 
 template<uint T>
 struct basic_mini_region {
-    size_t count;
+    uz count;
     T size;
 };
 
@@ -71,21 +73,21 @@ public:
 
 private:
     // Bin configuration - calculated from BINS_PER_LEAF
-    static constexpr size_t BINS_PER_LEAF = 8;
-    static constexpr size_t MANTISSA_BITS = std::countr_zero(BINS_PER_LEAF); // log2(8) = 3
+    static constexpr uz BINS_PER_LEAF = 8;
+    static constexpr uz MANTISSA_BITS = std::countr_zero(BINS_PER_LEAF); // log2(8) = 3
     static constexpr size_type MANTISSA_VALUE = size_type{1} << MANTISSA_BITS;
     static constexpr size_type MANTISSA_MASK = MANTISSA_VALUE - 1;
 
-    static constexpr size_t NUM_TOP_BINS = sizeof(SizeType) * 8;
-    static constexpr size_t TOP_BINS_INDEX_SHIFT = MANTISSA_BITS;
+    static constexpr uz NUM_TOP_BINS = sizeof(SizeType) * 8;
+    static constexpr uz TOP_BINS_INDEX_SHIFT = MANTISSA_BITS;
     static constexpr size_type LEAF_BINS_INDEX_MASK = BINS_PER_LEAF - 1;
-    static constexpr size_t NUM_LEAF_BINS = NUM_TOP_BINS * BINS_PER_LEAF;
+    static constexpr uz NUM_LEAF_BINS = NUM_TOP_BINS * BINS_PER_LEAF;
 
-    static constexpr size_t ALLOC_GROW_FACTOR = 2;
+    static constexpr uz ALLOC_GROW_FACTOR = 2;
 
     // Bin mask types
-    using top_bin_mask_t = std::conditional_t<sizeof(SizeType) <= 4, uint32_t, uint64_t>;
-    using leaf_bin_mask_t = uint8_t; // Always 8 bins per leaf
+    using top_bin_mask_t = std::conditional_t<sizeof(SizeType) <= 4, u32, u64>;
+    using leaf_bin_mask_t = u8; // Always 8 bins per leaf
 
 public:
     static constexpr index_type INVALID_INDEX = invalid<IndexType>();
@@ -96,7 +98,7 @@ public:
      * @param capacity of ram (in elements)
      * @param initial_alloc_capacity (in allocations), `>= 1`
      */
-    constexpr explicit basic_miniram(size_type capacity, size_t initial_alloc_capacity = 128 * 1024);
+    constexpr explicit basic_miniram(size_type capacity, uz initial_alloc_capacity = 128 * 1024);
     constexpr ~basic_miniram() = default;
 
     /**
@@ -147,7 +149,7 @@ public:
      */
     [[nodiscard]] constexpr defrag_type resize(size_type new_capacity) { return defragment(new_capacity); }
 
-    constexpr void reserve_allocations(size_t alloc_capacity) { reserve_nodes(alloc_capacity + 1); }
+    constexpr void reserve_allocations(uz alloc_capacity) { reserve_nodes(alloc_capacity + 1); }
 
     /**
      * splits moves into disjunct copies (no overlapping regions)
@@ -163,18 +165,18 @@ private:
     [[nodiscard]] constexpr static size_type to_uint(size_type float_value);
 
     constexpr void reserve_allocations() { reserve_allocations(alloc_capacity() * ALLOC_GROW_FACTOR); }
-    constexpr void reserve_nodes(size_t node_capacity);
+    constexpr void reserve_nodes(uz node_capacity);
 
     constexpr size_type compactUsedNodes(std::vector<index_type> const& used_nodes, defrag_type& report);
     constexpr void reconstructFreeSpace(size_type compacted_offset, index_type last_used_node);
 
     constexpr void sliceTopBinNode(
         size_type slice_size,
-        size_t bin_id,
-        size_t top_bin_id,
-        size_t leaf_bin_id
+        uz bin_id,
+        uz top_bin_id,
+        uz leaf_bin_id
     );
-    constexpr static size_t findLowestBitAfter(top_bin_mask_t bit_mask, size_t start_id);
+    constexpr static uz findLowestBitAfter(top_bin_mask_t bit_mask, uz start_id);
 
     constexpr index_type insertNode(size_type size, size_type data_offset);
     constexpr void removeNode(index_type node_index);
@@ -185,12 +187,12 @@ private:
     constexpr defrag_type defragment(size_type new_size);
     constexpr void defragmentReset();
 
-    [[nodiscard]] constexpr size_t nodes() const { return _nodes.size(); }
+    [[nodiscard]] constexpr uz nodes() const { return _nodes.size(); }
     [[nodiscard]] constexpr index_type popFreeNode();
     [[nodiscard]] constexpr index_type& pushFreeNode();
 
     size_type _capacity;
-    size_t _maxAllocs;
+    uz _maxAllocs;
     size_type _freeStorage{};
 
     top_bin_mask_t _usedBinsTop{};
@@ -199,7 +201,7 @@ private:
 
     std::vector<node_type> _nodes{};
     std::vector<index_type> _freeNodes{};
-    size_t _freeStackPtr{};
+    uz _freeStackPtr{};
 
 public:
     /**
@@ -210,12 +212,12 @@ public:
      * gets the current max number of allocations.
      * @details not a hard limit
      */
-    [[nodiscard]] constexpr size_t alloc_capacity() const { return nodes() - 1; }
+    [[nodiscard]] constexpr uz alloc_capacity() const { return nodes() - 1; }
     /**
      * Gets the remaining reserveless allocations
      * @details not a hard limit.
      */
-    [[nodiscard]] constexpr size_t remaining_allocs() const { return nodes() - _freeStackPtr; }
+    [[nodiscard]] constexpr uz remaining_allocs() const { return nodes() - _freeStackPtr; }
     /**
      * amount of unallocated elements left in ram
      */
@@ -253,29 +255,29 @@ public:
     constexpr basic_miniram& operator=(basic_miniram&& other) noexcept = default;
 };
 
-using miniram32 = basic_miniram<uint32_t, uint32_t>;
-using miniram64 = basic_miniram<uint64_t, uint32_t>;
-using miniram = basic_miniram<size_t, uint32_t>;
+using miniram32 = basic_miniram<u32, u32>;
+using miniram64 = basic_miniram<u64, u32>;
+using miniram = basic_miniram<uz, u32>;
 
-using mini_node32 = dev::basic_mini_node<uint32_t, uint32_t>;
-using mini_node64 = dev::basic_mini_node<uint64_t, uint32_t>;
-using mini_node = dev::basic_mini_node<size_t, uint32_t>;
+using mini_node32 = dev::basic_mini_node<u32, u32>;
+using mini_node64 = dev::basic_mini_node<u64, u32>;
+using mini_node = dev::basic_mini_node<uz, u32>;
 
-using mini_alloc32 = basic_mini_alloc<uint32_t, uint32_t>;
-using mini_alloc64 = basic_mini_alloc<uint64_t, uint32_t>;
-using mini_alloc = basic_mini_alloc<size_t, uint32_t>;
+using mini_alloc32 = basic_mini_alloc<u32, u32>;
+using mini_alloc64 = basic_mini_alloc<u64, u32>;
+using mini_alloc = basic_mini_alloc<uz, u32>;
 
-using mini_region32 = basic_mini_region<uint32_t>;
-using mini_region64 = basic_mini_region<uint64_t>;
-using mini_region = basic_mini_region<size_t>;
+using mini_region32 = basic_mini_region<u32>;
+using mini_region64 = basic_mini_region<u64>;
+using mini_region = basic_mini_region<uz>;
 
-using mini_memmove32 = basic_mini_memmove<uint32_t>;
-using mini_memmove64 = basic_mini_memmove<uint64_t>;
-using mini_memmove = basic_mini_memmove<size_t>;
+using mini_memmove32 = basic_mini_memmove<u32>;
+using mini_memmove64 = basic_mini_memmove<u64>;
+using mini_memmove = basic_mini_memmove<uz>;
 
-using mini_defrag32 = basic_mini_defrag<uint32_t, uint32_t>;
-using mini_defrag64 = basic_mini_defrag<uint64_t, uint32_t>;
-using mini_defrag = basic_mini_defrag<size_t, uint32_t>;
+using mini_defrag32 = basic_mini_defrag<u32, u32>;
+using mini_defrag64 = basic_mini_defrag<u64, u32>;
+using mini_defrag = basic_mini_defrag<uz, u32>;
 
 }
 

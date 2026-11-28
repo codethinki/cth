@@ -1,5 +1,6 @@
 #pragma once
 #include "cth/data/poly_vector.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <limits>
@@ -12,8 +13,8 @@ namespace cth::dt {
  */
 class union_find {
 public:
-    using index_type = size_t;
-    using size_type = uint32_t;
+    using index_type = uz;
+    using size_type = u32;
     using group_t = std::vector<index_type>;
 
 private:
@@ -26,7 +27,7 @@ public:
     /**
      * constructs with given size
      */
-    explicit constexpr union_find(size_t size) : _data({size, size}), _size{size} {
+    explicit constexpr union_find(uz size) : _data({size, size}), _size{size} {
         for(index_type i = 0; i < size; i++) {
             parent(i) = i;
             this->size_ref(i) = 1;
@@ -37,17 +38,17 @@ public:
      * constructs and immediately merges given pairs
      * @param n size
      * @param groups to execute immediately
-     * @details calls @ref union_find(size_t)
+     * @details calls @ref union_find(uz)
      */
-    union_find(size_t n, std::span<group_t const> groups) : union_find{n} {
+    union_find(uz n, std::span<group_t const> groups) : union_find{n} {
         for(auto& group : groups)
             merge(group);
     }
 
     /**
-     * delegation for @ref union_find(size_t, std::span<group_t const>)
+     * delegation for @ref union_find(uz, std::span<group_t const>)
      */
-    union_find(size_t n, std::initializer_list<group_t> groups) : union_find{n, std::span{groups}} {}
+    union_find(uz n, std::initializer_list<group_t> groups) : union_find{n, std::span{groups}} {}
 
     // ReSharper disable once CppNonExplicitConvertingConstructor
     union_find(std::span<group_t const> groups) : union_find(
@@ -116,8 +117,8 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr size_t chain_length(index_type x) const {
-        size_t len = 0;
+    [[nodiscard]] constexpr uz chain_length(index_type x) const {
+        uz len = 0;
         auto p = x;
         for(; !root(p); len++)
             p = parent(p);
@@ -163,8 +164,8 @@ public:
         std::vector<group_t> result{};
 
         // group of each root, the roots are indices
-        constexpr size_t NO_GROUP = std::numeric_limits<size_t>::max();
-        std::vector<size_t> groups(size(), NO_GROUP);
+        constexpr uz NO_GROUP = std::numeric_limits<uz>::max();
+        std::vector<uz> groups(size(), NO_GROUP);
 
         for(index_type idx = 0; idx < size(); idx++) {
             auto& group = groups[find(idx)];
@@ -185,7 +186,7 @@ private:
 
     mutable poly_vector<index_type, size_type> _data;
 
-    size_t _size;
+    uz _size;
 
 public:
     bool operator==(union_find const& other) const {
@@ -206,6 +207,6 @@ public:
     /**
      * size of the union find
      */
-    [[nodiscard]] constexpr size_t size(this auto const& self) { return self._size; }
+    [[nodiscard]] constexpr uz size(this auto const& self) { return self._size; }
 };
 } // namespace cth::dt

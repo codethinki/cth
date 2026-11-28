@@ -3,6 +3,7 @@
 #include "cth/coro/utility/fwd.hpp"
 
 #include <cth/ptr/ref_wrapper.hpp>
+#include <cth/types.hpp>
 
 #include <atomic>
 #include <coroutine>
@@ -28,7 +29,7 @@ public:
      * constructs the event with the start value
      * @param value start value
      */
-    constexpr explicit counter_event(uint64_t value = 0) noexcept : _value{value} {}
+    constexpr explicit counter_event(u64 value = 0) noexcept : _value{value} {}
 
     /**
      * @details waits for the end of a running `set()` and `awaiter::await_suspend()`
@@ -43,7 +44,7 @@ public:
      * @pre no concurrent `set()`
      * @attention a post that throws terminates the program
      */
-    void set(uint64_t value) noexcept;
+    void set(u64 value) noexcept;
 
     /**
      * waits until `value()` reaches the value
@@ -51,9 +52,9 @@ public:
      * @param value to wait for
      * @return awaiter for a `this_coro` caller, `co_await` it
      */
-    [[nodiscard]] constexpr awaiter wait(uint64_t value) const noexcept;
+    [[nodiscard]] constexpr awaiter wait(u64 value) const noexcept;
 
-    [[nodiscard]] uint64_t value() const noexcept { return _value.load(std::memory_order_acquire); }
+    [[nodiscard]] u64 value() const noexcept { return _value.load(std::memory_order_acquire); }
 
 private:
     /**
@@ -73,11 +74,11 @@ private:
      */
     void wait_in_flight() const noexcept;
 
-    std::atomic<uint64_t> _value;
+    std::atomic<u64> _value;
     /** lock free stack of the suspended waits, `nullptr` -> no pending wait */
     mutable std::atomic<node*> _head{nullptr};
     /** running `set()` and `awaiter::await_suspend()` calls, the destructor and the moves wait for `0` */
-    mutable std::atomic<uint32_t> _inFlight{0};
+    mutable std::atomic<u32> _inFlight{0};
 
 public:
     counter_event(counter_event const& other) = delete;
@@ -102,7 +103,7 @@ namespace cth::co {
  * suspended wait of `counter_event::wait()`, a node of the stack of the event
  */
 struct counter_event::node {
-    uint64_t value; ///< to wait for
+    u64 value; ///< to wait for
     std::coroutine_handle<> caller{};
     co::context const* context = nullptr; ///< of the caller, the resume is posted to it
     node* next = nullptr;
@@ -114,7 +115,7 @@ struct counter_event::node {
  */
 class counter_event::awaiter : public this_coro_awaiter_base {
 public:
-    constexpr awaiter(counter_event const& event, uint64_t value) noexcept :
+    constexpr awaiter(counter_event const& event, u64 value) noexcept :
         _event{event},
         _node{.value = value} {}
 
@@ -155,5 +156,5 @@ private:
     node _node;
 };
 
-constexpr auto counter_event::wait(uint64_t value) const noexcept -> awaiter { return awaiter{*this, value}; }
+constexpr auto counter_event::wait(u64 value) const noexcept -> awaiter { return awaiter{*this, value}; }
 }

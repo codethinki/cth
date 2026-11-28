@@ -1,4 +1,6 @@
 #pragma once
+#include "cth/types.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -14,7 +16,7 @@ namespace cth::dt {
 template<auto Generator>
 [[nodiscard]] consteval auto as_cxpr_array() {
     using value_type = std::ranges::range_value_t<decltype(Generator())>;
-    constexpr size_t SIZE = std::ranges::size(Generator());
+    constexpr uz SIZE = std::ranges::size(Generator());
 
     std::array<value_type, SIZE> result{};
     std::ranges::copy(Generator(), result.begin());

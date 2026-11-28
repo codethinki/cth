@@ -1,4 +1,6 @@
 #pragma once
+#include "cth/types.hpp"
+
 #include <cstddef>
 #include <concepts>
 #include <string_view>
@@ -11,10 +13,10 @@
 
 namespace cth::mta {
 
-template<size_t I, class... Ts>
+template<uz I, class... Ts>
 struct at : std::tuple_element<I, std::tuple<Ts...>> {};
 
-template<size_t I, class... Ts>
+template<uz I, class... Ts>
 using at_t = at<I, Ts...>::type;
 }
 
@@ -34,7 +36,7 @@ constexpr auto cpt_mask() {
  * @return index, `sizeof...(Ts)` -> no type satisfies `TCpt`
  */
 template<auto TCpt, class... Ts>
-consteval size_t cpt_find_idx() {
+consteval uz cpt_find_idx() {
     auto constexpr mask = cpt_mask<TCpt, Ts...>();
 
     return std::distance(

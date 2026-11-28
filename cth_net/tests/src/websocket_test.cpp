@@ -9,6 +9,7 @@
 #include <cth/coro/tasks/executor_task.hpp>
 
 #include <hv/WebSocketClient.h>
+#include <cth/types.hpp>
 
 #include <array>
 #include <chrono>
@@ -38,7 +39,7 @@ struct client_t {
     bool opened = false;
     bool closed = false;
 
-    explicit client_t(std::uint16_t port) {
+    explicit client_t(u16 port) {
         socket.setPingInterval(0);
         socket.onopen = [this] {
             {

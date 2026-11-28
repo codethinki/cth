@@ -5,6 +5,7 @@
 #include "cth/macro.hpp"
 #include "cth/os/osdef.hpp"
 #include "cth/string/format.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <chrono>
@@ -20,7 +21,7 @@ namespace cth::io {
  * - comparison operators may be used for symbol ranges, see implementation for supported ones
  * - `operator*()` converts to the underlying type
  */
-enum class Key : uint16_t {
+enum class Key : u16 {
     NONE, // No key, or invalid key (keep this near the end for logical grouping)
 
     // --- Alphabetical Keys (A-Z) ---
@@ -151,7 +152,7 @@ enum class Key : uint16_t {
     ENUM_LAST_VALUE = CUSTOM_4 // Keep this LAST - for array sizing, iteration, etc.
 };
 
-consteval auto keys_size() { return static_cast<size_t>(Key::ENUM_LAST_VALUE) + 1; }
+consteval auto keys_size() { return static_cast<uz>(Key::ENUM_LAST_VALUE) + 1; }
 
 /**
  * converts the Key to UTF-8 string symbol

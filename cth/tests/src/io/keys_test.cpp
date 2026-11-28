@@ -1,6 +1,7 @@
 #include "cth/test.hpp"
 
 #include "cth/io/keybd/keys.hpp"
+#include "cth/types.hpp"
 
 #include <format>
 
@@ -12,7 +13,7 @@ namespace {
      * @details a missing case hits `std::unreachable()`, no constant expression
      */
     consteval bool every_key_has_a_symbol() {
-        for(size_t i = 0; i < keys_size(); ++i)
+        for(uz i = 0; i < keys_size(); ++i)
             if(to_utf8_string(static_cast<Key>(i)).empty())
                 return false;
         return true;

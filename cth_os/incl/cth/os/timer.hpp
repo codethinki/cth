@@ -3,6 +3,7 @@
 #include "cth/os/wait.hpp"
 
 #include <cth/hash/hash_general.hpp>
+#include <cth/types.hpp>
 
 #include <chrono>
 
@@ -74,7 +75,7 @@ public:
     timer& operator=(timer&&) noexcept = default;
 };
 
-constexpr size_t hash(timer const& t) { return cth::hash::combine(t.native_handle()); }
+constexpr uz hash(timer const& t) { return cth::hash::combine(t.native_handle()); }
 
 }
 

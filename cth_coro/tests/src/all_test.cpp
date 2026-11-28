@@ -8,6 +8,7 @@
 #include "cth/coro/strand.hpp"
 #include "cth/coro/tasks/executor_task.hpp"
 #include "cth/coro/this_coro.hpp"
+#include "cth/types.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -29,24 +30,24 @@
 
 
 namespace {
-thread_local size_t allocations = 0; ///< the `operator new` calls of the thread
+thread_local cth::uz allocations = 0; ///< the `operator new` calls of the thread
 }
 
 // counts the allocations of every test of the binary, only the tests of co::all() read the count
 // the plain and the nothrow forms: a sanitizer runtime defines its own, its allocations must not reach this free
-void* operator new(size_t size, std::nothrow_t const&) noexcept {
+void* operator new(cth::uz size, std::nothrow_t const&) noexcept {
     ++allocations;
     return std::malloc(size == 0 ? 1 : size);
 }
 
-void* operator new(size_t size) {
+void* operator new(cth::uz size) {
     if(auto* const ptr = operator new(size, std::nothrow)) return ptr;
     throw std::bad_alloc{};
 }
 
 void operator delete(void* ptr) noexcept { std::free(ptr); }
 
-void operator delete(void* ptr, size_t) noexcept { std::free(ptr); }
+void operator delete(void* ptr, cth::uz) noexcept { std::free(ptr); }
 
 void operator delete(void* ptr, std::nothrow_t const&) noexcept { std::free(ptr); }
 
@@ -406,7 +407,7 @@ CORO_TEST(all, ready_void_children_allocate_nothing) {
     executor exec{sched};
 
     // no suspension: the count is of this thread only
-    auto root = []() -> executor_task<std::pair<size_t, size_t>> {
+    auto root = []() -> executor_task<std::pair<uz, uz>> {
         auto const ready = [](int) { return std::suspend_never{}; };
         auto const range = std::views::iota(0, 8) | std::views::transform(ready);
 

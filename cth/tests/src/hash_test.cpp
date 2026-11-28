@@ -1,6 +1,7 @@
 #include "cth/hash.hpp"
 
 #include "cth/test.hpp"
+#include "cth/types.hpp"
 
 #include <set>
 
@@ -18,7 +19,7 @@ struct Y {
     int a;
 };
 
-size_t hash_x(X x) { return x.a ^ x.b; }
+cth::uz hash_x(X x) { return x.a ^ x.b; }
 }
 
 CTH_HASH_OVERLOAD(asdf::X, asdf::hash_x)

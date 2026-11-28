@@ -1,5 +1,6 @@
 #pragma once
 #include <cth/io/log.hpp>
+#include <cth/types.hpp>
 
 #include <atomic>
 #include <cstddef>
@@ -54,7 +55,7 @@ public:
     }
 
 private:
-    std::atomic<size_t> _count{};
+    std::atomic<uz> _count{};
 
 public:
     simple_counting_scope(simple_counting_scope const& other) = delete;

@@ -1,9 +1,11 @@
 #pragma once
+#include "cth/types.hpp"
+
 #include <cstddef>
 #include <type_traits>
 
 namespace cth::en {
-constexpr size_t flag_val(size_t id) { return size_t{1} << id; }
+constexpr uz flag_val(uz id) { return uz{1} << id; }
 }
 
 #define CTH_GEN_ENUM_DEREF_OVERLOAD(EnumType)                          \

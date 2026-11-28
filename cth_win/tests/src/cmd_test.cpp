@@ -1,13 +1,14 @@
 #include "cth/win/cmd.hpp"
 
 #include "test.hpp"
+#include "cth/types.hpp"
 
 namespace cth::win::cmd {
 constexpr std::string_view PATH = "res\\";
 
 
 WIN_TEST(hidden_dir, basic) {
-    size_t result;
+    uz result;
 
     EXPECT_NO_THROW((result = hidden_dir(PATH, "dir")));
 

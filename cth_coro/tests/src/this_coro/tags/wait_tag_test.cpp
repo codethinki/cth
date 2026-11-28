@@ -4,6 +4,7 @@
 #include "cth/coro/scheduler.hpp"
 #include "cth/coro/tasks/executor_task.hpp"
 #include "cth/coro/this_coro.hpp"
+#include "cth/types.hpp"
 
 #include <chrono>
 
@@ -25,7 +26,7 @@ TAG_TEST(wait_tag, sub_1ms) {
     EXPECT_LT(end, start + std::chrono::milliseconds{3});
 
 
-    /* for(size_t i = 0; i < 10; i++) {
+    /* for(uz i = 0; i < 10; i++) {
          auto start2 = clock_t::now();
          exec.sync_wait(task());
          auto end2 = clock_t::now();

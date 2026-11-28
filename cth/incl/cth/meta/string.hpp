@@ -1,10 +1,12 @@
 #pragma once
+#include "cth/types.hpp"
+
 #include <cstddef>
 #include <algorithm>
 #include <array>
 
 namespace cth::mta {
-template<size_t Size, class CType = char>
+template<uz Size, class CType = char>
 class cval_string {
 public:
     constexpr cval_string(CType const (&str)[Size]) {
@@ -18,14 +20,14 @@ public:
     constexpr bool operator==(cval_string const&) const = default;
 };
 
-template<size_t Sz1, size_t Sz2, class CType>
+template<uz Sz1, uz Sz2, class CType>
 [[nodiscard]] constexpr bool operator==(cval_string<Sz1, CType> left, cval_string<Sz2, CType> right) {
     if constexpr(Sz1 != Sz2)
         return false;
     else return left == right;
 }
 
-template<size_t Sz1, size_t Sz2, class CType>
+template<uz Sz1, uz Sz2, class CType>
 [[nodiscard]] constexpr bool operator!=(cval_string<Sz1, CType> left, cval_string<Sz2, CType> right) {
     return !(left == right);
 }

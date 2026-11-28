@@ -2,6 +2,7 @@
 #include "cth/data/hash_map.hpp"
 #include "cth/io/log.hpp"
 #include "cth/meta/concepts.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <deque>
@@ -48,7 +49,7 @@ public:
      */
     template<class Rng> requires requires(Rng r, storage_type s) { s.append_range(std::forward<Rng>(r)); }
     void append_range(Rng&& rng) {
-        size_t oldSize = _storage.size();
+        uz oldSize = _storage.size();
 
         _storage.append_range(std::forward<Rng>(rng));
 
@@ -130,12 +131,12 @@ public:
     /**
      * total number of instances in pool
      */
-    [[nodiscard]] size_t capacity() const noexcept { return _storage.size(); }
+    [[nodiscard]] uz capacity() const noexcept { return _storage.size(); }
 
     /**
      * remaining instances to acquire without releasing
      */
-    [[nodiscard]] size_t remaining() const noexcept { return _inactive.size(); }
+    [[nodiscard]] uz remaining() const noexcept { return _inactive.size(); }
 
     /**
      * `true` if no more acquire calls are possible

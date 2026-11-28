@@ -9,6 +9,7 @@
 #include <asio/io_context.hpp>
 
 #include <cth/data/hash_map.hpp>
+#include <cth/types.hpp>
 
 #include <coroutine>
 #include <mutex>
@@ -23,7 +24,7 @@ struct scheduler::Impl {
     using coroutine_set_t = cth::dt::flat_hash_set<std::coroutine_handle<>>;
 
     // ReSharper disable once CppNonExplicitConvertingConstructor
-    Impl(size_t workers) : ctx{static_cast<int>(workers)}, timerPool{ctx} { ctx.stop(); }
+    Impl(uz workers) : ctx{static_cast<int>(workers)}, timerPool{ctx} { ctx.stop(); }
 
     // the destroy in ~Impl(), not in ~scheduler(): the move assignment destroys the old Impl too
     /**

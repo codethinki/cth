@@ -1,6 +1,7 @@
 #include "cth/data/ringalloc.hpp"
 
 #include "test.hpp"
+#include "cth/types.hpp"
 
 #include <thread>
 #include <vector>
@@ -8,7 +9,7 @@
 namespace cth::dt {
 
 DATA_TEST(ring_alloc, size_and_capacity) {
-    constexpr size_t expected = 100;
+    constexpr uz expected = 100;
     ring_alloc alloc{expected};
 
     ASSERT_EQ(expected, alloc.size());
@@ -144,20 +145,20 @@ DATA_TEST(ring_alloc, max_alloc_calculations) {
 }
 
 DATA_TEST(ring_alloc, multi_thread_concurrent_allocations) {
-    constexpr size_t THREAD_COUNT = 8;
-    constexpr size_t ALLOCS_PER_THREAD = 100;
-    constexpr size_t ALLOC_SIZE = 10;
+    constexpr uz THREAD_COUNT = 8;
+    constexpr uz ALLOCS_PER_THREAD = 100;
+    constexpr uz ALLOC_SIZE = 10;
 
     // Capacity exactly large enough to hold all concurrent allocations
     ring_alloc alloc{THREAD_COUNT * ALLOCS_PER_THREAD * ALLOC_SIZE};
 
     std::vector<std::thread> threads;
-    std::atomic<size_t> success_count{0};
+    std::atomic<uz> success_count{0};
 
-    for(size_t i = 0; i < THREAD_COUNT; ++i) {
+    for(uz i = 0; i < THREAD_COUNT; ++i) {
         threads.emplace_back(
             [&]() {
-                for(size_t j = 0; j < ALLOCS_PER_THREAD; ++j) {
+                for(uz j = 0; j < ALLOCS_PER_THREAD; ++j) {
                     if(alloc.alloc(ALLOC_SIZE).has_value()) { success_count.fetch_add(1, std::memory_order_relaxed); }
                 }
             }

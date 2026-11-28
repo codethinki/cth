@@ -1,5 +1,6 @@
 #pragma once
 #include "win_types.hpp"
+#include "cth/types.hpp"
 
 #include <filesystem>
 #include <vector>
@@ -38,6 +39,6 @@ std::optional<bool> active(std::wstring_view process_name);
  * @param process_name file name of the executable, without path
  * @return number of processes, `0` -> none or `enumerate()` failed
  */
-std::optional<size_t> count(std::wstring_view process_name);
+std::optional<uz> count(std::wstring_view process_name);
 
 }

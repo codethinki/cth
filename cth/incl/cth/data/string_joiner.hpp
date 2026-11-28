@@ -2,6 +2,7 @@
 #include "cth/algorithm/ranges.hpp"
 #include "cth/algorithm/views.hpp"
 #include "cth/meta/variadic.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <string>
@@ -29,7 +30,7 @@ public:
     string_joiner(std::string_view delimiter, Rng&& rng) : _delimiter{delimiter},
         _buffer{std::format("{}", rng | cth::views::format(_delimiter))} {}
 
-    string_joiner(std::string_view delimiter, size_t capacity) : _delimiter{delimiter} { _buffer.reserve(capacity); }
+    string_joiner(std::string_view delimiter, uz capacity) : _delimiter{delimiter} { _buffer.reserve(capacity); }
 
     template<class T>
     auto& operator+=(this auto&& self, T&& value) {

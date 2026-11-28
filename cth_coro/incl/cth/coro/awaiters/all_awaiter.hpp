@@ -10,6 +10,7 @@
 #include <cth/meta/concepts.hpp>
 #include <cth/meta/coro.hpp>
 #include <cth/ptr/ref_wrapper.hpp>
+#include <cth/types.hpp>
 
 #include <algorithm>
 #include <array>
@@ -116,7 +117,7 @@ protected:
 
         auto const coroutines = std::ranges::distance(handles) - std::ranges::count(handles, nullptr);
         // one more for the start: no child resumes the caller before every child started
-        _state.count.store(static_cast<size_t>(coroutines) + 1, std::memory_order_relaxed);
+        _state.count.store(static_cast<uz>(coroutines) + 1, std::memory_order_relaxed);
 
         if constexpr(std::same_as<Policy, std::execution::parallel_policy>) {
             // each child is posted once the next one is known: the last one starts inline
@@ -142,7 +143,7 @@ protected:
      * @throws cth::except::group_coro_exception reason: a child failed, one exception per child
      */
     template<std::ranges::forward_range Exceptions>
-    static void throw_failures(size_t children, Exceptions&& exceptions) {
+    static void throw_failures(uz children, Exceptions&& exceptions) {
         auto const failed = [](auto const& child) { return std::get<1>(child) != nullptr; };
         if(std::ranges::none_of(exceptions, failed)) return;
 
@@ -208,7 +209,7 @@ using all_element_t = std::conditional_t<
  */
 template<all_policy Policy, class... Awaitables>
 class all_awaiter : public all_awaiter_base {
-    static constexpr size_t CHILDREN = sizeof...(Awaitables);
+    static constexpr uz CHILDREN = sizeof...(Awaitables);
 
 public:
     explicit all_awaiter(std::tuple<Awaitables...>&& awaitables) : _awaitables{std::move(awaitables)} {}
@@ -219,7 +220,7 @@ public:
      */
     template<this_coro_compatible Caller>
     bool await_suspend(std::coroutine_handle<Caller> caller) {
-        [&]<size_t... Is>(std::index_sequence<Is...>) {
+        [&]<uz... Is>(std::index_sequence<Is...>) {
             ((std::get<Is>(_coroutines) = add(caller, std::get<Is>(_awaitables), std::get<Is>(_slots))), ...);
         }(std::index_sequence_for<Awaitables...>{});
 
@@ -237,10 +238,10 @@ public:
      * @throws cth::except::group_coro_exception reason: a child failed
      */
     auto await_resume() {
-        [this]<size_t... Is>(std::index_sequence<Is...>) {
+        [this]<uz... Is>(std::index_sequence<Is...>) {
             throw_failures(
                 CHILDREN,
-                std::array<std::pair<size_t, std::exception_ptr>, CHILDREN>{
+                std::array<std::pair<uz, std::exception_ptr>, CHILDREN>{
                     std::pair{Is, result<Is>().exception}...
                 }
             );
@@ -248,7 +249,7 @@ public:
 
         if constexpr((mta::is_void<awaited_t<Awaitables>> && ...)) return;
         else
-            return [this]<size_t... Is>(std::index_sequence<Is...>) {
+            return [this]<uz... Is>(std::index_sequence<Is...>) {
                 return std::tuple_cat(element<Is>()...);
             }(std::index_sequence_for<Awaitables...>{});
     }
@@ -257,7 +258,7 @@ private:
     /**
      * @return the slot or the promise of the child
      */
-    template<size_t I>
+    template<uz I>
     [[nodiscard]] auto& result() {
         auto& coroutine = std::get<I>(_coroutines);
         return coroutine != nullptr ? *coroutine : std::get<I>(_slots);
@@ -266,7 +267,7 @@ private:
     /**
      * @return the result of the child in a tuple, an empty tuple for a void child
      */
-    template<size_t I>
+    template<uz I>
     [[nodiscard]] auto element() {
         using result_type = awaited_t<std::tuple_element_t<I, std::tuple<Awaitables...>>>;
         if constexpr(mta::is_void<result_type>) return std::tuple<>{};
@@ -293,7 +294,7 @@ class all_range_awaiter : public all_awaiter_base {
      * child with a coroutine, a result or an exception
      */
     struct child_entry {
-        size_t childIdx; ///< in the order of the range
+        uz childIdx; ///< in the order of the range
         raw_promise<result_type> slot{}; ///< the result or the exception of a ready awaiter
         /** `nullptr` -> ready, the result is in `child_entry::slot` */
         all_child_ptr<result_type> coroutine{};
@@ -315,9 +316,9 @@ public:
      */
     template<this_coro_compatible Caller>
     bool await_suspend(std::coroutine_handle<Caller> caller) {
-        _children = static_cast<size_t>(std::ranges::distance(_range));
+        _children = static_cast<uz>(std::ranges::distance(_range));
 
-        size_t childIdx = 0;
+        uz childIdx = 0;
         for(auto&& awaitable : _range) {
             child_entry entry{.childIdx = childIdx++};
             entry.coroutine = add(caller, std::forward<decltype(awaitable)>(awaitable), entry.slot);
@@ -357,7 +358,7 @@ public:
 
 private:
     Range _range;
-    size_t _children = 0; ///< count of the children of the range
+    uz _children = 0; ///< count of the children of the range
 
     // after the range: destroyed first, a child can refer to an element of the range
     /**

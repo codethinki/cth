@@ -2,6 +2,7 @@
 #include "cth/constants.hpp"
 #include "cth/data/hash_map.hpp"
 #include "test.hpp"
+#include "cth/types.hpp"
 
 #include <atomic>
 #include <cstddef>
@@ -36,14 +37,14 @@ struct ObjectResetter {
 
 // captures @ref n distinct thread ids belonging to threads that are all alive at the same time,
 // guaranteeing the ids are pairwise distinct (an id may otherwise be recycled after a thread ends)
-[[nodiscard]] std::vector<std::thread::id> distinctIds(size_t n) {
+[[nodiscard]] std::vector<std::thread::id> distinctIds(uz n) {
     std::vector<std::thread::id> ids(n);
     std::latch captured{static_cast<std::ptrdiff_t>(n)};
     std::atomic_bool release{false};
 
     std::vector<std::jthread> threads;
     threads.reserve(n);
-    for(size_t i = 0; i < n; ++i)
+    for(uz i = 0; i < n; ++i)
         threads.emplace_back([&, i] {
             ids[i] = std::this_thread::get_id();
             captured.count_down();
@@ -127,7 +128,7 @@ DATA_TEST(thread_pool, acquire_is_idempotent_for_same_id) {
     tp.emplace(2);
 
     int& first = tp.acquire();
-    size_t const remainingAfterFirst = tp.remaining();
+    uz const remainingAfterFirst = tp.remaining();
 
     // repeated acquires by the same id return the very same resource without touching the pool
     int& second = tp.acquire();
@@ -269,10 +270,10 @@ DATA_TEST(thread_pool, clear_resets_active_objects_when_supported) {
 
 DATA_TEST(thread_pool, concurrent_acquire_gives_each_thread_a_distinct_resource) {
     // exercises the "thread safe" claim: many threads acquire simultaneously
-    constexpr size_t THREADS = 16;
+    constexpr uz THREADS = 16;
 
     thread_pool<int> tp;
-    for(size_t i = 0; i < THREADS; ++i)
+    for(uz i = 0; i < THREADS; ++i)
         tp.emplace(static_cast<int>(i));
 
     std::vector<int*> acquired(THREADS, nullptr);
@@ -281,7 +282,7 @@ DATA_TEST(thread_pool, concurrent_acquire_gives_each_thread_a_distinct_resource)
     {
         std::vector<std::jthread> workers;
         workers.reserve(THREADS);
-        for(size_t i = 0; i < THREADS; ++i)
+        for(uz i = 0; i < THREADS; ++i)
             workers.emplace_back([&, i] {
                 start.arrive_and_wait(); // maximise contention
                 acquired[i] = &tp.acquire();
@@ -298,19 +299,19 @@ DATA_TEST(thread_pool, concurrent_acquire_gives_each_thread_a_distinct_resource)
 }
 
 DATA_TEST(thread_pool, concurrent_acquire_release_cycles_stay_consistent) {
-    constexpr size_t THREADS = 8;
-    constexpr size_t ITERATIONS = 200;
+    constexpr uz THREADS = 8;
+    constexpr uz ITERATIONS = 200;
 
     thread_pool<int> tp;
-    for(size_t i = 0; i < THREADS; ++i)
+    for(uz i = 0; i < THREADS; ++i)
         tp.emplace(0);
 
     {
         std::vector<std::jthread> workers;
         workers.reserve(THREADS);
-        for(size_t i = 0; i < THREADS; ++i)
+        for(uz i = 0; i < THREADS; ++i)
             workers.emplace_back([&] {
-                for(size_t it = 0; it < ITERATIONS; ++it) {
+                for(uz it = 0; it < ITERATIONS; ++it) {
                     int& r = tp.acquire();
                     r += 1;
                     tp.release();

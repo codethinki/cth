@@ -5,6 +5,7 @@
 #include "cth/coro/utility/fwd.hpp"
 
 #include <cth/ptr/ref_wrapper.hpp>
+#include <cth/types.hpp>
 
 #include <atomic>
 #include <coroutine>
@@ -20,7 +21,7 @@ struct all_state {
     /**
      * the children that did not end, plus one while the awaiter starts them
      */
-    std::atomic<size_t> count{};
+    std::atomic<uz> count{};
 
     co::context const* callerContext = nullptr; ///< the caller resumes on it
 };

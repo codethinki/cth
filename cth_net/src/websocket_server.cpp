@@ -9,6 +9,7 @@
 #include <hv/WebSocketServer.h>
 #include <hv/hlog.h>
 #include <hv/hsocket.h>
+#include "cth/types.hpp"
 
 #include <atomic>
 #include <deque>
@@ -21,7 +22,7 @@
 namespace cth::net {
 namespace {
     void forward_libhv_log(int level, char const* message, int length) {
-        std::string_view text{message, static_cast<std::size_t>(length)};
+        std::string_view text{message, static_cast<uz>(length)};
         while(text.ends_with('\n') || text.ends_with('\r'))
             text.remove_suffix(1);
 
@@ -46,8 +47,8 @@ namespace {
 struct websocket_server::impl {
     hv::WebSocketService service;
     hv::WebSocketServer server{&service};
-    std::size_t maxMessageSize;
-    std::uint16_t boundPort{};
+    uz maxMessageSize;
+    u16 boundPort{};
 
     mutable std::mutex mutex;
     dt::flat_hash_map<hv::WebSocketChannel*, std::shared_ptr<dev::websocket_connection_state>>
@@ -57,7 +58,7 @@ struct websocket_server::impl {
 
     std::atomic_bool stopRequested = false;
 
-    impl(std::uint16_t port, std::size_t maxMessageSize);
+    impl(u16 port, uz maxMessageSize);
     ~impl();
 
     void configure_callbacks();
@@ -71,7 +72,7 @@ struct websocket_server::impl {
 
 namespace cth::net {
 
-websocket_server::impl::impl(std::uint16_t port, std::size_t maxMessageSize) :
+websocket_server::impl::impl(u16 port, uz maxMessageSize) :
     maxMessageSize{maxMessageSize} {
     CTH_CRITICAL(maxMessageSize == 0, "WebSocket maximum message size must be positive") {}
 
@@ -192,7 +193,7 @@ void websocket_server::impl::stop() noexcept {
 
 namespace cth::net {
 
-websocket_server::websocket_server(std::uint16_t port, std::size_t maxMessageSize) :
+websocket_server::websocket_server(u16 port, uz maxMessageSize) :
     _impl{std::make_unique<impl>(port, maxMessageSize)} {}
 
 websocket_server::~websocket_server() = default;
@@ -243,7 +244,7 @@ void websocket_server::stop() const noexcept {
         _impl->stop();
 }
 
-std::optional<std::uint16_t> websocket_server::port() const noexcept {
+std::optional<u16> websocket_server::port() const noexcept {
     CTH_CRITICAL(!_impl, "use after move") {}
     return _impl->boundPort;
 }

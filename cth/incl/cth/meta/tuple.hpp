@@ -1,6 +1,7 @@
 #pragma once
 #include "cth/macro.hpp"
 #include "utility.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <utility>
@@ -29,14 +30,14 @@ using trait_apply_t = trait_apply<Trait, Tuple>::type;
 namespace cth::mta {
 
 namespace dev {
-    template<class T, size_t... I>
+    template<class T, uz... I>
     consteval auto n_tuple_gen(T fill, std::index_sequence<I...>) { return std::tuple{(mta::zero(I), fill)...}; }
 }
 
-template<size_t N, class T>
+template<uz N, class T>
 [[nodiscard]] consteval auto n_tuple(T fill = {}) { return dev::n_tuple_gen(fill, std::make_index_sequence<N>()); }
 
-template<size_t N>
+template<uz N>
 [[nodiscard]] consteval auto n_tuple() { return n_tuple<N>(0); }
 
 }

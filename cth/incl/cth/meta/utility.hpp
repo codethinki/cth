@@ -1,5 +1,6 @@
 #pragma once
 #include "cth/macro.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <limits>
@@ -12,7 +13,7 @@ namespace cth::mta {
 
 constexpr auto no_range = [] {};
 constexpr auto empty = [] {};
-constexpr size_t MAX_DEPTH = (std::numeric_limits<size_t>::max)();
+constexpr uz MAX_DEPTH = (std::numeric_limits<uz>::max)();
 
 using no_range_t = decltype(no_range);
 using empty_t = decltype(empty);
@@ -23,13 +24,13 @@ using type_of_t = decltype(TraitValue)::type;
 
 namespace cth::mta {
 
-template<class T = size_t>
-consteval size_t zero() { return 0; }
+template<class T = uz>
+consteval uz zero() { return 0; }
 
 template<class T>
-consteval size_t zero(T) { return zero<T>(); }
+consteval uz zero(T) { return zero<T>(); }
 template<auto Val>
-consteval size_t zero() { return mta::zero(Val); }
+consteval uz zero() { return mta::zero(Val); }
 
 template<bool Copy, class T>
 decltype(auto) copy_if(T&& value) {

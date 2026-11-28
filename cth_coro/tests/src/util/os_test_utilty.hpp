@@ -1,6 +1,7 @@
 #pragma once
 #include <cth/os/native_handle.hpp>
 #include <cth/os/osdef.hpp>
+#include <cth/types.hpp>
 
 #ifdef CTH_FS_WINDOWS
 #ifndef WIN32_LEAN_AND_MEAN
@@ -26,7 +27,7 @@ inline void signal_event(native_handle_t handle) {
 #ifdef CTH_FS_WINDOWS
     SetEvent(handle);
 #elifdef CTH_FS_POSIX
-    uint64_t val = 1;
+    u64 val = 1;
     [[maybe_unused]] auto result = write(handle, &val, sizeof(val));
 #endif
 }

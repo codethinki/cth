@@ -1,6 +1,7 @@
 #pragma once
 #include "../macro.hpp"
 #include "tuple.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <mdspan>
@@ -12,7 +13,7 @@ namespace cth::mta {
  * @tparam D dimensions
  * @tparam Extent extent of every dimension
  */
-template<size_t D, auto Extent>
+template<uz D, auto Extent>
 [[nodiscard]] consteval auto mdextent() {
     return std::apply(
         [] < class... Args >(Args... args) {
@@ -27,7 +28,7 @@ template<size_t D, auto Extent>
  * @tparam D dimensions
  * @tparam Extent extent of every dimension
  */
-template<size_t D, auto Extent>
+template<uz D, auto Extent>
 using sq_mdextent_t = decltype(mdextent<D, Extent>());
 
 /**
@@ -36,10 +37,10 @@ using sq_mdextent_t = decltype(mdextent<D, Extent>());
  * @tparam D dimensions
  * @tparam Extent extent of every dimension (`std::dynamic_extent` => dynamic extents)
  */
-template<class T, size_t D, size_t Extent = std::dynamic_extent>
+template<class T, uz D, uz Extent = std::dynamic_extent>
 using sq_mdspan_t = std::mdspan<T, sq_mdextent_t<D, Extent>>;
 
-template<class T, size_t... Extents>
-using mdspan_t = std::mdspan<T, std::extents<size_t, Extents...>>;
+template<class T, uz... Extents>
+using mdspan_t = std::mdspan<T, std::extents<uz, Extents...>>;
 
 }

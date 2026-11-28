@@ -1,5 +1,6 @@
 #pragma once
 #include "../io/log.hpp"
+#include "cth/types.hpp"
 
 #include <cstdint>
 #include <stb_image.h>
@@ -13,7 +14,7 @@ struct stb_image {
         CTH_ERR(!std::filesystem::exists(path), "file not found") throw details->exception();
 
         int width = 0, height = 0, channels = 0;
-        uint8_t* ptr = stbi_load(path.data(), &width, &height, &channels, desired_channels);
+        u8* ptr = stbi_load(path.data(), &width, &height, &channels, desired_channels);
 
         CTH_ERR(width == 0 || height == 0, "failed to load file") throw details->exception();
 
@@ -27,33 +28,33 @@ struct stb_image {
         _width = width;
         _height = height;
         _channels = channels;
-        _data = std::span{ptr, static_cast<size_t>(width * height * channels)};
+        _data = std::span{ptr, static_cast<uz>(width * height * channels)};
     }
-    stb_image(int width, int height, int channels, uint8_t* ptr) :
+    stb_image(int width, int height, int channels, u8* ptr) :
         _width(width), _height(height), _channels(channels),
-        _data{ptr, static_cast<size_t>(width * height * channels)} {}
+        _data{ptr, static_cast<uz>(width * height * channels)} {}
     ~stb_image() { stbi_image_free(_data.data()); }
 
 private:
-    size_t _width, _height, _channels;
-    std::span<uint8_t> _data{};
+    uz _width, _height, _channels;
+    std::span<u8> _data{};
 
 public:
-    [[nodiscard]] size_t size() const { return _width * _height * _channels; }
-    [[nodiscard]] size_t width() const { return _width; }
-    [[nodiscard]] size_t height() const { return _height; }
-    [[nodiscard]] size_t channels() const { return _channels; }
-    [[nodiscard]] size_t pixels() const { return _width * _height; }
+    [[nodiscard]] uz size() const { return _width * _height * _channels; }
+    [[nodiscard]] uz width() const { return _width; }
+    [[nodiscard]] uz height() const { return _height; }
+    [[nodiscard]] uz channels() const { return _channels; }
+    [[nodiscard]] uz pixels() const { return _width * _height; }
 
-    [[nodiscard]] auto& operator[](size_t index) { return _data[index]; }
-    [[nodiscard]] auto operator[](size_t index) const { return _data[index]; }
+    [[nodiscard]] auto& operator[](uz index) { return _data[index]; }
+    [[nodiscard]] auto operator[](uz index) const { return _data[index]; }
 
 
-    [[nodiscard]] uint8_t const* data() const { return _data.data(); }
-    [[nodiscard]] uint8_t* data() { return _data.data(); }
+    [[nodiscard]] u8 const* data() const { return _data.data(); }
+    [[nodiscard]] u8* data() { return _data.data(); }
 
-    [[nodiscard]] std::span<uint8_t const> view() const { return _data; }
-    [[nodiscard]] std::span<uint8_t> view() { return _data; }
+    [[nodiscard]] std::span<u8 const> view() const { return _data; }
+    [[nodiscard]] std::span<u8> view() { return _data; }
 
     [[nodiscard]] char* raw() { return reinterpret_cast<char*>(_data.data()); }
     [[nodiscard]] char const* raw() const { return reinterpret_cast<char*>(_data.data()); }

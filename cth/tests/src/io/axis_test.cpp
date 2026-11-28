@@ -1,6 +1,7 @@
 #include "cth/test.hpp"
 
 #include "cth/io/axis.hpp"
+#include "cth/types.hpp"
 
 #include <format>
 
@@ -12,7 +13,7 @@ namespace {
      * @details a missing case hits `std::unreachable()`, no constant expression
      */
     consteval bool every_axis_has_a_symbol() {
-        for(size_t i = 0; i < axes_size(); ++i)
+        for(uz i = 0; i < axes_size(); ++i)
             if(to_utf8_string(static_cast<Axis>(i)).empty())
                 return false;
         return true;

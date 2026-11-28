@@ -2,6 +2,7 @@
 #include "cth/win/win_types.hpp"
 
 #include <cth/io/log.hpp>
+#include <cth/types.hpp>
 
 #include <span>
 #include <string>
@@ -29,7 +30,7 @@ rect_t desktop_rect();
  * gets the desktop frame count
  * @details calls `window_frame_count()`
  */
-size_t desktop_frame_count();
+uz desktop_frame_count();
 
 /**
  * Enumerates all monitors
@@ -117,7 +118,7 @@ bool window_minimized(hwnd_t hwnd) noexcept;
  * @param hwnd to check frame count of
  * @throws cth::except::win_exception on failure
  */
-size_t window_frame_count(hwnd_t hwnd);
+uz window_frame_count(hwnd_t hwnd);
 
 double window_scale(hwnd_t window);
 
@@ -141,8 +142,8 @@ void raw_blit(
     hbmp_t dst,
     ssize_t dst_x,
     ssize_t dst_y,
-    size_t width,
-    size_t height
+    uz width,
+    uz height
 );
 
 /**
@@ -154,13 +155,13 @@ void blit(
     hbmp_t src,
     ssize_t src_x,
     ssize_t src_y,
-    size_t src_w,
-    size_t src_h,
+    uz src_w,
+    uz src_h,
     hbmp_t dst,
     ssize_t dst_x,
     ssize_t dst_y,
-    size_t dst_w,
-    size_t dst_h
+    uz dst_w,
+    uz dst_h
 );
 
 /**
@@ -176,8 +177,8 @@ void blit_to_screen(
     hbmp_t dst,
     ssize_t dst_x,
     ssize_t dst_y,
-    size_t width,
-    size_t height,
+    uz width,
+    uz height,
     bool dpi_aware
 );
 
@@ -194,8 +195,8 @@ void blit_from_screen(
     hbmp_t dst,
     ssize_t dst_x,
     ssize_t dst_y,
-    size_t width,
-    size_t height,
+    uz width,
+    uz height,
     bool dpi_aware
 );
 
@@ -220,7 +221,7 @@ namespace cth::win::ui {
  */
 class section {
 public:
-    static constexpr size_t PIXEL_SIZE = 4; ///< in bytes
+    static constexpr uz PIXEL_SIZE = 4; ///< in bytes
 
     /**
      * constructs with pos & dimensions
@@ -295,12 +296,12 @@ private:
 public:
     rect_t rect() const { return _rect; }
 
-    size_t width() const { return _rect.width; }
-    size_t height() const { return _rect.height; }
+    uz width() const { return _rect.width; }
+    uz height() const { return _rect.height; }
 
-    size_t pixels() const { return width() * height(); }
+    uz pixels() const { return width() * height(); }
 
-    size_t bytes() const { return pixels() * PIXEL_SIZE; }
+    uz bytes() const { return pixels() * PIXEL_SIZE; }
 
     std::byte* raw() { return static_cast<std::byte*>(data()); }
     std::byte const* raw() const { return static_cast<std::byte const*>(data()); }
@@ -321,5 +322,5 @@ inline double desktop_scale() { return window_scale(desktop_handle()); }
 
 inline rect_t desktop_rect() { return window_rect(desktop_handle(), true); }
 
-inline size_t desktop_frame_count() { return window_frame_count(desktop_handle()); }
+inline uz desktop_frame_count() { return window_frame_count(desktop_handle()); }
 }

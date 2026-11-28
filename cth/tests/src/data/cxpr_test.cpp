@@ -1,6 +1,7 @@
 #include "test.hpp"
 
 #include "cth/data/cxpr.hpp"
+#include "cth/types.hpp"
 
 #include <string_view>
 #include <vector>
@@ -18,14 +19,14 @@ DATA_TEST(as_cxpr_array, computed_size) {
     static constexpr std::string_view CSV = "a,bb,ccc";
 
     constexpr auto splits = as_cxpr_array<[] {
-        std::vector<size_t> result{};
-        for(size_t i = 0; i < CSV.size(); i++)
+        std::vector<uz> result{};
+        for(uz i = 0; i < CSV.size(); i++)
             if(CSV[i] == ',')
                 result.push_back(i);
         return result;
     }>();
 
-    EXPECT_EQ(splits, (std::array<size_t, 2>{1, 4}));
+    EXPECT_EQ(splits, (std::array<uz, 2>{1, 4}));
 }
 
 }

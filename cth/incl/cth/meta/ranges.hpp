@@ -3,6 +3,7 @@
 #include "cth/macro.hpp"
 #include "traits.hpp"
 #include "utility.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <ranges>
@@ -19,19 +20,19 @@ namespace cth::mta {
  * @return dimensions of `Rng`, at most `max`
  */
 template<class Rng>
-consteval size_t dimensions(size_t max = MAX_DEPTH);
+consteval uz dimensions(uz max = MAX_DEPTH);
 
 /**
  * `true` if `Rng` has at least `D` dimensions
  * @tparam Rng range
  * @tparam D dimensions
  */
-template<class Rng, size_t D>
+template<class Rng, uz D>
 concept md_range = dimensions<Rng>(D) == D;
 
 
 namespace dev {
-    template<class Rng, size_t D>
+    template<class Rng, uz D>
     consteval auto md_range_value();
 }
 
@@ -42,7 +43,7 @@ namespace dev {
  * @tparam Rng range
  * @tparam D dimensions to descend (`MAX_DEPTH` => all dimensions)
  */
-template<class Rng, size_t D = MAX_DEPTH>
+template<class Rng, uz D = MAX_DEPTH>
 using md_range_value_t = type_of_t<dev::md_range_value<Rng, D>()>;
 
 /**
@@ -52,10 +53,10 @@ template<class Rng>
 using range2d_value_t = md_range_value_t<Rng, 2>;
 
 
-template<class Rng, class T, size_t D = MAX_DEPTH>
+template<class Rng, class T, uz D = MAX_DEPTH>
 concept md_range_over = std::same_as<T, md_range_value_t<Rng, D>>;
 
-template<class Rng, auto TCpt, size_t D = MAX_DEPTH>
+template<class Rng, auto TCpt, uz D = MAX_DEPTH>
 concept md_range_over_cpt = satisfies<md_range_value_t<Rng, D>, TCpt>;
 
 

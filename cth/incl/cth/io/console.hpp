@@ -3,6 +3,7 @@
 #include "cth/data/string_joiner.hpp"
 #include "cth/meta/ranges.hpp"
 #include "cth/ptr/ref_wrapper.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <array>
@@ -10,7 +11,7 @@
 #include <stack>
 
 namespace cth::io {
-using ansi_code_t = uint8_t;
+using ansi_code_t = u8;
 
 class col_stream;
 
@@ -113,8 +114,8 @@ namespace dev {
 }
 
 struct ansi_state {
-    static constexpr size_t MODIFIERS = static_cast<size_t>(TextModifiers::TEXT_MODIFIER_SIZE);
-    static constexpr size_t ATTRIBUTES = 4 + MODIFIERS;
+    static constexpr uz MODIFIERS = static_cast<uz>(TextModifiers::TEXT_MODIFIER_SIZE);
+    static constexpr uz ATTRIBUTES = 4 + MODIFIERS;
 
     TextColor textColor = TextColor::DEFAULT;
     BGColor bgColor = BGColor::DEFAULT;
@@ -122,7 +123,7 @@ struct ansi_state {
     TextUnderline underline = TextUnderline::NONE;
     std::array<bool, MODIFIERS> modifiers{};
 
-    constexpr bool& modifier(TextModifiers modifier) { return modifiers[static_cast<size_t>(modifier)]; }
+    constexpr bool& modifier(TextModifiers modifier) { return modifiers[static_cast<uz>(modifier)]; }
 
     constexpr bool update(TextColor t) { return opt_update(textColor, t); }
     constexpr bool update(BGColor t) { return opt_update(bgColor, t); }
@@ -141,7 +142,7 @@ struct ansi_state {
         codes[2] = to_ansi_code(intensity);
         codes[3] = to_ansi_code(underline);
 
-        for(size_t i = 0; i < MODIFIERS; i++)
+        for(uz i = 0; i < MODIFIERS; i++)
             codes[4 + i] = to_ansi_code(static_cast<TextModifiers>(i), modifiers[i]);
 
         return codes;
@@ -180,7 +181,7 @@ template<std::ranges::viewable_range Rng>
 
 namespace cth::io::dev {
 
-inline constexpr size_t MAX_STACK_SIZE = 16;
+inline constexpr uz MAX_STACK_SIZE = 16;
 
 enum Cursor_Ids {
     // cursor codes

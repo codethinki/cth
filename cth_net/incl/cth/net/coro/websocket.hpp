@@ -4,6 +4,7 @@
 #include "cth/net/websocket_server.hpp"
 
 #include <cth/coro/awaiters/base/osfence_awaiter_base.hpp>
+#include <cth/types.hpp>
 
 #include <coroutine>
 #include <optional>
@@ -135,8 +136,8 @@ inline std::optional<websocket_connection> accept_awaiter::await_resume() const 
 class websocket_server {
 public:
     explicit websocket_server(
-        std::uint16_t port = 0,
-        std::size_t maxMessageSize = net::websocket_server::DEFAULT_MAX_MESSAGE_SIZE
+        u16 port = 0,
+        uz maxMessageSize = net::websocket_server::DEFAULT_MAX_MESSAGE_SIZE
     ) : _server{port, maxMessageSize} {}
 
     /** awaits and consumes the next accepted connection */
@@ -144,7 +145,7 @@ public:
 
     void stop() const noexcept { _server.stop(); }
 
-    [[nodiscard]] std::optional<std::uint16_t> port() const noexcept { return _server.port(); }
+    [[nodiscard]] std::optional<u16> port() const noexcept { return _server.port(); }
     [[nodiscard]] bool stopped() const noexcept { return _server.stopped(); }
     [[nodiscard]] os::fence const& fence() const { return _server.fence(); }
 

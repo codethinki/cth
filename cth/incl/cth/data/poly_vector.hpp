@@ -4,6 +4,7 @@
 
 #include "cth/io/log.hpp"
 #include "cth/ptr/move_ptr.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <cstring>
@@ -19,28 +20,28 @@ namespace cth::dt {
 template<mta::trivial... Ts> requires(sizeof...(Ts) >= 1)
 class raw_poly_vector {
 public:
-    static constexpr size_t MIN_ALIGN = alignof(std::max_align_t);
-    static constexpr size_t SIZE = sizeof...(Ts);
-    static constexpr size_t N = sizeof...(Ts);
+    static constexpr uz MIN_ALIGN = alignof(std::max_align_t);
+    static constexpr uz SIZE = sizeof...(Ts);
+    static constexpr uz N = sizeof...(Ts);
 
-    template<size_t I> requires(I < N)
+    template<uz I> requires(I < N)
     using value_type = mta::get_t<I, Ts...>;
 
 private:
-    static constexpr std::array<size_t, N> TYPE_ALIGNS{std::max(MIN_ALIGN, alignof(Ts))...};
+    static constexpr std::array<uz, N> TYPE_ALIGNS{std::max(MIN_ALIGN, alignof(Ts))...};
     static constexpr auto ALLOC_ALIGN = std::align_val_t{std::ranges::max(TYPE_ALIGNS)};
 
     using base_t = std::byte;
 
 public:
-    explicit constexpr raw_poly_vector(std::span<size_t const> sizes) { realloc(sizes); }
+    explicit constexpr raw_poly_vector(std::span<uz const> sizes) { realloc(sizes); }
 
-    explicit constexpr raw_poly_vector(std::initializer_list<size_t> sizes) :
+    explicit constexpr raw_poly_vector(std::initializer_list<uz> sizes) :
         raw_poly_vector(std::span{sizes}) {}
 
     constexpr ~raw_poly_vector() { free(); }
 
-    template<size_t I, class S>
+    template<uz I, class S>
     [[nodiscard]] constexpr auto data(this S& s) noexcept {
         static_assert(I < N, "I is out of bounds");
 
@@ -50,7 +51,7 @@ public:
         return std::assume_aligned<TYPE_ALIGNS[I]>(std::launder(reinterpret_cast<ptr_t>(s._begins[I])));
     }
 
-    constexpr void realloc(std::span<size_t const> sizes) {
+    constexpr void realloc(std::span<uz const> sizes) {
         CTH_CRITICAL(
             sizes.size() != N,
             "invalid sizes count ({}), requires sizeof...(Ts) = {}",
@@ -58,13 +59,13 @@ public:
             N
         ) {}
 
-        constexpr std::array<size_t, N> typeSizes{sizeof(Ts)...};
-        constexpr std::array<size_t, N> typeAligns{std::max(MIN_ALIGN, alignof(Ts))...};
-        std::array<size_t, N> byteOffsets{};
+        constexpr std::array<uz, N> typeSizes{sizeof(Ts)...};
+        constexpr std::array<uz, N> typeAligns{std::max(MIN_ALIGN, alignof(Ts))...};
+        std::array<uz, N> byteOffsets{};
 
-        size_t offset = 0;
+        uz offset = 0;
 
-        for(size_t i = 0; i < N; ++i) {
+        for(uz i = 0; i < N; ++i) {
             offset = (offset + typeAligns[i] - 1) & ~(typeAligns[i] - 1);
 
             byteOffsets[i] = offset;
@@ -80,7 +81,7 @@ public:
 
         data_ref() = static_cast<std::byte*>(::operator new(offset, ALLOC_ALIGN));
 
-        for(size_t i = 0; i < N; ++i)
+        for(uz i = 0; i < N; ++i)
             _begins[i] = data_ref() + byteOffsets[i];
     }
 
@@ -118,16 +119,16 @@ namespace cth::dt {
 template<mta::trivial... Ts>
 class poly_vector {
 public:
-    static constexpr size_t SIZE = sizeof...(Ts);
-    static constexpr size_t N = sizeof...(Ts);
+    static constexpr uz SIZE = sizeof...(Ts);
+    static constexpr uz N = sizeof...(Ts);
 
 private:
-    using base_t = raw_poly_vector<size_t, Ts...>;
+    using base_t = raw_poly_vector<uz, Ts...>;
 
     template<class S>
     using cbase_t = mta::fwd_const_t<S, base_t>;
 
-    template<size_t I, class S> requires(I <= N)
+    template<uz I, class S> requires(I <= N)
     [[nodiscard]] auto* raw_data(this S& s) noexcept { return s._base.template data<I>(); }
 
     template<class S>
@@ -137,52 +138,52 @@ private:
     }
 
 public:
-    template<size_t I> requires(I < N)
+    template<uz I> requires(I < N)
     using value_type = mta::get_t<I, Ts...>;
 
-    explicit constexpr poly_vector(std::span<size_t const> sz) : _base{make_sizes_array(sz)} {
+    explicit constexpr poly_vector(std::span<uz const> sz) : _base{make_sizes_array(sz)} {
         CTH_CRITICAL(sz.size() != N, "invalid size range given") {}
-        for(size_t i = 0; i < N; i++)
+        for(uz i = 0; i < N; i++)
             this->raw_sizes()[i] = sz[i];
     }
 
-    explicit constexpr poly_vector(std::initializer_list<size_t> sz) : poly_vector(std::span{sz}) {}
+    explicit constexpr poly_vector(std::initializer_list<uz> sz) : poly_vector(std::span{sz}) {}
 
     constexpr ~poly_vector() = default;
 
-    template<size_t I, class S> requires(I < N)
+    template<uz I, class S> requires(I < N)
     [[nodiscard]] constexpr auto data(this S& s) noexcept {
         return s.template raw_data<I + 1>();
     }
 
-    template<size_t I, class S> requires(I < N)
+    template<uz I, class S> requires(I < N)
     [[nodiscard]] constexpr auto get(this S& s) noexcept {
         return std::span{s.template data<I>(), s.template size<I>()};
     }
 
-    template<size_t I> requires(I < N)
-    [[nodiscard]] constexpr size_t size(this auto const& s) noexcept {
+    template<uz I> requires(I < N)
+    [[nodiscard]] constexpr uz size(this auto const& s) noexcept {
         return s.raw_sizes()[I];
     }
 
-    [[nodiscard]] constexpr std::span<size_t const> sizes(this auto const& s) noexcept {
+    [[nodiscard]] constexpr std::span<uz const> sizes(this auto const& s) noexcept {
         return {s.raw_sizes(), N};
     }
 
 private:
-    static constexpr auto make_sizes_array(std::span<size_t const> sz) {
-        std::array<size_t, N + 1> arr{};
+    static constexpr auto make_sizes_array(std::span<uz const> sz) {
+        std::array<uz, N + 1> arr{};
         arr[0] = N;
         std::ranges::copy(sz, arr.begin() + 1);
         return arr;
     }
 
-    [[nodiscard]] constexpr size_t min_raw_size(this poly_vector const& s) {
+    [[nodiscard]] constexpr uz min_raw_size(this poly_vector const& s) {
         auto begin = std::bit_cast<uintptr_t>(s.template raw_data<0>());
 
         auto end = std::bit_cast<uintptr_t>(s.template data<N - 1>() + s.sizes()[N - 1]);
 
-        return static_cast<size_t>(end - begin);
+        return static_cast<uz>(end - begin);
     }
 
     constexpr void copy_base_data(this poly_vector& s, poly_vector const& other) {
@@ -193,7 +194,7 @@ private:
         std::memcpy(dst, src, size);
     }
 
-    raw_poly_vector<size_t, Ts...> _base;
+    raw_poly_vector<uz, Ts...> _base;
 
 public:
     constexpr poly_vector(poly_vector const& other) : _base{make_sizes_array(other.sizes())} {

@@ -3,6 +3,7 @@
 #include "cth/win/string.hpp"
 
 #include "../win_include.hpp"
+#include "cth/types.hpp"
 
 #include <ShellScalingApi.h>
 #include <dwmapi.h>
@@ -29,7 +30,7 @@ rect_t to_rect(RECT rect) {
     auto const bottom = static_cast<ssize_t>(rect.bottom);
 
 
-    return {left, top, static_cast<size_t>(right - left), static_cast<size_t>(bottom - top)};
+    return {left, top, static_cast<uz>(right - left), static_cast<uz>(bottom - top)};
 }
 }
 
@@ -183,11 +184,11 @@ std::string window_name(hwnd_t hwnd) {
     auto const length = GetWindowTextLengthW(static_cast<HWND>(hwnd));
     CTH_WIN_STABLE_THROW(length == 0 && GetLastError() != ERROR_SUCCESS, "failed to get window name length") {}
 
-    std::wstring name(static_cast<size_t>(length) + 1, L'\0');
+    std::wstring name(static_cast<uz>(length) + 1, L'\0');
     auto const written = GetWindowTextW(static_cast<HWND>(hwnd), name.data(), static_cast<int>(name.size()));
     CTH_WIN_STABLE_THROW(written == 0 && length != 0, "failed to get window name") {}
 
-    name.resize(static_cast<size_t>(written));
+    name.resize(static_cast<uz>(written));
     return to_string(name);
 }
 
@@ -195,7 +196,7 @@ bool window_visible(hwnd_t hwnd) noexcept { return IsWindowVisible(static_cast<H
 
 bool window_minimized(hwnd_t hwnd) noexcept { return IsIconic(static_cast<HWND>(hwnd)) != 0; }
 
-size_t window_frame_count(hwnd_t hwnd) {
+uz window_frame_count(hwnd_t hwnd) {
     DWM_TIMING_INFO timingInfo{.cbSize = sizeof(DWM_TIMING_INFO)};
 
     auto hresult = DwmGetCompositionTimingInfo(static_cast<HWND>(hwnd), &timingInfo);
@@ -264,8 +265,8 @@ void raw_blit(
     hbmp_t dst,
     ssize_t dst_x,
     ssize_t dst_y,
-    size_t width,
-    size_t height
+    uz width,
+    uz height
 ) {
     auto const result = BitBlt(
         static_cast<HDC>(dst),
@@ -286,13 +287,13 @@ void blit(
     hbmp_t src,
     ssize_t src_x,
     ssize_t src_y,
-    size_t src_w,
-    size_t src_h,
+    uz src_w,
+    uz src_h,
     hbmp_t dst,
     ssize_t dst_x,
     ssize_t dst_y,
-    size_t dst_w,
-    size_t dst_h
+    uz dst_w,
+    uz dst_h
 ) {
     if(src_w == dst_w && src_h == dst_h) {
         raw_blit(src, src_x, src_y, dst, dst_x, dst_y, src_w, src_h);
@@ -335,8 +336,8 @@ void blit_to_screen(
     hbmp_t dst,
     ssize_t dst_x,
     ssize_t dst_y,
-    size_t width,
-    size_t height,
+    uz width,
+    uz height,
     bool dpi_aware
 ) {
     if(dpi_aware) {
@@ -346,8 +347,8 @@ void blit_to_screen(
 
     auto const scale = monitor_scale(static_cast<HDC>(dst), static_cast<int>(dst_x), static_cast<int>(dst_y));
 
-    auto const scaledW = static_cast<size_t>(static_cast<double>(width) * scale);
-    auto const scaledH = static_cast<size_t>(static_cast<double>(height) * scale);
+    auto const scaledW = static_cast<uz>(static_cast<double>(width) * scale);
+    auto const scaledH = static_cast<uz>(static_cast<double>(height) * scale);
     auto const screenX = static_cast<ssize_t>(static_cast<double>(dst_x) * scale);
     auto const screenY = static_cast<ssize_t>(static_cast<double>(dst_y) * scale);
 
@@ -361,8 +362,8 @@ void blit_from_screen(
     hbmp_t dst,
     ssize_t dst_x,
     ssize_t dst_y,
-    size_t width,
-    size_t height,
+    uz width,
+    uz height,
     bool dpi_aware
 ) {
     if(dpi_aware) {
@@ -374,8 +375,8 @@ void blit_from_screen(
 
     auto const scaledX = static_cast<ssize_t>(static_cast<double>(src_x) * scale);
     auto const scaledY = static_cast<ssize_t>(static_cast<double>(src_y) * scale);
-    auto const scaledW = static_cast<size_t>(static_cast<double>(width) * scale);
-    auto const scaledH = static_cast<size_t>(static_cast<double>(height) * scale);
+    auto const scaledW = static_cast<uz>(static_cast<double>(width) * scale);
+    auto const scaledH = static_cast<uz>(static_cast<double>(height) * scale);
 
     blit(src, scaledX, scaledY, scaledW, scaledH, dst, dst_x, dst_y, width, height);
 }
