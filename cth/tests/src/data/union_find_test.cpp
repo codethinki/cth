@@ -5,6 +5,7 @@
 #include "stb_image.h"
 
 #include "cth/numeric.hpp"
+#include "cth/types.hpp"
 
 #include <random>
 
@@ -27,14 +28,14 @@ DATA_TEST(union_find, gt1_chain) {
 }
 
 DATA_TEST(union_find, ctors) {
-    static constexpr size_t SIZE = 5;
+    static constexpr uz SIZE = 5;
 
     union_find sizeCtor(SIZE);
     ASSERT_EQ(sizeCtor.size(), SIZE);
-    for(size_t i = 0; i < SIZE; i++)
+    for(uz i = 0; i < SIZE; i++)
         ASSERT_TRUE(sizeCtor.root(i));
 
-    static std::array<std::vector<size_t>, SIZE> groups{
+    static std::array<std::vector<uz>, SIZE> groups{
         {
             {0, 1, 2},
             {3},
@@ -45,7 +46,7 @@ DATA_TEST(union_find, ctors) {
     union_find spanSizeCtor(SIZE, groups);
     union_find initListSizeCtor(SIZE, {{0, 1, 2}, {3}});
 
-    auto check_groups = [](union_find const& find, size_t size) {
+    auto check_groups = [](union_find const& find, uz size) {
         ASSERT_EQ(find.size(), size);
         for(auto& index : groups[0])
             ASSERT_EQ(find.find(index), *groups[0].begin());
@@ -65,9 +66,9 @@ DATA_TEST(union_find, ctors) {
 }
 
 DATA_TEST(union_find, all_of) {
-    static constexpr size_t SIZE = 3;
+    static constexpr uz SIZE = 3;
 
-    static std::array<std::vector<size_t>, SIZE> expectedGroups{
+    static std::array<std::vector<uz>, SIZE> expectedGroups{
         {
             {0, 1, 2},
             {3},
@@ -85,7 +86,7 @@ DATA_TEST(union_find, all_of) {
 
 DATA_TEST(union_find, all) {
 
-    static std::array<std::vector<size_t>, 2> expectedGroups{
+    static std::array<std::vector<uz>, 2> expectedGroups{
         {
             {0, 1, 2},
             {3},
@@ -105,7 +106,7 @@ DATA_TEST(union_find, merge_overlapping_groups) {
     find.merge({2, 3});
     find.merge({1, 3});
 
-    EXPECT_EQ(find.all_of(0), (std::vector<size_t>{0, 1, 2, 3}));
+    EXPECT_EQ(find.all_of(0), (std::vector<uz>{0, 1, 2, 3}));
 }
 
 

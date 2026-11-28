@@ -6,6 +6,7 @@
 
 #include "cth/algorithm.hpp"
 #include "cth/string.hpp"
+#include "cth/types.hpp"
 #define VIEWS_TEST(suite, test_name) CTH_EX_TEST(_views, suite, test_name)
 
 namespace cth::views {
@@ -82,7 +83,7 @@ struct A {
 
     int foo(int a) const { return asdf + a; }
     double f(int, double d, float) { return asdf + d; }
-    static size_t x(A const& a) { return a.asdf; }
+    static uz x(A const& a) { return a.asdf; }
 
     int asdf;
 };

@@ -8,6 +8,7 @@
 #include <cth/coro/this_coro.hpp>
 #include <cth/coro/utility/concepts.hpp>
 #include <cth/os/fence.hpp>
+#include <cth/types.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -36,19 +37,19 @@ namespace {
 }
 
 CORO_TEST(strand, jobs_run_one_at_a_time_in_post_order) {
-    constexpr size_t workers = 4;
-    constexpr size_t jobs = 1000;
+    constexpr uz workers = 4;
+    constexpr uz jobs = 1000;
 
-    std::atomic<size_t> running{0};
-    std::atomic<size_t> maxRunning{0};
-    std::vector<size_t> order{};
+    std::atomic<uz> running{0};
+    std::atomic<uz> maxRunning{0};
+    std::vector<uz> order{};
     order.reserve(jobs);
     std::latch done{jobs};
 
     scheduler sched{autostart, workers};
     strand serial{sched};
 
-    for(size_t i = 0; i < jobs; ++i)
+    for(uz i = 0; i < jobs; ++i)
         serial.post([&, i] {
             auto const now = running.fetch_add(1) + 1;
             auto max = maxRunning.load();
@@ -65,7 +66,7 @@ CORO_TEST(strand, jobs_run_one_at_a_time_in_post_order) {
 
     EXPECT_FALSE(serial.owns_thread());
     EXPECT_EQ(maxRunning.load(), 1);
-    EXPECT_TRUE(std::ranges::equal(order, std::views::iota(size_t{0}, jobs)));
+    EXPECT_TRUE(std::ranges::equal(order, std::views::iota(uz{0}, jobs)));
 }
 
 CORO_TEST(strand, await_handle_calls_inside_strand) {
@@ -153,9 +154,9 @@ CORO_TEST(strand, schedule_from_a_scheduler_job_enters_an_idle_strand_inline) {
 }
 
 CORO_TEST(strand, dispatch_onto_a_busy_strand_queues_in_order) {
-    constexpr size_t JOBS = 100;
+    constexpr uz JOBS = 100;
 
-    std::vector<size_t> order{};
+    std::vector<uz> order{};
     order.reserve(JOBS + 1);
     std::binary_semaphore released{0};
     std::binary_semaphore dispatched{0};
@@ -171,7 +172,7 @@ CORO_TEST(strand, dispatch_onto_a_busy_strand_queues_in_order) {
         done.count_down();
     });
     sched.post([&] {
-        for(size_t i = 1; i <= JOBS; ++i)
+        for(uz i = 1; i <= JOBS; ++i)
             serial.dispatch([&, i] {
                 order.push_back(i); // the strand serializes the access
                 done.count_down();
@@ -184,7 +185,7 @@ CORO_TEST(strand, dispatch_onto_a_busy_strand_queues_in_order) {
     done.wait();
 
     EXPECT_TRUE(returned);
-    EXPECT_TRUE(std::ranges::equal(order, std::views::iota(size_t{0}, JOBS + 1)));
+    EXPECT_TRUE(std::ranges::equal(order, std::views::iota(uz{0}, JOBS + 1)));
 }
 
 CORO_TEST(strand, dispatch_from_a_foreign_thread_posts) {
@@ -375,13 +376,13 @@ CORO_TEST(strand, scheduler_jobs_run_beside_strand_job) {
 }
 
 CORO_TEST(strand, co_await_waits_for_the_jobs_posted_before) {
-    constexpr size_t THREADS = 4;
-    constexpr size_t JOBS = 50;
+    constexpr uz THREADS = 4;
+    constexpr uz JOBS = 50;
 
     scheduler sched{autostart, 4};
     strand serial{sched};
 
-    std::atomic<size_t> ran{0};
+    std::atomic<uz> ran{0};
     std::atomic<bool> awaits{false};
 
     // holds the strand until the task awaits it, the jobs below wait in the queue
@@ -392,14 +393,14 @@ CORO_TEST(strand, co_await_waits_for_the_jobs_posted_before) {
 
     {
         std::vector<std::jthread> threads{};
-        for(size_t i = 0; i < THREADS; ++i)
+        for(uz i = 0; i < THREADS; ++i)
             threads.emplace_back([&serial, &ran] {
-                for(size_t j = 0; j < JOBS; ++j)
+                for(uz j = 0; j < JOBS; ++j)
                     serial.post([&ran] { ran.fetch_add(1); });
             });
     }
 
-    auto task = [](strand const& s, std::atomic<size_t>& count, std::atomic<bool>& started) -> executor_task<size_t> {
+    auto task = [](strand const& s, std::atomic<uz>& count, std::atomic<bool>& started) -> executor_task<uz> {
         started = true;
         started.notify_one();
         co_await s;
@@ -455,13 +456,13 @@ CORO_TEST(strand, co_await_inside_strand_continues_inside_strand) {
 }
 
 CORO_TEST(strand, destruction_right_after_co_await_from_outside) {
-    constexpr size_t JOBS = 100;
+    constexpr uz JOBS = 100;
 
     scheduler sched{autostart, 4};
     std::optional<strand> serialOpt{std::in_place, sched};
 
-    std::atomic<size_t> ran{0};
-    for(size_t i = 0; i < JOBS; ++i)
+    std::atomic<uz> ran{0};
+    for(uz i = 0; i < JOBS; ++i)
         serialOpt->post([&ran] { ran.fetch_add(1); });
 
     auto task = [](std::optional<strand>& s) -> executor_task<void> {

@@ -2,9 +2,10 @@
 
 #include "cth/win/string.hpp"
 #include "win_include.hpp"
+#include "cth/types.hpp"
 
 namespace cth::win::cmd {
-size_t hidden_dir(std::string_view dir, std::string_view command) {
+uz hidden_dir(std::string_view dir, std::string_view command) {
     PROCESS_INFORMATION pInfo{};
     STARTUPINFOW sInfo{};
     sInfo.cb = sizeof(sInfo);

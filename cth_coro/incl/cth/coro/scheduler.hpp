@@ -5,6 +5,7 @@
 
 #include "context.hpp"
 #include "utility/fwd.hpp"
+#include <cth/types.hpp>
 
 
 #include <thread>
@@ -37,14 +38,14 @@ public:
      * @param workers number of worker threads
      * @pre `0 < workers < MAX_INT`
      */
-    explicit scheduler(size_t workers = 1);
+    explicit scheduler(uz workers = 1);
 
     /**
      * constructs the scheduler and calls `start()`
      * @param workers number of worker threads
      * @pre `0 < workers < MAX_INT`
      */
-    explicit scheduler(autostart_t, size_t workers = 1) : scheduler{workers} { start(); }
+    explicit scheduler(autostart_t, uz workers = 1) : scheduler{workers} { start(); }
     /**
      * calls `await_stop()`, destroys the detached coroutines without a scope that did not end
      * @details blocks until the jobs that run end
@@ -94,7 +95,7 @@ private:
     [[nodiscard]] Impl& impl() const { return *_impl; }
 
     std::unique_ptr<Impl> _impl;
-    std::unique_ptr<std::atomic<size_t>> _activeWorkers{};
+    std::unique_ptr<std::atomic<uz>> _activeWorkers{};
     std::vector<std::jthread> _workers{};
 
 public:
@@ -104,12 +105,12 @@ public:
      */
     [[nodiscard]] bool owns_thread() const override { return _threadScheduler == _impl.get(); }
 
-    [[nodiscard]] size_t workers() const { return _workers.size(); }
+    [[nodiscard]] uz workers() const { return _workers.size(); }
     /**
      * counts the workers that run at the moment
      * @pre not moved from
      */
-    [[nodiscard]] size_t active_workers() const {
+    [[nodiscard]] uz active_workers() const {
         CTH_CRITICAL(!_activeWorkers, "use after move") {}
         return _activeWorkers->load(std::memory_order_relaxed);
     }

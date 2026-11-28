@@ -4,6 +4,7 @@
 #include "cth/win/ui/screen.hpp"
 
 #include "cth/win/string.hpp"
+#include "cth/types.hpp"
 
 
 namespace cth::win::ui {
@@ -67,7 +68,7 @@ WIN_SCREEN_TEST(window_rect, main) {
  * Converts a raw BGRA byte buffer into a visual ASCII/Unicode string.
  * Useful for debugging capture logic in the console.
  */
-inline std::string to_ascii_view(std::span<std::byte> pixels, size_t width, size_t height) {
+inline std::string to_ascii_view(std::span<std::byte> pixels, cth::uz width, cth::uz height) {
     // 1. Define the Palette (Dark -> Light)
     // You can change these characters to whatever Unicode you prefer.
     // Example: " ░▒▓█" for blocky look, or " .:-=+*#%@" for classic ASCII.
@@ -78,13 +79,13 @@ inline std::string to_ascii_view(std::span<std::byte> pixels, size_t width, size
     std::string result;
     result.resize(height * (width + 1));
 
-    size_t outIdx = 0;
-    size_t const maxPaletteIdx = PALETTE.size() - 1;
+    cth::uz outIdx = 0;
+    cth::uz const maxPaletteIdx = PALETTE.size() - 1;
 
-    for(size_t y = 0; y < height; ++y) {
-        for(size_t x = 0; x < width; ++x) {
+    for(cth::uz y = 0; y < height; ++y) {
+        for(cth::uz x = 0; x < width; ++x) {
             // 3. Calculate Input Index (BGRA = 4 bytes)
-            size_t const idx = (y * width + x) * 4;
+            cth::uz const idx = (y * width + x) * 4;
 
             // Safety check
             if(idx + 2 >= pixels.size())

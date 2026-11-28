@@ -1,6 +1,7 @@
 #pragma once
 #include "cth/data/hash_map.hpp"
 #include "cth/data/pool.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <mutex>
@@ -95,13 +96,13 @@ private:
 
 public:
     /** total number of instances in the pool */
-    [[nodiscard]] size_t capacity() const {
+    [[nodiscard]] uz capacity() const {
         std::lock_guard lock{_mtx};
         return _pool.capacity();
     }
 
     /** remaining instances to acquire without releasing */
-    [[nodiscard]] size_t remaining() const {
+    [[nodiscard]] uz remaining() const {
         std::lock_guard lock{_mtx};
         return _pool.remaining();
     }
@@ -113,7 +114,7 @@ public:
     }
 
     /** number of threads currently holding a resource */
-    [[nodiscard]] size_t bound() const {
+    [[nodiscard]] uz bound() const {
         std::lock_guard lock{_mtx};
         return _bound.size();
     }

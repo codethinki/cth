@@ -2,6 +2,7 @@
 
 #include "utility/device.hpp"
 #include "utility/winrt_include.hpp"
+#include "cth/types.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -158,7 +159,7 @@ struct window_capture::impl {
         buffer.resize(height * rowBytes);
 
         auto const* src = static_cast<std::byte const*>(mapped.pData);
-        for(size_t y = 0; y < height; ++y)
+        for(uz y = 0; y < height; ++y)
             std::memcpy(buffer.data() + y * rowBytes, src + y * mapped.RowPitch, rowBytes);
 
         d3DContext->Unmap(staging.get(), 0);
@@ -213,8 +214,8 @@ struct window_capture::impl {
     winrt::Windows::Graphics::SizeInt32 poolSize{};
 
     std::vector<std::byte> buffer{};
-    size_t width = 0;
-    size_t height = 0;
+    uz width = 0;
+    uz height = 0;
 
     std::mutex mtx{};
     std::condition_variable cv{};
@@ -258,8 +259,8 @@ void window_capture::capture_cursor(bool enable) {
 
 bool window_capture::closed() const { return _impl->closed; }
 
-size_t window_capture::width() const { return _impl->width; }
-size_t window_capture::height() const { return _impl->height; }
+uz window_capture::width() const { return _impl->width; }
+uz window_capture::height() const { return _impl->height; }
 
 std::span<std::byte> window_capture::view() { return {_impl->buffer.data(), _impl->buffer.size()}; }
 std::span<std::byte const> window_capture::view() const { return {_impl->buffer.data(), _impl->buffer.size()}; }

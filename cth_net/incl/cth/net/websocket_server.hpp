@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cth/net/websocket_connection.hpp"
+#include "cth/types.hpp"
 
 #include <chrono>
 #include <cstddef>
@@ -13,11 +14,11 @@ namespace cth::net {
 /** `WebSocket` server bound to the IPv4 loopback interface. */
 class websocket_server {
 public:
-    static constexpr std::size_t DEFAULT_MAX_MESSAGE_SIZE = 1024 * 1024;
+    static constexpr uz DEFAULT_MAX_MESSAGE_SIZE = 1024 * 1024;
 
     explicit websocket_server(
-        std::uint16_t port = 0,
-        std::size_t maxMessageSize = DEFAULT_MAX_MESSAGE_SIZE
+        u16 port = 0,
+        uz maxMessageSize = DEFAULT_MAX_MESSAGE_SIZE
     );
     ~websocket_server();
 
@@ -32,7 +33,7 @@ public:
     /** stops accepting and closes all connections */
     void stop() const noexcept;
 
-    [[nodiscard]] std::optional<std::uint16_t> port() const noexcept;
+    [[nodiscard]] std::optional<u16> port() const noexcept;
     [[nodiscard]] bool stopped() const noexcept;
 
     /**

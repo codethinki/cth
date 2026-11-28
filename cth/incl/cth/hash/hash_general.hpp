@@ -1,6 +1,7 @@
 #pragma once
 #include "cth/macro.hpp"
 #include "cth/meta/ranges.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <functional>
@@ -8,23 +9,23 @@
 namespace cth::hash {
 namespace dev {
     template<class T>
-    constexpr size_t& combine(size_t& seed, T const& v) {
+    constexpr uz& combine(uz& seed, T const& v) {
         // from: https://stackoverflow.com/a/57595105
         return seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
 }
 
 template<class... Args>
-constexpr size_t combine(Args&&... args) {
-    size_t seed = 0;
+constexpr uz combine(Args&&... args) {
+    uz seed = 0;
 
     (dev::combine(seed, std::forward<Args>(args)), ...);
     return seed;
 }
 
 template<class Rng> requires(std::ranges::range<Rng>)
-constexpr size_t rng(Rng&& rng) {
-    size_t seed = 0;
+constexpr uz rng(Rng&& rng) {
+    uz seed = 0;
     for(auto const& v : std::forward<Rng>(rng))
         dev::combine(seed, v);
     return seed;
@@ -35,10 +36,10 @@ constexpr size_t rng(Rng&& rng) {
 #define CTH_DEV_HASH_OVERLOAD(T, func, prefix)                                                        \
         template<>                                                                                    \
         struct std::hash<T> {                                                                         \
-            prefix size_t operator()(T const& x) const noexcept(cth::mta::nothrow_callable_with<func, \
+            prefix cth::uz operator()(T const& x) const noexcept(cth::mta::nothrow_callable_with<func, \
     T const&>) {                                                                                      \
                 static_assert(                                                                        \
-    cth::mta::call_signature<func, size_t, T const&>,                                                 \
+    cth::mta::call_signature<func, cth::uz, T const&>,                                                \
     "invalid hash overload function: " #func " for " #T                                               \
                 );                                                                                    \
                 return func(x);                                                                       \

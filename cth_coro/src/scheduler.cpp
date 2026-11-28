@@ -4,12 +4,13 @@
 
 
 #include <cth/numeric.hpp>
+#include <cth/types.hpp>
 
 
 namespace cth::co {
 
-scheduler::scheduler(size_t workers) : _impl{std::make_unique<Impl>(workers)},
-    _activeWorkers{std::make_unique<std::atomic<size_t>>()},
+scheduler::scheduler(uz workers) : _impl{std::make_unique<Impl>(workers)},
+    _activeWorkers{std::make_unique<std::atomic<uz>>()},
     _workers{workers} {
     CTH_CRITICAL((!expr::num::in(workers, 1, std::numeric_limits<int>::max())), "workers out of range") {}
 }

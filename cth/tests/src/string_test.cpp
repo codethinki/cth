@@ -1,6 +1,7 @@
 #include "cth/string.hpp"
 
 #include "cth/test.hpp"
+#include "cth/types.hpp"
 
 #include <filesystem>
 
@@ -19,12 +20,12 @@ STR_TEST(to_string, range_decline_nonstatic_dim) {
 }
 
 STR_TEST(to_num, main) {
-    EXPECT_EQ(cth::str::to_num<uint32_t>("1234"), 1234u);
+    EXPECT_EQ(cth::str::to_num<u32>("1234"), 1234u);
     EXPECT_EQ(cth::str::to_num<float>("1234"), 1234.f);
     EXPECT_EQ(cth::str::to_num<float>("1234.5"), 1234.5f);
     EXPECT_EQ(cth::str::to_num<double>("8402.81237"), 8402.81237);
 
-    EXPECT_EQ(cth::str::to_num<uint32_t>("1hH23a4"), nullopt);
+    EXPECT_EQ(cth::str::to_num<u32>("1hH23a4"), nullopt);
     EXPECT_EQ(cth::str::to_num<float>("1as234"), nullopt);
     EXPECT_EQ(cth::str::to_num<float>("1234..5"), nullopt);
     EXPECT_EQ(cth::str::to_num<double>("8402.81A237"), nullopt);
@@ -37,12 +38,12 @@ STR_TEST(split, main) {
 
     constexpr std::array<std::string_view, 4> validRes = {{"asdf", "asdf", "asdf", "dht"}};
 
-    for(size_t i = 0; i < res.size(); ++i)
+    for(uz i = 0; i < res.size(); ++i)
         EXPECT_EQ(res[i], validRes[i]);
 
     [[maybe_unused]] auto res2 = str::split(L"asdf  asdf asdf dht", L' ');
 
-    for(size_t i = 0; i < res.size(); ++i)
+    for(uz i = 0; i < res.size(); ++i)
         EXPECT_EQ(res[i], validRes[i]);
 }
 

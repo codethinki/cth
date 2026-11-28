@@ -1,6 +1,7 @@
 #pragma once
 #include <cth/exception.hpp>
 #include <cth/io/log.hpp>
+#include <cth/types.hpp>
 
 #include <cstddef>
 #include <exception>
@@ -64,7 +65,7 @@ public:
     ) :
         coro_exception{message(exceptions), Severity::ERR, loc, std::move(trace)},
         _exceptions{std::move(exceptions)} {
-        for(size_t i = 0; i < _exceptions.size(); ++i)
+        for(uz i = 0; i < _exceptions.size(); ++i)
             if(_exceptions[i] != nullptr) add("child {}: {}", i, what_of(_exceptions[i]));
     }
 
@@ -75,7 +76,7 @@ public:
 
 private:
     [[nodiscard]] static std::string message(std::vector<std::exception_ptr> const& exceptions) {
-        size_t failed = 0;
+        uz failed = 0;
         for(auto const& exception : exceptions)
             if(exception != nullptr) ++failed;
         return std::format("{} of {} children of co::all() failed", failed, exceptions.size());

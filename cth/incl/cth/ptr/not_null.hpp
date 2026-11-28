@@ -2,6 +2,7 @@
 #pragma once
 #include "cth/constants.hpp"
 #include "cth/io/log.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <memory>
@@ -191,7 +192,7 @@ template<class T, auto Null, bool Adapt> requires(!not_null<T, Null, Adapt>::NUL
 template<class T, auto Null, bool Adapt>
 struct std::hash<
         cth::not_null<T, Null, Adapt>> /* NOLINT(cert-dcl58-cpp) this is a valid overload for std::hash */ {
-    std::size_t operator()(cth::not_null<T, Null, Adapt> const& obj) const noexcept {
+    cth::uz operator()(cth::not_null<T, Null, Adapt> const& obj) const noexcept {
         using value_t = std::remove_cvref_t<decltype(obj.get())>;
         return std::hash<value_t>{}(obj.get());
     }

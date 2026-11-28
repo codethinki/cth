@@ -1,6 +1,7 @@
 #pragma once
 #include "cth/os/exception.hpp"
 #include "cth/os/timer.hpp"
+#include "cth/types.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -37,7 +38,7 @@ namespace {
      */
     void drain(native_handle_t handle) noexcept {
         // non blocking, so this is EAGAIN when nothing expired
-        std::uint64_t expirations{};
+        u64 expirations{};
         [[maybe_unused]] auto const read = ::read(handle, &expirations, sizeof(expirations));
     }
 

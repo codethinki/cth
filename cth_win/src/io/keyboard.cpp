@@ -6,6 +6,7 @@
 #include "win_key_convert.hpp"
 
 #include "hidusage.h"
+#include "cth/types.hpp"
 
 #include <algorithm>
 #include <array>
@@ -164,7 +165,7 @@ keybd_event_queue::~keybd_event_queue() { keybdManager.unsubscribe(*this); }
     return _queue.empty();
 }
 
-[[nodiscard]] size_t keybd_event_queue::size() const {
+[[nodiscard]] uz keybd_event_queue::size() const {
     std::scoped_lock const _{_queueMtx};
     return _queue.size();
 }

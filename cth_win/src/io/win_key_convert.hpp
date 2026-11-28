@@ -6,6 +6,7 @@
 
 // private
 #include "../win_include.hpp"
+#include "cth/types.hpp"
 
 #include <algorithm>
 #include <array>
@@ -16,7 +17,7 @@
 
 
 namespace cth::win {
-using scan_code_t = uint16_t; ///< Set 1 scan code, the prefix `0xE0` or `0xE1` in the high byte: `0xE01C`
+using scan_code_t = u16; ///< Set 1 scan code, the prefix `0xE0` or `0xE1` in the high byte: `0xE01C`
 
 struct scan_code_key {
     scan_code_t scanCode;
@@ -261,7 +262,7 @@ inline constexpr auto SCAN_CODE_KEYS = [] {
         return "\x7F";
 
     // -1: dead key, the buffer holds its spacing character
-    std::wstring_view const units{buffer.data(), result < 0 ? 1 : static_cast<size_t>(result)};
+    std::wstring_view const units{buffer.data(), result < 0 ? 1 : static_cast<uz>(result)};
 
     try {
         return win::to_string(units);

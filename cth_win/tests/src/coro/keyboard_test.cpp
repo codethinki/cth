@@ -7,6 +7,7 @@
 #include <cth/coro/sync.hpp>
 #include <cth/coro/tasks/executor_task.hpp>
 #include <cth/coro/this_coro.hpp>
+#include <cth/types.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -159,8 +160,8 @@ CO_TEST(event_queue, survives_burst) {
         }
     };
 
-    auto task = [](keybd_event_queue& q) -> cth::co::executor_task<size_t> {
-        size_t taken = 0;
+    auto task = [](keybd_event_queue& q) -> cth::co::executor_task<uz> {
+        uz taken = 0;
 
         while(taken < 16) {
             [[maybe_unused]] auto const event = co_await q.next();

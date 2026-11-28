@@ -1,9 +1,10 @@
 #include "cth/enums.hpp"
 
 #include "cth/test.hpp"
+#include "cth/types.hpp"
 
 namespace cth::types {
-enum class A : size_t { AND_RESULT = 0, FIRST = 1, SECOND = 2, OR_RESULT = 3 };
+enum class A : uz { AND_RESULT = 0, FIRST = 1, SECOND = 2, OR_RESULT = 3 };
 CTH_GEN_ENUM_FLAG_OVERLOADS(A)
 
 TEST(MACRO_CTH_ENUM_OVERLOADS, main) {

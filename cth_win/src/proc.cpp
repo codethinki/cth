@@ -4,6 +4,7 @@
 #include "cth/win/win_types.hpp"
 #include "win_include.hpp"
 #include <cth/io/log.hpp>
+#include <cth/types.hpp>
 
 
 #include <array>
@@ -108,10 +109,10 @@ std::optional<bool> active(std::wstring_view process_name) {
 }
 
 
-std::optional<size_t> count(std::wstring_view process_name) {
+std::optional<uz> count(std::wstring_view process_name) {
     auto const& processIds = enumerate();
 
-    size_t instanceCount = 0;
+    uz instanceCount = 0;
 
     for(auto const id : processIds)
         if(auto const str = name(id, false); str.has_value() && str == process_name)

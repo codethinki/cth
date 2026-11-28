@@ -6,11 +6,12 @@
 
 #include "cth/io/file.hpp"
 #include "cth/win/win_types.hpp"
+#include "cth/types.hpp"
 
 
 namespace cth::win::io {
 void read_unbuffered(std::string_view path, std::vector<std::byte>& buffer) {
-    constexpr static size_t PAGE_SIZE = 4096;
+    constexpr static uz PAGE_SIZE = 4096;
 
 
     auto const wPath = win::to_wstring(path);
@@ -96,7 +97,7 @@ mapped_file map_file(std::string_view path) {
         std::move(file),
         std::move(mapping),
         std::move(dataHandle),
-        {static_cast<std::byte const*>(dataPtr), static_cast<std::size_t>(fileSize)}
+        {static_cast<std::byte const*>(dataPtr), static_cast<uz>(fileSize)}
     };
 }
 

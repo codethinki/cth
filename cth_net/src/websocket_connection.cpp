@@ -4,6 +4,7 @@
 #include "websocket_connection_state.hpp"
 
 #include <hv/WebSocketChannel.h>
+#include "cth/types.hpp"
 
 #include <limits>
 #include <utility>
@@ -12,7 +13,7 @@ namespace cth::net::dev {
 
 websocket_connection_state::websocket_connection_state(
     WebSocketChannelPtr channel,
-    std::size_t maxMessageSize
+    uz maxMessageSize
 ) : channel{std::move(channel)}, maxMessageSize{maxMessageSize} {}
 
 void websocket_connection_state::receive(

@@ -1,5 +1,6 @@
 #pragma once
 #include "log.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <filesystem>
@@ -20,9 +21,9 @@ uintmax_t size_in(std::filesystem::path const& path) {
     return file_size(path) / Divisor;
 }
 
-constexpr size_t DEFAULT_CHOP_BUFFER_SIZE = 0xfff;
+constexpr uz DEFAULT_CHOP_BUFFER_SIZE = 0xfff;
 
-template<class D, size_t Buffer = DEFAULT_CHOP_BUFFER_SIZE>
+template<class D, uz Buffer = DEFAULT_CHOP_BUFFER_SIZE>
 std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {
     CTH_STABLE_ERR(!std::filesystem::exists(path), "file doesn't exist [{}]", path.string()) {
         throw details->exception();
@@ -46,7 +47,7 @@ std::vector<std::string> chop(std::filesystem::path const& path, D delimiter) {
     return result;
 }
 
-template<size_t Buffer = DEFAULT_CHOP_BUFFER_SIZE>
+template<uz Buffer = DEFAULT_CHOP_BUFFER_SIZE>
 std::vector<std::string> chop(std::filesystem::path const& path, char delimiter = '\n') {
     return chop<char, Buffer>(path, delimiter);
 }
@@ -64,7 +65,7 @@ std::vector<T> read(std::filesystem::path const& path) {
         throw details->exception();
     }
 
-    size_t const fileSize = std::filesystem::file_size(path);
+    uz const fileSize = std::filesystem::file_size(path);
 
     std::vector<T> bytecode(fileSize / sizeof(T));
     file.read(reinterpret_cast<char*>(bytecode.data()), static_cast<std::streamsize>(fileSize));

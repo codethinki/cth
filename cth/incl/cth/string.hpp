@@ -4,6 +4,7 @@
 #include "cth/meta/ranges.hpp"
 #include "cth/meta/variadic.hpp"
 #include "cth/string/format.hpp"
+#include "cth/types.hpp"
 
 #include <cstddef>
 #include <algorithm>
@@ -32,7 +33,7 @@ namespace cth::str {
 template<cth::mta::arithmetic T>
 [[nodiscard]] constexpr std::optional<T> to_num(std::string_view str) {
     T num = 0;
-    size_t i = 0;
+    uz i = 0;
     for(; i < str.size(); i++) {
         char const c = str[i];
         if(c >= '0' && c <= '9')

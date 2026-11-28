@@ -1,4 +1,6 @@
 #pragma once
+#include "cth/types.hpp"
+
 #include <cstddef>
 #include <array>
 #include <bit>
@@ -35,7 +37,7 @@ namespace num {
         using diff_t = decltype(t - u);
         using cast_t = std::conditional_t<std::unsigned_integral<diff_t>, long long, diff_t>;
 
-        if constexpr(std::same_as<size_t, base_t>)
+        if constexpr(std::same_as<uz, base_t>)
             return static_cast<base_t>(std::max(t, u) - std::min(t, u));
         else
             return static_cast<base_t>(std::abs(static_cast<cast_t>(t) - static_cast<cast_t>(u)));
@@ -141,7 +143,7 @@ namespace num {
 
     template<std::floating_point T>
     [[nodiscard]] constexpr T exp(T x, T precision) {
-        uint32_t n = 1;
+        u32 n = 1;
         T result = 1, term = x;
         while(std::abs(term) > precision) {
             result += term;

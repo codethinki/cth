@@ -3,6 +3,7 @@
 
 #include "cth/os/exception.hpp"
 #include "cth/os/timer.hpp"
+#include "cth/types.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -30,7 +31,7 @@ namespace {
         // negative == relative to now, which dodges the wall clock. clamped to -1 because win32
         // documents a due time of 0 oddly
         auto const ticks = std::chrono::duration_cast<std::chrono::nanoseconds>(delta).count() / 100;
-        li.QuadPart = -std::max<std::int64_t>(1, ticks);
+        li.QuadPart = -std::max<i64>(1, ticks);
 
         return li;
     }

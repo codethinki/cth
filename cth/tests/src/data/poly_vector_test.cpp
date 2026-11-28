@@ -1,6 +1,7 @@
 #include "test.hpp"
 
 #include "cth/data/poly_vector.hpp"
+#include "cth/types.hpp"
 
 #include <numeric>
 
@@ -30,9 +31,9 @@ DATA_TEST(raw_poly_vector, DataAndAlignmentAndIntegrity) {
     using second_t = AlignedStruct;
     using third_t = int;
 
-    constexpr size_t n0 = 7;
-    constexpr size_t n1 = 3;
-    constexpr size_t n2 = 5;
+    constexpr uz n0 = 7;
+    constexpr uz n1 = 3;
+    constexpr uz n2 = 5;
 
     cth::dt::raw_poly_vector<first_t, second_t, third_t> rv(std::array{n0, n1, n2});
 
@@ -40,10 +41,10 @@ DATA_TEST(raw_poly_vector, DataAndAlignmentAndIntegrity) {
     auto p1 = rv.data<1>();
     auto p2 = rv.data<2>();
 
-    auto const addr1 = reinterpret_cast<uintptr_t>(p1);
+    auto const addr1 = reinterpret_cast<uaddr>(p1);
     EXPECT_EQ(addr1 % alignof(second_t), 0);
 
-    auto const addr2 = reinterpret_cast<uintptr_t>(p2);
+    auto const addr2 = reinterpret_cast<uaddr>(p2);
     EXPECT_EQ(addr2 % alignof(third_t), 0);
 
     std::fill_n(p0, n0, 'Z');
@@ -52,7 +53,7 @@ DATA_TEST(raw_poly_vector, DataAndAlignmentAndIntegrity) {
     p1[2] = {303};
     std::iota(p2, p2 + n2, -10);
 
-    for(size_t i = 0; i < n0; ++i) {
+    for(uz i = 0; i < n0; ++i) {
         EXPECT_EQ(p0[i], 'Z');
     }
     EXPECT_EQ(p1[0].val, 101);
@@ -66,8 +67,8 @@ DATA_TEST(raw_poly_vector, ConstData) {
     using first_t = long long;
     using second_t = char;
 
-    constexpr size_t n0 = 5;
-    constexpr size_t n1 = 8;
+    constexpr uz n0 = 5;
+    constexpr uz n1 = 8;
 
     cth::dt::raw_poly_vector<first_t, second_t> rv(std::array{n0, n1});
 
@@ -109,9 +110,9 @@ DATA_TEST(poly_vector, ConstructionAndSize) {
     using second_t = char;
     using third_t = double;
 
-    constexpr size_t n0 = 10;
-    constexpr size_t n1 = 100;
-    constexpr size_t n2 = 5;
+    constexpr uz n0 = 10;
+    constexpr uz n1 = 100;
+    constexpr uz n2 = 5;
 
     cth::dt::poly_vector<first_t, second_t, third_t> const pv(std::array{n0, n1, n2});
 
@@ -124,8 +125,8 @@ DATA_TEST(poly_vector, GetAndDataMutableConstStyle) {
     using first_t = long long;
     using second_t = char;
 
-    constexpr size_t n0 = 5;
-    constexpr size_t n1 = 8;
+    constexpr uz n0 = 5;
+    constexpr uz n1 = 8;
 
     cth::dt::poly_vector<first_t, second_t> pvMut(std::array{n0, n1});
     auto span0 = pvMut.get<0>();
@@ -155,8 +156,8 @@ DATA_TEST(poly_vector, GetAndDataConst) {
     constexpr first_t firstDefault = 42;
     constexpr second_t secondDefault = 3.14;
 
-    constexpr size_t firstSize = 3;
-    constexpr size_t secondSize = 4;
+    constexpr uz firstSize = 3;
+    constexpr uz secondSize = 4;
 
     cth::dt::poly_vector<int, double> pvMut(std::initializer_list{firstSize, secondSize});
     auto span0 = pvMut.get<0>();
@@ -195,10 +196,10 @@ DATA_TEST(poly_vector, ZeroSizedSpans) {
     using t2 = double;
     using t3 = float;
 
-    constexpr size_t n0 = 0;
-    constexpr size_t n1 = 10;
-    constexpr size_t n2 = 0;
-    constexpr size_t n3 = 5;
+    constexpr uz n0 = 0;
+    constexpr uz n1 = 10;
+    constexpr uz n2 = 0;
+    constexpr uz n3 = 5;
 
     cth::dt::poly_vector<t0, t1, t2, t3> pvMut(std::array{n0, n1, n2, n3});
 
@@ -230,13 +231,13 @@ DATA_TEST(poly_vector, AlignmentAndDataIntegrity) {
     };
 
     using pv_t = cth::dt::poly_vector<char, AlignedStruct, int>;
-    constexpr size_t n0 = 7, n1 = 3, n2 = 5;
+    constexpr uz n0 = 7, n1 = 3, n2 = 5;
     pv_t pvMut(std::array{n0, n1, n2});
 
-    auto const ptrAddrStruct = reinterpret_cast<uintptr_t>(pvMut.data<1>());
+    auto const ptrAddrStruct = reinterpret_cast<uaddr>(pvMut.data<1>());
     EXPECT_EQ(ptrAddrStruct % alignof(AlignedStruct), 0);
 
-    auto const ptrAddrInt = reinterpret_cast<uintptr_t>(pvMut.data<2>());
+    auto const ptrAddrInt = reinterpret_cast<uaddr>(pvMut.data<2>());
     EXPECT_EQ(ptrAddrInt % alignof(int), 0);
 
     std::fill(pvMut.get<0>().begin(), pvMut.get<0>().end(), 'Z');

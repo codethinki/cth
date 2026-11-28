@@ -3,6 +3,7 @@
 
 #include "cth/os/exception.hpp"
 #include "cth/os/wait.hpp"
+#include "cth/types.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -23,7 +24,7 @@ namespace {
         if(timeout.count() <= 0)
             return 0;
 
-        return static_cast<DWORD>(std::min<std::int64_t>(timeout.count(), INFINITE - 1));
+        return static_cast<DWORD>(std::min<i64>(timeout.count(), INFINITE - 1));
     }
 
     wait_result convert(DWORD result) {

@@ -2,6 +2,7 @@
 #include "cth/io/keybd/keys.hpp"
 
 #include <cth/os/fence.hpp>
+#include <cth/types.hpp>
 
 #include <mutex>
 #include <optional>
@@ -85,7 +86,7 @@ public:
     /**
      * size of current buffer queue
      */
-    [[nodiscard]] size_t size() const;
+    [[nodiscard]] uz size() const;
 
     /**
      * `true` if empty

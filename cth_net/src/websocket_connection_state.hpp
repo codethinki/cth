@@ -3,6 +3,7 @@
 #include <cth/os/fence.hpp>
 
 #include <hv/WebSocketChannel.h>
+#include <cth/types.hpp>
 
 #include <cstddef>
 #include <deque>
@@ -19,14 +20,14 @@ struct websocket_message {
 
 struct websocket_connection_state {
     WebSocketChannelPtr channel;
-    std::size_t maxMessageSize;
+    uz maxMessageSize;
 
     mutable std::mutex mutex;
     std::deque<websocket_message> messages;
     os::fence readyFence;
     bool closed = false;
 
-    websocket_connection_state(WebSocketChannelPtr channel, std::size_t maxMessageSize);
+    websocket_connection_state(WebSocketChannelPtr channel, uz maxMessageSize);
 
     void receive(WebSocketChannelPtr const& source, std::string const& data);
     void close(bool closeChannel) noexcept;

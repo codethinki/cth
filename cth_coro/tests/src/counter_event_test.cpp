@@ -9,6 +9,7 @@
 #include "cth/coro/utility/concepts.hpp"
 
 #include <cth/coro/atomic_fence.hpp>
+#include <cth/types.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -32,8 +33,8 @@ namespace {
      */
     executor_task<void> wait_and_signal(
         counter_event const& event,
-        uint64_t value,
-        std::atomic<size_t>& resumes,
+        u64 value,
+        std::atomic<uz>& resumes,
         atomic_fence& done
     ) {
         co_await event.wait(value);
@@ -54,7 +55,7 @@ namespace {
      * blocks until the count reaches the expected count or the timeout passes
      * @return the count reached the expected count
      */
-    [[nodiscard]] bool wait_for(std::atomic<size_t> const& count, size_t expected) {
+    [[nodiscard]] bool wait_for(std::atomic<uz> const& count, uz expected) {
         auto const deadline = std::chrono::steady_clock::now() + TIMEOUT;
         while(count.load() != expected) {
             if(std::chrono::steady_clock::now() > deadline) return false;
@@ -72,7 +73,7 @@ CORO_TEST(counter_event, a_reached_value_does_not_suspend) {
 
     // a suspension would never resume: no set()
     scheduler sched{autostart, 1};
-    auto task = [](counter_event const& e) -> executor_task<uint64_t> {
+    auto task = [](counter_event const& e) -> executor_task<u64> {
         co_await e.wait(2);
         co_return e.value();
     };
@@ -84,7 +85,7 @@ CORO_TEST(counter_event, set_resumes_a_wait) {
     scheduler sched{autostart, 1};
     simple_counting_scope tasks{};
     counter_event event{};
-    std::atomic<size_t> resumes{0};
+    std::atomic<uz> resumes{0};
     atomic_fence done{};
 
     executor{sched}.detach(tasks, wait_and_signal(event, 1, resumes, done));
@@ -102,8 +103,8 @@ CORO_TEST(counter_event, a_set_resumes_only_the_reached_waits) {
     scheduler sched{autostart, 1};
     simple_counting_scope tasks{};
     counter_event event{};
-    std::atomic<size_t> firstResumes{0};
-    std::atomic<size_t> secondResumes{0};
+    std::atomic<uz> firstResumes{0};
+    std::atomic<uz> secondResumes{0};
     atomic_fence firstDone{};
     atomic_fence secondDone{};
 
@@ -156,8 +157,8 @@ CORO_TEST(counter_event, set_posts_the_resume_also_on_the_context_of_the_caller)
     strand serial{sched};
     simple_counting_scope tasks{};
     counter_event event{};
-    std::atomic<size_t> resumes{0};
-    std::atomic<size_t> resumesInSet{1};
+    std::atomic<uz> resumes{0};
+    std::atomic<uz> resumesInSet{1};
     atomic_fence done{};
 
     executor{serial}.detach(tasks, wait_and_signal(event, 1, resumes, done));
@@ -177,39 +178,39 @@ CORO_TEST(counter_event, set_posts_the_resume_also_on_the_context_of_the_caller)
 }
 
 CORO_TEST(counter_event, set_from_another_thread_while_waits_push) {
-    constexpr size_t ITERATIONS = 1000;
-    constexpr size_t WAITERS = 16;
-    constexpr uint64_t VALUES = 64;
-    constexpr uint64_t STEP = 4;
+    constexpr uz ITERATIONS = 1000;
+    constexpr uz WAITERS = 16;
+    constexpr u64 VALUES = 64;
+    constexpr u64 STEP = 4;
 
     // every waiter waits for each value of its range: first value, then every STEP values
-    auto waiter = [](counter_event const& e, uint64_t first, std::atomic<size_t>& count)
+    auto waiter = [](counter_event const& e, u64 first, std::atomic<uz>& count)
         -> executor_task<void> {
-        for(uint64_t value = first; value <= VALUES; value += STEP) {
+        for(u64 value = first; value <= VALUES; value += STEP) {
             co_await e.wait(value);
             count.fetch_add(1);
         }
     };
 
-    size_t expected = 0;
-    for(size_t i = 0; i < WAITERS; ++i)
+    uz expected = 0;
+    for(uz i = 0; i < WAITERS; ++i)
         expected += (VALUES - (1 + i % STEP)) / STEP + 1;
 
     scheduler sched{autostart, 4};
     executor const exec{sched};
 
-    for(size_t i = 0; i < ITERATIONS; ++i) {
+    for(uz i = 0; i < ITERATIONS; ++i) {
         counter_event event{};
         simple_counting_scope tasks{};
-        std::atomic<size_t> resumes{0};
+        std::atomic<uz> resumes{0};
 
         std::thread setter{[&event] {
-            for(uint64_t value = 1; value <= VALUES; ++value) {
+            for(u64 value = 1; value <= VALUES; ++value) {
                 event.set(value);
                 if(value % 8 == 0) std::this_thread::yield();
             }
         }};
-        for(size_t j = 0; j < WAITERS; ++j)
+        for(uz j = 0; j < WAITERS; ++j)
             exec.detach(tasks, waiter(event, 1 + j % STEP, resumes));
         setter.join();
 
@@ -225,7 +226,7 @@ CORO_TEST(counter_event, set_from_another_thread_while_waits_push) {
 }
 
 CORO_TEST(counter_event, the_resumed_caller_destroys_the_event_at_once) {
-    constexpr size_t ITERATIONS = 5000;
+    constexpr uz ITERATIONS = 5000;
 
     // owns the event, destroys it at once after the resume: set() and await_suspend() can still run
     auto waiter = [](std::unique_ptr<counter_event> event) -> executor_task<void> {
@@ -236,7 +237,7 @@ CORO_TEST(counter_event, the_resumed_caller_destroys_the_event_at_once) {
     scheduler sched{autostart, 4};
     executor const exec{sched};
 
-    for(size_t i = 0; i < ITERATIONS; ++i) {
+    for(uz i = 0; i < ITERATIONS; ++i) {
         auto event = std::make_unique<counter_event>();
         auto* const eventPtr = event.get();
         simple_counting_scope tasks{};

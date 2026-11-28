@@ -1,5 +1,6 @@
 #include "cth/data/miniram.hpp"
 #include "test.hpp"
+#include "cth/types.hpp"
 
 #include <array>
 #include <cstdint>
@@ -83,12 +84,12 @@ DATA_TEST(miniram, reuse_and_fragmentation) {
 
 DATA_TEST(miniram, zero_fragmentation_scenario) {
     miniram ram(1024 * 1024 * 256);
-    constexpr uint32_t numAllocs = 256;
-    constexpr uint32_t allocSize = 1024 * 1024;
+    constexpr u32 numAllocs = 256;
+    constexpr u32 allocSize = 1024 * 1024;
 
     std::vector<mini_alloc> allocations(numAllocs);
 
-    for(uint32_t i = 0; i < numAllocs; i++) {
+    for(u32 i = 0; i < numAllocs; i++) {
         allocations[i] = ram.allocate(allocSize);
         EXPECT_EQ(allocations[i].offset, i * allocSize);
     }
@@ -117,7 +118,7 @@ DATA_TEST(miniram, zero_fragmentation_scenario) {
     EXPECT_NE(allocations[95].offset, miniram::NO_SPACE);
     EXPECT_NE(allocations[151].offset, miniram::NO_SPACE);
 
-    for(uint32_t i = 0; i < numAllocs; i++)
+    for(u32 i = 0; i < numAllocs; i++)
         if(i < 152 || i > 154)
             ram.free(allocations[i]);
 
@@ -149,7 +150,7 @@ DATA_TEST(miniram, query_methods) {
     allocator.free(d);
 
     auto const freeSpans = allocator.free_regions();
-    size_t nonEmptyBins = 0;
+    uz nonEmptyBins = 0;
     for(auto const& region : freeSpans) {
         if(region.count > 0) {
             nonEmptyBins++;
@@ -236,8 +237,8 @@ DATA_TEST(miniram, defragmentation) {
 
     auto report = ram.defragment();
 
-    uint32_t const totalLiveSize = 5 * 500;
-    uint32_t const totalFreeSize = ram.capacity() - totalLiveSize;
+    u32 const totalLiveSize = 5 * 500;
+    u32 const totalFreeSize = ram.capacity() - totalLiveSize;
     EXPECT_EQ(ram.remaining(), totalFreeSize);
     EXPECT_GE(ram.max_alloc(), totalFreeSize - 100);
     EXPECT_LE(ram.max_alloc(), totalFreeSize);
@@ -256,7 +257,7 @@ DATA_TEST(miniheap, post_defrag_integrity) {
     }
 
     std::map<miniram::index_type, mini_alloc> liveAllocs;
-    for(size_t i = 0; i < allocations.size(); ++i) {
+    for(uz i = 0; i < allocations.size(); ++i) {
         if(i % 2 == 0) {
             ram.free(allocations[i]);
         } else {
@@ -277,9 +278,9 @@ DATA_TEST(miniheap, post_defrag_integrity) {
     ram.free(allocToFree);
     liveAllocs.erase(allocations[5].id);
 
-    uint32_t expectedFreeSpace = ram.capacity() - (9 * 512) - 1024;
+    u32 expectedFreeSpace = ram.capacity() - (9 * 512) - 1024;
     EXPECT_EQ(ram.remaining(), expectedFreeSpace);
-    auto minExpected = static_cast<uint32_t>(expectedFreeSpace * 0.9);
+    auto minExpected = static_cast<u32>(expectedFreeSpace * 0.9);
     EXPECT_GE(ram.max_alloc(), minExpected);
     EXPECT_LE(ram.max_alloc(), expectedFreeSpace);
 

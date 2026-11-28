@@ -1,6 +1,7 @@
 #include "cth/coro/counter_event.hpp"
 
 #include <cth/io/log.hpp>
+#include <cth/types.hpp>
 
 #include <thread>
 
@@ -11,7 +12,7 @@ counter_event::~counter_event() {
     CTH_CRITICAL(_head.load(std::memory_order_acquire) != nullptr, "the event must have no pending wait") {}
 }
 
-void counter_event::set(uint64_t value) noexcept {
+void counter_event::set(u64 value) noexcept {
     CTH_CRITICAL(value <= this->value(), "the value must rise, got {} after {}", value, this->value()) {}
 
     // relaxed: the release of the store orders it before a wait sees the value or a resume

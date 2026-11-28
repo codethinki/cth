@@ -3,6 +3,7 @@
 #include "cth/test.hpp"
 
 #include "cth/numeric.hpp"
+#include "cth/types.hpp"
 
 #define NUM_TEST(suite, test_name) CTH_EX_TEST(_numeric, suite, test_name)
 
@@ -66,16 +67,16 @@ NUM_TEST(align_to, compile_time_multiple) {
     static_assert(align_to<4>(8) == 8);
     static_assert(align_to<4>(0) == 0);
     static_assert(align_to<1>(7) == 7);
-    static_assert(align_to<64>(size_t{65}) == 128);
-    static_assert(align_to<uint32_t>(5) == 8);
+    static_assert(align_to<64>(uz{65}) == 128);
+    static_assert(align_to<u32>(5) == 8);
 
     // negatives round up too
     static_assert(align_to<4>(-5) == -4);
     static_assert(align_to<4>(-8) == -8);
 
     // the result has the type of the value, a narrow unsigned mask keeps the high bits
-    static_assert(std::same_as<decltype(align_to<4>(uint64_t{1})), uint64_t>);
-    static_assert(align_to<4u>((uint64_t{1} << 40) + 1) == (uint64_t{1} << 40) + 4);
+    static_assert(std::same_as<decltype(align_to<4>(u64{1})), u64>);
+    static_assert(align_to<4u>((u64{1} << 40) + 1) == (u64{1} << 40) + 4);
 
     static_assert(alignable_to<4>);
     static_assert(!alignable_to<3>);
@@ -89,8 +90,8 @@ NUM_TEST(align_to, run_time_multiple) {
     EXPECT_EQ(align_to(1, multiple), 16);
     EXPECT_EQ(align_to(32, multiple), 32);
     EXPECT_EQ(align_to(-17, multiple), -16);
-    EXPECT_EQ(align_to(size_t{100}, uint64_t{64}), 128);
-    EXPECT_EQ(align_to((uint64_t{1} << 40) + 1, 4u), (uint64_t{1} << 40) + 4);
+    EXPECT_EQ(align_to(uz{100}, u64{64}), 128);
+    EXPECT_EQ(align_to((u64{1} << 40) + 1, 4u), (u64{1} << 40) + 4);
 }
 
 #ifdef CTH_DEBUG_MODE
@@ -102,8 +103,8 @@ NUM_TEST(align_to, run_time_multiple_not_a_power_of_2_crashes) {
 #endif
 
 NUM_TEST(abs_diff, main) {
-    uint8_t a = 1;
-    uint8_t b = 2;
+    u8 a = 1;
+    u8 b = 2;
 
     EXPECT_EQ(abs_diff(a, b), 1);
     EXPECT_EQ(abs_diff(b, a), 1);

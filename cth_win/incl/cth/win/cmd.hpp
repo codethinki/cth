@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cth/types.hpp"
+
 #include <filesystem>
 #include <format>
 
@@ -14,7 +16,7 @@ namespace cth::win::cmd {
  * @throws cth::except::win_exception reason: waiting for the process failed
  * @note paths in `command` only work with `'\'`, not with `'/'`
  */
-[[nodiscard]] size_t hidden_dir(std::string_view dir, std::string_view command);
+[[nodiscard]] uz hidden_dir(std::string_view dir, std::string_view command);
 
 /**
  * runs a formatted command hidden with `cmd /c` in a directory
@@ -29,7 +31,7 @@ namespace cth::win::cmd {
  */
 template<typename... Types>
 requires(sizeof...(Types) > 0u)
-[[nodiscard]] size_t
+[[nodiscard]] uz
 hidden_dir(std::string_view dir, std::format_string<Types...> command, Types&&... types) {
     return cth::win::cmd::hidden_dir(dir, std::format(command, std::forward<Types>(types)...));
 }
@@ -42,7 +44,7 @@ hidden_dir(std::string_view dir, std::format_string<Types...> command, Types&&..
  * @throws cth::except::win_exception reason: waiting for the process failed
  * @note paths in `command` only work with `'\'`, not with `'/'`
  */
-[[nodiscard]] inline size_t hidden(std::string_view command) {
+[[nodiscard]] inline uz hidden(std::string_view command) {
     return cth::win::cmd::hidden_dir(std::filesystem::current_path().string(), command);
 }
 
@@ -58,7 +60,7 @@ hidden_dir(std::string_view dir, std::format_string<Types...> command, Types&&..
  */
 template<typename... Types>
 requires(sizeof...(Types) > 0u)
-[[nodiscard]] size_t hidden(std::format_string<Types...> command, Types&&... types) {
+[[nodiscard]] uz hidden(std::format_string<Types...> command, Types&&... types) {
     return cth::win::cmd::hidden(std::format(command, std::forward<Types>(types)...));
 }
 }

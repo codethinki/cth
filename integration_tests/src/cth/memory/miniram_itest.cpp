@@ -1,6 +1,7 @@
 #include "cth/test.hpp"
 
 #include "cth/data/miniram.hpp"
+#include "cth/types.hpp"
 
 #include <algorithm>
 #include <map>
@@ -19,15 +20,15 @@ void gen_hist(miniram const& ram) {
     std::println("-----------------------------------------");
 
     auto const freeSpans = ram.free_regions();
-    std::map<uint32_t, size_t> histogram;
-    size_t maxCount = 0;
+    std::map<u32, uz> histogram;
+    uz maxCount = 0;
 
     for(auto const& [count, size] : freeSpans) {
         if(count > 0) {
             // Group sizes into power-of-two buckets for readability
-            uint32_t bucket = 1;
+            u32 bucket = 1;
             if(size > 0)
-                bucket = 1 << static_cast<uint32_t>(std::ceil(std::log2(size + 1)));
+                bucket = 1 << static_cast<u32>(std::ceil(std::log2(size + 1)));
             histogram[bucket] += count;
             maxCount = std::max(histogram[bucket], maxCount);
         }
@@ -48,9 +49,9 @@ void gen_hist(miniram const& ram) {
 
 MEM_TEST(miniram, FragmentationStressTest) {
     // --- Test Parameters ---
-    constexpr uint32_t ramSize = 1024 * 1024 * 256; // 256 MB ram
-    constexpr uint32_t numOperations = 300000; // Number of random alloc/free operations
-    constexpr uint32_t maxAllocSize = 1024 * 2; // Max size of a single random allocation (2 KB)
+    constexpr u32 ramSize = 1024 * 1024 * 256; // 256 MB ram
+    constexpr u32 numOperations = 300000; // Number of random alloc/free operations
+    constexpr u32 maxAllocSize = 1024 * 2; // Max size of a single random allocation (2 KB)
     constexpr int allocChancePercent = 70; // 70% chance to allocate, 30% chance to free
 
     // --- Setup ---
@@ -65,10 +66,10 @@ MEM_TEST(miniram, FragmentationStressTest) {
     std::uniform_int_distribution<> sizeDist(1, maxAllocSize);
 
     // --- Main Stress Loop ---
-    for(uint32_t i = 0; i < numOperations; ++i) {
+    for(u32 i = 0; i < numOperations; ++i) {
         if(opDist(gen) < allocChancePercent) {
             // Try to allocate
-            uint32_t size = sizeDist(gen);
+            u32 size = sizeDist(gen);
             mini_alloc newAlloc = ram.allocate(size);
             if(newAlloc.id != miniram::INVALID_INDEX) {
                 liveAllocations.push_back(newAlloc);
@@ -77,8 +78,8 @@ MEM_TEST(miniram, FragmentationStressTest) {
             // Try to free
             if(!liveAllocations.empty()) {
                 // Pick a random live allocation to free
-                std::uniform_int_distribution<size_t> freeDist(0, liveAllocations.size() - 1);
-                size_t const indexToFree = freeDist(gen);
+                std::uniform_int_distribution<uz> freeDist(0, liveAllocations.size() - 1);
+                uz const indexToFree = freeDist(gen);
 
                 // Free it
                 ram.free(liveAllocations[indexToFree]);

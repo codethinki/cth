@@ -2,6 +2,7 @@
 #include "cth/coro/simple_counting_scope.hpp"
 
 #include <cth/io/log.hpp>
+#include <cth/types.hpp>
 
 #include <atomic>
 #include <cstdint>
@@ -88,7 +89,7 @@ public:
     }
 
 private:
-    enum class error_state : uint8_t {
+    enum class error_state : u8 {
         NONE,
         WRITING, ///< a `store()` writes the error
         STORED,

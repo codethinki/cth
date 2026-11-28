@@ -2,6 +2,7 @@
 
 #include "cth/os/exception.hpp"
 #include "cth/os/fence.hpp"
+#include "cth/types.hpp"
 
 #include <cerrno>
 #include <cstdint>
@@ -17,13 +18,13 @@
 namespace cth::os {
 
 void fence::signal() noexcept {
-    std::uint64_t value = 1;
+    u64 value = 1;
     auto const written = ::write(native_handle(), &value, sizeof(value));
     CTH_OS_STABLE_ERR(written != sizeof(value) && errno != EAGAIN, "failed to signal fence") {}
 }
 
 void fence::reset() noexcept {
-    std::uint64_t value{};
+    u64 value{};
     while(::read(native_handle(), &value, sizeof(value)) == sizeof(value)) {}
     CTH_OS_STABLE_ERR(errno != EAGAIN, "failed to reset fence") {}
 }

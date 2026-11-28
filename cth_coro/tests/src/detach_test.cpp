@@ -7,6 +7,7 @@
 #include "cth/coro/strand.hpp"
 #include "cth/coro/tasks/executor_task.hpp"
 #include "cth/coro/this_coro.hpp"
+#include "cth/types.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -20,7 +21,7 @@ namespace {
     // counts its destructions, the frame of a detached task holds one
     // the slow destruction: a wait() that returns before the end of the destruction sees the old count
     struct destruction_counter {
-        explicit destruction_counter(std::atomic<size_t>& count) : _count{&count} {}
+        explicit destruction_counter(std::atomic<uz>& count) : _count{&count} {}
         ~destruction_counter() {
             if(_count == nullptr) return;
             std::this_thread::sleep_for(std::chrono::milliseconds{1});
@@ -34,7 +35,7 @@ namespace {
         destruction_counter& operator=(destruction_counter&&) = delete;
 
     private:
-        std::atomic<size_t>* _count;
+        std::atomic<uz>* _count;
     };
 
     // a payload with a marker value
@@ -128,19 +129,19 @@ CORO_TEST(executor, detach_without_a_scope_is_in_no_scope) {
 }
 
 CORO_TEST(executor, detach_wait_returns_after_the_frames_are_destroyed) {
-    constexpr size_t TASKS = 16;
+    constexpr uz TASKS = 16;
     scheduler sched{autostart, 2};
     executor exec{sched};
     simple_counting_scope tasks{};
 
-    std::atomic<size_t> destroyed{0};
-    auto task = [](std::atomic<size_t>& count) -> executor_task<void> {
+    std::atomic<uz> destroyed{0};
+    auto task = [](std::atomic<uz>& count) -> executor_task<void> {
         destruction_counter const counter{count};
         // suspends before the end
         co_await this_coro::wait(std::chrono::milliseconds{2});
     };
 
-    for(size_t i = 0; i < TASKS; ++i)
+    for(uz i = 0; i < TASKS; ++i)
         exec.detach(tasks, task(destroyed));
     tasks.wait();
 
@@ -148,16 +149,16 @@ CORO_TEST(executor, detach_wait_returns_after_the_frames_are_destroyed) {
 }
 
 CORO_TEST(executor, detach_wait_returns_after_the_parameters_are_destroyed) {
-    constexpr size_t TASKS = 4;
+    constexpr uz TASKS = 4;
     scheduler sched{autostart, 2};
     executor exec{sched};
     simple_counting_scope tasks{};
 
-    std::atomic<size_t> destroyed{0};
+    std::atomic<uz> destroyed{0};
     // the frame of the task holds the counter until the frame is destroyed
     auto task = [](destruction_counter) -> executor_task<void> { co_return; };
 
-    for(size_t i = 0; i < TASKS; ++i)
+    for(uz i = 0; i < TASKS; ++i)
         exec.detach(tasks, task(destruction_counter{destroyed}));
     tasks.wait();
 
@@ -165,19 +166,19 @@ CORO_TEST(executor, detach_wait_returns_after_the_parameters_are_destroyed) {
 }
 
 CORO_TEST(executor, detach_tasks_suspend_and_move_between_contexts) {
-    constexpr size_t TASKS = 8;
+    constexpr uz TASKS = 8;
     scheduler first{autostart, 1};
     scheduler second{autostart, 1};
     executor exec{first};
     simple_counting_scope tasks{};
 
-    std::atomic<size_t> onSecond{0};
-    auto task = [](scheduler const& target, std::atomic<size_t>& count) -> executor_task<void> {
+    std::atomic<uz> onSecond{0};
+    auto task = [](scheduler const& target, std::atomic<uz>& count) -> executor_task<void> {
         co_await executor{target}.schedule();
         if(target.owns_thread()) count.fetch_add(1);
     };
 
-    for(size_t i = 0; i < TASKS; ++i)
+    for(uz i = 0; i < TASKS; ++i)
         exec.detach(tasks, task(second, onSecond));
     tasks.wait();
 
@@ -201,14 +202,14 @@ CORO_TEST(executor, detach_passes_the_payload) {
 }
 
 CORO_TEST(scheduler, destroys_a_task_detached_without_a_scope_that_did_not_end) {
-    std::atomic<size_t> destroyed{0};
+    std::atomic<uz> destroyed{0};
     std::atomic<bool> waits{false};
 
     {
         scheduler sched{autostart, 1};
         executor exec{sched};
 
-        auto task = [](std::atomic<size_t>& count, std::atomic<bool>& started) -> executor_task<void> {
+        auto task = [](std::atomic<uz>& count, std::atomic<bool>& started) -> executor_task<void> {
             destruction_counter const counter{count};
             started = true;
             started.notify_one();
@@ -224,7 +225,7 @@ CORO_TEST(scheduler, destroys_a_task_detached_without_a_scope_that_did_not_end) 
 }
 
 CORO_TEST(scheduler, destroys_a_task_detached_on_a_strand_without_a_scope_that_did_not_end) {
-    std::atomic<size_t> destroyed{0};
+    std::atomic<uz> destroyed{0};
     std::atomic<bool> waits{false};
 
     {
@@ -232,7 +233,7 @@ CORO_TEST(scheduler, destroys_a_task_detached_on_a_strand_without_a_scope_that_d
         strand str{sched};
 
         // waits on the strand: the scheduler stops first, nothing resumes on the strand then
-        auto task = [](std::atomic<size_t>& count, std::atomic<bool>& started) -> executor_task<void> {
+        auto task = [](std::atomic<uz>& count, std::atomic<bool>& started) -> executor_task<void> {
             destruction_counter const counter{count};
             started = true;
             started.notify_one();
